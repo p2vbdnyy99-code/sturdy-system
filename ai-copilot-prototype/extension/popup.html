@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI Copilot</title>
+    <style>
+      :root {
+        --bg: #1c1c1f;
+        --elev: #26262b;
+        --input: #2f2f36;
+        --border: #3a3a42;
+        --text: #ececee;
+        --dim: #a0a0aa;
+        --accent: #7c6cff;
+        --danger: #ff6b6b;
+        --success: #48c78e;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        width: 320px;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+      }
+      header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 14px 16px;
+        border-bottom: 1px solid var(--border);
+        background: var(--elev);
+      }
+      .brand { font-weight: 700; font-size: 15px; display: flex; gap: 6px; align-items: center; }
+      .brand .spark { color: var(--accent); }
+      main { padding: 16px; }
+      .field { margin-bottom: 10px; }
+      label { display: block; font-size: 11px; color: var(--dim); margin-bottom: 4px; }
+      input {
+        width: 100%;
+        padding: 9px 11px;
+        border-radius: 8px;
+        border: 1px solid var(--border);
+        background: var(--input);
+        color: var(--text);
+        font-size: 13px;
+        outline: none;
+      }
+      input:focus { border-color: var(--accent); }
+      button.primary {
+        width: 100%;
+        padding: 10px;
+        border: none;
+        border-radius: 8px;
+        background: var(--accent);
+        color: #fff;
+        font-weight: 600;
+        font-size: 13px;
+        cursor: pointer;
+      }
+      button.primary:hover { filter: brightness(1.08); }
+      button.primary:disabled { opacity: 0.6; cursor: default; }
+      .row { display: flex; justify-content: space-between; align-items: center; }
+      .link {
+        background: none; border: none; color: var(--accent);
+        cursor: pointer; font-size: 12px; padding: 0;
+      }
+      .msg { font-size: 12px; margin: 8px 0; min-height: 16px; }
+      .msg.error { color: var(--danger); }
+      .msg.success { color: var(--success); }
+      .credits {
+        font-size: 12px; color: var(--dim);
+        background: var(--input); padding: 3px 10px; border-radius: 999px;
+      }
+      .account { font-size: 13px; margin-bottom: 12px; }
+      .account b { color: var(--text); }
+      .divider { height: 1px; background: var(--border); margin: 14px 0; }
+      .foot { display: flex; justify-content: space-between; margin-top: 4px; }
+      .hidden { display: none; }
+      .hint { font-size: 11px; color: var(--dim); margin-top: 10px; text-align: center; }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="brand"><span class="spark">✦</span> AI Copilot</div>
+      <span id="credits" class="credits hidden">—</span>
+    </header>
+    <main>
+      <!-- Signed-out view -->
+      <section id="authView">
+        <div class="field">
+          <label for="email">Email</label>
+          <input id="email" type="email" placeholder="you@example.com" autocomplete="username" />
+        </div>
+        <div class="field">
+          <label for="password">Password</label>
+          <input id="password" type="password" placeholder="••••••••" autocomplete="current-password" />
+        </div>
+        <div id="authMsg" class="msg"></div>
+        <button id="submitBtn" class="primary">Sign in</button>
+        <div class="foot">
+          <button id="toggleMode" class="link">Need an account? Register</button>
+        </div>
+        <div class="hint">Backend defaults to http://localhost:8787</div>
+      </section>
+
+      <!-- Signed-in view -->
+      <section id="accountView" class="hidden">
+        <div class="account">Signed in as <b id="accountEmail"></b></div>
+        <div class="row">
+          <span>Credits remaining</span>
+          <span id="accountCredits" class="credits">—</span>
+        </div>
+        <div class="divider"></div>
+        <button id="openOptions" class="link">Open settings</button>
+        <div class="foot" style="margin-top: 12px;">
+          <button id="logoutBtn" class="link" style="color: var(--danger);">Sign out</button>
+        </div>
+        <div class="hint">Ctrl/Cmd+Shift+K opens the command palette on any page.</div>
+      </section>
+    </main>
+    <script src="popup.js"></script>
+  </body>
+</html>

@@ -1,0 +1,12 @@
+# Dependencies
+node_modules/
+
+# Local secrets & runtime state
+.env
+backend/.env
+backend/data/
+*.log
+
+# OS / editor cruft
+.DS_Store
+*.swp

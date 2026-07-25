@@ -1,0 +1,23 @@
+{
+  "name": "ai-copilot-backend",
+  "version": "0.1.0",
+  "description": "Backend proxy for the AI Copilot browser extension: JWT auth, Claude API proxy, and a credit metering system.",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.68.0",
+    "bcryptjs": "^3.0.2",
+    "cors": "^2.8.5",
+    "dotenv": "^17.0.0",
+    "express": "^5.1.0",
+    "express-rate-limit": "^8.0.1",
+    "jsonwebtoken": "^9.0.2"
+  }
+}

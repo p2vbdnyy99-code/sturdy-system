@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI Copilot — Settings</title>
+    <style>
+      :root {
+        --bg: #1c1c1f;
+        --elev: #26262b;
+        --input: #2f2f36;
+        --border: #3a3a42;
+        --text: #ececee;
+        --dim: #a0a0aa;
+        --accent: #7c6cff;
+        --success: #48c78e;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        display: flex;
+        justify-content: center;
+        padding: 40px 16px;
+      }
+      .card {
+        width: 100%;
+        max-width: 560px;
+        background: var(--elev);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        overflow: hidden;
+      }
+      .card__head {
+        padding: 20px 24px;
+        border-bottom: 1px solid var(--border);
+        font-size: 18px;
+        font-weight: 700;
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
+      .spark { color: var(--accent); }
+      .card__body { padding: 8px 24px 24px; }
+      .setting {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 16px 0;
+        border-bottom: 1px solid var(--border);
+      }
+      .setting:last-child { border-bottom: none; }
+      .setting__label { font-size: 14px; }
+      .setting__desc { font-size: 12px; color: var(--dim); margin-top: 3px; }
+      input[type='text'],
+      select {
+        padding: 8px 10px;
+        border-radius: 8px;
+        border: 1px solid var(--border);
+        background: var(--input);
+        color: var(--text);
+        font-size: 13px;
+        min-width: 200px;
+        outline: none;
+      }
+      input[type='text']:focus,
+      select:focus { border-color: var(--accent); }
+      /* toggle */
+      .switch { position: relative; width: 44px; height: 24px; flex-shrink: 0; }
+      .switch input { opacity: 0; width: 0; height: 0; }
+      .slider {
+        position: absolute; inset: 0; cursor: pointer;
+        background: var(--input); border: 1px solid var(--border);
+        border-radius: 999px; transition: 0.2s;
+      }
+      .slider::before {
+        content: ''; position: absolute; height: 18px; width: 18px;
+        left: 2px; top: 2px; background: var(--dim);
+        border-radius: 50%; transition: 0.2s;
+      }
+      .switch input:checked + .slider { background: var(--accent); border-color: var(--accent); }
+      .switch input:checked + .slider::before { transform: translateX(20px); background: #fff; }
+      .saved { font-size: 12px; color: var(--success); opacity: 0; transition: opacity 0.2s; }
+      .saved.show { opacity: 1; }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <div class="card__head"><span class="spark">✦</span> AI Copilot Settings</div>
+      <div class="card__body">
+        <div class="setting">
+          <div>
+            <div class="setting__label">Backend URL</div>
+            <div class="setting__desc">Where the proxy server is running.</div>
+          </div>
+          <input id="backendUrl" type="text" placeholder="http://localhost:8787" />
+        </div>
+
+        <div class="setting">
+          <div>
+            <div class="setting__label">Theme</div>
+            <div class="setting__desc">Appearance of the in-page UI.</div>
+          </div>
+          <select id="theme">
+            <option value="dark">Dark</option>
+            <option value="light">Light</option>
+          </select>
+        </div>
+
+        <div class="setting">
+          <div>
+            <div class="setting__label">Model override</div>
+            <div class="setting__desc">Leave blank to use the backend default.</div>
+          </div>
+          <input id="model" type="text" placeholder="(backend default)" />
+        </div>
+
+        <div class="setting">
+          <div>
+            <div class="setting__label">Floating button</div>
+            <div class="setting__desc">Show the draggable launcher on pages.</div>
+          </div>
+          <label class="switch"><input id="floatingButton" type="checkbox" /><span class="slider"></span></label>
+        </div>
+
+        <div class="setting">
+          <div>
+            <div class="setting__label">Selection toolbar</div>
+            <div class="setting__desc">Show quick actions when you highlight text.</div>
+          </div>
+          <label class="switch"><input id="textToolbar" type="checkbox" /><span class="slider"></span></label>
+        </div>
+
+        <div class="setting">
+          <div class="saved" id="saved">Saved ✓</div>
+        </div>
+      </div>
+    </div>
+    <script src="options.js"></script>
+  </body>
+</html>
