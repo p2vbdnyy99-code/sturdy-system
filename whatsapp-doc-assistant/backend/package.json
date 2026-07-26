@@ -1,0 +1,22 @@
+{
+  "name": "whatsapp-doc-assistant",
+  "version": "0.1.0",
+  "description": "A WhatsApp AI document assistant: send a PDF to a WhatsApp number and summarize it, ask questions, OCR scanned pages, convert to Word, translate, and more — all inside the chat.",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.68.0",
+    "docx": "^9.0.2",
+    "dotenv": "^17.0.0",
+    "express": "^5.1.0",
+    "pdf-parse": "^1.1.1",
+    "tesseract.js": "^5.1.1"
+  }
+}
