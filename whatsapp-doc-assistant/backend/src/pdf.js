@@ -11,9 +11,6 @@ import { spawnSync } from 'node:child_process';
 import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-// Import the library entrypoint directly to avoid pdf-parse's debug harness,
-// which tries to read a bundled sample file when imported as the package root.
-import pdfParse from 'pdf-parse/lib/pdf-parse.js';
 import { log } from './logger.js';
 
 // Below this many characters of text per page, we treat the PDF as scanned.
@@ -22,19 +19,48 @@ const SCANNED_CHARS_PER_PAGE = 40;
 const MAX_OCR_PAGES = 15;
 
 /**
+ * Read the embedded text layer of a PDF with pdf.js (the legacy build runs in
+ * plain Node without a DOM). Returns `{ text, pages }`.
+ */
+async function readTextLayer(buffer) {
+  const pdfjs = await import('pdfjs-dist/legacy/build/pdf.mjs');
+  const data = new Uint8Array(buffer);
+  const loadingTask = pdfjs.getDocument({
+    data,
+    useSystemFonts: true,
+    isEvalSupported: false,
+  });
+  const doc = await loadingTask.promise;
+
+  try {
+    const pageTexts = [];
+    for (let i = 1; i <= doc.numPages; i += 1) {
+      const page = await doc.getPage(i);
+      const content = await page.getTextContent();
+      pageTexts.push(content.items.map((it) => it.str).join(' ').trim());
+      page.cleanup?.();
+    }
+    return { text: pageTexts.join('\n\n').trim(), pages: doc.numPages };
+  } finally {
+    // Release worker/resources — method name has varied across pdf.js majors.
+    await (doc.destroy?.() ?? loadingTask.destroy?.());
+  }
+}
+
+/**
  * Extract text from a PDF buffer.
  * @returns {Promise<{ text: string, pages: number, ocrUsed: boolean, ocrUnavailable: boolean }>}
  */
 export async function extractText(buffer) {
-  let parsed;
+  let layer;
   try {
-    parsed = await pdfParse(buffer);
+    layer = await readTextLayer(buffer);
   } catch (err) {
     throw new Error(`Could not read PDF: ${err.message}`);
   }
 
-  const pages = parsed.numpages || 1;
-  const text = (parsed.text || '').trim();
+  const pages = layer.pages || 1;
+  const text = layer.text;
   const looksScanned = text.length / pages < SCANNED_CHARS_PER_PAGE;
 
   if (!looksScanned) {

@@ -16,7 +16,7 @@
     "docx": "^9.0.2",
     "dotenv": "^17.0.0",
     "express": "^5.1.0",
-    "pdf-parse": "^1.1.1",
+    "pdfjs-dist": "^6.1.200",
     "tesseract.js": "^5.1.1"
   }
 }

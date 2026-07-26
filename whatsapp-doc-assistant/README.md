@@ -52,7 +52,7 @@ whatsapp-doc-assistant/
     │   ├── logger.js        Timestamped console logger
     │   ├── whatsapp.js      Cloud API client: send/list/buttons/docs, media, HMAC
     │   ├── ai.js            Claude: summarize, ask, translate, ELI10, tables, intent
-    │   ├── pdf.js           pdf-parse text layer + OCR fallback (pdftoppm+tesseract)
+    │   ├── pdf.js           pdfjs-dist text layer + OCR fallback (pdftoppm+tesseract)
     │   ├── docx.js          Plain text → .docx
     │   ├── sessions.js      Per-user active document + Q&A memory (in-memory, TTL)
     │   ├── storage.js       Temp file storage on disk (TTL swept)
@@ -155,9 +155,50 @@ The prototype takes shortcuts a real deployment shouldn't:
 - Add observability (structured logs, error tracking) and a retryable queue for
   the async processing path.
 
-## Testing without WhatsApp
+## Testing
 
-The webhook is plain HTTP, so you can exercise it locally by POSTing a Cloud API
-message envelope to `/webhook` (set `WHATSAPP_APP_SECRET` empty to skip the
-signature check in dev). Media download/upload and AI replies still require real
-credentials.
+You can test in three layers, from "no accounts" to "full round-trip."
+
+### 1. The document pipeline, locally (no WhatsApp)
+
+`backend/scripts/try.mjs` runs a real PDF through the same extraction, OCR, AI,
+and `.docx` code the bot uses, printing to the terminal. A sample PDF is
+included at [`samples/quarterly-review.pdf`](samples/quarterly-review.pdf).
+
+```bash
+cd backend
+node scripts/try.mjs ../samples/quarterly-review.pdf extract      # no API key
+node scripts/try.mjs ../samples/quarterly-review.pdf word          # no API key → .docx
+# these need ANTHROPIC_API_KEY set (in .env or the environment):
+node scripts/try.mjs ../samples/quarterly-review.pdf summarize
+node scripts/try.mjs ../samples/quarterly-review.pdf ask "what were total revenues?"
+node scripts/try.mjs ../samples/quarterly-review.pdf tables
+node scripts/try.mjs ../samples/quarterly-review.pdf translate "Hindi"
+```
+
+### 2. The webhook, locally (no WhatsApp)
+
+The webhook is plain HTTP. Verify liveness and the handshake with no keys:
+
+```bash
+npm start   # in one terminal
+curl localhost:8788/health
+curl "localhost:8788/webhook?hub.mode=subscribe&hub.verify_token=<YOUR_VERIFY_TOKEN>&hub.challenge=hello"
+# → echoes "hello"
+```
+
+You can also POST a Cloud API message envelope to `/webhook` to drive the
+router (leave `WHATSAPP_APP_SECRET` empty to skip the signature check in dev) —
+though the bot's *replies* go out through the real Cloud API, so seeing them
+requires credentials.
+
+### 3. Full round-trip (real WhatsApp)
+
+Complete the setup steps above (Cloud API creds + tunnel + webhook config), then
+message a PDF to your test number and watch it reply. Use the WhatsApp Cloud API
+**test number** and add your own phone as a recipient in the Meta dashboard while
+developing — no charges, no business verification needed.
+
+> **OCR note:** OCR only runs if `pdftoppm` (poppler-utils) is installed. Without
+> it, text-based PDFs still work fine; scanned PDFs report that OCR is
+> unavailable rather than failing silently.
