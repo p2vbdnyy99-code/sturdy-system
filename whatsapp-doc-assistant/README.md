@@ -87,6 +87,9 @@ Design notes:
 
 ### 2. WhatsApp Cloud API
 
+Create the Meta app and collect your credentials — full step-by-step in
+**[SETUP.md](SETUP.md)**. In short:
+
 1. Create an app at <https://developers.facebook.com> and add the **WhatsApp**
    product.
 2. From **API Setup**, copy the **temporary access token** and the
@@ -94,6 +97,7 @@ Design notes:
    Generate a permanent token via a System User before going live.
 3. Copy the **App Secret** (App Settings → Basic) into `WHATSAPP_APP_SECRET`.
 4. Invent a `WHATSAPP_VERIFY_TOKEN` string (any random value).
+5. Allow-list your own phone number as a test recipient.
 
 ### 3. Run the backend
 
