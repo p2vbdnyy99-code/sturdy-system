@@ -19,6 +19,12 @@ Each credential you collect maps to a variable in `backend/.env` (copy it from
 2. First time only: click **Get Started** and accept the developer terms.
 3. **My Apps** (top right) → **Create App**.
 4. **Use case:** pick **Other** → **Next**.
+   - ⚠️ Do **not** pick an AI-related use case (anything labelled *AI*, *Llama*,
+     *Meta AI*, or *Model API*). Those activate Meta's Llama "Model API", which
+     is region-restricted (e.g. not available in India) and is **not needed** —
+     this project calls Anthropic from your own server, never Meta's model API.
+     If a *"The Model API isn't available in your region"* popup appears, tap
+     **OK**, back out, and choose **Other**.
 5. **App type:** choose **Business** → **Next**.
 6. Give it a name (e.g. "Doc Assistant"), enter a contact email, select your
    Business account → **Create App** (it may ask for your password).
@@ -114,3 +120,4 @@ action menu.
 | `401` on incoming webhooks in the logs      | `WHATSAPP_APP_SECRET` is wrong (signature check fails)                           |
 | Replies fail with a 190 / token error       | Temporary access token expired — regenerate it (or switch to a permanent token) |
 | Scanned PDFs say OCR is unavailable         | Install `poppler-utils` (`pdftoppm`); text-based PDFs work without it            |
+| *"The Model API isn't available in your region"* during app creation | You selected an AI use case. That's Meta's region-locked Llama API — not needed here. Tap **OK**, back out, and pick **Other** → **Business**, then add the **WhatsApp** product |
