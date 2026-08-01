@@ -22,13 +22,18 @@ export class OpenAIProvider extends AIProvider {
     this.client = new OpenAI({ apiKey, timeout: timeoutMs });
   }
 
-  async complete({ system, user, maxTokens = 1500 }) {
+  async complete({ system, user, maxTokens = 1500, reasoningEffort }) {
     try {
       const res = await this.client.responses.create({
         model: this.model,
         ...(system ? { instructions: system } : {}),
         input: user,
         max_output_tokens: maxTokens,
+        // Reasoning models bill "thinking" tokens against max_output_tokens.
+        // When a caller asks for a specific effort (e.g. 'minimal' for simple
+        // classification), pass it through so reasoning doesn't crowd out the
+        // visible answer. Omitted → the model's default effort.
+        ...(reasoningEffort ? { reasoning: { effort: reasoningEffort } } : {}),
       });
       return (res.output_text || '').trim();
     } catch (err) {

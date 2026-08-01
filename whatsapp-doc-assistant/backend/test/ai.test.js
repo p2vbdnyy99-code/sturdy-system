@@ -89,6 +89,16 @@ test('classifyIntent() falls through to the model only when ambiguous', async ()
   assert.equal(res.intent, 'summarize');
 });
 
+test('classifyIntent() asks the model for minimal reasoning + an adequate budget', async () => {
+  const m = mockProvider('{"intent":"summarize"}');
+  setProvider(m);
+  await classifyIntent('hmm, the thing about page fifteen'); // ambiguous → LLM
+  assert.equal(m.calls.length, 1);
+  assert.equal(m.calls[0].reasoningEffort, 'minimal', 'lowest reasonable effort for classification');
+  assert.notEqual(m.calls[0].maxTokens, 200, 'must not reuse the old tiny budget');
+  assert.ok(m.calls[0].maxTokens >= 512, 'budget leaves room for reasoning + short JSON');
+});
+
 test('an AIError from the provider propagates and has a safe userMessage', async () => {
   setProvider({
     name: 'boom',

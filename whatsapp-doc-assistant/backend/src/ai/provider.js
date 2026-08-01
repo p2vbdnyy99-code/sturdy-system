@@ -13,7 +13,13 @@ export class AIProvider {
 
   /**
    * Run a single-turn completion and return the text output.
-   * @param {{ system?: string, user: string, maxTokens?: number }} _args
+   *
+   * `reasoningEffort` is a provider-agnostic hint ('none' | 'minimal' | 'low' |
+   * 'medium' | 'high' | …). A provider honors it if its model supports reasoning
+   * and ignores it otherwise. It lets callers ask a reasoning model to spend
+   * little effort on simple tasks (e.g. intent classification).
+   *
+   * @param {{ system?: string, user: string, maxTokens?: number, reasoningEffort?: string }} _args
    * @returns {Promise<string>}
    */
   // eslint-disable-next-line no-unused-vars

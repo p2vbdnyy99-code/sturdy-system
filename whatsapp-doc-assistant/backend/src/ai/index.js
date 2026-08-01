@@ -143,6 +143,14 @@ const INTENTS = [
   'unknown',
 ];
 
+// Intent classification is a trivial task, but the default model may be a
+// reasoning model whose "thinking" tokens are billed against max_output_tokens.
+// So we (a) ask for the lowest reasonable reasoning effort and (b) give a budget
+// with room for that minimal reasoning plus the short JSON reply — never the old
+// 200, which a reasoning model could consume entirely, yielding empty output.
+const ROUTER_MAX_TOKENS = 768;
+const ROUTER_REASONING_EFFORT = 'minimal';
+
 const ROUTER_SYSTEM =
   'You route a user message about a document they already sent to ONE action. ' +
   'Reply with ONLY a JSON object, no prose. Schema: {"intent": one of ' +
@@ -165,9 +173,14 @@ export async function classifyIntent(userText) {
   // Obvious command — resolved locally, no LLM request needed.
   if (heuristic.intent !== 'unknown') return heuristic;
 
-  // Ambiguous — ask the model to route.
+  // Ambiguous — ask the model to route (minimal reasoning, adequate budget).
   try {
-    const raw = await complete({ system: ROUTER_SYSTEM, user: userText, maxTokens: 200 });
+    const raw = await complete({
+      system: ROUTER_SYSTEM,
+      user: userText,
+      maxTokens: ROUTER_MAX_TOKENS,
+      reasoningEffort: ROUTER_REASONING_EFFORT,
+    });
     const parsed = safeJson(raw);
     if (parsed && INTENTS.includes(parsed.intent)) {
       return {
