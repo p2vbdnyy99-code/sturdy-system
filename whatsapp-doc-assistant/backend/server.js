@@ -9,7 +9,7 @@
 // asynchronously, because Meta retries webhooks that don't return quickly.
 
 import express from 'express';
-import { config, warnOnMissingConfig } from './src/config.js';
+import { config, warnOnMissingConfig, selectedApiKey } from './src/config.js';
 import { log } from './src/logger.js';
 import { verifyWebhook, verifySignature } from './src/whatsapp.js';
 import { handleMessage } from './src/router.js';
@@ -34,8 +34,9 @@ app.use(
 app.get('/health', (_req, res) => {
   res.json({
     ok: true,
+    provider: config.ai.provider,
     model: config.ai.model,
-    hasAiKey: Boolean(config.ai.apiKey),
+    hasAiKey: Boolean(selectedApiKey(config.ai)),
     hasWhatsAppToken: Boolean(config.whatsapp.token),
   });
 });
@@ -105,7 +106,9 @@ async function start() {
   await ensureDataDir();
   app.listen(config.server.port, () => {
     log.info(`WhatsApp Document Assistant listening on http://localhost:${config.server.port}`);
-    log.info(`  model: ${config.ai.model} · data dir: ${config.server.dataDir}`);
+    log.info(
+      `  AI: ${config.ai.provider} (${config.ai.model}) · data dir: ${config.server.dataDir}`,
+    );
   });
 }
 

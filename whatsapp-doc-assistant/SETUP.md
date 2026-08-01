@@ -22,7 +22,8 @@ Each credential you collect maps to a variable in `backend/.env` (copy it from
    - ⚠️ Do **not** pick an AI-related use case (anything labelled *AI*, *Llama*,
      *Meta AI*, or *Model API*). Those activate Meta's Llama "Model API", which
      is region-restricted (e.g. not available in India) and is **not needed** —
-     this project calls Anthropic from your own server, never Meta's model API.
+     this project calls your own AI provider (OpenAI or Anthropic) from your
+     server, never Meta's model API.
      If a *"The Model API isn't available in your region"* popup appears, tap
      **OK**, back out, and choose **Other**.
 5. **App type:** choose **Business** → **Next**.
@@ -57,8 +58,18 @@ And one you invent yourself — any random string:
 | ------------------------------------------------ | ------------------------ |
 | e.g. `openssl rand -hex 16`                      | `WHATSAPP_VERIFY_TOKEN`  |
 
-Plus your Anthropic key in `ANTHROPIC_API_KEY` (from
-<https://platform.claude.com>).
+### AI provider key
+
+Pick one AI provider and set only its key (the app is provider-independent —
+see the README for details). Set `AI_PROVIDER` to match.
+
+| Provider  | `.env`                                                           | Get the key from                          |
+| --------- | ---------------------------------------------------------------- | ----------------------------------------- |
+| OpenAI    | `AI_PROVIDER=openai` + `OPENAI_API_KEY`                          | <https://platform.openai.com/api-keys>    |
+| Anthropic | `AI_PROVIDER=anthropic` + `ANTHROPIC_API_KEY`                    | <https://platform.claude.com>             |
+
+Only the selected provider's key is required. `AI_MODEL` is optional (defaults:
+OpenAI `gpt-4o`, Anthropic `claude-opus-5`).
 
 ## 4. Allow-list your own phone
 

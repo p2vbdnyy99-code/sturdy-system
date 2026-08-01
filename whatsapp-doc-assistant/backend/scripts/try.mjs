@@ -13,13 +13,14 @@
 //   node scripts/try.mjs <file.pdf> eli
 //   node scripts/try.mjs <file.pdf> word            (writes <name>.docx)
 //
-// `extract` and `word` need no API key. The AI actions need ANTHROPIC_API_KEY.
+// `extract` and `word` need no API key. The AI actions need the selected
+// provider's key (OPENAI_API_KEY or ANTHROPIC_API_KEY — see AI_PROVIDER).
 
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { extractText } from '../src/pdf.js';
 import { textToDocx } from '../src/docx.js';
-import * as ai from '../src/ai.js';
+import * as ai from '../src/ai/index.js';
 
 const [, , file, action = 'summarize', arg] = process.argv;
 

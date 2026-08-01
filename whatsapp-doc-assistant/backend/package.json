@@ -6,7 +6,8 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "node --watch server.js"
+    "dev": "node --watch server.js",
+    "test": "node --test"
   },
   "engines": {
     "node": ">=20"
@@ -16,6 +17,7 @@
     "docx": "^9.0.2",
     "dotenv": "^17.0.0",
     "express": "^5.1.0",
+    "openai": "^7.3.0",
     "pdfjs-dist": "^6.1.200",
     "tesseract.js": "^5.1.1"
   }

@@ -9,7 +9,7 @@
 
 import path from 'node:path';
 import * as wa from './whatsapp.js';
-import * as ai from './ai.js';
+import * as ai from './ai/index.js';
 import { config } from './config.js';
 import { log } from './logger.js';
 import { extractText } from './pdf.js';
@@ -82,9 +82,13 @@ export async function handleMessage(message, contact) {
     }
   } catch (err) {
     log.error('handleMessage failed:', err);
-    await wa
-      .sendText(from, '⚠️ Something went wrong on my side. Please try again in a moment.')
-      .catch(() => {});
+    // Surface a short, safe message for known AI problems; stay generic otherwise.
+    // Raw SDK errors, stack traces, and API keys never reach the user.
+    const friendly =
+      err instanceof ai.AIError
+        ? `⚠️ ${err.userMessage}`
+        : '⚠️ Something went wrong on my side. Please try again in a moment.';
+    await wa.sendText(from, friendly).catch(() => {});
   }
 }
 

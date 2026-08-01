@@ -1,14 +1,56 @@
-// AI reasoning over documents, via the Anthropic Claude API.
+// AI facade — provider-independent document operations.
 // -----------------------------------------------------------------------------
-// One server-side API key powers every capability: summaries, Q&A, translation,
-// "explain like I'm 10", table extraction, and natural-language intent routing.
+// The rest of the app imports ONLY this module and calls summarize / answer /
+// translate / explainSimply / extractTables / classifyIntent. It has no idea
+// which provider is behind them. Prompts live here (provider-independent); the
+// selected provider supplies the raw `complete()` transport.
 
-import Anthropic from '@anthropic-ai/sdk';
-import { config } from './config.js';
-import { log } from './logger.js';
+import { config } from '../config.js';
+import { log } from '../logger.js';
+import { OpenAIProvider } from './openai.js';
+import { AnthropicProvider } from './anthropic.js';
+import { AIError } from './errors.js';
 
-const anthropic = new Anthropic({ apiKey: config.ai.apiKey });
-const MODEL = config.ai.model;
+export { AIError, AI_ERROR_CODES } from './errors.js';
+
+// ─── Provider selection ──────────────────────────────────────────────────────
+
+/**
+ * Construct the provider named by config. Throws AIError('not_configured') if
+ * the selected provider's API key is missing, or if the provider is unknown
+ * (config validation normally rejects unknown providers before this).
+ */
+export function createProvider(ai = config.ai) {
+  switch (ai.provider) {
+    case 'openai':
+      return new OpenAIProvider({ apiKey: ai.openaiKey, model: ai.model, timeoutMs: ai.timeoutMs });
+    case 'anthropic':
+      return new AnthropicProvider({
+        apiKey: ai.anthropicKey,
+        model: ai.model,
+        timeoutMs: ai.timeoutMs,
+      });
+    default:
+      throw new AIError('not_configured', `Unsupported AI provider "${ai.provider}".`);
+  }
+}
+
+let _provider = null;
+
+/** Lazily construct (once) and return the active provider. */
+export function getProvider() {
+  if (!_provider) _provider = createProvider();
+  return _provider;
+}
+
+/** Replace the active provider. Used by tests to inject a mock. */
+export function setProvider(provider) {
+  _provider = provider;
+}
+
+const complete = (args) => getProvider().complete(args);
+
+// ─── Document capabilities ───────────────────────────────────────────────────
 
 // Cap how much document text we feed the model per request. Generous enough for
 // most real documents, low enough to bound latency and token cost. Longer docs
@@ -20,23 +62,6 @@ function clip(text) {
   if (s.length <= MAX_DOC_CHARS) return { text: s, truncated: false };
   return { text: s.slice(0, MAX_DOC_CHARS), truncated: true };
 }
-
-/** Run a single-turn completion and return the concatenated text output. */
-async function complete({ system, user, maxTokens = 1500 }) {
-  const message = await anthropic.messages.create({
-    model: MODEL,
-    max_tokens: maxTokens,
-    ...(system ? { system } : {}),
-    messages: [{ role: 'user', content: user }],
-  });
-  return message.content
-    .filter((b) => b.type === 'text')
-    .map((b) => b.text)
-    .join('')
-    .trim();
-}
-
-// ─── Document capabilities ───────────────────────────────────────────────────
 
 export async function summarize(docText, filename) {
   const { text, truncated } = clip(docText);
@@ -118,27 +143,31 @@ const INTENTS = [
   'unknown',
 ];
 
+const ROUTER_SYSTEM =
+  'You route a user message about a document they already sent to ONE action. ' +
+  'Reply with ONLY a JSON object, no prose. Schema: {"intent": one of ' +
+  JSON.stringify(INTENTS) +
+  ', "question": string (only for "ask"), "language": string (only for ' +
+  '"translate")}. Use "ask" when they pose a question about the content. Use ' +
+  '"menu" when they ask what you can do. Use "unknown" if unclear.';
+
 /**
  * Map free-text like "make this a word doc" or "what does clause 4 say?" onto a
- * menu action. Returns `{ intent, question?, language? }`. Falls back to a
- * keyword heuristic if the model output can't be parsed.
+ * menu action. Returns `{ intent, question?, language? }`.
+ *
+ * Deterministic-first: obvious commands are matched by keyword rules WITHOUT an
+ * LLM call. Only genuinely ambiguous messages fall through to the model (which
+ * itself falls back to the keyword result if the call fails or won't parse).
  */
 export async function classifyIntent(userText) {
   const heuristic = keywordIntent(userText);
 
+  // Obvious command — resolved locally, no LLM request needed.
+  if (heuristic.intent !== 'unknown') return heuristic;
+
+  // Ambiguous — ask the model to route.
   try {
-    const raw = await complete({
-      system:
-        'You route a user message about a document they already sent to ONE ' +
-        'action. Reply with ONLY a JSON object, no prose. Schema: ' +
-        '{"intent": one of ' +
-        JSON.stringify(INTENTS) +
-        ', "question": string (only for "ask"), "language": string (only for ' +
-        '"translate")}. Use "ask" when they pose a question about the content. ' +
-        'Use "menu" when they ask what you can do. Use "unknown" if unclear.',
-      user: userText,
-      maxTokens: 200,
-    });
+    const raw = await complete({ system: ROUTER_SYSTEM, user: userText, maxTokens: 200 });
     const parsed = safeJson(raw);
     if (parsed && INTENTS.includes(parsed.intent)) {
       return {
@@ -170,18 +199,26 @@ function safeJson(raw) {
   }
 }
 
-/** Cheap, offline fallback so routing still works if the model call fails. */
+/**
+ * Deterministic keyword/rule matcher. Returns a concrete intent for obvious
+ * commands and `unknown` when the message needs the model to disambiguate.
+ */
 function keywordIntent(text) {
   const t = String(text || '').toLowerCase();
-  if (/\b(help|menu|option|what can you|commands?)\b/.test(t)) return { intent: 'menu' };
-  if (/\b(word|docx|\.doc)\b/.test(t)) return { intent: 'convert_word' };
-  if (/\b(table|spreadsheet|rows?|columns?)\b/.test(t)) return { intent: 'extract_tables' };
-  if (/\b(translate|translation|in (hindi|spanish|french|german|arabic|chinese))\b/.test(t)) {
-    const m = t.match(/in ([a-z]+)/);
+  if (/\b(help|menu|options?|what can you|commands?)\b/.test(t)) return { intent: 'menu' };
+  if (/\b(word|docx)\b|\.docx?\b/.test(t)) return { intent: 'convert_word' };
+  if (/\btables?\b|\bspreadsheet\b|\bcolumns?\b|\brows?\b/.test(t)) {
+    return { intent: 'extract_tables' };
+  }
+  if (/\btranslat\w*/.test(t) || /\b(?:in|to|into)\s+(hindi|spanish|french|german|arabic|chinese|english|tamil|telugu|bengali|marathi)\b/.test(t)) {
+    // Capture the target language from "translate to/into/in <language>".
+    const m = t.match(/(?:into|in|to)\s+([a-z]+)/);
     return { intent: 'translate', language: m ? m[1] : undefined };
   }
-  if (/\b(eli5|explain.*(simpl|like i'?m|to a kid|10))\b/.test(t)) return { intent: 'eli' };
-  if (/\b(summar|tl;?dr|overview|gist)\b/.test(t)) return { intent: 'summarize' };
+  if (/\beli5\b|\bexplain\b.*(simpl|like i'?m|to a kid|\b10\b)/.test(t)) return { intent: 'eli' };
+  if (/\bsummar\w*/.test(t) || /\btl;?dr\b/.test(t) || /\b(overview|gist)\b/.test(t)) {
+    return { intent: 'summarize' };
+  }
   if (/\?\s*$/.test(text || '') || /\b(what|why|how|who|when|where|which)\b/.test(t)) {
     return { intent: 'ask', question: text };
   }
