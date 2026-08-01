@@ -25,7 +25,7 @@ export const SUPPORTED_AI_PROVIDERS = ['openai', 'anthropic'];
 
 // Default model per provider, used when AI_MODEL is not set.
 const DEFAULT_MODELS = {
-  openai: 'gpt-4o',
+  openai: 'gpt-5.6-terra',
   anthropic: 'claude-opus-5',
 };
 

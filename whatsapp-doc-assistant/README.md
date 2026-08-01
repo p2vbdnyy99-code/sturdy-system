@@ -128,7 +128,7 @@ at startup — the app never silently falls back.
 
 ```env
 AI_PROVIDER=openai
-AI_MODEL=gpt-4o           # optional; this is the default
+AI_MODEL=gpt-5.6-terra    # optional; this is the default
 OPENAI_API_KEY=sk-...
 ```
 

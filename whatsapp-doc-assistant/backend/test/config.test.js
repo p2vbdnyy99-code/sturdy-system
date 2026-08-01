@@ -6,7 +6,7 @@ import { buildAiConfig, selectedApiKey, selectedKeyName } from '../src/config.js
 test('AI_PROVIDER=openai resolves the OpenAI provider + default model', () => {
   const ai = buildAiConfig({ AI_PROVIDER: 'openai', OPENAI_API_KEY: 'sk-openai' });
   assert.equal(ai.provider, 'openai');
-  assert.equal(ai.model, 'gpt-4o');
+  assert.equal(ai.model, 'gpt-5.6-terra');
   assert.equal(selectedApiKey(ai), 'sk-openai');
   assert.equal(selectedKeyName(ai), 'OPENAI_API_KEY');
 });

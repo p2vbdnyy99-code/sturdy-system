@@ -69,7 +69,7 @@ see the README for details). Set `AI_PROVIDER` to match.
 | Anthropic | `AI_PROVIDER=anthropic` + `ANTHROPIC_API_KEY`                    | <https://platform.claude.com>             |
 
 Only the selected provider's key is required. `AI_MODEL` is optional (defaults:
-OpenAI `gpt-4o`, Anthropic `claude-opus-5`).
+OpenAI `gpt-5.6-terra`, Anthropic `claude-opus-5`).
 
 ## 4. Allow-list your own phone
 
