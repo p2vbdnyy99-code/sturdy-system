@@ -16,7 +16,9 @@ const {
   PORT = '8788',
   DATA_DIR = './data',
   MAX_PDF_MB = '20',
+  MAX_PDF_PAGES = '300',
   SESSION_TTL_MINUTES = '60',
+  RATE_LIMIT_PER_MIN = '20',
 } = process.env;
 
 // ─── AI provider selection ───────────────────────────────────────────────────
@@ -87,7 +89,11 @@ export const config = {
     port: Number(PORT) || 8788,
     dataDir: path.resolve(DATA_DIR),
     maxPdfBytes: (Number(MAX_PDF_MB) || 20) * 1024 * 1024,
+    // Max pages of a PDF whose text layer we extract (page-bomb / CPU guard).
+    maxPdfPages: Math.max(1, Number(MAX_PDF_PAGES) || 300),
     sessionTtlMs: (Number(SESSION_TTL_MINUTES) || 60) * 60 * 1000,
+    // Max inbound messages processed per sender per minute (abuse/cost guard).
+    rateLimitPerMin: Math.max(1, Number(RATE_LIMIT_PER_MIN) || 20),
   },
 };
 

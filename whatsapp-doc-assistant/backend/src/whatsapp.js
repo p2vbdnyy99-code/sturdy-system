@@ -46,23 +46,34 @@ export function verifyWebhook(query) {
 }
 
 /**
- * Verify the `X-Hub-Signature-256` header against the raw request body using the
- * app secret. Returns `true` when verification passes OR when no app secret is
- * configured (dev mode). Uses a constant-time comparison.
+ * Pure signature check: does `signatureHeader` (`sha256=<hex>`) match an HMAC of
+ * `rawBody` under `secret`? When `secret` is empty this returns `true` (dev-only
+ * bypass). A missing body or malformed header returns `false` — never throws.
+ * Uses a constant-time comparison. Exported so it can be unit-tested directly.
  */
-export function verifySignature(rawBody, signatureHeader) {
-  if (!appSecret) return true; // dev only — warned about at startup
-  if (!signatureHeader || !signatureHeader.startsWith('sha256=')) return false;
+export function signaturesMatch(rawBody, signatureHeader, secret) {
+  if (!secret) return true; // dev only — warned about at startup
+  if (!rawBody || !signatureHeader || !signatureHeader.startsWith('sha256=')) return false;
 
-  const expected = crypto
-    .createHmac('sha256', appSecret)
-    .update(rawBody)
-    .digest('hex');
+  let expected;
+  try {
+    expected = crypto.createHmac('sha256', secret).update(rawBody).digest('hex');
+  } catch {
+    return false;
+  }
   const provided = signatureHeader.slice('sha256='.length);
 
   const a = Buffer.from(expected, 'hex');
   const b = Buffer.from(provided, 'hex');
   return a.length === b.length && crypto.timingSafeEqual(a, b);
+}
+
+/**
+ * Verify the `X-Hub-Signature-256` header on an incoming webhook against the
+ * configured app secret. Delegates to {@link signaturesMatch}.
+ */
+export function verifySignature(rawBody, signatureHeader) {
+  return signaturesMatch(rawBody, signatureHeader, appSecret);
 }
 
 // ─── Sending ─────────────────────────────────────────────────────────────────
@@ -144,23 +155,85 @@ export async function markRead(messageId) {
 
 // ─── Media: download & upload ────────────────────────────────────────────────
 
+// A media id from the webhook is interpolated into a Graph API URL path, so it
+// must be a plain id — never characters that could alter the request path/query.
+const MEDIA_ID_RE = /^[A-Za-z0-9_-]{1,128}$/;
+
+/** Is `id` a syntactically valid WhatsApp media id (safe to put in a URL path)? */
+export function isValidMediaId(id) {
+  return typeof id === 'string' && MEDIA_ID_RE.test(id);
+}
+
+// The download URL is returned by Meta's authenticated API and fetched WITH our
+// bearer token — so we only ever send that token to a Meta-owned host.
+const ALLOWED_MEDIA_HOST_SUFFIXES = [
+  '.fbsbx.com',
+  '.fbcdn.net',
+  '.facebook.com',
+  '.whatsapp.net',
+  '.cdninstagram.com',
+];
+
+/** Is `url` an https Meta-owned media host we may send the access token to? */
+export function isAllowedMediaUrl(url) {
+  let u;
+  try {
+    u = new URL(url);
+  } catch {
+    return false;
+  }
+  if (u.protocol !== 'https:') return false;
+  const host = u.hostname.toLowerCase();
+  return ALLOWED_MEDIA_HOST_SUFFIXES.some((s) => host === s.slice(1) || host.endsWith(s));
+}
+
+/** Raised when the media exceeds the allowed size (caller shows a friendly note). */
+export class MediaTooLargeError extends Error {
+  constructor(size, limit) {
+    super('media too large');
+    this.name = 'MediaTooLargeError';
+    this.code = 'MEDIA_TOO_LARGE';
+    this.size = size;
+    this.limit = limit;
+  }
+}
+
 /**
  * Download an inbound media object. Two steps: resolve the media id to a
  * short-lived URL, then fetch the bytes (that fetch must also carry the token).
- * Returns `{ buffer, mimeType }`.
+ * Hardened: validates the id, rejects oversized media BEFORE downloading via the
+ * metadata `file_size`, only sends the token to Meta-owned hosts, and enforces
+ * the byte cap again after download. Returns `{ buffer, mimeType }`.
  */
-export async function downloadMedia(mediaId) {
-  const metaRes = await fetch(`${graphBase}/${mediaId}`, { headers: authHeaders() });
+export async function downloadMedia(mediaId, { maxBytes = Infinity } = {}) {
+  if (!isValidMediaId(mediaId)) {
+    throw new Error('Invalid media id');
+  }
+
+  const metaRes = await fetch(`${graphBase}/${encodeURIComponent(mediaId)}`, {
+    headers: authHeaders(),
+  });
   if (!metaRes.ok) {
     throw new Error(`Media lookup failed (${metaRes.status})`);
   }
   const meta = await metaRes.json();
+
+  const declaredSize = Number(meta.file_size);
+  if (Number.isFinite(declaredSize) && declaredSize > maxBytes) {
+    throw new MediaTooLargeError(declaredSize, maxBytes);
+  }
+  if (!isAllowedMediaUrl(meta.url)) {
+    throw new Error('Media URL host not allowed');
+  }
 
   const binRes = await fetch(meta.url, { headers: authHeaders() });
   if (!binRes.ok) {
     throw new Error(`Media download failed (${binRes.status})`);
   }
   const buffer = Buffer.from(await binRes.arrayBuffer());
+  if (buffer.length > maxBytes) {
+    throw new MediaTooLargeError(buffer.length, maxBytes);
+  }
   return { buffer, mimeType: meta.mime_type || 'application/octet-stream' };
 }
 

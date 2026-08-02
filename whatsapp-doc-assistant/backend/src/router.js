@@ -14,7 +14,6 @@ import { config } from './config.js';
 import { log } from './logger.js';
 import { extractText } from './pdf.js';
 import { textToDocx } from './docx.js';
-import { saveFile } from './storage.js';
 import {
   getSession,
   setDocument,
@@ -109,10 +108,18 @@ async function handleDocument(from, doc, name) {
 
   await wa.sendText(from, `📥 Got *${filename}*. Reading it now — one moment…`);
 
-  const { buffer, mimeType } = await wa.downloadMedia(doc.id);
-  if (buffer.length > config.server.maxPdfBytes) {
-    const mb = (config.server.maxPdfBytes / (1024 * 1024)).toFixed(0);
-    return wa.sendText(from, `That file is too large. Please send a PDF under ${mb} MB.`);
+  let buffer;
+  let mimeType;
+  try {
+    ({ buffer, mimeType } = await wa.downloadMedia(doc.id, {
+      maxBytes: config.server.maxPdfBytes,
+    }));
+  } catch (err) {
+    if (err instanceof wa.MediaTooLargeError) {
+      const mb = (config.server.maxPdfBytes / (1024 * 1024)).toFixed(0);
+      return wa.sendText(from, `That file is too large. Please send a PDF under ${mb} MB.`);
+    }
+    throw err;
   }
   log.info(`Received ${filename} (${mimeType}, ${buffer.length} bytes) from ${from}`);
 
@@ -132,8 +139,10 @@ async function handleDocument(from, doc, name) {
     );
   }
 
-  const filePath = await saveFile(buffer, 'pdf');
-  setDocument(from, { text, filename, filePath, ocrUsed });
+  // Keep only the extracted text in memory for follow-up actions. We do NOT
+  // persist the original document to disk — nothing reads it back, and it is
+  // the user's private content.
+  setDocument(from, { text, filename, ocrUsed });
 
   const badges = [];
   badges.push(`${pages} page${pages === 1 ? '' : 's'}`);
@@ -271,7 +280,18 @@ async function runAction(from, action, opts) {
   }
 }
 
+// Derive a safe title from a user-supplied filename: strip the directory and
+// extension, remove control/reserved characters, and bound the length. Used for
+// the .docx title and the outgoing document filename.
 function stripExt(filename) {
-  const base = path.basename(filename);
-  return base.replace(/\.[^.]+$/, '') || 'document';
+  const base = path.basename(String(filename || ''));
+  const noExt = base.replace(/\.[^.]+$/, '');
+  // Reserved / path chars by code point (<>:"/\|?*), no backslash literal needed.
+  const RESERVED = new Set([60, 62, 58, 34, 47, 92, 124, 63, 42]);
+  const safe = Array.from(noExt)
+    .filter((ch) => ch.codePointAt(0) >= 0x20 && !RESERVED.has(ch.codePointAt(0)))
+    .join('')
+    .trim()
+    .slice(0, 100);
+  return safe || 'document';
 }

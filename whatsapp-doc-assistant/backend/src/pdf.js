@@ -11,12 +11,22 @@ import { spawnSync } from 'node:child_process';
 import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
+import { config } from './config.js';
 import { log } from './logger.js';
 
 // Below this many characters of text per page, we treat the PDF as scanned.
 const SCANNED_CHARS_PER_PAGE = 40;
 // Cap OCR work so a huge scan can't stall the bot.
 const MAX_OCR_PAGES = 15;
+// Cap text-layer extraction so a many-page / "page-bomb" PDF can't pin the CPU.
+// Configurable via MAX_PDF_PAGES (see config.js); default 300.
+export const MAX_PDF_PAGES = config.server.maxPdfPages;
+
+/** How many pages to actually read, given the declared count and a cap. */
+export function pagesToRead(numPages, cap = MAX_PDF_PAGES) {
+  const n = Number.isFinite(numPages) && numPages > 0 ? Math.floor(numPages) : 1;
+  return Math.min(n, cap);
+}
 
 /**
  * Read the embedded text layer of a PDF with pdf.js (the legacy build runs in
@@ -33,8 +43,9 @@ async function readTextLayer(buffer) {
   const doc = await loadingTask.promise;
 
   try {
+    const readCount = pagesToRead(doc.numPages);
     const pageTexts = [];
-    for (let i = 1; i <= doc.numPages; i += 1) {
+    for (let i = 1; i <= readCount; i += 1) {
       const page = await doc.getPage(i);
       const content = await page.getTextContent();
       pageTexts.push(content.items.map((it) => it.str).join(' ').trim());

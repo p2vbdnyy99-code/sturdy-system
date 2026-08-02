@@ -9,11 +9,13 @@
 // asynchronously, because Meta retries webhooks that don't return quickly.
 
 import express from 'express';
-import { config, warnOnMissingConfig, selectedApiKey } from './src/config.js';
+import { config, warnOnMissingConfig } from './src/config.js';
 import { log } from './src/logger.js';
 import { verifyWebhook, verifySignature } from './src/whatsapp.js';
 import { handleMessage } from './src/router.js';
 import { ensureDataDir } from './src/storage.js';
+import { isDuplicate } from './src/dedupe.js';
+import { allow } from './src/ratelimit.js';
 
 const app = express();
 app.disable('x-powered-by');
@@ -31,14 +33,10 @@ app.use(
 
 // ─── Health ──────────────────────────────────────────────────────────────────
 
+// Minimal public liveness check — intentionally free of internal config
+// (provider/model/key presence) to avoid fingerprinting the deployment.
 app.get('/health', (_req, res) => {
-  res.json({
-    ok: true,
-    provider: config.ai.provider,
-    model: config.ai.model,
-    hasAiKey: Boolean(selectedApiKey(config.ai)),
-    hasWhatsAppToken: Boolean(config.whatsapp.token),
-  });
+  res.json({ ok: true });
 });
 
 // ─── Privacy policy ──────────────────────────────────────────────────────────
@@ -127,6 +125,17 @@ async function processWebhook(body) {
       );
 
       for (const message of value.messages) {
+        // Replay/duplicate protection: Meta delivers at-least-once, and a signed
+        // request could be replayed. Skip anything we've already processed.
+        if (isDuplicate(message.id)) {
+          log.debug('Skipping duplicate webhook message.');
+          continue;
+        }
+        // Per-sender abuse/cost guard.
+        if (!allow(message.from)) {
+          log.warn('Rate limit exceeded for a sender; dropping message.');
+          continue;
+        }
         const contact = contactsById.get(message.from);
         await handleMessage(message, contact);
       }
@@ -136,8 +145,8 @@ async function processWebhook(body) {
 
 // ─── Fallbacks + start ───────────────────────────────────────────────────────
 
-app.use((req, res) => {
-  res.status(404).json({ error: `No route for ${req.method} ${req.path}` });
+app.use((_req, res) => {
+  res.status(404).json({ error: 'Not found' });
 });
 
 // eslint-disable-next-line no-unused-vars
