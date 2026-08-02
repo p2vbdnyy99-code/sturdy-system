@@ -172,6 +172,23 @@ app.use((err, _req, res, _next) => {
   res.status(500).json({ error: 'Internal server error.' });
 });
 
+// Keep the free-tier host awake: ping our own public /health on an interval
+// shorter than the platform's idle spin-down window (~15 min on Render). The
+// public URL comes from KEEPALIVE_URL, or RENDER_EXTERNAL_URL which Render sets
+// automatically. No-op locally where neither is present.
+function startKeepAlive() {
+  const url = (process.env.KEEPALIVE_URL || process.env.RENDER_EXTERNAL_URL || '').replace(/\/$/, '');
+  if (!url) return;
+  const everyMs = 10 * 60 * 1000;
+  const ping = () =>
+    fetch(`${url}/health`)
+      .then(() => log.debug('keep-alive ping ok'))
+      .catch((err) => log.debug('keep-alive ping failed:', err.message));
+  const timer = setInterval(ping, everyMs);
+  timer.unref?.();
+  log.info(`Keep-alive enabled: pinging ${url}/health every 10 min.`);
+}
+
 async function start() {
   warnOnMissingConfig(log);
   await ensureDataDir();
@@ -181,6 +198,7 @@ async function start() {
       `  AI: ${config.ai.provider} (${config.ai.model}) · data dir: ${config.server.dataDir}`,
     );
   });
+  startKeepAlive();
 }
 
 start().catch((err) => {
