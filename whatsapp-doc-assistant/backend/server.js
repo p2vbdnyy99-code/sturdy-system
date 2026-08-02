@@ -86,6 +86,32 @@ app.get('/privacy', (_req, res) => {
 </html>`);
 });
 
+// ─── Admin: subscribe this app to a WhatsApp Business Account ─────────────────
+// Real inbound messages are only delivered to the app that the WABA is
+// subscribed to. This one-time helper subscribes the app whose token is
+// configured here to the given WABA, then lists the current subscriptions.
+// Guarded by the verify token. Safe to remove once messages are flowing.
+
+app.get('/admin/subscribe-waba', async (req, res) => {
+  if (req.query.token !== config.whatsapp.verifyToken) {
+    return res.sendStatus(403);
+  }
+  const waba = String(req.query.waba || '').trim();
+  if (!waba) return res.status(400).json({ error: 'Provide ?waba=<WABA_ID>' });
+
+  const base = config.whatsapp.graphBase;
+  const auth = { Authorization: `Bearer ${config.whatsapp.token}` };
+  try {
+    const subRes = await fetch(`${base}/${waba}/subscribed_apps`, { method: 'POST', headers: auth });
+    const subscribe = { status: subRes.status, body: await subRes.json().catch(() => ({})) };
+    const listRes = await fetch(`${base}/${waba}/subscribed_apps`, { headers: auth });
+    const list = { status: listRes.status, body: await listRes.json().catch(() => ({})) };
+    res.json({ subscribe, list });
+  } catch (err) {
+    res.status(502).json({ error: String(err?.message || err) });
+  }
+});
+
 // ─── Webhook verification (GET) ──────────────────────────────────────────────
 
 app.get('/webhook', (req, res) => {
