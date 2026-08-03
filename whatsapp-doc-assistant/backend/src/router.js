@@ -12,8 +12,11 @@ import * as wa from './whatsapp.js';
 import * as ai from './ai/index.js';
 import { config } from './config.js';
 import { log } from './logger.js';
-import { extractText } from './pdf.js';
-import { textToDocx } from './docx.js';
+import { extractStructured } from './pdf.js';
+import { buildDocModel } from './docmodel.js';
+import { buildDocx, textToDocx } from './docx.js';
+import { detectTablesAcrossPages, TABLE_CONFIDENCE_MIN } from './extract/tables.js';
+import { buildXlsx } from './xlsx.js';
 import {
   getSession,
   setDocument,
@@ -22,13 +25,24 @@ import {
   clearPending,
 } from './sessions.js';
 
+// Bound any single conversion in wall-clock time so a pathological PDF can't pin
+// the worker. Rejects with a friendly error the router already handles.
+function withTimeout(promise, ms, label) {
+  let timer;
+  const guard = new Promise((_, reject) => {
+    timer = setTimeout(() => reject(new Error(`${label} timed out`)), ms);
+    timer.unref?.();
+  });
+  return Promise.race([promise, guard]).finally(() => clearTimeout(timer));
+}
+
 // ─── Menu definition ─────────────────────────────────────────────────────────
 
 const MENU_ROWS = [
   { id: 'summarize', title: '📝 Summarize', description: 'A concise overview of the document' },
   { id: 'ask', title: '💬 Ask a question', description: 'Chat with the document' },
   { id: 'convert_word', title: '📄 Convert to Word', description: 'Get an editable .docx file' },
-  { id: 'extract_tables', title: '📊 Extract tables', description: 'Pull tables out as text' },
+  { id: 'extract_tables', title: '📊 Convert to Excel', description: 'Get an .xlsx spreadsheet' },
   { id: 'translate', title: '🌐 Translate', description: 'Into any language you name' },
   { id: 'eli', title: '🧒 Explain simply', description: 'Explain it like I am 10' },
 ];
@@ -123,7 +137,7 @@ async function handleDocument(from, doc, name) {
   }
   log.info(`Received ${filename} (${mimeType}, ${buffer.length} bytes) from ${from}`);
 
-  const { text, pages, ocrUsed, ocrUnavailable } = await extractText(buffer);
+  const { text, spanPages, pageCount, ocrUsed, ocrUnavailable } = await extractStructured(buffer);
 
   if (!text || text.trim().length < 10) {
     if (ocrUnavailable) {
@@ -139,13 +153,13 @@ async function handleDocument(from, doc, name) {
     );
   }
 
-  // Keep only the extracted text in memory for follow-up actions. We do NOT
-  // persist the original document to disk — nothing reads it back, and it is
-  // the user's private content.
-  setDocument(from, { text, filename, ocrUsed });
+  // Keep the extracted text + structured spans in memory for follow-up actions
+  // (DOCX/XLSX conversion). We do NOT persist the original document to disk — it
+  // is the user's private content and nothing reads the raw bytes back.
+  setDocument(from, { text, filename, spanPages, ocrUsed });
 
   const badges = [];
-  badges.push(`${pages} page${pages === 1 ? '' : 's'}`);
+  badges.push(`${pageCount} page${pageCount === 1 ? '' : 's'}`);
   if (ocrUsed) badges.push('OCR ✅');
   const greetName = name ? `, ${name.split(' ')[0]}` : '';
 
@@ -230,11 +244,8 @@ async function runAction(from, action, opts) {
       return wa.sendText(from, out);
     }
 
-    case 'extract_tables': {
-      await wa.sendText(from, '📊 Looking for tables…');
-      const out = await ai.extractTables(doc.text);
-      return wa.sendText(from, out);
-    }
+    case 'extract_tables':
+      return convertToExcel(from, doc);
 
     case 'ask': {
       const question = (opts.question || '').trim();
@@ -262,7 +273,15 @@ async function runAction(from, action, opts) {
     case 'convert_word': {
       await wa.sendText(from, '📄 Building your Word document…');
       const title = stripExt(doc.filename);
-      const docxBuffer = await textToDocx(doc.text, title);
+      // Structured DOCX from spans; if spans are unavailable (e.g. OCR-only
+      // scans), fall back to the plain-text builder.
+      const docxBuffer = await withTimeout(
+        doc.spanPages && doc.spanPages.length
+          ? buildDocx(buildDocModel(doc.spanPages), { title })
+          : textToDocx(doc.text, title),
+        config.server.conversionTimeoutMs,
+        'Word conversion',
+      );
       const mediaId = await wa.uploadMedia(
         docxBuffer,
         'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
@@ -278,6 +297,48 @@ async function runAction(from, action, opts) {
     default:
       return sendMenu(from, "I didn't recognize that action. Try one of these:");
   }
+}
+
+// Deterministic PDF → Excel. Detects tables from span geometry (no LLM), and —
+// per the hard product rule — sends a transparent text fallback rather than a
+// fabricated grid when no table clears the confidence threshold.
+async function convertToExcel(from, doc) {
+  await wa.sendText(from, '📊 Looking for tables…');
+
+  const NO_TABLE =
+    "I couldn't reliably detect a table in this PDF, so I didn't create a " +
+    'spreadsheet (I won\'t guess columns and risk getting them wrong). If you ' +
+    'expected a table, it may be an image/scan — OCR tables are coming soon.';
+
+  if (!doc.spanPages || !doc.spanPages.length) {
+    return wa.sendText(from, NO_TABLE);
+  }
+
+  const tables = detectTablesAcrossPages(doc.spanPages)
+    .filter((t) => t.confidence >= TABLE_CONFIDENCE_MIN)
+    .slice(0, config.server.maxTables);
+
+  if (!tables.length) {
+    return wa.sendText(from, NO_TABLE);
+  }
+
+  const title = stripExt(doc.filename);
+  const xlsxBuffer = await withTimeout(
+    buildXlsx(tables),
+    config.server.conversionTimeoutMs,
+    'Excel conversion',
+  );
+  const mediaId = await wa.uploadMedia(
+    xlsxBuffer,
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    `${title}.xlsx`,
+  );
+  const n = tables.length;
+  return wa.sendDocument(from, {
+    mediaId,
+    filename: `${title}.xlsx`,
+    caption: `✅ Extracted ${n} table${n === 1 ? '' : 's'} into an Excel file.`,
+  });
 }
 
 // Derive a safe title from a user-supplied filename: strip the directory and

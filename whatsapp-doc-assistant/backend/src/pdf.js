@@ -13,6 +13,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { config } from './config.js';
 import { log } from './logger.js';
+import { extractSpans, spansToText } from './extract/spans.js';
 
 // Below this many characters of text per page, we treat the PDF as scanned.
 const SCANNED_CHARS_PER_PAGE = 40;
@@ -29,69 +30,56 @@ export function pagesToRead(numPages, cap = MAX_PDF_PAGES) {
 }
 
 /**
- * Read the embedded text layer of a PDF with pdf.js (the legacy build runs in
- * plain Node without a DOM). Returns `{ text, pages }`.
+ * Structured extraction: positioned spans (for conversion) plus a flattened
+ * text view (for AI features), with a graceful OCR fallback for scans.
+ * @returns {Promise<{ spanPages: Array, text: string, pageCount: number,
+ *                     pagesRead: number, ocrUsed: boolean, ocrUnavailable: boolean }>}
  */
-async function readTextLayer(buffer) {
-  const pdfjs = await import('pdfjs-dist/legacy/build/pdf.mjs');
-  const data = new Uint8Array(buffer);
-  const loadingTask = pdfjs.getDocument({
-    data,
-    useSystemFonts: true,
-    isEvalSupported: false,
-  });
-  const doc = await loadingTask.promise;
-
+export async function extractStructured(buffer) {
+  let result;
   try {
-    const readCount = pagesToRead(doc.numPages);
-    const pageTexts = [];
-    for (let i = 1; i <= readCount; i += 1) {
-      const page = await doc.getPage(i);
-      const content = await page.getTextContent();
-      pageTexts.push(content.items.map((it) => it.str).join(' ').trim());
-      page.cleanup?.();
-    }
-    return { text: pageTexts.join('\n\n').trim(), pages: doc.numPages };
-  } finally {
-    // Release worker/resources — method name has varied across pdf.js majors.
-    await (doc.destroy?.() ?? loadingTask.destroy?.());
-  }
-}
-
-/**
- * Extract text from a PDF buffer.
- * @returns {Promise<{ text: string, pages: number, ocrUsed: boolean, ocrUnavailable: boolean }>}
- */
-export async function extractText(buffer) {
-  let layer;
-  try {
-    layer = await readTextLayer(buffer);
+    result = await extractSpans(buffer, { maxPages: MAX_PDF_PAGES });
   } catch (err) {
     throw new Error(`Could not read PDF: ${err.message}`);
   }
 
-  const pages = layer.pages || 1;
-  const text = layer.text;
-  const looksScanned = text.length / pages < SCANNED_CHARS_PER_PAGE;
+  const text = spansToText(result.pages);
+  const denseChars = text.replace(/\s/g, '').length;
+  const looksScanned = denseChars / (result.pagesRead || 1) < SCANNED_CHARS_PER_PAGE;
+
+  const base = {
+    spanPages: result.pages,
+    pageCount: result.pageCount,
+    pagesRead: result.pagesRead,
+  };
 
   if (!looksScanned) {
-    return { text, pages, ocrUsed: false, ocrUnavailable: false };
+    return { ...base, text, ocrUsed: false, ocrUnavailable: false };
   }
 
-  log.info(`PDF looks scanned (${text.length} chars / ${pages} pages) — trying OCR`);
+  log.info(`PDF looks scanned (${denseChars} chars / ${result.pagesRead} pages) — trying OCR`);
   if (!hasPdftoppm()) {
-    return { text, pages, ocrUsed: false, ocrUnavailable: true };
+    return { ...base, text, ocrUsed: false, ocrUnavailable: true };
   }
 
   try {
-    const ocrText = await ocrPdf(buffer, pages);
-    // Prefer OCR output when it clearly recovered more content.
+    // OCR currently returns text only (bounding-box OCR is the next milestone).
+    const ocrText = await ocrPdf(buffer, result.pagesRead);
     const best = ocrText.length > text.length ? ocrText : text;
-    return { text: best, pages, ocrUsed: ocrText.length > text.length, ocrUnavailable: false };
+    return { ...base, text: best, ocrUsed: ocrText.length > text.length, ocrUnavailable: false };
   } catch (err) {
     log.warn('OCR failed, falling back to text layer:', err.message);
-    return { text, pages, ocrUsed: false, ocrUnavailable: false };
+    return { ...base, text, ocrUsed: false, ocrUnavailable: false };
   }
+}
+
+/**
+ * Back-compat text-only extraction (used by the local CLI / AI features).
+ * @returns {Promise<{ text: string, pages: number, ocrUsed: boolean, ocrUnavailable: boolean }>}
+ */
+export async function extractText(buffer) {
+  const r = await extractStructured(buffer);
+  return { text: r.text, pages: r.pageCount, ocrUsed: r.ocrUsed, ocrUnavailable: r.ocrUnavailable };
 }
 
 /** Is Poppler's `pdftoppm` on PATH? Cached after first probe. */

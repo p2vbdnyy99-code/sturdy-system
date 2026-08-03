@@ -17,6 +17,8 @@ const {
   DATA_DIR = './data',
   MAX_PDF_MB = '20',
   MAX_PDF_PAGES = '300',
+  MAX_TABLES = '50',
+  CONVERSION_TIMEOUT_MS = '45000',
   SESSION_TTL_MINUTES = '60',
   RATE_LIMIT_PER_MIN = '20',
 } = process.env;
@@ -91,6 +93,10 @@ export const config = {
     maxPdfBytes: (Number(MAX_PDF_MB) || 20) * 1024 * 1024,
     // Max pages of a PDF whose text layer we extract (page-bomb / CPU guard).
     maxPdfPages: Math.max(1, Number(MAX_PDF_PAGES) || 300),
+    // Max tables emitted into one .xlsx (bounds output size / memory).
+    maxTables: Math.max(1, Number(MAX_TABLES) || 50),
+    // Hard wall-clock bound on a single DOCX/XLSX conversion.
+    conversionTimeoutMs: Math.max(1000, Number(CONVERSION_TIMEOUT_MS) || 45000),
     sessionTtlMs: (Number(SESSION_TTL_MINUTES) || 60) * 60 * 1000,
     // Max inbound messages processed per sender per minute (abuse/cost guard).
     rateLimitPerMin: Math.max(1, Number(RATE_LIMIT_PER_MIN) || 20),
