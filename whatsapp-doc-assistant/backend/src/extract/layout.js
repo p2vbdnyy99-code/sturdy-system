@@ -102,13 +102,17 @@ export function proseBlocks(lines, bodySize) {
   const left = Math.min(...lines.map((l) => l.x));
   const right = Math.max(...lines.map((l) => l.xEnd));
 
-  // Heading size thresholds relative to body text.
-  const headingLevel = (size, bold) => {
-    const r = size / (bodySize || 12);
+  // Heading detection: primarily relative font size, but also promote short
+  // bold / ALL-CAPS lines (common section headers that share the body size).
+  const headingLevel = (line) => {
+    const r = line.fontSize / (bodySize || 12);
     if (r >= 1.6) return 1;
     if (r >= 1.3) return 2;
     if (r >= 1.15) return 3;
-    if (bold && r >= 1.05) return 3;
+    const text = line.spans.map((s) => s.text).join(' ').trim();
+    const words = text.split(/\s+/).filter(Boolean).length;
+    const allCaps = /[A-Za-z]/.test(text) && text === text.toUpperCase();
+    if (line.bold && words <= 6 && (r >= 1.05 || allCaps)) return allCaps ? 2 : 3;
     return 0;
   };
 
@@ -126,7 +130,7 @@ export function proseBlocks(lines, bodySize) {
     const lineHeight = line.h || bodySize;
 
     const list = detectList(line);
-    const level = headingLevel(line.fontSize, line.bold);
+    const level = list ? 0 : headingLevel(line);
     const align = alignOf(line, left, right);
     const runs = lineToRuns(line);
 

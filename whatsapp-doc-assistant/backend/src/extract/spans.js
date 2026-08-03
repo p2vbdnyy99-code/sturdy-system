@@ -80,11 +80,21 @@ export async function extractSpans(buffer, { maxPages = 300 } = {}) {
       const spans = [];
       for (const it of tc.items) {
         if (typeof it.str !== 'string' || it.str === '') continue;
+        const fi = fontInfo(page, it.fontName, fontCache);
+
+        // Symbol fonts (ZapfDingbats/Wingdings/Symbol) encode glyphs on ordinary
+        // letters — e.g. a bullet renders as "n". Normalize a symbol glyph to a
+        // real bullet and drop symbol whitespace so lists read correctly.
+        let text = it.str;
+        if (/dingbat|wingding|symbol/i.test(fi.name)) {
+          if (!text.trim()) continue;
+          text = '•';
+        }
+
         const t = it.transform; // [a,b,c,d,e,f]
         const size = it.height || Math.hypot(t[2], t[3]) || Math.hypot(t[0], t[1]) || 0;
-        const fi = fontInfo(page, it.fontName, fontCache);
         spans.push({
-          text: it.str,
+          text,
           x: round(t[4], 2),
           y: round(height - t[5], 2), // top-down baseline
           w: round(it.width || 0, 2),

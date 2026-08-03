@@ -143,6 +143,14 @@ function buildTable(region, rulesLike) {
   const ruled = rulesLike >= colCount + rowCount;
   if (ruled) confidence = Math.min(1, confidence + 0.15);
 
+  // Reject list/prose columns masquerading as a table (hard rule: prefer a
+  // fallback over a fabricated grid). Real data cells are short; a two-column
+  // bulleted list or wrapped-prose columns have long cells and/or bullets.
+  const cellTexts = grid.flat().filter((c) => c && c.trim());
+  const avgCellLen = cellTexts.reduce((a, c) => a + c.length, 0) / (cellTexts.length || 1);
+  const bulletCells = cellTexts.filter((c) => /^\s*[•·▪◦‣]/.test(c)).length;
+  if (!ruled && (avgCellLen > 25 || bulletCells >= 2)) return null;
+
   const headerBold = region[0].cells.every((c) => c.bold) && region[0].cells.length >= 2;
   const top = region[0].line.y;
   const lastLine = region[region.length - 1].line;
