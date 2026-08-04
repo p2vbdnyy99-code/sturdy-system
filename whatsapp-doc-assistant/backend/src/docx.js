@@ -20,7 +20,21 @@ import {
   TableCell,
   WidthType,
   PageBreak,
+  BorderStyle,
 } from 'docx';
+
+// Borderless: used for the two-column layout table so it reads as plain text,
+// not a visible grid (real Word tables render correctly on desktop AND mobile,
+// unlike absolute-positioned frames — see docx-layout.js for why that failed).
+const NO_BORDER = { style: BorderStyle.NONE, size: 0, color: 'FFFFFF' };
+const NO_BORDERS = {
+  top: NO_BORDER,
+  bottom: NO_BORDER,
+  left: NO_BORDER,
+  right: NO_BORDER,
+  insideHorizontal: NO_BORDER,
+  insideVertical: NO_BORDER,
+};
 import { fontFamily } from './extract/spans.js';
 
 const HEADING = { 1: HeadingLevel.HEADING_1, 2: HeadingLevel.HEADING_2, 3: HeadingLevel.HEADING_3 };
@@ -70,6 +84,33 @@ function renderTable(t) {
   return new Table({ rows, width: { size: 100, type: WidthType.PERCENTAGE } });
 }
 
+/** Render one column's blocks as TableCell children (never empty — a cell needs >=1 child). */
+function renderColumnCell(blocks, widthPercent) {
+  const children = (blocks || []).map(renderBlock);
+  if (!children.length) children.push(new Paragraph({ children: [new TextRun('')] }));
+  return new TableCell({
+    children,
+    width: { size: widthPercent, type: WidthType.PERCENTAGE },
+    borders: NO_BORDERS,
+  });
+}
+
+/** A detected two-column region (e.g. CV sidebar + main body) as a borderless,
+ *  single-row Word table — renders correctly in desktop AND mobile Word, unlike
+ *  absolute-positioned frames. */
+function renderColumns(block) {
+  const ratios = block.widthRatios && block.widthRatios.length === block.columns.length
+    ? block.widthRatios
+    : block.columns.map(() => 1 / block.columns.length);
+  const total = ratios.reduce((a, b) => a + b, 0) || 1;
+  const cells = block.columns.map((colBlocks, i) => renderColumnCell(colBlocks, Math.round((ratios[i] / total) * 100)));
+  return new Table({
+    rows: [new TableRow({ children: cells })],
+    width: { size: 100, type: WidthType.PERCENTAGE },
+    borders: NO_BORDERS,
+  });
+}
+
 function renderBlock(block) {
   switch (block.type) {
     case 'pagebreak':
@@ -87,6 +128,8 @@ function renderBlock(block) {
       });
     case 'table':
       return renderTable(block.table);
+    case 'columns':
+      return renderColumns(block);
     case 'paragraph':
     default:
       return new Paragraph({ alignment: ALIGN[block.align], children: toRuns(block.runs) });

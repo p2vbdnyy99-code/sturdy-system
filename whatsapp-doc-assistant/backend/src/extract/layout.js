@@ -82,6 +82,37 @@ function detectList(line) {
   return null;
 }
 
+/** Split a visual line into x-gap-separated segments (same heuristic used by
+ *  tables.js/segmentCells and docx-layout.js/segments: a gap wider than a
+ *  normal word space). Used to detect two list items crammed onto one visual
+ *  line — a common CV pattern (a two-column bullet block within an otherwise
+ *  single-column page, e.g. "• Skill one    • Skill two"). */
+function splitLineSegments(line) {
+  const gap = Math.max(14, 1.4 * (line.fontSize || 12));
+  const segs = [];
+  let cur = null;
+  for (const s of line.spans) {
+    if (!cur || s.x - cur.xEnd > gap) {
+      cur = { x: s.x, xEnd: s.x + s.w, spans: [s] };
+      segs.push(cur);
+    } else {
+      cur.xEnd = Math.max(cur.xEnd, s.x + s.w);
+      cur.spans.push(s);
+    }
+  }
+  return segs;
+}
+
+/** If every segment of a line starts with its own bullet/ordered marker, this
+ *  is multiple list items on one visual line, not one item with a wide gap. */
+function detectMultiListLine(line) {
+  const segs = splitLineSegments(line);
+  if (segs.length < 2) return null;
+  const items = segs.map((seg) => ({ seg, list: detectList({ spans: seg.spans }) }));
+  if (!items.every((it) => it.list)) return null;
+  return items;
+}
+
 /** Basic alignment from line position within the page's text column. */
 function alignOf(line, left, right) {
   const width = right - left;
@@ -118,6 +149,12 @@ export function proseBlocks(lines, bodySize) {
 
   const blocks = [];
   let para = null;
+  // List items eligible to absorb a wrapped continuation line, each tagged
+  // with its x-range. A single-bullet line has one; a multi-bullet line (two
+  // columns of bullets on one visual row) has one per column, so a wrapped
+  // continuation is matched to the item nearest its own x, not just "the last
+  // one pushed" — otherwise a left-column wrap can attach to the right column.
+  let openListItems = [];
   const flushPara = () => {
     if (para) blocks.push(para);
     para = null;
@@ -129,6 +166,24 @@ export function proseBlocks(lines, bodySize) {
     const gap = prev ? line.y - prev.y : 0;
     const lineHeight = line.h || bodySize;
 
+    const multi = detectMultiListLine(line);
+    if (multi) {
+      flushPara();
+      openListItems = [];
+      for (const { seg, list } of multi) {
+        const item = {
+          type: 'listitem',
+          ordered: list.ordered,
+          runs: lineToRuns({ spans: seg.spans }),
+          page: line.page,
+          y: line.y,
+        };
+        blocks.push(item);
+        openListItems.push({ item, x: seg.x, xEnd: seg.xEnd });
+      }
+      continue;
+    }
+
     const list = detectList(line);
     const level = list ? 0 : headingLevel(line);
     const align = alignOf(line, left, right);
@@ -136,14 +191,36 @@ export function proseBlocks(lines, bodySize) {
 
     if (level > 0) {
       flushPara();
+      openListItems = [];
       blocks.push({ type: 'heading', level, runs, align, page: line.page, y: line.y });
       continue;
     }
     if (list) {
       flushPara();
-      blocks.push({ type: 'listitem', ordered: list.ordered, runs, page: line.page, y: line.y });
+      const item = { type: 'listitem', ordered: list.ordered, runs, page: line.page, y: line.y };
+      blocks.push(item);
+      openListItems = [{ item, x: line.x, xEnd: line.xEnd }];
       continue;
     }
+    // A wrapped continuation of a previous list item (no bullet of its own,
+    // follows closely, no paragraph already open) stays part of that item
+    // instead of becoming a disconnected, unindented paragraph. Matched by
+    // x-proximity so a multi-bullet line's wrap reattaches to the right column.
+    if (openListItems.length && !para && gap <= 1.6 * lineHeight) {
+      let best = openListItems[0];
+      let bestD = Math.abs(best.x - line.x);
+      for (const cand of openListItems) {
+        const d = Math.abs(cand.x - line.x);
+        if (d < bestD) {
+          bestD = d;
+          best = cand;
+        }
+      }
+      if (best.item.runs.length && runs.length) best.item.runs[best.item.runs.length - 1].text += ' ';
+      best.item.runs.push(...runs);
+      continue;
+    }
+    openListItems = [];
     // Paragraph: start a new one on a large vertical gap or alignment change.
     const newPara = !para || gap > 1.6 * lineHeight || (para && para.align !== align);
     if (newPara) {

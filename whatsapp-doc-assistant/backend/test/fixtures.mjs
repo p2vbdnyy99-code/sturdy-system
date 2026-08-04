@@ -109,6 +109,60 @@ export function proseOnlyPdf() {
   });
 }
 
+/** Two bullet items crammed onto one visual line (CV "core competencies" style
+ *  layout), where the LEFT item wraps to a second line. Regression fixture for
+ *  the multi-bullet-line split + x-proximity continuation matching. */
+export function twoColumnBulletsPdf() {
+  return buildPdf((doc) => {
+    doc.font('Helvetica-Bold').fontSize(14).text('CORE COMPETENCIES', 60, 60, { lineBreak: false });
+    doc.font('Helvetica').fontSize(11);
+    doc.text('• Ophthalmic Imaging Interpretation (OCT, Fundus,', 60, 90, { lineBreak: false });
+    doc.text('• AI Dataset Annotation & Clinical Validation', 350, 90, { lineBreak: false });
+    doc.text('Perimetry)', 60, 104, { lineBreak: false });
+    doc.text('• Glaucoma Diagnosis, Management & Research', 60, 130, { lineBreak: false });
+    doc.text('• Clinical Workflow Design for AI Training', 350, 130, { lineBreak: false });
+  });
+}
+
+/** A wrapped single bullet item followed by a second bullet item — regression
+ *  fixture for continuation lines reattaching to the list item, not becoming
+ *  an orphan unindented paragraph. */
+export function wrappedBulletPdf() {
+  return buildPdf((doc) => {
+    doc.font('Helvetica-Bold').fontSize(16).text('WORK EXPERIENCE', 60, 60, { lineBreak: false });
+    doc.font('Helvetica').fontSize(11);
+    doc.text('• Independently perform cataract surgeries and assist in complex', 64, 90, { lineBreak: false });
+    doc.text('ophthalmic procedures, documenting findings in structured records.', 74, 104, { lineBreak: false });
+    doc.text('• Diagnose and manage high-volume anterior segment pathologies.', 64, 130, { lineBreak: false });
+  });
+}
+
+/** A genuine two-column page (sidebar + main body) sustained across many rows,
+ *  the pattern the column-layout detector must find (unlike the coincidental
+ *  two-bullets-per-line case above, which stays single-column prose). */
+export function sidebarColumnsPdf() {
+  return buildPdf((doc) => {
+    doc.font('Helvetica-Bold').fontSize(18).text('Jane Doe', 60, 40, { lineBreak: false });
+    doc.font('Helvetica').fontSize(10);
+    // Real column content: each side wraps independently at its own column
+    // width, so line y-positions between the two sides do NOT line up row for
+    // row (unlike a data table's uniform grid) — the realistic signature of a
+    // page layout rather than tabular data.
+    doc.text(
+      'CONTACT\njane@example.com\n+1 555 0100\nCity, Country\n\nSKILLS\nLeadership\nCommunication\nPlanning\nAnalysis\nTeam Building\nBudgeting\nNegotiation\n\nLANGUAGES\nEnglish\nSpanish',
+      60,
+      90,
+      { width: 130, lineGap: 2 },
+    );
+    doc.text(
+      'PROFESSIONAL SUMMARY\nExperienced manager with a proven track record of delivering measurable results across multiple cross-functional teams and departments in fast-paced environments.\n\nWORK EXPERIENCE\nSenior Manager, Acme Corp\nLed cross-functional initiatives that improved operational efficiency and business outcomes. Managed budgets, stakeholders, and a team of twelve direct reports across three regional offices.\n\nJunior Manager, Beta Inc\nCoordinated daily operations and supported senior leadership on strategic planning tasks.',
+      220,
+      90,
+      { width: 320, lineGap: 2 },
+    );
+  });
+}
+
 /** Two pages, so multi-page handling / page boundaries can be checked. */
 export function twoPagePdf() {
   return buildPdf((doc) => {
