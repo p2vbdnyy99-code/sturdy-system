@@ -4,6 +4,8 @@
 // known content and geometry. No files are written; nothing is networked.
 
 import PDFDocument from 'pdfkit';
+import { extractSpans } from '../src/extract/spans.js';
+import { rasterizePages } from '../src/extract/rasterize.js';
 
 /** Render a pdfkit document (via the callback) to a Buffer. */
 export function buildPdf(draw, opts = {}) {
@@ -20,6 +22,33 @@ export function buildPdf(draw, opts = {}) {
       reject(err);
     }
   });
+}
+
+/**
+ * Turn any digital fixture PDF into a genuinely "scanned" PDF: same page
+ * count and dimensions, but each page is a full-page raster image with NO
+ * text layer — so extractStructured's per-page coverage check has to fall
+ * through to real OCR, exactly like a real scanned document would.
+ * @param {Buffer} sourceBuffer A digital PDF (e.g. from another fixture).
+ * @param {{dpi?: number, pages?: number[]}} opts pages: 1-based subset to
+ *        convert; others are dropped (useful for building a MIXED doc by
+ *        combining a scanned subset with untouched digital pages upstream).
+ */
+export async function toScannedPdf(sourceBuffer, { dpi = 150 } = {}) {
+  const { pages } = await extractSpans(sourceBuffer, { maxPages: 20 });
+  const pageNumbers = pages.map((p) => p.page);
+  const rasters = await rasterizePages(sourceBuffer, pageNumbers, dpi);
+
+  return buildPdf(
+    (doc) => {
+      pages.forEach((p, i) => {
+        if (i > 0) doc.addPage({ size: [p.width, p.height], margin: 0 });
+        const raster = rasters.get(p.page);
+        doc.image(raster.png, 0, 0, { width: p.width, height: p.height });
+      });
+    },
+    { size: [pages[0].width, pages[0].height], margin: 0 },
+  );
 }
 
 /** Heading + paragraphs + bold/italic + a big/small size contrast. */

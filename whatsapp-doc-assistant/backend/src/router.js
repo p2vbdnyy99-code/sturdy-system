@@ -137,14 +137,15 @@ async function handleDocument(from, doc, name) {
   }
   log.info(`Received ${filename} (${mimeType}, ${buffer.length} bytes) from ${from}`);
 
-  const { text, spanPages, pageCount, ocrUsed, ocrUnavailable } = await extractStructured(buffer);
+  const { text, spanPages, pageCount, ocrUsed, ocrUnavailable, lowConfidencePages } =
+    await extractStructured(buffer);
 
   if (!text || text.trim().length < 10) {
     if (ocrUnavailable) {
       return wa.sendText(
         from,
-        'This looks like a scanned PDF, but OCR is not available on this server ' +
-          '(missing poppler-utils). I could not extract any text.',
+        'This looks like a scanned PDF, and OCR failed while reading it. Please try again, ' +
+          'or send a clearer scan.',
       );
     }
     return wa.sendText(
@@ -163,9 +164,16 @@ async function handleDocument(from, doc, name) {
   if (ocrUsed) badges.push('OCR ✅');
   const greetName = name ? `, ${name.split(' ')[0]}` : '';
 
+  let note = '';
+  if (lowConfidencePages?.length) {
+    note =
+      `\n\n⚠️ Pages ${lowConfidencePages.join(', ')} were hard to read (low-quality scan) — ` +
+      'double-check anything important from those pages.';
+  }
+
   return sendMenu(
     from,
-    `✅ Ready${greetName}! I read *${filename}* (${badges.join(' · ')}).\n\n` +
+    `✅ Ready${greetName}! I read *${filename}* (${badges.join(' · ')}).${note}\n\n` +
       'Pick an action below, or just tell me what you need in your own words.',
   );
 }

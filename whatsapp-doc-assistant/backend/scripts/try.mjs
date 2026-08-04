@@ -39,7 +39,7 @@ console.log(`\n📄 ${path.basename(file)} (${buffer.length} bytes)\n`);
 const { text, pages, ocrUsed, ocrUnavailable } = await extractText(buffer);
 console.log(`   pages: ${pages} · chars: ${text.length}` +
   (ocrUsed ? ' · OCR used ✅' : '') +
-  (ocrUnavailable ? ' · scanned but OCR unavailable (install poppler-utils) ⚠️' : ''));
+  (ocrUnavailable ? ' · scanned but OCR failed ⚠️' : ''));
 console.log('─'.repeat(60));
 
 switch (action) {

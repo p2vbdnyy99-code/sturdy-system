@@ -1,24 +1,18 @@
-// PDF text extraction, with an OCR fallback for scanned documents.
+// PDF text extraction, with a per-page OCR fallback for scanned documents.
 // -----------------------------------------------------------------------------
-// `extractText` first tries the embedded text layer via pdf-parse. If a document
-// looks scanned (very little machine-readable text per page), it rasterizes the
-// pages with Poppler's `pdftoppm` and runs Tesseract OCR over the images.
-//
-// OCR degrades gracefully: if `pdftoppm` is not installed, we return whatever
-// text layer exists plus a flag so the caller can tell the user.
+// `extractStructured` reads the embedded text layer first (spans.js). Any PAGE
+// whose text coverage is below a threshold — not the whole-document average —
+// is treated as scanned and OCR'd individually, so a mixed document (some
+// digital pages, some scanned) is handled correctly per page instead of
+// all-or-nothing. OCR (ocr.js) produces spans in the exact same shape as the
+// digital text layer, so headings/lists/tables/columns/DOCX/XLSX all work on
+// OCR'd pages unmodified. OCR itself makes no AI-provider calls.
 
-import { spawnSync } from 'node:child_process';
-import fs from 'node:fs/promises';
-import os from 'node:os';
-import path from 'node:path';
 import { config } from './config.js';
 import { log } from './logger.js';
 import { extractSpans, spansToText } from './extract/spans.js';
+import { ocrPages } from './extract/ocr.js';
 
-// Below this many characters of text per page, we treat the PDF as scanned.
-const SCANNED_CHARS_PER_PAGE = 40;
-// Cap OCR work so a huge scan can't stall the bot.
-const MAX_OCR_PAGES = 15;
 // Cap text-layer extraction so a many-page / "page-bomb" PDF can't pin the CPU.
 // Configurable via MAX_PDF_PAGES (see config.js); default 300.
 export const MAX_PDF_PAGES = config.server.maxPdfPages;
@@ -29,11 +23,17 @@ export function pagesToRead(numPages, cap = MAX_PDF_PAGES) {
   return Math.min(n, cap);
 }
 
+/** Real (non-whitespace) character count of one page's digital text spans. */
+function denseCharsOnPage(page) {
+  return page.spans.reduce((sum, s) => sum + s.text.replace(/\s/g, '').length, 0);
+}
+
 /**
  * Structured extraction: positioned spans (for conversion) plus a flattened
- * text view (for AI features), with a graceful OCR fallback for scans.
+ * text view (for AI features), with a per-page OCR fallback for scans.
  * @returns {Promise<{ spanPages: Array, text: string, pageCount: number,
- *                     pagesRead: number, ocrUsed: boolean, ocrUnavailable: boolean }>}
+ *                     pagesRead: number, ocrUsed: boolean, ocrUnavailable: boolean,
+ *                     ocrPageCount: number, lowConfidencePages: number[] }>}
  */
 export async function extractStructured(buffer) {
   let result;
@@ -43,34 +43,66 @@ export async function extractStructured(buffer) {
     throw new Error(`Could not read PDF: ${err.message}`);
   }
 
-  const text = spansToText(result.pages);
-  const denseChars = text.replace(/\s/g, '').length;
-  const looksScanned = denseChars / (result.pagesRead || 1) < SCANNED_CHARS_PER_PAGE;
+  const scannedPages = result.pages.filter((p) => denseCharsOnPage(p) < config.ocr.scannedCharsPerPage);
 
   const base = {
-    spanPages: result.pages,
     pageCount: result.pageCount,
     pagesRead: result.pagesRead,
   };
 
-  if (!looksScanned) {
-    return { ...base, text, ocrUsed: false, ocrUnavailable: false };
+  if (!scannedPages.length) {
+    return {
+      ...base,
+      spanPages: result.pages,
+      text: spansToText(result.pages),
+      ocrUsed: false,
+      ocrUnavailable: false,
+      ocrPageCount: 0,
+      lowConfidencePages: [],
+    };
   }
 
-  log.info(`PDF looks scanned (${denseChars} chars / ${result.pagesRead} pages) — trying OCR`);
-  if (!hasPdftoppm()) {
-    return { ...base, text, ocrUsed: false, ocrUnavailable: true };
-  }
+  log.info(`${scannedPages.length}/${result.pagesRead} page(s) look scanned — trying OCR`);
 
+  let ocrResults;
   try {
-    // OCR currently returns text only (bounding-box OCR is the next milestone).
-    const ocrText = await ocrPdf(buffer, result.pagesRead);
-    const best = ocrText.length > text.length ? ocrText : text;
-    return { ...base, text: best, ocrUsed: ocrText.length > text.length, ocrUnavailable: false };
+    ocrResults = await ocrPages(buffer, scannedPages);
   } catch (err) {
-    log.warn('OCR failed, falling back to text layer:', err.message);
-    return { ...base, text, ocrUsed: false, ocrUnavailable: false };
+    log.warn('OCR failed, falling back to the digital text layer:', err.message);
+    return {
+      ...base,
+      spanPages: result.pages,
+      text: spansToText(result.pages),
+      ocrUsed: false,
+      ocrUnavailable: true,
+      ocrPageCount: 0,
+      lowConfidencePages: [],
+    };
   }
+
+  // Replace only the scanned pages' spans with OCR spans; digital pages are
+  // untouched, so a mixed document uses the right method per page.
+  const lowConfidencePages = [];
+  const spanPages = result.pages.map((page) => {
+    const ocr = ocrResults.get(page.page);
+    if (!ocr) return page;
+    if (ocr.lowConfidence) lowConfidencePages.push(page.page);
+    return { ...page, spans: ocr.spans, ocr: true, ocrConfidence: ocr.avgConfidence };
+  });
+
+  return {
+    ...base,
+    spanPages,
+    text: spansToText(spanPages),
+    ocrUsed: true,
+    ocrUnavailable: false,
+    // ocrResults.size, not scannedPages.length: ocrPages() caps work at
+    // config.ocr.maxPages, so this must reflect what actually ran, not what
+    // merely looked scanned (a scanned page beyond the cap keeps its — empty
+    // — digital spans rather than being OCR'd; never fabricated, just blank).
+    ocrPageCount: ocrResults.size,
+    lowConfidencePages,
+  };
 }
 
 /**
@@ -80,61 +112,4 @@ export async function extractStructured(buffer) {
 export async function extractText(buffer) {
   const r = await extractStructured(buffer);
   return { text: r.text, pages: r.pageCount, ocrUsed: r.ocrUsed, ocrUnavailable: r.ocrUnavailable };
-}
-
-/** Is Poppler's `pdftoppm` on PATH? Cached after first probe. */
-let _pdftoppm;
-function hasPdftoppm() {
-  if (_pdftoppm === undefined) {
-    const probe = spawnSync('pdftoppm', ['-v'], { stdio: 'ignore' });
-    _pdftoppm = !probe.error;
-    if (!_pdftoppm) {
-      log.warn('`pdftoppm` (poppler-utils) not found — OCR for scanned PDFs is disabled.');
-    }
-  }
-  return _pdftoppm;
-}
-
-/**
- * Rasterize a PDF to PNGs with `pdftoppm`, then OCR each page with Tesseract.
- * Tesseract.js is imported lazily so the (large) dependency only loads when a
- * scanned document actually shows up.
- */
-async function ocrPdf(buffer, pages) {
-  const { createWorker } = await import('tesseract.js');
-  const workDir = await fs.mkdtemp(path.join(os.tmpdir(), 'wa-ocr-'));
-  const pdfPath = path.join(workDir, 'in.pdf');
-
-  try {
-    await fs.writeFile(pdfPath, buffer);
-
-    const lastPage = Math.min(pages, MAX_OCR_PAGES);
-    const render = spawnSync(
-      'pdftoppm',
-      ['-png', '-r', '200', '-l', String(lastPage), pdfPath, path.join(workDir, 'page')],
-      { stdio: 'ignore' },
-    );
-    if (render.status !== 0) {
-      throw new Error('pdftoppm rasterization failed');
-    }
-
-    const images = (await fs.readdir(workDir))
-      .filter((f) => f.endsWith('.png'))
-      .sort()
-      .map((f) => path.join(workDir, f));
-
-    const worker = await createWorker('eng');
-    try {
-      const parts = [];
-      for (const img of images) {
-        const { data } = await worker.recognize(img);
-        parts.push(data.text.trim());
-      }
-      return parts.join('\n\n').trim();
-    } finally {
-      await worker.terminate();
-    }
-  } finally {
-    await fs.rm(workDir, { recursive: true, force: true }).catch(() => {});
-  }
 }

@@ -21,6 +21,10 @@ const {
   CONVERSION_TIMEOUT_MS = '45000',
   SESSION_TTL_MINUTES = '60',
   RATE_LIMIT_PER_MIN = '20',
+  OCR_DPI = '200',
+  MAX_OCR_PAGES = '15',
+  SCANNED_CHARS_PER_PAGE = '40',
+  OCR_LOW_CONFIDENCE_THRESHOLD = '45',
 } = process.env;
 
 // ─── AI provider selection ───────────────────────────────────────────────────
@@ -100,6 +104,20 @@ export const config = {
     sessionTtlMs: (Number(SESSION_TTL_MINUTES) || 60) * 60 * 1000,
     // Max inbound messages processed per sender per minute (abuse/cost guard).
     rateLimitPerMin: Math.max(1, Number(RATE_LIMIT_PER_MIN) || 20),
+  },
+  ocr: {
+    // Rasterization resolution for pages sent to Tesseract (higher = more
+    // accurate, slower). 200 is a reasonable accuracy/CPU tradeoff.
+    dpi: Math.max(72, Number(OCR_DPI) || 200),
+    // Cap OCR work so a huge scan can't stall the bot.
+    maxPages: Math.max(1, Number(MAX_OCR_PAGES) || 15),
+    // Below this many characters of real text, a PAGE (not the whole document)
+    // is treated as scanned — supports mixed digital/scanned documents.
+    scannedCharsPerPage: Math.max(1, Number(SCANNED_CHARS_PER_PAGE) || 40),
+    // Below this average Tesseract word confidence (0-100), OCR text is kept
+    // but flagged low-confidence so the caller can warn the user rather than
+    // silently reconstruct a document from guesses (hard rule: never fabricate).
+    lowConfidenceThreshold: Math.max(0, Number(OCR_LOW_CONFIDENCE_THRESHOLD) || 45),
   },
 };
 

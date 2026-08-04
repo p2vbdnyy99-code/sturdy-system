@@ -131,8 +131,13 @@ export function spansToText(pages) {
     const sorted = [...pg.spans].sort((a, b) => a.y - b.y || a.x - b.x);
     let lineY = null;
     let line = [];
+    // Sort each finished line by x before joining. For digital PDF text this
+    // is a no-op (spans on one line already share an exact baseline y, so the
+    // initial (y, x) sort already leaves them in reading order) — but OCR
+    // word boxes have natural per-word y jitter, which the initial sort keys
+    // on FIRST, silently scrambling word order within a line without this.
     const flush = () => {
-      if (line.length) out.push(line.map((s) => s.text).join(' '));
+      if (line.length) out.push([...line].sort((a, b) => a.x - b.x).map((s) => s.text).join(' '));
       line = [];
     };
     for (const s of sorted) {
