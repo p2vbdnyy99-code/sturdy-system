@@ -21,10 +21,6 @@ const {
   CONVERSION_TIMEOUT_MS = '45000',
   SESSION_TTL_MINUTES = '60',
   RATE_LIMIT_PER_MIN = '20',
-  OCR_DPI = '200',
-  MAX_OCR_PAGES = '15',
-  SCANNED_CHARS_PER_PAGE = '40',
-  OCR_LOW_CONFIDENCE_THRESHOLD = '45',
 } = process.env;
 
 // ─── AI provider selection ───────────────────────────────────────────────────
@@ -71,6 +67,32 @@ export function buildAiConfig(env = {}) {
   };
 }
 
+/**
+ * Build the OCR configuration from an environment-like object. Kept pure, like
+ * buildAiConfig, so it is easy to unit-test with different inputs.
+ *
+ * Env:
+ *   OCR_DPI                        rasterization resolution (default: 200)
+ *   MAX_OCR_PAGES                  per-document OCR page cap (default: 15)
+ *   SCANNED_CHARS_PER_PAGE         per-page "looks scanned" threshold (default: 40)
+ *   OCR_LOW_CONFIDENCE_THRESHOLD   flag-as-uncertain threshold, 0-100 (default: 45)
+ *   OCR_TIMEOUT_MS                 wall-clock cap on extraction+OCR for one
+ *                                  request (default: 180000 / 3 minutes) —
+ *                                  deliberately separate from
+ *                                  CONVERSION_TIMEOUT_MS: OCR scales with page
+ *                                  count/image complexity in a way DOCX/XLSX
+ *                                  generation doesn't, and needs its own budget.
+ */
+export function buildOcrConfig(env = {}) {
+  return {
+    dpi: Math.max(72, Number(env.OCR_DPI) || 200),
+    maxPages: Math.max(1, Number(env.MAX_OCR_PAGES) || 15),
+    scannedCharsPerPage: Math.max(1, Number(env.SCANNED_CHARS_PER_PAGE) || 40),
+    lowConfidenceThreshold: Math.max(0, Number(env.OCR_LOW_CONFIDENCE_THRESHOLD) || 45),
+    timeoutMs: Math.max(1000, Number(env.OCR_TIMEOUT_MS) || 180_000),
+  };
+}
+
 /** The API key for whichever provider is currently selected (may be empty). */
 export function selectedApiKey(ai) {
   return ai.provider === 'openai' ? ai.openaiKey : ai.anthropicKey;
@@ -105,20 +127,7 @@ export const config = {
     // Max inbound messages processed per sender per minute (abuse/cost guard).
     rateLimitPerMin: Math.max(1, Number(RATE_LIMIT_PER_MIN) || 20),
   },
-  ocr: {
-    // Rasterization resolution for pages sent to Tesseract (higher = more
-    // accurate, slower). 200 is a reasonable accuracy/CPU tradeoff.
-    dpi: Math.max(72, Number(OCR_DPI) || 200),
-    // Cap OCR work so a huge scan can't stall the bot.
-    maxPages: Math.max(1, Number(MAX_OCR_PAGES) || 15),
-    // Below this many characters of real text, a PAGE (not the whole document)
-    // is treated as scanned — supports mixed digital/scanned documents.
-    scannedCharsPerPage: Math.max(1, Number(SCANNED_CHARS_PER_PAGE) || 40),
-    // Below this average Tesseract word confidence (0-100), OCR text is kept
-    // but flagged low-confidence so the caller can warn the user rather than
-    // silently reconstruct a document from guesses (hard rule: never fabricate).
-    lowConfidenceThreshold: Math.max(0, Number(OCR_LOW_CONFIDENCE_THRESHOLD) || 45),
-  },
+  ocr: buildOcrConfig(process.env),
 };
 
 /** Warn (but don't crash) about configuration that will break requests. */

@@ -25,15 +25,31 @@ import {
   clearPending,
 } from './sessions.js';
 
-// Bound any single conversion in wall-clock time so a pathological PDF can't pin
-// the worker. Rejects with a friendly error the router already handles.
-function withTimeout(promise, ms, label) {
+// Bound any single conversion/extraction in wall-clock time so a pathological
+// PDF can't pin the worker. Rejects with a friendly error the router already
+// handles. NOTE: this stops US waiting on the promise — it does not cancel
+// whatever CPU work is already in flight (rasterization / a Tesseract
+// recognize() call has no cancellation hook here), so on timeout the
+// underlying work may keep consuming resources until it finishes on its own.
+// If that turns out to matter in practice, the real fix is isolating OCR in
+// its own worker/process so it can be killed outright, not a bigger timeout.
+export function withTimeout(promise, ms, label) {
   let timer;
   const guard = new Promise((_, reject) => {
     timer = setTimeout(() => reject(new Error(`${label} timed out`)), ms);
     timer.unref?.();
   });
   return Promise.race([promise, guard]).finally(() => clearTimeout(timer));
+}
+
+/** Map any thrown error to the safe, generic message the user sees. Known AI
+ *  errors get their specific (still safe) message; everything else — including
+ *  an extraction/OCR timeout — gets the generic fallback. Never leaks raw SDK
+ *  errors, stack traces, or document content. */
+export function friendlyErrorMessage(err) {
+  return err instanceof ai.AIError
+    ? `⚠️ ${err.userMessage}`
+    : '⚠️ Something went wrong on my side. Please try again in a moment.';
 }
 
 // ─── Menu definition ─────────────────────────────────────────────────────────
@@ -94,14 +110,10 @@ export async function handleMessage(message, contact) {
         return await wa.sendText(from, GREETING);
     }
   } catch (err) {
+    // Diagnostic enough to spot e.g. an OCR timeout in logs (err.message says
+    // so — see the withTimeout label below) — never the document's own text.
     log.error('handleMessage failed:', err);
-    // Surface a short, safe message for known AI problems; stay generic otherwise.
-    // Raw SDK errors, stack traces, and API keys never reach the user.
-    const friendly =
-      err instanceof ai.AIError
-        ? `⚠️ ${err.userMessage}`
-        : '⚠️ Something went wrong on my side. Please try again in a moment.';
-    await wa.sendText(from, friendly).catch(() => {});
+    await wa.sendText(from, friendlyErrorMessage(err)).catch(() => {});
   }
 }
 
@@ -138,7 +150,7 @@ async function handleDocument(from, doc, name) {
   log.info(`Received ${filename} (${mimeType}, ${buffer.length} bytes) from ${from}`);
 
   const { text, spanPages, pageCount, ocrUsed, ocrUnavailable, lowConfidencePages } =
-    await extractStructured(buffer);
+    await withTimeout(extractStructured(buffer), config.ocr.timeoutMs, 'PDF extraction/OCR');
 
   if (!text || text.trim().length < 10) {
     if (ocrUnavailable) {
