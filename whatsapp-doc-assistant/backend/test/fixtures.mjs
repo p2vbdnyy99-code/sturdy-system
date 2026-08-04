@@ -173,3 +173,56 @@ export function twoPagePdf() {
     doc.font('Helvetica').fontSize(12).text('Content of the second page.');
   });
 }
+
+/** A page with a full-width running header and footer around single-column
+ *  body content — regression fixture for the column detector correctly
+ *  treating header/footer as full-width prose rather than column noise. */
+export function headerFooterPdf() {
+  return buildPdf((doc) => {
+    doc.font('Helvetica-Bold').fontSize(10).text('ACME INC — CONFIDENTIAL', 50, 40, { lineBreak: false });
+    doc.font('Helvetica-Bold').fontSize(16).text('Quarterly Review', 50, 80, { lineBreak: false });
+    doc.font('Helvetica').fontSize(11).text(
+      'This report summarises quarterly performance across all business units, ' +
+        'covering revenue, headcount, and key operational metrics for the period.',
+      50,
+      110,
+      { width: 500 },
+    );
+    doc.font('Helvetica').fontSize(9).text('Page 1 of 1 — Internal Use Only', 50, 740, { lineBreak: false });
+  });
+}
+
+/** A genuine equal-width two-column newsletter layout (as opposed to a
+ *  sidebar + main body): both columns carry ordinary wrapped prose, so lines
+ *  rarely align row-for-row between the two sides. */
+export function newsletterColumnsPdf() {
+  return buildPdf((doc) => {
+    doc.font('Helvetica-Bold').fontSize(18).text('Company Newsletter — Q1', 50, 40, { lineBreak: false });
+    doc.font('Helvetica').fontSize(10);
+    doc.text(
+      'From the CEO\nThis quarter we expanded into two new markets and grew the ' +
+        'engineering team by twenty percent. Customer satisfaction scores reached ' +
+        'an all-time high across every region we operate in, driven largely by ' +
+        'the new support tooling shipped in January. We also renegotiated two ' +
+        'major vendor contracts, reducing infrastructure spend for the year.' +
+        '\n\nProduct Update\nThe new ' +
+        'dashboard shipped to all customers this month, replacing the legacy ' +
+        'reporting screens entirely. Early feedback has been overwhelmingly positive.',
+      50,
+      90,
+      { width: 230, lineGap: 2 },
+    );
+    doc.text(
+      'People & Culture\nWe welcomed eighteen new hires this quarter across ' +
+        'engineering, sales, and customer success. Our annual survey showed ' +
+        'record engagement scores, with particular strength in career growth ' +
+        'and manager support. Two internal promotions were also announced.' +
+        '\n\nLooking Ahead\nNext quarter we are focused on ' +
+        'international expansion, a major platform migration, and continued ' +
+        'investment in customer-facing tooling across every product line.',
+      310,
+      90,
+      { width: 230, lineGap: 2 },
+    );
+  });
+}
