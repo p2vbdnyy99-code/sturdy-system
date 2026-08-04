@@ -82,6 +82,12 @@ export function buildAiConfig(env = {}) {
  *                                  CONVERSION_TIMEOUT_MS: OCR scales with page
  *                                  count/image complexity in a way DOCX/XLSX
  *                                  generation doesn't, and needs its own budget.
+ *   OCR_MAX_HEAP_MB                V8 old-space cap for the isolated OCR child
+ *                                  process (default: 256). Keeps a runaway
+ *                                  allocation inside the child, where it dies
+ *                                  as a reportable error, instead of pushing
+ *                                  the whole container over its memory limit
+ *                                  and getting the server SIGKILLed.
  */
 export function buildOcrConfig(env = {}) {
   return {
@@ -90,6 +96,7 @@ export function buildOcrConfig(env = {}) {
     scannedCharsPerPage: Math.max(1, Number(env.SCANNED_CHARS_PER_PAGE) || 40),
     lowConfidenceThreshold: Math.max(0, Number(env.OCR_LOW_CONFIDENCE_THRESHOLD) || 45),
     timeoutMs: Math.max(1000, Number(env.OCR_TIMEOUT_MS) || 180_000),
+    maxHeapMb: Math.max(64, Number(env.OCR_MAX_HEAP_MB) || 256),
   };
 }
 

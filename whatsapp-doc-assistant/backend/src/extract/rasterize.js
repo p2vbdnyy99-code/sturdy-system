@@ -19,6 +19,33 @@ import * as pdfjs from 'pdfjs-dist/legacy/build/pdf.mjs';
  *          back to the PDF's own coordinate space.
  */
 export async function rasterizePages(buffer, pageNumbers, dpi) {
+  const renderer = await openForRasterizing(buffer);
+  const out = new Map();
+  try {
+    for (const pageNum of pageNumbers) {
+      out.set(pageNum, await renderer.renderPage(pageNum, dpi));
+    }
+    return out;
+  } finally {
+    await renderer.close();
+  }
+}
+
+/**
+ * Open a PDF once and render pages ON DEMAND, one at a time.
+ *
+ * This exists because rendering every page up front was a production OOM: a
+ * scanned document's pages are photographs, and a single 3000x4000 source
+ * image decodes to tens of megabytes before it is even scaled. Holding all of
+ * them simultaneously — alongside the Tesseract WASM runtime — exceeded the
+ * container's memory limit and the kernel SIGKILLed the process, which is
+ * uncatchable: no error, no log, no reply to the user. Streaming keeps peak
+ * usage at roughly ONE page instead of the whole batch.
+ *
+ * The caller is responsible for calling `close()`.
+ * @param {Buffer} buffer PDF file bytes.
+ */
+export async function openForRasterizing(buffer) {
   // Lazy import: @napi-rs/canvas ships prebuilt native binaries per platform.
   // On an unsupported platform this throws — we want that to surface as
   // "OCR unavailable" for this request, not crash the whole server at boot.
@@ -30,26 +57,35 @@ export async function rasterizePages(buffer, pageNumbers, dpi) {
     useSystemFonts: true,
   });
   const doc = await loadingTask.promise;
-  const scale = dpi / 72;
-  const out = new Map();
 
-  try {
-    for (const pageNum of pageNumbers) {
+  return {
+    pageCount: doc.numPages || 0,
+
+    /** Render one page to PNG. Page resources are released before returning
+     *  so the next call starts from a clean baseline. */
+    async renderPage(pageNum, dpi) {
+      const scale = dpi / 72;
       const page = await doc.getPage(pageNum);
-      const viewport = page.getViewport({ scale });
-      const canvas = createCanvas(Math.ceil(viewport.width), Math.ceil(viewport.height));
-      const ctx = canvas.getContext('2d');
-      await page.render({ canvasContext: ctx, viewport, canvas }).promise;
-      out.set(pageNum, {
-        png: canvas.toBuffer('image/png'),
-        width: canvas.width,
-        height: canvas.height,
-        scale,
-      });
-      page.cleanup?.();
-    }
-    return out;
-  } finally {
-    await (doc.destroy?.() ?? loadingTask.destroy?.());
-  }
+      try {
+        const viewport = page.getViewport({ scale });
+        const canvas = createCanvas(Math.ceil(viewport.width), Math.ceil(viewport.height));
+        const ctx = canvas.getContext('2d');
+        await page.render({ canvasContext: ctx, viewport, canvas }).promise;
+        return {
+          png: canvas.toBuffer('image/png'),
+          width: canvas.width,
+          height: canvas.height,
+          scale,
+        };
+      } finally {
+        // Drops this page's decoded image data — without it pdf.js retains
+        // every rendered page's bitmap for the document's lifetime.
+        page.cleanup?.();
+      }
+    },
+
+    async close() {
+      await (doc.destroy?.() ?? loadingTask.destroy?.());
+    },
+  };
 }

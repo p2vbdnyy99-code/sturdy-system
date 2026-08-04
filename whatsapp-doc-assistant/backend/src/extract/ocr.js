@@ -13,7 +13,7 @@
 
 import { config } from '../config.js';
 import { log } from '../logger.js';
-import { rasterizePages } from './rasterize.js';
+import { openForRasterizing } from './rasterize.js';
 
 function round(n, p = 1) {
   const f = 10 ** p;
@@ -72,15 +72,17 @@ export async function ocrPages(buffer, pageDims, ocrConfig = config.ocr) {
   if (!pageNumbers.length) return new Map();
 
   const { createWorker } = await import('tesseract.js');
-  const rasters = await rasterizePages(buffer, pageNumbers, ocrConfig.dpi);
-
+  // Streamed, NOT batched: render one page, OCR it, drop it, then move on.
+  // Rendering every page up front held the whole batch in memory at once
+  // alongside the Tesseract runtime and OOMed the container in production.
+  const renderer = await openForRasterizing(buffer);
   const worker = await createWorker('eng');
   const results = new Map();
   try {
     for (const pageNum of pageNumbers) {
-      const raster = rasters.get(pageNum);
-      if (!raster) continue;
+      let raster = null;
       try {
+        raster = await renderer.renderPage(pageNum, ocrConfig.dpi);
         const { spans, avgConfidence } = await ocrImage(worker, raster.png, pageNum, raster.scale);
         const lowConfidence = avgConfidence < ocrConfig.lowConfidenceThreshold;
         if (lowConfidence) {
@@ -88,12 +90,17 @@ export async function ocrPages(buffer, pageDims, ocrConfig = config.ocr) {
         }
         results.set(pageNum, { spans, avgConfidence, lowConfidence });
       } catch (err) {
+        // One unreadable page must not lose the rest of the document.
         log.warn(`OCR failed on page ${pageNum}: ${err.message}`);
         results.set(pageNum, { spans: [], avgConfidence: 0, lowConfidence: true });
+      } finally {
+        // Release this page's PNG before rendering the next one.
+        raster = null;
       }
     }
   } finally {
     await worker.terminate();
+    await renderer.close();
   }
   return results;
 }

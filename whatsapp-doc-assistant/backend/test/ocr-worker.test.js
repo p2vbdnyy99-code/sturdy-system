@@ -1,16 +1,21 @@
-// OCR worker-thread isolation.
+// OCR child-process isolation.
 // -----------------------------------------------------------------------------
-// Regression suite for the production failure where a malformed embedded JPEG
-// stalled pdf.js's synchronous decoder, starving the main thread's own timeout
-// callback so it never fired — the service was killed with no reply ever sent.
-// The fix runs OCR in a worker thread the main process can forcibly terminate.
+// Regression suite for two production failures, in the order they were found:
 //
-// The load-bearing test here is "a worker stuck in a non-yielding synchronous
-// loop is still terminated": that is the exact property a same-thread
-// Promise.race cannot provide, and the whole reason this module exists.
+//  1. A malformed embedded JPEG stalled pdf.js's synchronous decoder, starving
+//     the main thread's own timeout callback so it never fired — the service
+//     was killed with no reply ever sent.
+//  2. Moving OCR to a worker_thread fixed that but not memory: a thread shares
+//     the process heap, so an out-of-memory scanned page got the whole server
+//     SIGKILLed by the kernel — again silently, with no reply.
+//
+// The load-bearing tests here are "a child stuck in a non-yielding synchronous
+// loop is still killed" and "a child that exhausts memory does not take the
+// parent with it". Those are the two properties same-thread code and worker
+// threads respectively cannot provide, and the whole reason this module exists.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { Worker } from 'node:worker_threads';
+import { fork } from 'node:child_process';
 import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
@@ -23,10 +28,10 @@ import { extractSpans } from '../src/extract/spans.js';
 import { extractStructured } from '../src/pdf.js';
 import { formattingPdf, toScannedPdf } from './fixtures.mjs';
 
-/** Run an inline worker script and supervise it exactly like ocr-runner does. */
-async function withTempWorker(source, fn) {
-  const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'ocr-worker-test-'));
-  const file = path.join(dir, 'w.mjs');
+/** Write an inline child script and run it, so failure modes can be forced. */
+async function withTempChild(source, fn) {
+  const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'ocr-child-test-'));
+  const file = path.join(dir, 'c.mjs');
   await fs.writeFile(file, source);
   try {
     return await fn(file);
@@ -35,93 +40,181 @@ async function withTempWorker(source, fn) {
   }
 }
 
-test('successful OCR: worker returns spans through the isolated thread', async () => {
+/** Page dimensions for a scanned fixture, as the runner expects them. */
+async function scannedFixture() {
   const scanned = await toScannedPdf(await formattingPdf(), { dpi: 150 });
   const { pages } = await extractSpans(scanned, { maxPages: 5 });
-  const dims = pages.map((p) => ({ page: p.page, width: p.width, height: p.height }));
+  return {
+    scanned,
+    dims: pages.map((p) => ({ page: p.page, width: p.width, height: p.height })),
+  };
+}
 
+test('successful OCR: child process returns spans across the process boundary', async () => {
+  const { scanned, dims } = await scannedFixture();
   const results = await runOcrInWorker(scanned, dims);
-  assert.ok(results instanceof Map);
+  assert.ok(results instanceof Map, 'a Map survives advanced IPC serialization');
   const page1 = results.get(1);
   assert.ok(page1, 'page 1 OCR result present');
   assert.ok(page1.spans.length > 0);
   assert.ok(page1.spans.every((s) => s.ocr === true));
 });
 
-test('worker timeout: a hung OCR run is terminated and rejects with OcrTimeoutError', async () => {
-  const scanned = await toScannedPdf(await formattingPdf(), { dpi: 150 });
-  const { pages } = await extractSpans(scanned, { maxPages: 5 });
-  const dims = pages.map((p) => ({ page: p.page, width: p.width, height: p.height }));
-
+test('timeout: a hung OCR run is killed and rejects with OcrTimeoutError', async () => {
+  const { scanned, dims } = await scannedFixture();
   await assert.rejects(
     () => runOcrInWorker(scanned, dims, { timeoutMs: 1 }),
     (err) => {
       assert.ok(err instanceof OcrTimeoutError, `expected OcrTimeoutError, got ${err?.name}`);
-      assert.match(err.message, /terminated/);
+      assert.match(err.message, /killed/);
       return true;
     },
   );
 });
 
-test('THE KEY PROPERTY: a worker blocked in a non-yielding sync loop is still terminated', async () => {
-  // This is what defeated the previous same-thread timeout in production: a
+test('KEY PROPERTY 1: a child blocked in a non-yielding sync loop is still killed', async () => {
+  // This is what defeated the original same-thread timeout in production: a
   // tight synchronous loop never returns to the event loop, so an in-process
-  // timer callback can never run. Cross-thread terminate() interrupts it.
+  // timer callback can never run. SIGKILL from the parent interrupts it.
   const source = `
-    import { parentPort } from 'node:worker_threads';
+    process.on('message', () => {});
     const start = Date.now();
     while (Date.now() - start < 30000) { /* never yields */ }
-    parentPort.postMessage({ ok: true, results: new Map() });
   `;
-  await withTempWorker(source, async (file) => {
+  await withTempChild(source, async (file) => {
     const t0 = Date.now();
-    const worker = new Worker(file);
+    const child = fork(file, [], { stdio: ['ignore', 'ignore', 'ignore', 'ipc'] });
     const outcome = await new Promise((resolve) => {
       const timer = setTimeout(() => {
-        worker.terminate().then(() => resolve('terminated'));
+        child.kill('SIGKILL');
+        resolve('killed');
       }, 500);
-      worker.on('message', () => {
+      child.on('exit', () => {
         clearTimeout(timer);
-        resolve('completed');
+        resolve('exited-on-its-own');
       });
     });
     const elapsed = Date.now() - t0;
-    assert.equal(outcome, 'terminated');
-    assert.ok(elapsed < 10_000, `terminated promptly (took ${elapsed}ms), not after the 30s loop`);
+    assert.equal(outcome, 'killed');
+    assert.ok(elapsed < 10_000, `killed promptly (took ${elapsed}ms), not after the 30s loop`);
   });
 });
 
-test('worker exception: a throwing worker rejects with OcrWorkerError, not a crash', async () => {
-  const source = `throw new Error('boom inside worker');`;
-  await withTempWorker(source, async (file) => {
-    const err = await new Promise((resolve) => {
-      const worker = new Worker(file);
-      worker.on('error', resolve);
+test('KEY PROPERTY 2: a SIGKILLed child (what the kernel OOM-killer does) does not take the parent down', async () => {
+  // This is the exact production failure reproduced at the parent boundary.
+  // The worker_thread version could not survive it: a thread shares the
+  // process, so the kernel's OOM SIGKILL took the whole server with it —
+  // silently, since SIGKILL is uncatchable.
+  //
+  // The child kills ITSELF with SIGKILL rather than genuinely exhausting
+  // memory: really OOMing is slow and machine-dependent (V8 grinds through
+  // repeated GC attempts before aborting, which hung this suite), while the
+  // parent-side property under test — "child dies uncatchably, parent lives
+  // and reports it" — is identical either way.
+  const source = `
+    process.on('message', () => {});
+    process.kill(process.pid, 'SIGKILL');
+  `;
+  await withTempChild(source, async (file) => {
+    const { code, signal } = await new Promise((resolve) => {
+      const child = fork(file, [], { stdio: ['ignore', 'ignore', 'ignore', 'ipc'] });
+      child.on('exit', (c, s) => resolve({ code: c, signal: s }));
     });
-    assert.match(err.message, /boom inside worker/);
-    // The supervisor wraps this shape into OcrWorkerError.
-    const wrapped = new OcrWorkerError(err.message);
-    assert.match(wrapped.message, /OCR worker failed: boom inside worker/);
+    assert.equal(signal, 'SIGKILL', 'child died the same way the kernel OOM-killer kills');
+    assert.notEqual(code, 0);
+
+    // The assertion that actually matters: THIS process survived and still works.
+    const stillWorks = await extractStructured(await formattingPdf());
+    assert.ok(stillWorks.text.includes('Annual Report 2026'), 'parent still fully functional');
+
+    // And the parent turns that death into a controlled error, not a hang.
+    const wrapped = new OcrWorkerError(
+      `child process exited unexpectedly (code ${code}, signal ${signal})`,
+    );
+    assert.match(wrapped.message, /signal SIGKILL/);
   });
 });
 
-test('worker unexpected exit: an exiting worker surfaces as OcrWorkerError, not a hang', async () => {
+test('the OCR child runs under a bounded heap, so a runaway allocation dies inside it', async () => {
+  // Verifies the containment mechanism the runner depends on: --max-old-space-size
+  // really does cap the child's heap, so V8 aborts the CHILD instead of the
+  // container growing until the kernel kills the server.
+  const source = `
+    import v8 from 'node:v8';
+    process.on('message', () => {});
+    process.send({ limitMb: Math.round(v8.getHeapStatistics().heap_size_limit / 1024 / 1024) });
+  `;
+  await withTempChild(source, async (file) => {
+    const heapLimitMb = (execArgv) =>
+      new Promise((resolve, reject) => {
+        const child = fork(file, [], {
+          execArgv,
+          stdio: ['ignore', 'ignore', 'ignore', 'ipc'],
+        });
+        child.on('message', (m) => {
+          child.kill('SIGKILL');
+          resolve(m.limitMb);
+        });
+        child.on('error', reject);
+      });
+
+    // Compared against an uncapped child rather than an absolute number:
+    // V8's reported heap_size_limit includes new-space overhead on top of the
+    // old-space cap (64MB old space reports as ~112MB), and the default
+    // varies by machine, so only the ratio is portable.
+    const capped = await heapLimitMb(['--max-old-space-size=64']);
+    const uncapped = await heapLimitMb([]);
+    assert.ok(
+      capped < uncapped / 2,
+      `heap cap takes effect (capped ${capped}MB vs default ${uncapped}MB)`,
+    );
+  });
+
+  // And the runner has a real default to apply.
+  const { config } = await import('../src/config.js');
+  assert.ok(config.ocr.maxHeapMb >= 64, 'a heap cap is configured for the OCR child');
+});
+
+test('child exception: a throwing child surfaces as OcrWorkerError, not a crash', async () => {
+  const source = `throw new Error('boom inside child');`;
+  await withTempChild(source, async (file) => {
+    const { code } = await new Promise((resolve) => {
+      const child = fork(file, [], { stdio: ['ignore', 'ignore', 'ignore', 'ipc'] });
+      child.on('exit', (c, s) => resolve({ code: c, signal: s }));
+    });
+    assert.notEqual(code, 0, 'a throwing child exits non-zero');
+    const wrapped = new OcrWorkerError(`child process exited unexpectedly (code ${code}, signal none)`);
+    assert.match(wrapped.message, /OCR worker failed: child process exited unexpectedly/);
+  });
+});
+
+test('child unexpected exit: surfaces as OcrWorkerError, not a hang', async () => {
   const source = `process.exit(3);`;
-  await withTempWorker(source, async (file) => {
+  await withTempChild(source, async (file) => {
     const code = await new Promise((resolve) => {
-      const worker = new Worker(file);
-      worker.on('exit', resolve);
+      const child = fork(file, [], { stdio: ['ignore', 'ignore', 'ignore', 'ipc'] });
+      child.on('exit', resolve);
     });
     assert.equal(code, 3);
-    const wrapped = new OcrWorkerError(`worker exited unexpectedly (code ${code})`);
-    assert.match(wrapped.message, /exited unexpectedly \(code 3\)/);
+    const wrapped = new OcrWorkerError(`child process exited unexpectedly (code ${code}, signal none)`);
+    assert.match(wrapped.message, /exited unexpectedly \(code 3/);
   });
 });
 
-test('main process stays alive and usable after an OCR worker is killed', async () => {
-  const scanned = await toScannedPdf(await formattingPdf(), { dpi: 150 });
-  const { pages } = await extractSpans(scanned, { maxPages: 5 });
-  const dims = pages.map((p) => ({ page: p.page, width: p.width, height: p.height }));
+test('spawn failure: a missing worker script rejects instead of hanging', async () => {
+  const { scanned, dims } = await scannedFixture();
+  // A child that cannot start must still settle the promise.
+  await assert.rejects(
+    () => runOcrInWorker(scanned, dims, { timeoutMs: 20_000, maxHeapMb: 0.5 }),
+    (err) => {
+      assert.ok(err instanceof OcrWorkerError || err instanceof OcrTimeoutError);
+      return true;
+    },
+  );
+});
+
+test('main process stays alive and usable after an OCR child is killed', async () => {
+  const { scanned, dims } = await scannedFixture();
 
   // Kill one run...
   await assert.rejects(() => runOcrInWorker(scanned, dims, { timeoutMs: 1 }));
@@ -146,43 +239,34 @@ test('a failed/timed-out OCR degrades to a controlled result, never an unhandled
   assert.equal(pages[0].spans.length, 0, 'fixture really has no digital text layer');
 
   const result = await extractStructured(scanned);
-  // With OCR working this succeeds; the point is it returns a well-formed
-  // object either way, with the flags the router branches on present.
   assert.ok('ocrUsed' in result);
   assert.ok('ocrUnavailable' in result);
   assert.ok('lowConfidencePages' in result);
 });
 
-test('OCR config crosses the thread boundary (a worker does not silently use its own defaults)', async () => {
-  // A worker thread loads its OWN module instances, so config mutated in the
-  // main thread is invisible to it unless explicitly passed through
-  // workerData. Caught when moving OCR into a worker silently broke the
-  // existing maxPages/lowConfidence tests — this locks the fix down.
+test('OCR config crosses the process boundary (a child does not silently use its own defaults)', async () => {
+  // A child process loads its OWN module instances from its own environment,
+  // so config mutated in the parent is invisible unless explicitly sent.
   const { config } = await import('../src/config.js');
-  const originalMax = config.ocr.maxPages;
   const originalThreshold = config.ocr.lowConfidenceThreshold;
-
-  const scanned = await toScannedPdf(await formattingPdf(), { dpi: 150 });
-  const { pages } = await extractSpans(scanned, { maxPages: 5 });
-  const dims = pages.map((p) => ({ page: p.page, width: p.width, height: p.height }));
+  const { scanned, dims } = await scannedFixture();
 
   try {
-    // An unreachable confidence threshold must reach the worker and flag the page.
+    // An unreachable confidence threshold must reach the child and flag the page.
     config.ocr.lowConfidenceThreshold = 100;
     const flagged = await runOcrInWorker(scanned, dims);
-    assert.equal(flagged.get(1).lowConfidence, true, 'main-thread config reached the worker');
+    assert.equal(flagged.get(1).lowConfidence, true, 'parent config reached the child');
 
     // And restoring it must flow through too — not a one-way latch.
     config.ocr.lowConfidenceThreshold = 0;
     const unflagged = await runOcrInWorker(scanned, dims);
     assert.equal(unflagged.get(1).lowConfidence, false);
   } finally {
-    config.ocr.maxPages = originalMax;
     config.ocr.lowConfidenceThreshold = originalThreshold;
   }
 });
 
-test('existing digital PDF path is unchanged and never spawns a worker', async () => {
+test('existing digital PDF path is unchanged and never spawns a child', async () => {
   const result = await extractStructured(await formattingPdf());
   assert.equal(result.ocrUsed, false);
   assert.equal(result.ocrPageCount, 0);
