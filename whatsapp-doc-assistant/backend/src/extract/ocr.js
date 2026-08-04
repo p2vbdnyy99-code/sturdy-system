@@ -61,14 +61,18 @@ async function ocrImage(worker, imagePng, pageNum, scale) {
  * @param {Array<{page:number, width:number, height:number}>} pageDims Page
  *        dimensions in PDF points (from extractSpans), so OCR'd spans line up
  *        with any digital pages in the same document.
+ * @param {object} [ocrConfig] Resolved OCR settings. Passed explicitly because
+ *        this runs in a worker thread, which loads its OWN module instances —
+ *        a `config` object mutated in the main thread would not be visible
+ *        here, so the caller sends its effective config across the boundary.
  * @returns {Promise<Map<number, {spans: Array, avgConfidence: number, lowConfidence: boolean}>>}
  */
-export async function ocrPages(buffer, pageDims) {
-  const pageNumbers = pageDims.map((p) => p.page).slice(0, config.ocr.maxPages);
+export async function ocrPages(buffer, pageDims, ocrConfig = config.ocr) {
+  const pageNumbers = pageDims.map((p) => p.page).slice(0, ocrConfig.maxPages);
   if (!pageNumbers.length) return new Map();
 
   const { createWorker } = await import('tesseract.js');
-  const rasters = await rasterizePages(buffer, pageNumbers, config.ocr.dpi);
+  const rasters = await rasterizePages(buffer, pageNumbers, ocrConfig.dpi);
 
   const worker = await createWorker('eng');
   const results = new Map();
@@ -78,7 +82,7 @@ export async function ocrPages(buffer, pageDims) {
       if (!raster) continue;
       try {
         const { spans, avgConfidence } = await ocrImage(worker, raster.png, pageNum, raster.scale);
-        const lowConfidence = avgConfidence < config.ocr.lowConfidenceThreshold;
+        const lowConfidence = avgConfidence < ocrConfig.lowConfidenceThreshold;
         if (lowConfidence) {
           log.warn(`OCR page ${pageNum}: low confidence (${avgConfidence}) — flagging for the caller`);
         }

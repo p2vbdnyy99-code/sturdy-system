@@ -7,11 +7,16 @@
 // all-or-nothing. OCR (ocr.js) produces spans in the exact same shape as the
 // digital text layer, so headings/lists/tables/columns/DOCX/XLSX all work on
 // OCR'd pages unmodified. OCR itself makes no AI-provider calls.
+//
+// OCR runs in an isolated worker thread (ocr-runner.js) that the main process
+// can forcibly terminate; the digital path below stays in the main process.
+// That split is deliberate — only the OCR path has been observed to stall the
+// event loop hard enough to kill the service.
 
 import { config } from './config.js';
 import { log } from './logger.js';
 import { extractSpans, spansToText } from './extract/spans.js';
-import { ocrPages } from './extract/ocr.js';
+import { runOcrInWorker } from './extract/ocr-runner.js';
 
 // Cap text-layer extraction so a many-page / "page-bomb" PDF can't pin the CPU.
 // Configurable via MAX_PDF_PAGES (see config.js); default 300.
@@ -66,7 +71,11 @@ export async function extractStructured(buffer) {
 
   let ocrResults;
   try {
-    ocrResults = await ocrPages(buffer, scannedPages);
+    // Isolated + terminable: a hung decode/recognize is killed, not waited on.
+    ocrResults = await runOcrInWorker(
+      buffer,
+      scannedPages.map((p) => ({ page: p.page, width: p.width, height: p.height })),
+    );
   } catch (err) {
     log.warn('OCR failed, falling back to the digital text layer:', err.message);
     return {

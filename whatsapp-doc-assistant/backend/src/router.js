@@ -42,6 +42,11 @@ export function withTimeout(promise, ms, label) {
   return Promise.race([promise, guard]).finally(() => clearTimeout(timer));
 }
 
+// Extra headroom for the outer extraction guard, on top of the OCR budget the
+// worker thread enforces internally. Covers the digital-extraction work that
+// runs before OCR starts, so the inner (terminating) timeout fires first.
+const EXTRACTION_TIMEOUT_MARGIN_MS = 30_000;
+
 /** Map any thrown error to the safe, generic message the user sees. Known AI
  *  errors get their specific (still safe) message; everything else — including
  *  an extraction/OCR timeout — gets the generic fallback. Never leaks raw SDK
@@ -149,8 +154,17 @@ async function handleDocument(from, doc, name) {
   }
   log.info(`Received ${filename} (${mimeType}, ${buffer.length} bytes) from ${from}`);
 
+  // Two layers, deliberately staggered. The INNER one (ocr-runner.js) owns the
+  // OCR budget and actually terminates the worker thread; this OUTER one is a
+  // last-resort net for the non-OCR (digital) work that still runs on this
+  // thread. It gets a margin so it can't fire first and reject while leaving
+  // the worker orphaned — the terminating timeout must always win.
   const { text, spanPages, pageCount, ocrUsed, ocrUnavailable, lowConfidencePages } =
-    await withTimeout(extractStructured(buffer), config.ocr.timeoutMs, 'PDF extraction/OCR');
+    await withTimeout(
+      extractStructured(buffer),
+      config.ocr.timeoutMs + EXTRACTION_TIMEOUT_MARGIN_MS,
+      'PDF extraction/OCR',
+    );
 
   if (!text || text.trim().length < 10) {
     if (ocrUnavailable) {
