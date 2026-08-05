@@ -29,10 +29,10 @@ export function getSession(userId) {
  *  spanPages carries the structured geometry the Word/Excel converters need;
  *  it MUST be persisted — dropping it silently forces every conversion down the
  *  flat-text fallback (that regression is what test/sessions.test.js guards). */
-export function setDocument(userId, { text, filename, filePath, spanPages, ocrUsed }) {
+export function setDocument(userId, { text, filename, filePath, spanPages, ocrUsed, layout }) {
   sessions.set(userId, {
     userId,
-    doc: { text, filename, filePath, spanPages, ocrUsed },
+    doc: { text, filename, filePath, spanPages, ocrUsed, layout },
     history: [],
     pending: null,
     updatedAt: Date.now(),

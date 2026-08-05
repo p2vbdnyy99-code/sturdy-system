@@ -16,6 +16,7 @@ import { extractStructured } from './pdf.js';
 import { buildDocModel } from './docmodel.js';
 import { buildDocx, textToDocx } from './docx.js';
 import { detectTablesAcrossPages, TABLE_CONFIDENCE_MIN } from './extract/tables.js';
+import { assessLayout } from './extract/complexity.js';
 import { buildXlsx } from './xlsx.js';
 import {
   getSession,
@@ -180,10 +181,24 @@ async function handleDocument(from, doc, name) {
     );
   }
 
+  // Assess layout complexity once, up front (deterministic geometry, no AI,
+  // no stored content) so conversions can warn honestly on layouts the
+  // converter can't reconstruct faithfully instead of shipping confident
+  // nonsense. See extract/complexity.js.
+  const layout = assessLayout(spanPages);
+
   // Keep the extracted text + structured spans in memory for follow-up actions
   // (DOCX/XLSX conversion). We do NOT persist the original document to disk — it
   // is the user's private content and nothing reads the raw bytes back.
-  setDocument(from, { text, filename, spanPages, ocrUsed });
+  setDocument(from, { text, filename, spanPages, ocrUsed, layout });
+
+  // Content-free usage metric: whether real users hit complex layouts, and how
+  // often, is exactly the signal that decides if a region-first layout engine
+  // is worth building later. Logs counts only — never document text.
+  log.info(
+    `metric ingest pages=${pageCount} columns=${layout.columnCount} ` +
+      `complex=${layout.complex} crossCol=${layout.crossColumnRatio} ocr=${ocrUsed}`,
+  );
 
   const badges = [];
   badges.push(`${pageCount} page${pageCount === 1 ? '' : 's'}`);
@@ -321,11 +336,20 @@ async function runAction(from, action, opts) {
         'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
         `${title}.docx`,
       );
-      return wa.sendDocument(from, {
-        mediaId,
-        filename: `${title}.docx`,
-        caption: '✅ Here is your editable Word version.',
-      });
+      log.info(
+        `metric convert action=word complex=${Boolean(doc.layout?.complex)} ` +
+          `columns=${doc.layout?.columnCount ?? '?'}`,
+      );
+      // Honest warning for layouts we can't reconstruct faithfully (3+ column
+      // designer templates): the styling comes through but reading order may
+      // scramble, so tell the user rather than let them discover it.
+      const caption = doc.layout?.complex
+        ? '✅ Here is your editable Word version.\n\n' +
+          '⚠️ This PDF uses a complex multi-column layout, so the *reading order* ' +
+          'of the text may not be perfectly preserved. The original PDF remains ' +
+          'the authoritative version.'
+        : '✅ Here is your editable Word version.';
+      return wa.sendDocument(from, { mediaId, filename: `${title}.docx`, caption });
     }
 
     default:
