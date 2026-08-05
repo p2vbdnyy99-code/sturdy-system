@@ -25,11 +25,14 @@ export function getSession(userId) {
   return s;
 }
 
-/** Store (or replace) the user's active document and reset conversation state. */
-export function setDocument(userId, { text, filename, filePath, ocrUsed }) {
+/** Store (or replace) the user's active document and reset conversation state.
+ *  spanPages carries the structured geometry the Word/Excel converters need;
+ *  it MUST be persisted — dropping it silently forces every conversion down the
+ *  flat-text fallback (that regression is what test/sessions.test.js guards). */
+export function setDocument(userId, { text, filename, filePath, spanPages, ocrUsed }) {
   sessions.set(userId, {
     userId,
-    doc: { text, filename, filePath, ocrUsed },
+    doc: { text, filename, filePath, spanPages, ocrUsed },
     history: [],
     pending: null,
     updatedAt: Date.now(),
