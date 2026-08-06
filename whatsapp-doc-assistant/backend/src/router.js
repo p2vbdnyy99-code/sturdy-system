@@ -119,6 +119,9 @@ export async function handleMessage(message, contact) {
     // Diagnostic enough to spot e.g. an OCR timeout in logs (err.message says
     // so — see the withTimeout label below) — never the document's own text.
     log.error('handleMessage failed:', err);
+    // Content-free failure metric: error CLASS only (never the message, which
+    // could echo content), so beta can measure a failure rate and rough kind.
+    log.info(`metric error kind=${err?.name || 'Error'} type=${message?.type || 'unknown'}`);
     await wa.sendText(from, friendlyErrorMessage(err)).catch(() => {});
   }
 }
@@ -277,6 +280,11 @@ async function runAction(from, action, opts) {
   }
   const { doc } = session;
 
+  // Content-free usage metric: which action was requested. Answers the beta
+  // question "what do people actually do with a document" (the conversion mix)
+  // without logging any document content.
+  log.info(`metric action=${action}`);
+
   switch (action) {
     case 'menu':
       return sendMenu(from);
@@ -369,6 +377,7 @@ async function convertToExcel(from, doc) {
     'expected a table, it may be an image/scan — OCR tables are coming soon.';
 
   if (!doc.spanPages || !doc.spanPages.length) {
+    log.info('metric convert action=excel tables=0 outcome=no-spans');
     return wa.sendText(from, NO_TABLE);
   }
 
@@ -377,8 +386,10 @@ async function convertToExcel(from, doc) {
     .slice(0, config.server.maxTables);
 
   if (!tables.length) {
+    log.info('metric convert action=excel tables=0 outcome=no-table');
     return wa.sendText(from, NO_TABLE);
   }
+  log.info(`metric convert action=excel tables=${tables.length} outcome=ok`);
 
   const title = stripExt(doc.filename);
   const xlsxBuffer = await withTimeout(
