@@ -15,7 +15,8 @@
 
 import { config } from './config.js';
 import { log } from './logger.js';
-import { extractSpans, spansToText } from './extract/spans.js';
+import { spansToText } from './extract/spans.js';
+import { runExtractInWorker } from './extract/extract-runner.js';
 import { runOcrInWorker } from './extract/ocr-runner.js';
 
 // Cap text-layer extraction so a many-page / "page-bomb" PDF can't pin the CPU.
@@ -43,7 +44,11 @@ function denseCharsOnPage(page) {
 export async function extractStructured(buffer) {
   let result;
   try {
-    result = await extractSpans(buffer, { maxPages: MAX_PDF_PAGES });
+    // Isolated + heap-capped + killable: the span extractor decodes every
+    // page's embedded images, which can OOM on a large image-heavy digital
+    // PDF. Running it in a child process means such a blow-up dies there (a
+    // reportable error) instead of SIGKILLing the whole server.
+    result = await runExtractInWorker(buffer, { maxPages: MAX_PDF_PAGES });
   } catch (err) {
     throw new Error(`Could not read PDF: ${err.message}`);
   }

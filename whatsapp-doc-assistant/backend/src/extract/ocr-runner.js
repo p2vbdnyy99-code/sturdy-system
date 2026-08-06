@@ -26,10 +26,9 @@
 // how to turn into a friendly message. The main process must survive whatever
 // happens in the child — that is the actual objective here.
 
-import { fork } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { config } from '../config.js';
-import { log } from '../logger.js';
+import { superviseChild } from './worker-supervisor.js';
 
 const WORKER_PATH = fileURLToPath(new URL('./ocr-worker.js', import.meta.url));
 
@@ -61,80 +60,19 @@ export function runOcrInWorker(
   pageDims,
   { timeoutMs = config.ocr.timeoutMs, maxHeapMb = config.ocr.maxHeapMb } = {},
 ) {
-  return new Promise((resolve, reject) => {
-    let child;
-    try {
-      child = fork(WORKER_PATH, [], {
-        // 'advanced' keeps structured-clone semantics over IPC, so Buffers and
-        // Maps survive intact. Default JSON serialization would balloon the
-        // PDF into an array of numbers — the opposite of what we need here.
-        serialization: 'advanced',
-        execArgv: [`--max-old-space-size=${maxHeapMb}`],
-        // Inherit stdio so the child's logs (and any V8 fatal error) show up
-        // in the server's own log stream.
-        stdio: ['ignore', 'inherit', 'inherit', 'ipc'],
-      });
-    } catch (err) {
-      reject(new OcrWorkerError(err?.message || String(err)));
-      return;
-    }
-
-    let settled = false;
-    const finish = (fn, value) => {
-      if (settled) return;
-      settled = true;
-      clearTimeout(timer);
-      // Detach handlers so the kill below can't re-settle via 'exit'.
-      child.removeAllListeners();
-      // SIGKILL, not SIGTERM: a child stuck in a synchronous decode loop never
-      // reaches its signal handlers, so only an uncatchable signal stops it.
-      try {
-        child.kill('SIGKILL');
-      } catch {
-        /* already gone */
-      }
-      fn(value);
-    };
-
-    const timer = setTimeout(() => {
-      log.warn(`OCR exceeded ${timeoutMs}ms — killing the OCR child process`);
-      finish(reject, new OcrTimeoutError(timeoutMs));
-    }, timeoutMs);
-    timer.unref?.();
-
-    child.on('message', (msg) => {
-      if (msg?.ok) {
-        if (!(msg.results instanceof Map)) {
-          finish(reject, new OcrWorkerError('worker returned a malformed result'));
-          return;
-        }
-        finish(resolve, msg.results);
-      } else {
-        finish(reject, new OcrWorkerError(msg?.error || 'unknown worker error'));
-      }
-    });
-
-    // Failed to spawn, or the IPC channel broke.
-    child.on('error', (err) => {
-      finish(reject, new OcrWorkerError(err?.message || String(err)));
-    });
-
-    // Exited without a result — heap limit hit, kernel OOM-kill, or a crash.
-    // This is the path that used to take the whole server down silently.
-    child.on('exit', (code, signal) => {
-      finish(
-        reject,
-        new OcrWorkerError(
-          `child process exited unexpectedly (code ${code}, signal ${signal || 'none'})`,
-        ),
-      );
-    });
-
-    // fork() has no workerData; hand the job over once the child is up.
-    try {
-      child.send({ buffer, pageDims, ocrConfig: { ...config.ocr } });
-    } catch (err) {
-      finish(reject, new OcrWorkerError(`could not send job to child: ${err?.message || err}`));
-    }
-  });
+  return superviseChild(
+    WORKER_PATH,
+    { buffer, pageDims, ocrConfig: { ...config.ocr } },
+    {
+      timeoutMs,
+      maxHeapMb,
+      label: 'OCR',
+      timeoutError: (ms) => new OcrTimeoutError(ms),
+      workerError: (msg) => new OcrWorkerError(msg),
+      parse: (msg) => {
+        if (!(msg.results instanceof Map)) throw new Error('worker returned a malformed result');
+        return msg.results;
+      },
+    },
+  );
 }

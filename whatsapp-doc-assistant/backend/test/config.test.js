@@ -1,7 +1,7 @@
 // Configuration tests — provider selection and validation.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { buildAiConfig, selectedApiKey, selectedKeyName } from '../src/config.js';
+import { buildAiConfig, selectedApiKey, selectedKeyName, buildExtractConfig } from '../src/config.js';
 
 test('AI_PROVIDER=openai resolves the OpenAI provider + default model', () => {
   const ai = buildAiConfig({ AI_PROVIDER: 'openai', OPENAI_API_KEY: 'sk-openai' });
@@ -45,4 +45,19 @@ test('missing selected provider key does not throw here (key is empty, warned la
   // The other provider's key must not be required for the selected provider.
   const ai2 = buildAiConfig({ AI_PROVIDER: 'openai', ANTHROPIC_API_KEY: 'sk-ant' });
   assert.equal(selectedApiKey(ai2), '');
+});
+
+test('buildExtractConfig: defaults and overrides for the isolated extraction child', () => {
+  const d = buildExtractConfig({});
+  assert.equal(d.timeoutMs, 120_000);
+  assert.equal(d.maxHeapMb, 256);
+
+  const o = buildExtractConfig({ EXTRACT_TIMEOUT_MS: '30000', EXTRACT_MAX_HEAP_MB: '128' });
+  assert.equal(o.timeoutMs, 30_000);
+  assert.equal(o.maxHeapMb, 128);
+
+  // Defensive flooring, matching the rest of config.js's numeric parsing.
+  assert.equal(buildExtractConfig({ EXTRACT_TIMEOUT_MS: '10' }).timeoutMs, 1000);
+  assert.equal(buildExtractConfig({ EXTRACT_MAX_HEAP_MB: '8' }).maxHeapMb, 64);
+  assert.equal(buildExtractConfig({ EXTRACT_TIMEOUT_MS: 'nope' }).timeoutMs, 120_000);
 });

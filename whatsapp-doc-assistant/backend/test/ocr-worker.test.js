@@ -266,7 +266,10 @@ test('OCR config crosses the process boundary (a child does not silently use its
   }
 });
 
-test('existing digital PDF path is unchanged and never spawns a child', async () => {
+test('a digital PDF never spawns an OCR child (extraction is isolated separately)', async () => {
+  // The digital path now runs in its own extraction child (see
+  // extract-worker.test.js), but it must never invoke OCR — no scanned pages,
+  // no OCR result, no OCR-tagged spans.
   const result = await extractStructured(await formattingPdf());
   assert.equal(result.ocrUsed, false);
   assert.equal(result.ocrPageCount, 0);

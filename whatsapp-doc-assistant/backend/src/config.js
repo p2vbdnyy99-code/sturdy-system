@@ -100,6 +100,28 @@ export function buildOcrConfig(env = {}) {
   };
 }
 
+/**
+ * Build the digital-extraction isolation config. The span extractor decodes
+ * every page's embedded images (getOperatorList), which can OOM the server on
+ * a large image-heavy DIGITAL PDF — the same failure class OCR had, but on the
+ * path OCR isolation never covered. It runs in its own killable, heap-capped
+ * child process; these are its bounds. Kept pure/testable like buildOcrConfig.
+ *
+ * Env:
+ *   EXTRACT_TIMEOUT_MS   wall-clock cap on one extraction (default: 120000).
+ *                        Digital parsing is faster than OCR, so its budget is
+ *                        smaller than OCR_TIMEOUT_MS.
+ *   EXTRACT_MAX_HEAP_MB  V8 old-space cap for the extraction child (default:
+ *                        256) — a runaway decode dies in the child, not the
+ *                        server.
+ */
+export function buildExtractConfig(env = {}) {
+  return {
+    timeoutMs: Math.max(1000, Number(env.EXTRACT_TIMEOUT_MS) || 120_000),
+    maxHeapMb: Math.max(64, Number(env.EXTRACT_MAX_HEAP_MB) || 256),
+  };
+}
+
 /** The API key for whichever provider is currently selected (may be empty). */
 export function selectedApiKey(ai) {
   return ai.provider === 'openai' ? ai.openaiKey : ai.anthropicKey;
@@ -135,6 +157,7 @@ export const config = {
     rateLimitPerMin: Math.max(1, Number(RATE_LIMIT_PER_MIN) || 20),
   },
   ocr: buildOcrConfig(process.env),
+  extract: buildExtractConfig(process.env),
 };
 
 /** Warn (but don't crash) about configuration that will break requests. */
