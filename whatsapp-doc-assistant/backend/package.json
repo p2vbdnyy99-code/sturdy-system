@@ -21,7 +21,7 @@
     "exceljs": "^4.4.0",
     "express": "^5.1.0",
     "openai": "^7.3.0",
-    "pdfjs-dist": "^6.1.200",
+    "pdfjs-dist": "^6.2.108",
     "tesseract.js": "^5.1.1"
   },
   "devDependencies": {
