@@ -10,7 +10,7 @@
 import path from 'node:path';
 import * as wa from './whatsapp.js';
 import * as ai from './ai/index.js';
-import { config } from './config.js';
+import { config, hashSender } from './config.js';
 import { log } from './logger.js';
 import { extractStructured } from './pdf.js';
 import { buildDocModel } from './docmodel.js';
@@ -47,6 +47,14 @@ export function withTimeout(promise, ms, label) {
 // worker thread enforces internally. Covers the digital-extraction work that
 // runs before OCR starts, so the inner (terminating) timeout fires first.
 const EXTRACTION_TIMEOUT_MARGIN_MS = 30_000;
+
+/** Pseudonymous ` user=<hash>` suffix for a metric line, or '' when no salt is
+ *  configured. Lets distinct users be counted in logs without ever recording
+ *  the phone number. */
+function userTag(from) {
+  const h = hashSender(from);
+  return h ? ` user=${h}` : '';
+}
 
 /** Map any thrown error to the safe, generic message the user sees. Known AI
  *  errors get their specific (still safe) message; everything else — including
@@ -163,12 +171,14 @@ async function handleDocument(from, doc, name) {
   // last-resort net for the non-OCR (digital) work that still runs on this
   // thread. It gets a margin so it can't fire first and reject while leaving
   // the worker orphaned — the terminating timeout must always win.
+  const ingestStart = Date.now();
   const { text, spanPages, pageCount, ocrUsed, ocrUnavailable, lowConfidencePages } =
     await withTimeout(
       extractStructured(buffer),
       config.ocr.timeoutMs + EXTRACTION_TIMEOUT_MARGIN_MS,
       'PDF extraction/OCR',
     );
+  const ingestMs = Date.now() - ingestStart;
 
   if (!text || text.trim().length < 10) {
     if (ocrUnavailable) {
@@ -195,12 +205,14 @@ async function handleDocument(from, doc, name) {
   // is the user's private content and nothing reads the raw bytes back.
   setDocument(from, { text, filename, spanPages, ocrUsed, layout });
 
-  // Content-free usage metric: whether real users hit complex layouts, and how
-  // often, is exactly the signal that decides if a region-first layout engine
-  // is worth building later. Logs counts only — never document text.
+  // Content-free usage metric: whether real users hit complex layouts, how
+  // often, how big their files are, and how long processing takes — the signals
+  // that drive the beta economics/Engine-B decision. Counts and a pseudonymous
+  // user tag only (see hashSender) — never document text or the phone number.
   log.info(
-    `metric ingest pages=${pageCount} columns=${layout.columnCount} ` +
-      `complex=${layout.complex} crossCol=${layout.crossColumnRatio} ocr=${ocrUsed}`,
+    `metric ingest pages=${pageCount} bytes=${buffer.length} ms=${ingestMs} ` +
+      `columns=${layout.columnCount} complex=${layout.complex} ` +
+      `crossCol=${layout.crossColumnRatio} ocr=${ocrUsed}${userTag(from)}`,
   );
 
   const badges = [];
@@ -283,7 +295,7 @@ async function runAction(from, action, opts) {
   // Content-free usage metric: which action was requested. Answers the beta
   // question "what do people actually do with a document" (the conversion mix)
   // without logging any document content.
-  log.info(`metric action=${action}`);
+  log.info(`metric action=${action}${userTag(from)}`);
 
   switch (action) {
     case 'menu':
@@ -332,6 +344,7 @@ async function runAction(from, action, opts) {
       const title = stripExt(doc.filename);
       // Structured DOCX from spans; if spans are unavailable (e.g. OCR-only
       // scans), fall back to the plain-text builder.
+      const wordStart = Date.now();
       const docxBuffer = await withTimeout(
         doc.spanPages && doc.spanPages.length
           ? buildDocx(buildDocModel(doc.spanPages), { title })
@@ -345,8 +358,8 @@ async function runAction(from, action, opts) {
         `${title}.docx`,
       );
       log.info(
-        `metric convert action=word complex=${Boolean(doc.layout?.complex)} ` +
-          `columns=${doc.layout?.columnCount ?? '?'}`,
+        `metric convert action=word ms=${Date.now() - wordStart} ` +
+          `complex=${Boolean(doc.layout?.complex)} columns=${doc.layout?.columnCount ?? '?'}`,
       );
       // Honest warning for layouts we can't reconstruct faithfully (3+ column
       // designer templates): the styling comes through but reading order may
@@ -370,6 +383,7 @@ async function runAction(from, action, opts) {
 // fabricated grid when no table clears the confidence threshold.
 async function convertToExcel(from, doc) {
   await wa.sendText(from, '📊 Looking for tables…');
+  const start = Date.now();
 
   const NO_TABLE =
     "I couldn't reliably detect a table in this PDF, so I didn't create a " +
@@ -377,7 +391,7 @@ async function convertToExcel(from, doc) {
     'expected a table, it may be an image/scan — OCR tables are coming soon.';
 
   if (!doc.spanPages || !doc.spanPages.length) {
-    log.info('metric convert action=excel tables=0 outcome=no-spans');
+    log.info(`metric convert action=excel tables=0 outcome=no-spans ms=${Date.now() - start}`);
     return wa.sendText(from, NO_TABLE);
   }
 
@@ -386,10 +400,9 @@ async function convertToExcel(from, doc) {
     .slice(0, config.server.maxTables);
 
   if (!tables.length) {
-    log.info('metric convert action=excel tables=0 outcome=no-table');
+    log.info(`metric convert action=excel tables=0 outcome=no-table ms=${Date.now() - start}`);
     return wa.sendText(from, NO_TABLE);
   }
-  log.info(`metric convert action=excel tables=${tables.length} outcome=ok`);
 
   const title = stripExt(doc.filename);
   const xlsxBuffer = await withTimeout(
@@ -397,6 +410,7 @@ async function convertToExcel(from, doc) {
     config.server.conversionTimeoutMs,
     'Excel conversion',
   );
+  log.info(`metric convert action=excel tables=${tables.length} outcome=ok ms=${Date.now() - start}`);
   const mediaId = await wa.uploadMedia(
     xlsxBuffer,
     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',

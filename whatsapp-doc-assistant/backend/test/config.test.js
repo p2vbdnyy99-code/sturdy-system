@@ -61,3 +61,22 @@ test('buildExtractConfig: defaults and overrides for the isolated extraction chi
   assert.equal(buildExtractConfig({ EXTRACT_MAX_HEAP_MB: '8' }).maxHeapMb, 64);
   assert.equal(buildExtractConfig({ EXTRACT_TIMEOUT_MS: 'nope' }).timeoutMs, 120_000);
 });
+
+test('buildMetricsConfig + hashSender: user counting is opt-in and privacy-safe', async () => {
+  const { buildMetricsConfig, hashSender } = await import('../src/config.js');
+
+  // No salt -> disabled: the phone number is never logged.
+  assert.equal(buildMetricsConfig({}).hashSalt, '');
+  assert.equal(hashSender('+15551234567', ''), '', 'no salt yields no tag');
+
+  // With a salt -> a short, stable, pseudonymous tag (not the number itself).
+  const salt = 'a-real-secret-salt';
+  const tag = hashSender('+15551234567', salt);
+  assert.match(tag, /^[0-9a-f]{12}$/, 'short hex hash');
+  assert.notEqual(tag, '+15551234567');
+  assert.equal(hashSender('+15551234567', salt), tag, 'stable for the same sender');
+  assert.notEqual(hashSender('+15559999999', salt), tag, 'differs across senders');
+
+  // Different salts produce different hashes (so it isn't a fixed rainbow target).
+  assert.notEqual(hashSender('+15551234567', 'other-salt'), tag);
+});

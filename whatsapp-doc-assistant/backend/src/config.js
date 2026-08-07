@@ -6,6 +6,7 @@
 
 import 'dotenv/config';
 import path from 'node:path';
+import crypto from 'node:crypto';
 
 const {
   WHATSAPP_TOKEN = '',
@@ -122,6 +123,31 @@ export function buildExtractConfig(env = {}) {
   };
 }
 
+/**
+ * Metrics config. The only knob is an OPTIONAL salt for pseudonymous
+ * per-user counting. We never log the phone number; with a salt set we log a
+ * short HMAC of it instead, so distinct users can be counted without storing
+ * or exposing any real identifier. No salt → no user tag at all (safe default).
+ *
+ * Env:
+ *   METRICS_HASH_SALT  secret salt enabling the user counter. MUST be a real
+ *                      secret — the phone-number space is small enough that an
+ *                      unsalted or guessable-salt hash could be reversed.
+ */
+export function buildMetricsConfig(env = {}) {
+  return { hashSalt: String(env.METRICS_HASH_SALT || '') };
+}
+
+/**
+ * A short, pseudonymous tag for a sender — for counting distinct users in logs
+ * without ever recording the phone number. Returns '' when no salt is
+ * configured, so the phone number is never logged by default. Pure/testable.
+ */
+export function hashSender(from, salt = config.metrics.hashSalt) {
+  if (!salt || !from) return '';
+  return crypto.createHmac('sha256', salt).update(String(from)).digest('hex').slice(0, 12);
+}
+
 /** The API key for whichever provider is currently selected (may be empty). */
 export function selectedApiKey(ai) {
   return ai.provider === 'openai' ? ai.openaiKey : ai.anthropicKey;
@@ -158,6 +184,7 @@ export const config = {
   },
   ocr: buildOcrConfig(process.env),
   extract: buildExtractConfig(process.env),
+  metrics: buildMetricsConfig(process.env),
 };
 
 /** Warn (but don't crash) about configuration that will break requests. */
