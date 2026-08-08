@@ -91,6 +91,21 @@ grep -o "user=[0-9a-f]*" | sort -u | wc -l # distinct users (needs METRICS_HASH_
 
 Fields: `metric ingest pages= bytes= ms= columns= complex= crossCol= ocr= [user=]`.
 
+**One-screen digest.** Instead of grepping, pipe a log dump through the digest —
+it prints cohort size, the complex-layout rate (the Engine-B signal), OCR rate,
+action mix, conversion outcomes, and errors:
+
+```
+# From a file downloaded via Render → Logs → ⋯ → Download:
+npm run digest -- render.log
+
+# Or straight off a paste / live source:
+cat render.log | npm run digest
+```
+
+Number setup and the SMB-vs-Cloud-API trap (new-number onboarding, stale
+Phone Number IDs, the send-error cheat sheet) live in **`WHATSAPP_SETUP.md`**.
+
 ## Reliability status (what's already hardened)
 
 - OCR and digital extraction both run in **isolated, heap-capped, killable

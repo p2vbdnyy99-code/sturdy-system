@@ -8,7 +8,8 @@
     "start": "node server.js",
     "dev": "node --watch server.js",
     "test": "node --test \"test/*.test.js\"",
-    "benchmark": "node test/benchmark.mjs"
+    "benchmark": "node test/benchmark.mjs",
+    "digest": "node scripts/digest.mjs"
   },
   "engines": {
     "node": ">=20"
