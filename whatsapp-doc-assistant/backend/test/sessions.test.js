@@ -46,3 +46,12 @@ test('other document fields still round-trip (no field was displaced by the fix)
   assert.equal(doc.filename, 'f.pdf');
   assert.equal(doc.ocrUsed, true);
 });
+
+test('firstTouch returns true only on a sender\'s first message', async () => {
+  const { firstTouch } = await import('../src/sessions.js');
+  const u = 'sender-first-touch-1';
+  assert.equal(firstTouch(u), true, 'first time -> welcome fires');
+  assert.equal(firstTouch(u), false, 'second time -> no welcome');
+  assert.equal(firstTouch(u), false, 'still no welcome');
+  assert.equal(firstTouch('a-different-sender'), true, 'a new sender is welcomed');
+});

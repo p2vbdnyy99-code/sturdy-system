@@ -24,6 +24,7 @@ import {
   addQa,
   setPending,
   clearPending,
+  firstTouch,
 } from './sessions.js';
 
 // Bound any single conversion/extraction in wall-clock time so a pathological
@@ -91,6 +92,30 @@ const GREETING =
   'Send me a *PDF* and I can summarize it, answer questions about it, run OCR ' +
   'on scans, convert it to Word, extract tables, translate it, and more.';
 
+// Branded onboarding, sent once on a new user's very first message.
+const WELCOME =
+  '👋 Welcome to *Papyr* — documents, on WhatsApp!\n\n' +
+  'Send me a *PDF* and I can:\n' +
+  '📝 Summarize it\n' +
+  '💬 Answer questions about it\n' +
+  '📄 Convert it to Word\n' +
+  '📊 Extract tables to Excel\n' +
+  '🌐 Translate it\n' +
+  '🔍 Read scanned pages (OCR)\n\n' +
+  'Just send a PDF to begin — it’s free while in beta. 🚀';
+
+const GREETING_RE = /^(hi|hello|hey|start|menu|help|hii+|yo|hola)\b/i;
+
+/** Best-effort usage ping to the owner's own number, if configured. WhatsApp
+ *  only delivers business-initiated messages inside a 24h window, so this is
+ *  fire-and-forget — never blocks or fails the user's request. Skips pinging
+ *  the owner about the owner's own testing. */
+function notifyOwner(text, fromUser) {
+  const owner = config.whatsapp.ownerNumber;
+  if (!owner || owner === fromUser) return;
+  wa.sendText(owner, text).catch(() => {});
+}
+
 // ─── Public entrypoint ───────────────────────────────────────────────────────
 
 /**
@@ -103,14 +128,27 @@ export async function handleMessage(message, contact) {
   const name = contact?.profile?.name;
   wa.markRead(message.id);
 
+  // First-ever contact from this sender → branded welcome + owner ping.
+  const isNew = firstTouch(from);
+  if (isNew) {
+    await wa.sendText(from, WELCOME).catch(() => {});
+    log.info('metric event=new_user');
+    notifyOwner('🎉 A new person just started using Papyr.', from);
+  }
+
   try {
     switch (message.type) {
       case 'document':
         return await handleDocument(from, message.document, name);
       case 'interactive':
         return await handleInteractive(from, message.interactive);
-      case 'text':
-        return await handleText(from, message.text?.body || '');
+      case 'text': {
+        // A brand-new user who just said "hi" already got the welcome above;
+        // don't immediately follow it with the near-identical greeting.
+        const body = message.text?.body || '';
+        if (isNew && !getSession(from) && GREETING_RE.test(body.trim())) return undefined;
+        return await handleText(from, body);
+      }
       case 'image':
       case 'audio':
       case 'video':
@@ -213,6 +251,13 @@ async function handleDocument(from, doc, name) {
     `metric ingest pages=${pageCount} bytes=${buffer.length} ms=${ingestMs} ` +
       `columns=${layout.columnCount} complex=${layout.complex} ` +
       `crossCol=${layout.crossColumnRatio} ocr=${ocrUsed}${userTag(from)}`,
+  );
+
+  // Usage ping to the owner (no filename/content — could be personal).
+  notifyOwner(
+    `📥 Papyr: a ${pageCount}-page ${ocrUsed ? 'scanned' : 'digital'} PDF was received` +
+      `${layout.complex ? ' (complex layout)' : ''}.`,
+    from,
   );
 
   const badges = [];

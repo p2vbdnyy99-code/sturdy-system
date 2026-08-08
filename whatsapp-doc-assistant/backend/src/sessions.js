@@ -15,6 +15,19 @@ const sessions = new Map();
 
 const TTL = config.server.sessionTtlMs;
 
+// Senders we've greeted at least once, so the branded welcome fires only on a
+// user's FIRST message. In-memory: it resets on restart, so a returning user
+// may be welcomed again after a deploy — acceptable for beta, and it keeps us
+// from persisting any user identifier to disk.
+const seenSenders = new Set();
+
+/** True the first time we see a sender (and records them). False thereafter. */
+export function firstTouch(userId) {
+  if (seenSenders.has(userId)) return false;
+  seenSenders.add(userId);
+  return true;
+}
+
 export function getSession(userId) {
   const s = sessions.get(userId);
   if (!s) return null;

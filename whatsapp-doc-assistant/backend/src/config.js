@@ -22,6 +22,7 @@ const {
   CONVERSION_TIMEOUT_MS = '45000',
   SESSION_TTL_MINUTES = '60',
   RATE_LIMIT_PER_MIN = '20',
+  OWNER_WHATSAPP = '',
 } = process.env;
 
 // ─── AI provider selection ───────────────────────────────────────────────────
@@ -166,6 +167,10 @@ export const config = {
     appSecret: WHATSAPP_APP_SECRET,
     graphVersion: GRAPH_API_VERSION,
     graphBase: `https://graph.facebook.com/${GRAPH_API_VERSION}`,
+    // Optional: your own number (international format, digits only) to receive
+    // usage pings. Best-effort — WhatsApp only delivers business-initiated
+    // messages inside a 24h window, so keep a chat open with the bot.
+    ownerNumber: String(OWNER_WHATSAPP).replace(/[^\d]/g, ''),
   },
   ai: buildAiConfig(process.env),
   server: {
