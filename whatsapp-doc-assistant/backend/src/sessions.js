@@ -28,24 +28,26 @@ export function firstTouch(userId) {
   return true;
 }
 
-// Feedback capture must work for ANY sender, even one with no active document,
-// so it can't live on the document session. Tiny TTL-bounded map: after a user
-// types "feedback", we remember to treat their NEXT message as the note.
-const feedbackWaiting = new Map(); // userId -> timestamp set
-const FEEDBACK_PENDING_TTL = 10 * 60 * 1000; // 10 min to actually type it
+// Short out-of-band prompts (feedback, pricing) must work for ANY sender, even
+// one with no active document, so they can't live on the document session. Tiny
+// TTL-bounded map: after we ask, we remember to treat the sender's NEXT message
+// as the answer to THAT prompt (the `kind`).
+const awaitingReply = new Map(); // userId -> { kind, at }
+const CAPTURE_TTL = 10 * 60 * 1000; // 10 min to actually type the reply
 
-/** Mark that we asked this sender for feedback and expect their next message. */
-export function setFeedbackPending(userId) {
-  feedbackWaiting.set(userId, Date.now());
+/** Arm a one-shot capture: the sender's next message answers `kind`
+ *  ('feedback' | 'pricing' | …). */
+export function setPendingReply(userId, kind) {
+  awaitingReply.set(userId, { kind, at: Date.now() });
 }
 
-/** True (and clears the flag) if this sender was asked for feedback and hasn't
- *  timed out; false otherwise. One-shot: capture their next message, then reset. */
-export function takeFeedbackPending(userId) {
-  const t = feedbackWaiting.get(userId);
-  if (t === undefined) return false;
-  feedbackWaiting.delete(userId);
-  return Date.now() - t <= FEEDBACK_PENDING_TTL;
+/** Return the pending capture kind for this sender (and clear it) if one is
+ *  armed and hasn't timed out; otherwise null. One-shot. */
+export function takePendingReply(userId) {
+  const e = awaitingReply.get(userId);
+  if (!e) return null;
+  awaitingReply.delete(userId);
+  return Date.now() - e.at <= CAPTURE_TTL ? e.kind : null;
 }
 
 export function getSession(userId) {
@@ -103,9 +105,9 @@ const sweep = setInterval(() => {
       removed += 1;
     }
   }
-  // Also drop feedback prompts the user never answered.
-  for (const [id, t] of feedbackWaiting) {
-    if (now - t > FEEDBACK_PENDING_TTL) feedbackWaiting.delete(id);
+  // Also drop capture prompts (feedback/pricing) the user never answered.
+  for (const [id, e] of awaitingReply) {
+    if (now - e.at > CAPTURE_TTL) awaitingReply.delete(id);
   }
   if (removed) log.debug(`Swept ${removed} expired session(s)`);
 }, 5 * 60 * 1000);

@@ -56,19 +56,23 @@ test('firstTouch returns true only on a sender\'s first message', async () => {
   assert.equal(firstTouch('a-different-sender'), true, 'a new sender is welcomed');
 });
 
-test('feedback pending is one-shot and per-sender (works without a document)', async () => {
-  const { setFeedbackPending, takeFeedbackPending } = await import('../src/sessions.js');
+test('pending reply capture is one-shot, per-sender, and carries the kind', async () => {
+  const { setPendingReply, takePendingReply } = await import('../src/sessions.js');
 
   // No prompt yet -> nothing pending.
-  assert.equal(takeFeedbackPending('fb-user-1'), false, 'nothing pending by default');
+  assert.equal(takePendingReply('cap-user-1'), null, 'nothing pending by default');
 
-  // After we prompt, the NEXT message is captured — exactly once.
-  setFeedbackPending('fb-user-1');
-  assert.equal(takeFeedbackPending('fb-user-1'), true, 'first message captured as feedback');
-  assert.equal(takeFeedbackPending('fb-user-1'), false, 'not captured twice');
+  // After we prompt, the NEXT message is captured — exactly once — and reports
+  // WHICH prompt it answers (feedback vs pricing).
+  setPendingReply('cap-user-1', 'feedback');
+  assert.equal(takePendingReply('cap-user-1'), 'feedback', 'captured as feedback');
+  assert.equal(takePendingReply('cap-user-1'), null, 'not captured twice');
 
-  // The flag is per-sender: prompting one user doesn't arm another.
-  setFeedbackPending('fb-user-2');
-  assert.equal(takeFeedbackPending('fb-user-3'), false, 'a different sender is unaffected');
-  assert.equal(takeFeedbackPending('fb-user-2'), true, 'the prompted sender is captured');
+  setPendingReply('cap-user-1', 'pricing');
+  assert.equal(takePendingReply('cap-user-1'), 'pricing', 'a later prompt can be a different kind');
+
+  // Per-sender: prompting one user doesn't arm another.
+  setPendingReply('cap-user-2', 'pricing');
+  assert.equal(takePendingReply('cap-user-3'), null, 'a different sender is unaffected');
+  assert.equal(takePendingReply('cap-user-2'), 'pricing', 'the prompted sender is captured');
 });

@@ -26,8 +26,8 @@ import {
   setPending,
   clearPending,
   firstTouch,
-  setFeedbackPending,
-  takeFeedbackPending,
+  setPendingReply,
+  takePendingReply,
 } from './sessions.js';
 
 // Bound any single conversion/extraction in wall-clock time so a pathological
@@ -135,7 +135,7 @@ const WELCOME =
   '🌐 Translate it\n' +
   '🔍 Read scanned pages (OCR)\n\n' +
   'Just send a PDF to begin — it’s free while in beta. 🚀\n\n' +
-  '💬 Got thoughts? Type *feedback* anytime to send a note to the team.';
+  '💬 Type *feedback* to send a note, or *pricing* to tell us what you’d pay.';
 
 const GREETING_RE = /^(hi|hello|hey|start|menu|help|hii+|yo|hola)\b/i;
 
@@ -174,6 +174,36 @@ async function recordFeedback(from, note) {
     from,
     '🙏 Thank you — your feedback went straight to the team and genuinely helps ' +
       'shape Papyr. Send a PDF whenever you’re ready.',
+  );
+}
+
+// A message that opens with a payment-intent word, so "pricing" (then prompt)
+// and "pay ₹100" (inline) both work. Deliberately narrow words so it doesn't
+// hijack a document question that merely mentions cost.
+const PRICING_RE = /^(pricing|plans?|subscribe|upgrade|pay)\b[\s:,.-]*/i;
+const PRICING_MAX_CHARS = 200;
+const PRICING_PROMPT =
+  '💚 Papyr is *free* during the beta.\n\n' +
+  'To help us plan ahead: if it became a paid app, what would you pay per ' +
+  'month? Reply with an amount — even a rough one — or *no*, which is just as ' +
+  'useful. 🙏';
+
+/**
+ * Capture a user's willingness-to-pay answer (open probe — a free-text amount,
+ * range, or "no"). Collected like feedback: content-free `metric event=pricing`
+ * count for the digest, a grep-able PRICING log line (reliable, tagged only with
+ * the pseudonymous user hash), and a best-effort owner ping. This is deliberate,
+ * user-volunteered signal — distinct from document text, which is never logged.
+ */
+async function recordPricing(from, answer) {
+  const text = answer.trim().slice(0, PRICING_MAX_CHARS);
+  log.info(`metric event=pricing${userTag(from)}`);
+  log.info(`PRICING${userTag(from)}: ${text.replace(/\s+/g, ' ')}`);
+  notifyOwner(`💰 Papyr willingness-to-pay:\n\n"${text}"`, from);
+  return wa.sendText(
+    from,
+    '🙏 Thank you — that really helps us decide. Papyr stays free through the ' +
+      'beta; send a PDF whenever you like.',
   );
 }
 
@@ -354,20 +384,28 @@ async function handleText(from, body) {
   const text = body.trim();
   if (!text) return;
 
-  // Feedback — available to anyone, with or without an active document, so it
-  // is handled before the document/session logic below.
-  if (takeFeedbackPending(from)) {
-    return recordFeedback(from, text);
-  }
+  // Out-of-band prompts (feedback, pricing) — available to anyone, with or
+  // without an active document, so they're handled before the document/session
+  // logic below. First: is this message the answer to one we just asked?
+  const pending = takePendingReply(from);
+  if (pending === 'feedback') return recordFeedback(from, text);
+  if (pending === 'pricing') return recordPricing(from, text);
+
   if (FEEDBACK_RE.test(text)) {
     const inline = text.replace(FEEDBACK_RE, '').trim();
     if (inline) return recordFeedback(from, inline);
-    setFeedbackPending(from);
+    setPendingReply(from, 'feedback');
     return wa.sendText(
       from,
       '💬 I’d love your feedback — what worked, what didn’t, what’s missing? ' +
         'Type it in one message and I’ll pass it to the team.',
     );
+  }
+  if (PRICING_RE.test(text)) {
+    const inline = text.replace(PRICING_RE, '').trim();
+    if (inline) return recordPricing(from, inline);
+    setPendingReply(from, 'pricing');
+    return wa.sendText(from, PRICING_PROMPT);
   }
 
   const session = getSession(from);
@@ -381,7 +419,7 @@ async function handleText(from, body) {
       from,
       'Send me a *PDF* first, then I can summarize it, answer questions, convert ' +
         'it to Word, and more.\n\n' +
-        '💬 Or type *feedback* to send a note to the team.',
+        '💬 Or type *feedback* / *pricing* anytime.',
     );
   }
 

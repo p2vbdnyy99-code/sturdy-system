@@ -60,6 +60,7 @@ const bar = (n, d, width = 24) => {
 const users = new Set(); // distinct pseudonymous user tags (needs METRICS_HASH_SALT)
 let newUsers = 0;
 let feedback = 0;
+let pricingReplies = 0;
 let capped = 0;
 let firstTs = null;
 let lastTs = null;
@@ -96,6 +97,7 @@ for (const raw of readInput().split('\n')) {
     case 'event':
       if (f.event === 'new_user') newUsers += 1;
       else if (f.event === 'feedback') feedback += 1;
+      else if (f.event === 'pricing') pricingReplies += 1;
       break;
     case 'ai_capped':
       capped += 1;
@@ -143,7 +145,8 @@ L.push(
   `    distinct users seen ... ${users.size || '—'}` +
     (users.size ? '' : '   (set METRICS_HASH_SALT to enable)'),
 );
-L.push(`    feedback notes ........ ${feedback}${feedback ? '  💬 read them: grep FEEDBACK the log' : ''}`);
+L.push(`    feedback notes ........ ${feedback}${feedback ? '   💬 grep FEEDBACK the log' : ''}`);
+L.push(`    pricing replies ....... ${pricingReplies}${pricingReplies ? '   💰 grep PRICING the log' : ''}`);
 if (capped) L.push(`    AI-cap hits ........... ${capped}   ⚠️ users hit the spend cap`);
 L.push('');
 
