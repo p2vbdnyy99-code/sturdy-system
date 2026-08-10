@@ -11,6 +11,7 @@ import path from 'node:path';
 import * as wa from './whatsapp.js';
 import * as ai from './ai/index.js';
 import { config, hashSender } from './config.js';
+import { consumeAiCall } from './budget.js';
 import { log } from './logger.js';
 import { extractStructured } from './pdf.js';
 import { buildDocModel } from './docmodel.js';
@@ -55,6 +56,35 @@ const EXTRACTION_TIMEOUT_MARGIN_MS = 30_000;
 function userTag(from) {
   const h = hashSender(from);
   return h ? ` user=${h}` : '';
+}
+
+// What the user sees when the beta AI cap is reached. Honest about the pause,
+// and steers them to the features that still work (Word/Excel/OCR use no AI, so
+// they're never capped) rather than dead-ending. Keyed by which cap tripped.
+const AI_CAP_MESSAGE = {
+  user:
+    "⚡ You've reached today's limit for AI answers (summary, Q&A, translate, " +
+    "explain) during the beta — it resets tomorrow.\n\n" +
+    'Converting to Word 📄 and Excel 📊 still works right now, with no limit.',
+  day:
+    "⚡ Papyr's AI features are paused for today — the beta usage cap was reached. " +
+    "They're back tomorrow.\n\n" +
+    'Word 📄 and Excel 📊 conversions still work now (no limit).',
+  month:
+    "⚡ Papyr's AI features are paused — the beta's monthly cap was reached.\n\n" +
+    'Word 📄 and Excel 📊 conversions still work now (no limit).',
+};
+
+/** Gate a paid AI call behind the beta budget (budget.js). Returns true if the
+ *  caller may proceed (one call is consumed); false if a cap is hit — in which
+ *  case the user has ALREADY been told and the caller must simply return. Free
+ *  (non-AI) features never call this. */
+async function aiBudgetOk(from) {
+  const { ok, scope } = consumeAiCall(from);
+  if (ok) return true;
+  log.info(`metric ai_capped scope=${scope}${userTag(from)}`);
+  await wa.sendText(from, AI_CAP_MESSAGE[scope]);
+  return false;
 }
 
 /** Map any thrown error to the safe, generic message the user sees. Known AI
@@ -318,6 +348,18 @@ async function handleText(from, body) {
   }
 
   // Otherwise, interpret the message as an intent over the active document.
+  // Intent-classification is itself a paid AI call, so it falls under the same
+  // beta cap. If capped, fall back to the (free) menu with an honest note —
+  // the Word/Excel buttons still work; AI buttons surface the cap when tapped.
+  const gate = consumeAiCall(from);
+  if (!gate.ok) {
+    log.info(`metric ai_capped scope=${gate.scope}${userTag(from)}`);
+    return sendMenu(
+      from,
+      'AI replies are paused for the beta (usage cap reached). You can still tap ' +
+        'Word 📄 or Excel 📊 below — those have no limit:',
+    );
+  }
   const { intent, question, language } = await ai.classifyIntent(text);
   if (intent === 'unknown') {
     return sendMenu(
@@ -347,12 +389,14 @@ async function runAction(from, action, opts) {
       return sendMenu(from);
 
     case 'summarize': {
+      if (!(await aiBudgetOk(from))) return;
       await wa.sendText(from, '📝 Summarizing…');
       const out = await ai.summarize(doc.text, doc.filename);
       return wa.sendText(from, out);
     }
 
     case 'eli': {
+      if (!(await aiBudgetOk(from))) return;
       await wa.sendText(from, '🧒 Putting it in simple terms…');
       const out = await ai.explainSimply(doc.text, doc.filename);
       return wa.sendText(from, out);
@@ -367,6 +411,7 @@ async function runAction(from, action, opts) {
         setPending(from, { type: 'awaiting_question' });
         return wa.sendText(from, '💬 Sure — what would you like to know about the document?');
       }
+      if (!(await aiBudgetOk(from))) return;
       await wa.sendText(from, '💬 Thinking…');
       const out = await ai.answer(doc.text, question, session.history);
       addQa(from, question, out);
@@ -379,6 +424,7 @@ async function runAction(from, action, opts) {
         setPending(from, { type: 'awaiting_language' });
         return wa.sendText(from, '🌐 Which language should I translate it into?');
       }
+      if (!(await aiBudgetOk(from))) return;
       await wa.sendText(from, `🌐 Translating into ${language}…`);
       const out = await ai.translate(doc.text, language);
       return wa.sendText(from, out);

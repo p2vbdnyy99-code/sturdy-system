@@ -125,6 +125,41 @@ export function buildExtractConfig(env = {}) {
 }
 
 /**
+ * AI spend caps for the beta — a hard ceiling on paid AI calls (summary / Q&A /
+ * translate / explain / intent-classify) so usage can't run up a surprise bill.
+ * The free features (Word / Excel / OCR) are never capped. Enforced in
+ * budget.js; these are just the numbers. Kept pure/testable like the others.
+ *
+ * A value of 0 (or blank) disables that dimension — "unlimited". Defaults are
+ * beta-safe, not production limits: raise them (or set 0) once you trust spend.
+ *
+ * Env:
+ *   AI_DAILY_CALL_CAP           max paid AI calls across ALL users per UTC day
+ *                               (default: 500)
+ *   AI_MONTHLY_CALL_CAP         max paid AI calls across ALL users per UTC month
+ *                               (default: 5000)
+ *   AI_PER_USER_DAILY_CALL_CAP  max paid AI calls for ONE user per UTC day, so a
+ *                               single enthusiastic tester can't drain the whole
+ *                               budget (default: 50)
+ *
+ * Cost ≈ (calls) × (your model's per-call price). Count is deliberately used
+ * instead of dollars: it's deterministic and doesn't require wiring live
+ * provider pricing. Watch the ACTIONS block in `npm run digest` to see how many
+ * calls real usage drives.
+ */
+export function buildBudgetConfig(env = {}) {
+  const cap = (v, d) => {
+    const x = Number(v);
+    return Number.isFinite(x) && x >= 0 ? Math.floor(x) : d;
+  };
+  return {
+    dailyAiCalls: cap(env.AI_DAILY_CALL_CAP, 500),
+    monthlyAiCalls: cap(env.AI_MONTHLY_CALL_CAP, 5000),
+    perUserDailyAiCalls: cap(env.AI_PER_USER_DAILY_CALL_CAP, 50),
+  };
+}
+
+/**
  * Metrics config. The only knob is an OPTIONAL salt for pseudonymous
  * per-user counting. We never log the phone number; with a salt set we log a
  * short HMAC of it instead, so distinct users can be counted without storing
@@ -190,6 +225,7 @@ export const config = {
   ocr: buildOcrConfig(process.env),
   extract: buildExtractConfig(process.env),
   metrics: buildMetricsConfig(process.env),
+  budget: buildBudgetConfig(process.env),
 };
 
 /** Warn (but don't crash) about configuration that will break requests. */

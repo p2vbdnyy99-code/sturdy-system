@@ -80,3 +80,37 @@ test('buildMetricsConfig + hashSender: user counting is opt-in and privacy-safe'
   // Different salts produce different hashes (so it isn't a fixed rainbow target).
   assert.notEqual(hashSender('+15551234567', 'other-salt'), tag);
 });
+
+test('buildBudgetConfig: beta-safe defaults, overrides, and 0 = unlimited', async () => {
+  const { buildBudgetConfig } = await import('../src/config.js');
+
+  // Defaults when nothing is set.
+  const d = buildBudgetConfig({});
+  assert.equal(d.dailyAiCalls, 500);
+  assert.equal(d.monthlyAiCalls, 5000);
+  assert.equal(d.perUserDailyAiCalls, 50);
+
+  // Explicit overrides are honored and floored to integers.
+  const o = buildBudgetConfig({
+    AI_DAILY_CALL_CAP: '100',
+    AI_MONTHLY_CALL_CAP: '1000',
+    AI_PER_USER_DAILY_CALL_CAP: '5.9',
+  });
+  assert.equal(o.dailyAiCalls, 100);
+  assert.equal(o.monthlyAiCalls, 1000);
+  assert.equal(o.perUserDailyAiCalls, 5);
+
+  // 0 is a valid, meaningful value ("unlimited") — not replaced by the default.
+  const z = buildBudgetConfig({
+    AI_DAILY_CALL_CAP: '0',
+    AI_MONTHLY_CALL_CAP: '0',
+    AI_PER_USER_DAILY_CALL_CAP: '0',
+  });
+  assert.equal(z.dailyAiCalls, 0);
+  assert.equal(z.monthlyAiCalls, 0);
+  assert.equal(z.perUserDailyAiCalls, 0);
+
+  // Garbage / negative falls back to the default (never a broken cap).
+  assert.equal(buildBudgetConfig({ AI_DAILY_CALL_CAP: 'nope' }).dailyAiCalls, 500);
+  assert.equal(buildBudgetConfig({ AI_MONTHLY_CALL_CAP: '-10' }).monthlyAiCalls, 5000);
+});
