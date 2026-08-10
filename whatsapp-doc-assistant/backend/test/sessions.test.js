@@ -55,3 +55,20 @@ test('firstTouch returns true only on a sender\'s first message', async () => {
   assert.equal(firstTouch(u), false, 'still no welcome');
   assert.equal(firstTouch('a-different-sender'), true, 'a new sender is welcomed');
 });
+
+test('feedback pending is one-shot and per-sender (works without a document)', async () => {
+  const { setFeedbackPending, takeFeedbackPending } = await import('../src/sessions.js');
+
+  // No prompt yet -> nothing pending.
+  assert.equal(takeFeedbackPending('fb-user-1'), false, 'nothing pending by default');
+
+  // After we prompt, the NEXT message is captured — exactly once.
+  setFeedbackPending('fb-user-1');
+  assert.equal(takeFeedbackPending('fb-user-1'), true, 'first message captured as feedback');
+  assert.equal(takeFeedbackPending('fb-user-1'), false, 'not captured twice');
+
+  // The flag is per-sender: prompting one user doesn't arm another.
+  setFeedbackPending('fb-user-2');
+  assert.equal(takeFeedbackPending('fb-user-3'), false, 'a different sender is unaffected');
+  assert.equal(takeFeedbackPending('fb-user-2'), true, 'the prompted sender is captured');
+});

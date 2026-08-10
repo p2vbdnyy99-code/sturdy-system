@@ -26,6 +26,8 @@ import {
   setPending,
   clearPending,
   firstTouch,
+  setFeedbackPending,
+  takeFeedbackPending,
 } from './sessions.js';
 
 // Bound any single conversion/extraction in wall-clock time so a pathological
@@ -132,7 +134,8 @@ const WELCOME =
   '📊 Extract tables to Excel\n' +
   '🌐 Translate it\n' +
   '🔍 Read scanned pages (OCR)\n\n' +
-  'Just send a PDF to begin — it’s free while in beta. 🚀';
+  'Just send a PDF to begin — it’s free while in beta. 🚀\n\n' +
+  '💬 Got thoughts? Type *feedback* anytime to send a note to the team.';
 
 const GREETING_RE = /^(hi|hello|hey|start|menu|help|hii+|yo|hola)\b/i;
 
@@ -144,6 +147,34 @@ function notifyOwner(text, fromUser) {
   const owner = config.whatsapp.ownerNumber;
   if (!owner || owner === fromUser) return;
   wa.sendText(owner, text).catch(() => {});
+}
+
+// A message that opens with "feedback"/"suggestion" and optional separators, so
+// both "feedback" (then prompt) and "feedback the tables broke" (inline) work.
+const FEEDBACK_RE = /^(feedback|suggestion)\b[\s:,.-]*/i;
+const FEEDBACK_MAX_CHARS = 1000;
+
+/**
+ * Capture user-volunteered feedback. Unlike document text (which is never
+ * logged), feedback is content the user is deliberately sending to the team, so
+ * it is intentionally collected through TWO channels for reliability:
+ *   1. a WhatsApp ping to the owner (best-effort — only delivers inside the 24h
+ *      window, so it can silently miss);
+ *   2. a `FEEDBACK` line in the server log (the reliable channel), tagged only
+ *      with the pseudonymous user hash — never the phone number.
+ * Plus a content-free `metric event=feedback` count for the digest.
+ */
+async function recordFeedback(from, note) {
+  const text = note.trim().slice(0, FEEDBACK_MAX_CHARS);
+  log.info(`metric event=feedback${userTag(from)}`);
+  // Newlines flattened so one note stays one grep-able log line.
+  log.info(`FEEDBACK${userTag(from)}: ${text.replace(/\s+/g, ' ')}`);
+  notifyOwner(`💬 Papyr feedback:\n\n"${text}"`, from);
+  return wa.sendText(
+    from,
+    '🙏 Thank you — your feedback went straight to the team and genuinely helps ' +
+      'shape Papyr. Send a PDF whenever you’re ready.',
+  );
 }
 
 // ─── Public entrypoint ───────────────────────────────────────────────────────
@@ -323,6 +354,22 @@ async function handleText(from, body) {
   const text = body.trim();
   if (!text) return;
 
+  // Feedback — available to anyone, with or without an active document, so it
+  // is handled before the document/session logic below.
+  if (takeFeedbackPending(from)) {
+    return recordFeedback(from, text);
+  }
+  if (FEEDBACK_RE.test(text)) {
+    const inline = text.replace(FEEDBACK_RE, '').trim();
+    if (inline) return recordFeedback(from, inline);
+    setFeedbackPending(from);
+    return wa.sendText(
+      from,
+      '💬 I’d love your feedback — what worked, what didn’t, what’s missing? ' +
+        'Type it in one message and I’ll pass it to the team.',
+    );
+  }
+
   const session = getSession(from);
 
   // No active document — greet / guide.
@@ -333,7 +380,8 @@ async function handleText(from, body) {
     return wa.sendText(
       from,
       'Send me a *PDF* first, then I can summarize it, answer questions, convert ' +
-        'it to Word, and more.',
+        'it to Word, and more.\n\n' +
+        '💬 Or type *feedback* to send a note to the team.',
     );
   }
 

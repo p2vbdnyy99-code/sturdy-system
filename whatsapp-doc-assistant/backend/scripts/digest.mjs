@@ -59,6 +59,8 @@ const bar = (n, d, width = 24) => {
 // ─── Accumulators ────────────────────────────────────────────────────────────
 const users = new Set(); // distinct pseudonymous user tags (needs METRICS_HASH_SALT)
 let newUsers = 0;
+let feedback = 0;
+let capped = 0;
 let firstTs = null;
 let lastTs = null;
 
@@ -70,8 +72,12 @@ const errors = { total: 0, byKind: new Map() };
 // ─── Parse ───────────────────────────────────────────────────────────────────
 for (const raw of readInput().split('\n')) {
   const line = raw.trimEnd();
-  const at = line.indexOf('metric ');
-  if (at === -1) continue;
+  // Anchor on the logger's own shape (`<ts> [level] metric …`) rather than a
+  // bare "metric " search, so free-text lines that merely contain the word
+  // (e.g. a FEEDBACK note that mentions "metric") are never misparsed.
+  const mm = line.match(/\[(?:info|warn|error|debug)\]\s+metric\s+(.*)$/);
+  if (!mm) continue;
+  const rest = mm[1];
 
   // Timestamp (ISO) is at the head of the log line, if present.
   const ts = line.match(/^\S+/)?.[0];
@@ -80,16 +86,19 @@ for (const raw of readInput().split('\n')) {
     if (!lastTs || ts > lastTs) lastTs = ts;
   }
 
-  const rest = line.slice(at + 'metric '.length);
   // Category is the leading word. Note `event`/`action` lines glue it to `=value`
   // (`metric action=word`), so match the word only — never split on whitespace.
-  const kind = rest.match(/^\w+/)?.[0]; // ingest | action | convert | error | event
+  const kind = rest.match(/^\w+/)?.[0]; // ingest | action | convert | error | event | ai_capped
   const f = fields(rest);
   if (f.user) users.add(f.user);
 
   switch (kind) {
     case 'event':
       if (f.event === 'new_user') newUsers += 1;
+      else if (f.event === 'feedback') feedback += 1;
+      break;
+    case 'ai_capped':
+      capped += 1;
       break;
     case 'ingest':
       ingest.count += 1;
@@ -134,6 +143,8 @@ L.push(
   `    distinct users seen ... ${users.size || '—'}` +
     (users.size ? '' : '   (set METRICS_HASH_SALT to enable)'),
 );
+L.push(`    feedback notes ........ ${feedback}${feedback ? '  💬 read them: grep FEEDBACK the log' : ''}`);
+if (capped) L.push(`    AI-cap hits ........... ${capped}   ⚠️ users hit the spend cap`);
 L.push('');
 
 L.push('  DOCUMENTS');

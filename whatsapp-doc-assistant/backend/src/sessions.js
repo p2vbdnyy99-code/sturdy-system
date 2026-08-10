@@ -28,6 +28,26 @@ export function firstTouch(userId) {
   return true;
 }
 
+// Feedback capture must work for ANY sender, even one with no active document,
+// so it can't live on the document session. Tiny TTL-bounded map: after a user
+// types "feedback", we remember to treat their NEXT message as the note.
+const feedbackWaiting = new Map(); // userId -> timestamp set
+const FEEDBACK_PENDING_TTL = 10 * 60 * 1000; // 10 min to actually type it
+
+/** Mark that we asked this sender for feedback and expect their next message. */
+export function setFeedbackPending(userId) {
+  feedbackWaiting.set(userId, Date.now());
+}
+
+/** True (and clears the flag) if this sender was asked for feedback and hasn't
+ *  timed out; false otherwise. One-shot: capture their next message, then reset. */
+export function takeFeedbackPending(userId) {
+  const t = feedbackWaiting.get(userId);
+  if (t === undefined) return false;
+  feedbackWaiting.delete(userId);
+  return Date.now() - t <= FEEDBACK_PENDING_TTL;
+}
+
 export function getSession(userId) {
   const s = sessions.get(userId);
   if (!s) return null;
@@ -82,6 +102,10 @@ const sweep = setInterval(() => {
       sessions.delete(id);
       removed += 1;
     }
+  }
+  // Also drop feedback prompts the user never answered.
+  for (const [id, t] of feedbackWaiting) {
+    if (now - t > FEEDBACK_PENDING_TTL) feedbackWaiting.delete(id);
   }
   if (removed) log.debug(`Swept ${removed} expired session(s)`);
 }, 5 * 60 * 1000);
