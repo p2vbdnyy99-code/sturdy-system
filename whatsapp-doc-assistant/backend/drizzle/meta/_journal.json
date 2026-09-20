@@ -15,6 +15,13 @@
       "when": 1789923602210,
       "tag": "0001_mushy_epoch",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1789926660219,
+      "tag": "0002_petite_wendell_rand",
+      "breakpoints": true
     }
   ]
 }

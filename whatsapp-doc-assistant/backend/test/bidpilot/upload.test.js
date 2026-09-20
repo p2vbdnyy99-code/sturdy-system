@@ -23,9 +23,29 @@ import { setStorage } from '../../src/bidpilot/storage/index.js';
 import { LocalDiskStorage } from '../../src/bidpilot/storage/localDisk.js';
 import { createTendersRouter } from '../../src/bidpilot/routes/tenders.js';
 import { createDownloadRouter } from '../../src/bidpilot/routes/download.js';
+import { createAuthRouter } from '../../src/bidpilot/routes/auth.js';
+import { cookieParserMiddleware, SESSION_COOKIE_NAME } from '../../src/bidpilot/auth/cookies.js';
+import { createSession } from '../../src/bidpilot/auth/sessionService.js';
+import { csrfTokenFor } from '../../src/bidpilot/auth/csrf.js';
+
+// Milestone 2's routes are now gated by Milestone 3's real session auth (the
+// earlier placeholder x-bidpilot-user-id header no longer exists at all).
+// Sessions here are minted DIRECTLY via createSession() rather than going
+// through the real POST /login HTTP flow — this file is testing tender
+// ingestion, not login; the login/registration flow itself has its own
+// dedicated, thorough coverage in test/bidpilot/auth.test.js. Using the fast
+// path here keeps these 17 tests focused and quick.
+//
+// Needs BIDPILOT_CSRF_SECRET too, not just DATABASE_URL — uploadPdf()'s CSRF
+// header is derived via csrfTokenFor(), which reads it from config.
+const SKIP_REASON = !dbAvailable()
+  ? 'DATABASE_URL not set — see test/db/helpers.js'
+  : !process.env.BIDPILOT_CSRF_SECRET
+    ? 'BIDPILOT_CSRF_SECRET not set — required since Milestone 3'
+    : false;
 
 test('BidPilot tender ingestion (full vertical slice)', {
-  skip: !dbAvailable() && 'DATABASE_URL not set — see test/db/helpers.js',
+  skip: SKIP_REASON,
   timeout: 60_000,
 }, async (t) => {
   // Two separate pg.Pools to the SAME database: `db` is this test file's own
@@ -52,6 +72,8 @@ test('BidPilot tender ingestion (full vertical slice)', {
     setDb(appPool);
 
     const app = express();
+    app.use('/bidpilot', cookieParserMiddleware);
+    app.use('/bidpilot', createAuthRouter());
     app.use('/bidpilot', createTendersRouter());
     app.use('/bidpilot', createDownloadRouter());
     server = http.createServer(app);
@@ -69,7 +91,14 @@ test('BidPilot tender ingestion (full vertical slice)', {
     await closeTestDb();
   });
 
-  let userA, companyA, userB, companyB;
+  let userA, companyA, userB, companyB, authA, authB;
+
+  /** Mint a real session (bypassing the login HTTP flow — see file header)
+   *  and the matching CSRF token for a test user. */
+  async function mintAuth(userId) {
+    const { rawToken, session } = await createSession(db, userId);
+    return { cookie: rawToken, csrf: csrfTokenFor(session.tokenHash) };
+  }
 
   t.beforeEach(async () => {
     // Grace period for the PREVIOUS test's fire-and-forget background
@@ -89,9 +118,29 @@ test('BidPilot tender ingestion (full vertical slice)', {
     });
     userA = a.user; companyA = a.company;
     userB = b.user; companyB = b.company;
+    authA = await mintAuth(userA.id);
+    authB = await mintAuth(userB.id);
   });
 
   // ── helpers ──────────────────────────────────────────────────────────────
+
+  /** Map a `user` param (userA / userB / null, the only values this file
+   *  ever passes) to the matching minted {cookie, csrf} pair, or undefined
+   *  for null (the "no session at all" case). */
+  function authFor(user) {
+    if (user === userA) return authA;
+    if (user === userB) return authB;
+    return undefined; // user === null, or an explicitly-unauthenticated call
+  }
+
+  function authHeaders(user, { includeCsrf } = {}) {
+    const auth = authFor(user);
+    if (!auth) return {};
+    return {
+      cookie: `${SESSION_COOKIE_NAME}=${auth.cookie}`,
+      ...(includeCsrf ? { 'x-csrf-token': auth.csrf } : {}),
+    };
+  }
 
   function uploadPdf({ user = userA, company = companyA, buffer, filename = 'tender.pdf', headers = {} } = {}) {
     const boundary = '----bidpilottest' + Math.random().toString(16).slice(2);
@@ -110,21 +159,17 @@ test('BidPilot tender ingestion (full vertical slice)', {
     return httpRequest('POST', '/bidpilot/tenders/upload', {
       'content-type': `multipart/form-data; boundary=${boundary}`,
       'content-length': String(body.length),
-      ...(user ? { 'x-bidpilot-user-id': user.id } : {}),
+      ...authHeaders(user, { includeCsrf: true }), // upload is state-changing -> CSRF required
       ...headers,
     }, body);
   }
 
   function getTenderStatus(tenderId, { user = userA, company = companyA } = {}) {
-    return httpRequest('GET', `/bidpilot/tenders/${tenderId}?companyId=${company.id}`, {
-      ...(user ? { 'x-bidpilot-user-id': user.id } : {}),
-    });
+    return httpRequest('GET', `/bidpilot/tenders/${tenderId}?companyId=${company.id}`, authHeaders(user));
   }
 
   function getDocumentUrl(tenderId, { user = userA, company = companyA } = {}) {
-    return httpRequest('GET', `/bidpilot/tenders/${tenderId}/document-url?companyId=${company.id}`, {
-      ...(user ? { 'x-bidpilot-user-id': user.id } : {}),
-    });
+    return httpRequest('GET', `/bidpilot/tenders/${tenderId}/document-url?companyId=${company.id}`, authHeaders(user));
   }
 
   function httpRequest(method, urlPath, headers = {}, body = null) {

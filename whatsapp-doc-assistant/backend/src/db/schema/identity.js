@@ -14,16 +14,25 @@
 
 import { pgTable, uuid, text, timestamp, uniqueIndex, unique, index } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
-import { companyMemberRole } from './enums.js';
+import { companyMemberRole, userStatus } from './enums.js';
 
 export const users = pgTable('users', {
   id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
   email: text('email').notNull(),
-  // Nullable: Milestone 1 ships the schema, not a login flow. A later
-  // milestone owns hashing/verification; this column exists so that work
-  // doesn't require another migration.
+  // Set by registration (Milestone 3) — Argon2id, see
+  // src/bidpilot/auth/passwordHash.js. Nullable because Milestone 1 users
+  // (test fixtures, pre-auth rows) never had one; never nullable for a row
+  // created through the real registration path.
   passwordHash: text('password_hash'),
   name: text('name'),
+  status: userStatus('status').notNull().default('PENDING_VERIFICATION'),
+  emailVerifiedAt: timestamp('email_verified_at', { withTimezone: true }),
+  // A single pending verification token at a time — requesting a new one
+  // overwrites these rather than accumulating rows in a separate table (a
+  // user only ever has one live verification attempt). Hashed at rest, same
+  // reasoning as sessions.tokenHash — see src/bidpilot/auth/tokens.js.
+  verificationTokenHash: text('verification_token_hash'),
+  verificationTokenExpiresAt: timestamp('verification_token_expires_at', { withTimezone: true }),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 }, (t) => [

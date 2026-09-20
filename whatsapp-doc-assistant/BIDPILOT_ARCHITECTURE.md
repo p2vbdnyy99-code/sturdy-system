@@ -552,3 +552,244 @@ the existing `ai/provider.js` transport, writing into
 `tender_requirements` + `tender_requirement_evidence` via the
 evidence-first `createRequirementWithEvidence()` already built in
 Milestone 1. `ANALYZING` (defined, unused until now) becomes real.
+
+---
+
+# Milestone 3 — Authentication & Company Membership Authorization
+
+Replaces Milestone 2's placeholder identity header **entirely** with real
+authentication: registration, email/password login, server-side PostgreSQL
+sessions, logout, email verification state, CSRF protection, and brute-force
+rate limiting. Every BidPilot tender route is now gated by a real session,
+not a header anyone could set. Papyr's WhatsApp path is untouched.
+
+## Auth mechanism comparison — recap
+
+Full comparison (email/password+session vs. magic link vs. JWT, evaluated
+against this repo's actual architecture) was done and approved before any
+code was written — see the conversation record. Chosen: **email/password +
+server-side session via a secure HttpOnly cookie**, DB-backed in the same
+Postgres already central to this design. Rejected JWT (real revocation needs
+a server-side refresh-token table anyway, eroding its main advantage; wider
+historical footgun surface) and magic-link-as-the-only-method (adds a
+transactional-email dependency this product has never had, for a login
+question — Axis A — that's orthogonal to the session-representation question
+— Axis B — this milestone actually needed to answer).
+
+## Repo-specific verification before implementing
+
+- **`argon2` (node-argon2)** — installed and tested in this sandbox before
+  committing to it: ships prebuilt native binaries for linux-x64/arm64 under
+  **both glibc and musl** (covers Debian/Ubuntu- and Alpine-based Render
+  images), installed in ~2 seconds with no compiler invoked, and verified
+  functionally (hash/verify round-trip, wrong password correctly rejected).
+  Same bar Drizzle was held to over Prisma in Milestone 1 — no native-binary
+  build risk on Render.
+- **`cookie`** — already present as Express's own internal dependency (used
+  for `res.cookie()`); added as an explicit direct dependency for stability
+  rather than pulling in the separate `cookie-parser` middleware package for
+  what `cookie.parse()` already does in one line.
+- **Express 5.2.1 confirmed**, and `server.js` did not set `trust proxy` —
+  fixed (`app.set('trust proxy', 1)`), required for `Secure` cookies to
+  behave correctly behind Render's TLS-terminating proxy.
+
+## Schema additions
+
+One migration, additive only:
+
+- **`users`**: `status` enum (`PENDING_VERIFICATION` / `ACTIVE` /
+  `SUSPENDED`, default `PENDING_VERIFICATION`), `emailVerifiedAt`,
+  `verificationTokenHash`, `verificationTokenExpiresAt`. The verification
+  token lives directly on `users` (not a separate table) — a user only ever
+  has one live verification attempt at a time; a new request overwrites it.
+- **`sessions`** (new table): `id`, `userId` (FK, cascade), `tokenHash`
+  (unique), `createdAt`, `expiresAt` (absolute cap), `lastSeenAt` (throttled
+  sliding idle indicator), `userAgent`. **No `companyId` column** — a session
+  identifies a user, never a company (see "auth ≠ authorization" below). No
+  IP address stored, to limit this table's PII footprint.
+
+## Sessions hashed at rest
+
+The raw session token **never touches the database**. `auth/tokens.js`
+generates 256 bits of randomness (`crypto.randomBytes(32)`); only its
+SHA-256 hash is stored (`sessions.tokenHash`). Verified directly against the
+running database during manual testing: the raw cookie value does not appear
+anywhere in the stored row. If the database were ever compromised, the
+attacker gets unusable hashes, not replayable session credentials. (Plain
+SHA-256, not HMAC — the input is already a uniformly random 256-bit CSPRNG
+value, so a precompute/rainbow-table attack is infeasible regardless; the
+entropy lives in the token, not a server secret. Contrast with password
+hashing, where the input space is small/guessable and a slow salted KDF is
+required instead.)
+
+## Cookie configuration
+
+`HttpOnly: true`, `SameSite: Lax`, `Path: /`, and `Secure` **auto-detected**
+(true on Render / `NODE_ENV=production`, false otherwise — via the same
+`RENDER_EXTERNAL_URL`-detection precedent `server.js` already used for its
+keep-alive ping) so local HTTP development isn't silently broken by a Secure
+cookie the browser would refuse to send back. `BIDPILOT_COOKIE_SECURE` is an
+explicit override for an unusual deployment shape.
+
+## Password hashing
+
+Argon2id, library defaults (time cost 3, memory 64MB, parallelism 4) —
+current OWASP guidance, used as-is rather than hand-tuned. Minimum 8
+characters (NIST 800-63B: prioritize length over forced complexity rules; no
+mandated uppercase/digit/symbol, no forced rotation), rejected if identical to
+the email. Never plaintext, reversible encryption, bare SHA-256, or a custom
+scheme.
+
+## Authentication ≠ authorization — the actual chain
+
+```
+Browser --(HttpOnly session cookie)--> Session --> User
+                                                     │
+                                    resolved FRESH, every request
+                                                     ▼
+                                          company_members --> CompanyScope
+                                                     │
+                                                     ▼
+                                       Tender / Documents / Requirements
+```
+
+`requireSession()` (`routes/auth.js`) answers ONLY "who is this" and sets
+`req.bidpilotUserId` — it never resolves or caches a `companyId`. Every
+tender route still calls `requireCompanyAccess()` (Milestone 1, unmodified)
+against whatever `companyId` the request names. A session is never scoped to
+a single company, so a user belonging to more than one company (the
+explicit reason `company_members` was built as a join table in Milestone 1)
+never needs to re-login to act on a different one. Milestone 2's
+`CompanyScope`/tenant-isolation code required **zero changes** — it already
+took a `userId` + `companyId` pair, never trusted an identity object to carry
+authorization.
+
+## CSRF protection
+
+Signed double-submit cookie, **no server-side storage**: `csrfTokenFor(sessionTokenHash) = HMAC-SHA256(BIDPILOT_CSRF_SECRET, sessionTokenHash)`,
+set in a cookie the frontend can read (the one cookie in the app that is
+deliberately **not** HttpOnly) and echoed back as an `x-csrf-token` header on
+state-changing requests. `requireCsrf()` is self-exempting for
+GET/HEAD/OPTIONS, so it's mounted across the whole `/tenders` subtree rather
+than per-route — only the upload endpoint is actually gated. `SameSite=Lax`
+already blocks most cross-site vectors for this same-origin app; this is the
+OWASP-recommended belt-and-suspenders layer on top. `csrfTokenFor()` throws
+loudly if `BIDPILOT_CSRF_SECRET` is unset, rather than silently HMAC-ing with
+an empty key.
+
+## Brute-force protection
+
+A **new**, narrowly-scoped limiter (`auth/loginRateLimit.js`) — not a reuse
+of `src/ratelimit.js`, whose window is a hardcoded 60s constant tuned for
+WhatsApp message throughput. Brute-force protection needs a longer,
+configurable window (10 attempts / 15 minutes here), so reusing it directly
+would mean either changing Papyr-shared code or silently getting the wrong
+window. Same reasoning as `uploadLock.js` in Milestone 2: reuse the concept
+(fixed-window in-memory counter), write a new implementation sized for the
+actual problem. In-memory, single-instance — same scaling caveat as every
+other in-memory mechanism in this codebase at this stage. Cleared on a
+successful login so a user who mistyped their password a few times isn't
+punished after getting it right.
+
+## Email verification — deliberately no email provider
+
+Registration generates a token; in dev/non-production the verification link
+is **logged and returned directly in the API response**
+(`devVerificationUrl`) rather than emailed — no transactional email provider
+(Resend/Postmark/SES/etc.) was wired in, per instruction. `PENDING_VERIFICATION`
+does **not** block login — an unverified user can use the product immediately;
+`emailVerifiedAt`/`status` are the explicit state a later feature (or a
+stricter gate) can act on. `SUSPENDED` **does** block login, and is checked on
+**every** authenticated request via `requireSession()`, not only at login
+time — proven directly: a test suspends a user mid-session (after their
+cookie was already issued) and confirms their very next request is rejected.
+No suspension *mechanism* exists yet (no admin endpoint) — only the state a
+later one can transition into, matching the same "give the schema room to
+grow" pattern used throughout this schema.
+
+## Manual smoke test — clean on the first pass
+
+Unlike Milestones 1 and 2 (which each surfaced a real bug during manual
+testing), this milestone's end-to-end smoke test — register → verify → login
+→ inspect Set-Cookie headers → `/me` → CSRF-protected upload (rejected
+without the header, accepted with it) → tender status through the new real
+session (Milestone 2's pipeline, completely unmodified) → logout → confirm
+the old cookie is rejected → 11 rapid login attempts (10 allowed, 11th
+`429`) → direct database inspection confirming the stored password hash is
+real Argon2id and the stored session value is a hash, never the raw
+cookie — passed cleanly on the first run. The extra repo-specific
+verification done *before* writing code (argon2's binary distribution, the
+`trust proxy` requirement, the auth‑vs‑authorization chain) is the most
+likely reason; recorded here as the comparison point for future milestones,
+not a guarantee it repeats.
+
+## A real gap this milestone's own test suite required fixing
+
+Updating `test/bidpilot/upload.test.js` (Milestone 2's suite) to use real
+sessions instead of the removed placeholder header surfaced that its skip
+condition only checked `DATABASE_URL`, not the newly-required
+`BIDPILOT_CSRF_SECRET` — a `DATABASE_URL`-only environment (a realistic
+misconfiguration: BidPilot's database is set up but the CSRF secret is
+forgotten) caused 18 test failures, not clean skips. Fixed by extending both
+`upload.test.js`'s and `auth.test.js`'s skip conditions to check for the CSRF
+secret independently of database availability. All three realistic
+configuration states — neither configured, DB only, both configured — are
+now verified to produce zero failures (graceful skips or full runs, never a
+crash).
+
+## Tests
+
+`test/bidpilot/auth.test.js` (40 tests): password hashing, token generation,
+CSRF token derivation/tamper/cross-session rejection, brute-force limiting,
+and — DB-backed — registration (weak password, duplicate email, hashing),
+email verification (success, reuse-after-verify, wrong token, expired
+token), session creation/lookup/expiry/destruction (with direct proof the
+raw token is never stored), and a full HTTP integration pass: register →
+verify → login → `/me`, case-insensitive email login, generic-error login
+failures (wrong password and nonexistent user return byte-identical error
+text), unverified-user-can-login, suspended-user-cannot (both at login and
+mid-session), brute-force lockout, CSRF-gated logout, session destruction
+actually taking effect, and forged/missing cookies rejected without a 500.
+
+`test/bidpilot/upload.test.js` (Milestone 2's 17 tests, updated): now
+authenticates via real minted sessions (`createSession()` directly, not the
+HTTP `/login` endpoint — this file tests tender ingestion, not login) plus
+real CSRF tokens on the upload route. All prior tenant-isolation, dedupe,
+OCR, and large-document coverage is unchanged and still passing through the
+new auth layer.
+
+**251 pass, 0 fail** with both `DATABASE_URL` and `BIDPILOT_CSRF_SECRET`
+configured (1 unrelated pre-existing skip). Verified clean (0 failures) in
+all three realistic configuration states — see above.
+
+## Environment variables added
+
+`BIDPILOT_CSRF_SECRET` (required once BidPilot is used — a real random
+secret, e.g. `openssl rand -hex 32`), `BIDPILOT_SESSION_TTL_DAYS` (default
+30), `BIDPILOT_SESSION_TOUCH_MINUTES` (default 10), `BIDPILOT_VERIFICATION_TOKEN_TTL_HOURS`
+(default 24), `BIDPILOT_COOKIE_SECURE` (optional override). `warnOnMissingConfig`
+now warns loudly if `DATABASE_URL` is set but `BIDPILOT_CSRF_SECRET` isn't.
+
+## Unresolved decisions (deliberately left for later milestones)
+
+- **Production transactional email** — a deliberate, later decision (Resend/
+  Postmark/SES/etc.), not quietly wired in now.
+- **No "resend verification email" endpoint** — a small, natural follow-up if
+  needed; skipped for narrowness this milestone.
+- **No admin/suspension endpoint** — the `SUSPENDED` state and its enforcement
+  exist; nothing can set it yet except a direct database write.
+- **No "view/revoke my other active sessions" UI** — `sessions.userAgent` is
+  stored specifically to make that easy to add later without another schema
+  change; not built this milestone.
+- **API/programmatic authentication** (for a future non-browser client) is
+  still open — cookies don't travel well outside a browser context; likely a
+  separate personal-access-token mechanism layered on later, not a reason to
+  revisit the session choice made here.
+
+## Suggested next milestone
+
+Per the approved sequencing: **Structured Tender Intelligence** (product
+spec Milestone 4) — now that both the ingestion pipeline (Milestone 2) and a
+real, tested authorization boundary (this milestone) exist, the
+evidence-first `createRequirementWithEvidence()` built in Milestone 1 can
+finally be exercised by real extracted content instead of test fixtures.

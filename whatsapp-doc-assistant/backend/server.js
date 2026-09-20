@@ -18,9 +18,16 @@ import { isDuplicate } from './src/dedupe.js';
 import { allow } from './src/ratelimit.js';
 import { createTendersRouter } from './src/bidpilot/routes/tenders.js';
 import { createDownloadRouter } from './src/bidpilot/routes/download.js';
+import { createAuthRouter } from './src/bidpilot/routes/auth.js';
+import { cookieParserMiddleware } from './src/bidpilot/auth/cookies.js';
 
 const app = express();
 app.disable('x-powered-by');
+// Render terminates TLS at its edge and proxies plain HTTP to this process —
+// without this, Express can't tell a request arrived over HTTPS, which
+// silently breaks Secure-cookie behavior (auth/cookies.js). Harmless for
+// Papyr's WhatsApp routes, which don't use cookies at all.
+app.set('trust proxy', 1);
 
 // Capture the raw body so we can verify the X-Hub-Signature-256 HMAC. Express
 // still parses JSON into req.body as usual.
@@ -154,6 +161,8 @@ async function processWebhook(body) {
 // cleanly rather than the server failing to boot. A Papyr-only deployment
 // (no DATABASE_URL) is completely unaffected either way.
 if (config.db.url) {
+  app.use('/bidpilot', cookieParserMiddleware);
+  app.use('/bidpilot', createAuthRouter());
   app.use('/bidpilot', createTendersRouter());
   app.use('/bidpilot', createDownloadRouter());
 } else {

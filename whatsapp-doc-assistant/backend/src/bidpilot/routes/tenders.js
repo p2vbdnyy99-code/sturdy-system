@@ -6,7 +6,8 @@ import express from 'express';
 import multer from 'multer';
 import { getDb } from '../../db/client.js';
 import { log } from '../../logger.js';
-import { requireIdentity } from './auth.js';
+import { requireSession } from './auth.js';
+import { requireCsrf } from '../auth/csrf.js';
 import { requireCompanyAccess, TenantAccessError } from '../repo/tenants.js';
 import { getTender } from '../repo/tenders.js';
 import { listPages } from '../repo/pages.js';
@@ -27,12 +28,16 @@ const upload = multer({
 export function createTendersRouter() {
   const router = express.Router();
   router.use(express.json());
-  // Scoped to /tenders explicitly (not a bare router.use(requireIdentity()))
+  // Scoped to /tenders explicitly (not a bare router.use(requireSession()))
   // so mounting this router alongside download.js's router at the same
   // /bidpilot prefix can never accidentally gate the signed-URL download
-  // route behind an identity header — a signed URL is meant to be
-  // self-authorizing, with no separate identity check at all.
-  router.use('/tenders', requireIdentity());
+  // route behind a session cookie — a signed URL is meant to be
+  // self-authorizing, with no separate auth check at all.
+  router.use('/tenders', requireSession());
+  // CSRF is self-exempting for GET/HEAD/OPTIONS (see csrf.js), so applying it
+  // to the whole /tenders subtree only actually gates the state-changing
+  // upload route — safe to apply broadly rather than per-route.
+  router.use('/tenders', requireCsrf());
 
   router.post('/tenders/upload', (req, res) => {
     upload.single('file')(req, res, async (multerErr) => {

@@ -202,10 +202,10 @@ export function buildDbConfig(env = {}) {
 }
 
 /**
- * BidPilot ingestion config — storage backend selection, upload limits, and
- * the placeholder identity header (see routes/auth.js — NOT real
- * authentication, see its docblock). Kept fully separate from Papyr's config;
- * Papyr's WhatsApp path never reads any of this.
+ * BidPilot config — storage backend selection, upload limits, and
+ * authentication (Milestone 3: real sessions, replacing the earlier
+ * placeholder identity header entirely). Kept fully separate from Papyr's
+ * config; Papyr's WhatsApp path never reads any of this.
  *
  * Env:
  *   BIDPILOT_STORAGE_DRIVER      'local' (dev/test) | 's3' (production).
@@ -226,8 +226,24 @@ export function buildDbConfig(env = {}) {
  *                                 (default: 50 — larger than Papyr's 20MB
  *                                 WhatsApp cap; tenders can legitimately run
  *                                 hundreds of pages).
- *   BIDPILOT_IDENTITY_HEADER     Header name the placeholder identity
- *                                 middleware reads (default: x-bidpilot-user-id).
+ *   BIDPILOT_CSRF_SECRET         Required. HMAC key for the double-submit
+ *                                 CSRF token (csrf.js) — a real secret, not a
+ *                                 placeholder; startup should not proceed with
+ *                                 a blank value in production (see
+ *                                 warnOnMissingConfig below).
+ *   BIDPILOT_SESSION_TTL_DAYS    Absolute session lifetime cap, regardless of
+ *                                 activity (default: 30).
+ *   BIDPILOT_SESSION_TOUCH_MINUTES  Minimum minutes between lastSeenAt writes
+ *                                 for the same session — throttles the sliding
+ *                                 idle timestamp so an active user doesn't
+ *                                 cause a DB write on every single request
+ *                                 (default: 10).
+ *   BIDPILOT_VERIFICATION_TOKEN_TTL_HOURS  How long an email-verification
+ *                                 token stays valid (default: 24).
+ *   BIDPILOT_COOKIE_SECURE       Explicit override for the cookie Secure
+ *                                 flag — see auth/cookies.js. Normally
+ *                                 auto-detected from RENDER_EXTERNAL_URL /
+ *                                 NODE_ENV; only set this for an edge case.
  */
 export function buildBidpilotConfig(env = {}) {
   return {
@@ -245,7 +261,10 @@ export function buildBidpilotConfig(env = {}) {
       secretAccessKey: env.BIDPILOT_S3_SECRET_ACCESS_KEY || '',
     },
     maxUploadBytes: (Math.max(1, Number(env.BIDPILOT_MAX_UPLOAD_MB) || 50)) * 1024 * 1024,
-    identityHeader: String(env.BIDPILOT_IDENTITY_HEADER || 'x-bidpilot-user-id').toLowerCase(),
+    csrfSecret: String(env.BIDPILOT_CSRF_SECRET || ''),
+    sessionTtlMs: Math.max(1, Number(env.BIDPILOT_SESSION_TTL_DAYS) || 30) * 24 * 60 * 60 * 1000,
+    sessionTouchThresholdMs: Math.max(1, Number(env.BIDPILOT_SESSION_TOUCH_MINUTES) || 10) * 60 * 1000,
+    verificationTokenTtlMs: Math.max(1, Number(env.BIDPILOT_VERIFICATION_TOKEN_TTL_HOURS) || 24) * 60 * 60 * 1000,
   };
 }
 
@@ -323,6 +342,13 @@ export function warnOnMissingConfig(log) {
     log.warn(
       'WHATSAPP_APP_SECRET is not set — incoming webhook signatures will NOT be ' +
         'verified. Set it before exposing this server publicly.',
+    );
+  }
+  if (config.db.url && !config.bidpilot.csrfSecret) {
+    log.warn(
+      'BIDPILOT_CSRF_SECRET is not set — BidPilot auth routes will refuse ' +
+        'state-changing requests until it is. Set a real random secret before ' +
+        'exposing this server publicly.',
     );
   }
 }

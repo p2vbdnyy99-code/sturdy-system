@@ -5,6 +5,18 @@
 
 import { pgEnum } from 'drizzle-orm/pg-core';
 
+// Account lifecycle (Milestone 3). PENDING_VERIFICATION does NOT block login —
+// unverified users can use the product; this is the explicit state the
+// product can later choose to gate on, not a login gate itself (see
+// BIDPILOT_ARCHITECTURE.md "Milestone 3" for the reasoning). SUSPENDED DOES
+// block login — reserved for future admin/moderation action; no suspension
+// flow is built yet, only the state a later one can transition into.
+export const userStatus = pgEnum('user_status', [
+  'PENDING_VERIFICATION',
+  'ACTIVE',
+  'SUSPENDED',
+]);
+
 // Business lifecycle of a tender — deliberately separate from processingStatus
 // below. A tender can be SUBMITTED (business status) while its LATEST re-upload
 // is still PROCESSING (document status); conflating them would make either

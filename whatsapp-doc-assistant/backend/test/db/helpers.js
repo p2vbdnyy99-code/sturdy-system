@@ -37,7 +37,7 @@ export async function truncateAll() {
       tender_events, tender_questions, compliance_items, tender_boq_items,
       tender_requirement_evidence, tender_requirements, tender_pages,
       tender_documents, tenders, company_profiles, company_members,
-      companies, users
+      sessions, companies, users
     RESTART IDENTITY CASCADE
   `);
 }
