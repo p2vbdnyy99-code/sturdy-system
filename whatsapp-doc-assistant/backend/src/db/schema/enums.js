@@ -32,11 +32,29 @@ export const tenderStatus = pgEnum('tender_status', [
   'CLOSED',
 ]);
 
-// Document-processing pipeline state for a tender's ingestion.
+// Document-processing pipeline state for a tender's ingestion (deterministic,
+// free — PDF/OCR only, see pdf.js). NOTE: 'ANALYZING' here is superseded by
+// tenderAnalysisStatus below (Milestone 4) — kept in this enum only because
+// Postgres enum values can't be cheaply removed; it must never be set by any
+// code path. Paid AI analysis has its own, deliberately separate status so a
+// re-run of analysis can never be confused with a re-run of extraction.
 export const tenderProcessingStatus = pgEnum('tender_processing_status', [
   'UPLOADED',
   'PROCESSING',
   'EXTRACTING',
+  'ANALYZING',
+  'COMPLETED',
+  'FAILED',
+]);
+
+// Paid AI analysis pipeline state (Milestone 4) — deliberately its own column
+// (tenders.analysisStatus), separate from tenderProcessingStatus above. A
+// tender's document processing can be COMPLETED (text extracted, free) while
+// its analysis is separately NOT_STARTED, ANALYZING, or being re-run —
+// conflating the two would make either status lie about the other, same
+// reasoning Milestone 1 used to split business status from processing status.
+export const tenderAnalysisStatus = pgEnum('tender_analysis_status', [
+  'NOT_STARTED',
   'ANALYZING',
   'COMPLETED',
   'FAILED',
@@ -54,6 +72,7 @@ export const requirementCategory = pgEnum('requirement_category', [
   'OEM',
   'DOCUMENT',
   'GEOGRAPHIC',
+  'SPECIAL_CONDITION',
   'OTHER',
 ]);
 

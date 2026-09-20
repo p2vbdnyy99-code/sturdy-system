@@ -9,12 +9,15 @@ import { log } from '../../logger.js';
 import { requireSession } from './auth.js';
 import { requireCsrf } from '../auth/csrf.js';
 import { requireCompanyAccess, TenantAccessError } from '../repo/tenants.js';
-import { getTender } from '../repo/tenders.js';
+import { getTender, startAnalysis } from '../repo/tenders.js';
 import { listPages } from '../repo/pages.js';
 import { listDocumentsForTender } from '../repo/documents.js';
 import { ingestUpload, processExtraction } from '../ingestion/pipeline.js';
 import { ValidationError } from '../ingestion/validate.js';
 import { getStorage } from '../storage/index.js';
+import { chunkPages } from '../analysis/chunker.js';
+import { assertAnalysisBudget, AnalysisBudgetError } from '../analysis/budget.js';
+import { runAnalysis } from '../analysis/pipeline.js';
 import { config } from '../../config.js';
 
 // multer buffers the upload in memory (never touches disk itself) — fine at
@@ -70,6 +73,60 @@ export function createTendersRouter() {
         processingStatus: tender.processingStatus,
         processingError: tender.processingError,
         pageCount: pages.length,
+        analysisStatus: tender.analysisStatus,
+        analysisError: tender.analysisError,
+        analyzedAt: tender.analyzedAt,
+      });
+    } catch (err) {
+      handleError(res, err);
+    }
+  });
+
+  router.post('/tenders/:id/analyze', async (req, res) => {
+    try {
+      const db = getDb();
+      const scope = await requireCompanyAccess(db, {
+        userId: req.bidpilotUserId,
+        companyId: req.body?.companyId,
+      });
+      const tender = await getTender(scope, req.params.id);
+      if (!tender) return res.status(404).json({ error: 'Not found.' });
+
+      // Analysis needs completed extraction text to work from — cannot run
+      // on a tender that's still UPLOADED/PROCESSING/EXTRACTING, or that
+      // failed extraction entirely.
+      if (tender.processingStatus !== 'COMPLETED') {
+        return res.status(409).json({
+          error: `Tender processing is ${tender.processingStatus}, not COMPLETED — cannot analyze yet.`,
+        });
+      }
+
+      const pages = await listPages(scope, tender.id);
+      const chunks = chunkPages(pages, { maxChars: config.bidpilot.analysis.chunkChars });
+      try {
+        await assertAnalysisBudget(db, scope.companyId, chunks.length);
+      } catch (err) {
+        if (err instanceof AnalysisBudgetError) {
+          return res.status(err.reason === 'tender_too_large' ? 413 : 429).json({ error: err.message });
+        }
+        throw err;
+      }
+
+      // Atomic compare-and-set — see startAnalysis()'s docblock. A row is
+      // only returned to the request that actually won the race.
+      const isReanalysis = tender.analysisStatus === 'COMPLETED';
+      const started = await startAnalysis(scope, tender.id);
+      if (!started) {
+        return res.status(409).json({ error: 'Analysis is already in progress for this tender.' });
+      }
+
+      res.status(202).json({ tenderId: tender.id, analysisStatus: 'ANALYZING' });
+
+      // Off the request path — same idiom as upload's extraction trigger.
+      setImmediate(() => {
+        runAnalysis(scope, tender.id, { isReanalysis }).catch((err) => {
+          log.error(`bidpilot: unhandled analysis failure for tender=${tender.id}:`, err);
+        });
       });
     } catch (err) {
       handleError(res, err);

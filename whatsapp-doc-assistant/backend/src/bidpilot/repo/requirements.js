@@ -10,6 +10,7 @@
 // requirement can never exist (even transiently, even after a crash mid-write)
 // without something backing it. See test/db/requirements-evidence.test.js.
 
+import { eq } from 'drizzle-orm';
 import { getTender } from './tenders.js';
 import { tenderRequirements, tenderRequirementEvidence } from '../../db/schema/index.js';
 
@@ -50,4 +51,17 @@ export async function createRequirementWithEvidence(scope, tenderId, requirement
 
     return { requirement, evidence: evidenceRows };
   });
+}
+
+/** Caller must have already confirmed tenderId ownership (mirrors the
+ *  pattern used throughout — see e.g. repo/pages.js). */
+export async function listRequirements(scope, tenderId) {
+  return scope.db.select().from(tenderRequirements).where(eq(tenderRequirements.tenderId, tenderId));
+}
+
+export async function listEvidenceForRequirement(scope, requirementId) {
+  return scope.db
+    .select()
+    .from(tenderRequirementEvidence)
+    .where(eq(tenderRequirementEvidence.requirementId, requirementId));
 }

@@ -244,6 +244,23 @@ export function buildDbConfig(env = {}) {
  *                                 flag — see auth/cookies.js. Normally
  *                                 auto-detected from RENDER_EXTERNAL_URL /
  *                                 NODE_ENV; only set this for an edge case.
+ *   BIDPILOT_ANALYSIS_CHUNK_CHARS  Character budget per AI analysis chunk
+ *                                 (default: 40000 — leaves headroom under
+ *                                 typical context limits for the system
+ *                                 prompt + schema instructions + output).
+ *   BIDPILOT_ANALYSIS_MAX_CHUNKS_PER_TENDER  Hard ceiling on chunks (= AI
+ *                                 calls) for ONE analysis run (default: 60).
+ *                                 A tender that would exceed this is refused
+ *                                 with a clear error rather than silently
+ *                                 truncated or allowed to run unbounded.
+ *   BIDPILOT_ANALYSIS_MAX_CALLS_PER_COMPANY_PER_DAY  Rolling-window cap on
+ *                                 total analysis AI calls across ALL of a
+ *                                 company's tenders per day (default: 200).
+ *                                 Enforced from usage_records (durable, not
+ *                                 in-memory) — this protects real spend, so
+ *                                 unlike the login-attempt limiter it must
+ *                                 survive a restart and stay accurate under
+ *                                 concurrent instances.
  */
 export function buildBidpilotConfig(env = {}) {
   return {
@@ -265,6 +282,11 @@ export function buildBidpilotConfig(env = {}) {
     sessionTtlMs: Math.max(1, Number(env.BIDPILOT_SESSION_TTL_DAYS) || 30) * 24 * 60 * 60 * 1000,
     sessionTouchThresholdMs: Math.max(1, Number(env.BIDPILOT_SESSION_TOUCH_MINUTES) || 10) * 60 * 1000,
     verificationTokenTtlMs: Math.max(1, Number(env.BIDPILOT_VERIFICATION_TOKEN_TTL_HOURS) || 24) * 60 * 60 * 1000,
+    analysis: {
+      chunkChars: Math.max(2000, Number(env.BIDPILOT_ANALYSIS_CHUNK_CHARS) || 40_000),
+      maxChunksPerTender: Math.max(1, Number(env.BIDPILOT_ANALYSIS_MAX_CHUNKS_PER_TENDER) || 60),
+      maxCallsPerCompanyPerDay: Math.max(1, Number(env.BIDPILOT_ANALYSIS_MAX_CALLS_PER_COMPANY_PER_DAY) || 200),
+    },
   };
 }
 

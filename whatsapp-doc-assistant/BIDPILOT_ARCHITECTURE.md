@@ -793,3 +793,273 @@ spec Milestone 4) — now that both the ingestion pipeline (Milestone 2) and a
 real, tested authorization boundary (this milestone) exist, the
 evidence-first `createRequirementWithEvidence()` built in Milestone 1 can
 finally be exercised by real extracted content instead of test fixtures.
+
+---
+
+# Milestone 4 — Structured Tender Intelligence
+
+Builds the AI analysis layer on top of Milestone 2's extraction (unmodified)
+and Milestone 3's real auth (unmodified): `POST /tenders/:id/analyze` reads
+a tender's `tender_pages`, chunks them by character budget, runs each chunk
+through structured AI extraction, validates the output against a strict
+domain schema, and persists requirements, BOQ, dates, and red flags —
+replacing any previous analysis wholesale. **No eligibility verdict, no
+frontend, no RAG.** Papyr's WhatsApp path is untouched; the deterministic
+PDF/OCR extraction engine was not modified at all.
+
+## What the audit found already existed
+
+Checked the real M1–M3 schema before proposing anything: most of the
+"destination" schema for this milestone was already built in Milestone 1,
+deliberately. `requirementCategory`'s enum already covered 10 of 12 needed
+categories; `tender_requirement_evidence` already had `sourcePage`,
+`evidenceText`, `extractedValue`, `confidence`; `tender_boq_items` existed
+unused since M1; `tenders`' overview columns (`organization`, `tenderNumber`,
+...) existed but were never populated (M2 only ever set `title` to the
+filename). This milestone mostly *populates* existing structure rather than
+inventing new destinations for data.
+
+## Schema additions (two migrations, both additive)
+
+- `SPECIAL_CONDITION` added to `requirementCategory` (a clause worth
+  flagging, distinct from a bid-eligibility gate — not folded into `OTHER`).
+- `tenderAnalysisStatus` enum (`NOT_STARTED → ANALYZING → COMPLETED/FAILED`)
+  and three new `tenders` columns: `analysisStatus`, `analysisError`,
+  `analyzedAt`. Deliberately **separate** from `processingStatus` (whose own
+  `ANALYZING` value, defined in Milestone 1 anticipating this, is now
+  explicitly superseded and must never be set again — left in the enum
+  rather than removed, since Postgres enum values aren't cheaply
+  droppable, but documented as dead). Same "business vs. processing status"
+  separation principle Milestone 1 established for `tenders.status` vs.
+  `tenders.processingStatus`, applied one level further.
+- `tenders.overviewEvidence` (jsonb) — per-field source-page evidence for
+  the scalar overview columns (`organization`, `location`, ...), since a
+  plain scalar column has no natural evidence relationship the way a
+  requirement does. A map, not 9 new `sourcePage`/`evidenceText` column
+  pairs — same reasoning as `company_profiles`' jsonb fields (read as a
+  whole, never independently queried).
+- `tender_requirements.title` — a short label, distinct from `description`
+  (fuller structured restatement) and `evidence.evidenceText` (verbatim
+  quote). Three-way distinction, not redundant fields.
+- Two new tables: **`tender_dates`** (`label`, `parsedDate` nullable,
+  `rawText`, `sourcePage`, `evidenceText`) and **`tender_red_flags`**
+  (`description`, `sourcePage`, `evidenceText`, deliberately no severity
+  field for v1). Kept structurally separate from `tender_events` per the
+  approved distinction: `tender_dates` is *document* data ("pre-bid
+  meeting — 12 Oct 2026 — page 14"); `tender_events` is *application
+  activity* ("tender re-analyzed") — this milestone writes to both, for
+  different reasons.
+
+## Pipeline architecture
+
+```
+tender_pages (Milestone 2, unmodified)
+     │
+     ▼
+chunkPages() — character-budget grouping of CONSECUTIVE pages (not a fixed
+page count — a dense clause page and a mostly-blank cover page are wildly
+different workloads). Page identity is embedded IN the text via explicit
+[PAGE N] markers, not just carried as a chunk-level range — so a fact from
+the middle of a 5-page chunk still cites its real, exact page.
+     │
+     ▼
+extractChunk() — one AI call per chunk via ai/index.js's EXISTING provider
+transport (getProvider().complete()) — no new transport, new prompts only.
+Reuses the same untrusted-content framing ai/index.js already uses for
+Papyr's document operations (tender text is exactly as untrusted as a
+WhatsApp-uploaded PDF).
+     │
+     ▼
+validateChunkResult() — hand-rolled validator (no JSON-schema library — the
+shape doesn't warrant the dependency), NOT "is this valid JSON" but "does
+every fact carry REAL evidence". A requirement/date/BOQ-item/red-flag
+missing a page citation, or citing a page not actually in this chunk (a
+hallucinated citation), is DROPPED — never persisted with a blank or
+invented source. This is the code-level enforcement of "if evidence cannot
+be located, do not manufacture it," not just a prompt instruction.
+     │
+     ▼
+aggregateResults() — deterministic merge, no extra AI call. Overview fields:
+earliest chunk (= earliest pages, since chunks are in page order) to
+provide a field wins. Requirements/BOQ/dates/red-flags: concatenated.
+Chunks don't overlap, so cross-chunk duplicate extraction of the same fact
+is expected to be rare — accepted as a known v1 limitation, not engineered
+around with fuzzy matching.
+     │
+     ▼
+replaceAnalysis() — one transaction: delete all prior AI-derived rows for
+this tender, insert the new set, update tenders' overview columns +
+overviewEvidence + analysisStatus, write one tender_events row. Either the
+whole replacement lands or none of it does.
+```
+
+## Trigger: explicit, not automatic
+
+`POST /tenders/:id/analyze` — analysis never runs automatically after
+upload/extraction. A tender must reach `processingStatus: COMPLETED` first
+(`409` otherwise). This keeps AI spend opt-in per action and gives a clean
+future billing boundary, per the approved design.
+
+**Idempotent start, race-safe**: `startAnalysis()` is a single atomic
+`UPDATE ... WHERE analysis_status != 'ANALYZING' RETURNING *` — the row
+itself is the compare-and-set. A second concurrent request simply gets zero
+rows back and returns `409`, with no separate lock module needed. Proven
+with a genuine `Promise.all()` of two concurrent analyze requests in the
+test suite: exactly one gets `202`, the other `409`.
+
+## Re-analysis: replace, not merge — and failure never destroys success
+
+Approved design: re-running analysis **replaces** the tender's AI-derived
+intelligence wholesale, never tries to reconcile old vs. new extraction.
+`replaceAnalysis()`'s delete-then-insert only runs inside its own
+transaction, invoked **only on a successful analysis run**. A **failed**
+analysis (`markAnalysisFailed()`) touches nothing but `analysisStatus`/
+`analysisError` — a re-analysis attempt that fails halfway leaves the
+**previous successful analysis completely intact**. Proven directly: a test
+runs a successful analysis, then a second run whose provider throws, then
+asserts the original requirements are still all present.
+
+No `analysisRun` history table — the approved "simple current-state model
+plus `tender_events`" — what happened IS recorded (`analysis_completed` vs.
+`analysis_replaced` event types), just not as a queryable history of past
+extracted-data snapshots. Revisit if the UI demonstrates a need for one.
+
+## Partial-success policy
+
+One chunk failing to parse does not sink a whole analysis — a 150-page
+tender shouldn't lose everything because one chunk's JSON was malformed.
+Chunk failures are caught individually and logged; if **at least one**
+chunk produced usable results, the analysis completes with whatever was
+successfully extracted. Only if **every** chunk failed (or a page-listing
+error prevented any chunk from running at all) is the whole analysis marked
+`FAILED` — and even then, per above, any prior successful analysis is left
+untouched.
+
+## AI spend control — deliberately DB-backed, not in-memory
+
+Two configurable caps (`config.bidpilot.analysis`, all env-driven, no
+hardcoded numbers):
+
+- **Per-tender chunk ceiling** (`BIDPILOT_ANALYSIS_MAX_CHUNKS_PER_TENDER`,
+  default 60) — a tender that would need more AI calls than this is
+  refused outright (`413`) before spending anything, rather than silently
+  truncated.
+- **Per-company rolling-window ceiling**
+  (`BIDPILOT_ANALYSIS_MAX_CALLS_PER_COMPANY_PER_DAY`, default 200) —
+  queried from `usage_records` (already scaffolded, unused, in Milestone 1)
+  over the trailing 24h, not an in-memory counter.
+
+This is the one deliberate departure from the in-memory-limiter pattern used
+everywhere else in this codebase so far (`loginRateLimit.js`,
+`uploadLock.js`): those protect against *abuse*, where a best-effort,
+single-instance-only guard is an acceptable tradeoff. This protects **real
+money** — it must stay accurate across a restart and, later, across
+multiple instances, so it reads its own prior spend back from Postgres
+before allowing more, rather than trusting an in-memory counter that resets
+on every deploy.
+
+Usage is recorded (`recordChunkUsage`) **after** each chunk call actually
+succeeds, not upfront — a failed/skipped chunk never counts against the
+company's budget.
+
+## Security / prompt injection
+
+Tender content is exactly as untrusted as a WhatsApp-uploaded document —
+`extract.js`'s system prompt reuses `ai/index.js`'s existing injection-guard
+wording verbatim (not a rewrite), and the untrusted text is wrapped in
+explicit delimiters, mirroring the same pattern `test/security-prompts.test.js`
+already proves for Papyr. A new test file
+(`test/bidpilot/analysis-security.test.js`) proves the same properties for
+the analysis prompt specifically, including that an embedded "ignore all
+previous instructions" payload is passed through as **data** inside the
+delimiters (never stripped — stripping would be its own kind of silent data
+loss) while the system prompt's guard is what does the actual defensive
+work.
+
+## Tests
+
+96 new tests across 7 files:
+- `chunker.test.js` (9) — budget-based grouping, page-identity-in-text,
+  an oversized single page never dropped, ordering, empty/null input.
+- `analysis-schema.test.js` (23) — the evidence-first drop rule for every
+  fact type (requirements, BOQ, dates, red flags, overview), hallucinated
+  page-citation rejection, malformed input never throws.
+- `aggregate.test.js` (6) — earliest-chunk-wins overview merge,
+  concatenation, dropped-count summing.
+- `analysis-budget.test.js` (7, DB-backed) — both caps, the exact boundary
+  (at-the-cap allowed, one-over refused), per-company isolation, the 24h
+  rolling window actually rolling.
+- `analysis-security.test.js` (8) — prompt-injection framing, category
+  whitelist, fabrication-forbidden instruction, tolerant JSON parsing.
+- `analysis.test.js` (17, DB-backed + full HTTP) — persistence (replace not
+  duplicate, failure preserves success, `tender_events` wording, an
+  all-dropped chunk still completes cleanly), and the full route: golden
+  path, `409` on incomplete extraction, concurrent-request race safety,
+  re-analysis via HTTP, `413` on an oversized tender, tenant isolation,
+  CSRF, session requirement.
+
+No test ever calls a real OpenAI/Anthropic API — every test uses
+`setProvider()` (the same existing test seam `ai/index.js` already
+provides) to inject a mock, consistent with `test/security-prompts.test.js`'s
+established pattern.
+
+One real bug this milestone's own smoke test caught before automated tests
+were even written: verifying nested-transaction support (`createRequirementWithEvidence()`'s
+own internal transaction, called from inside `replaceAnalysis()`'s
+transaction) — confirmed empirically to work correctly via drizzle-orm's pg
+driver (savepoints) before relying on it, rather than assumed. One bug in
+the test suite itself (not the implementation): the repo-level persistence
+tests initially forgot to call `insertPages()`, so every analysis in that
+block failed fast with "no pages to analyze" — caught immediately by the
+first run, since a real fix (inserting pages) was needed before any
+assertion could pass, not a change to loosen the assertion.
+
+**All tests pass** across all three realistic configuration states (neither
+configured, `DATABASE_URL` only, both configured) — Papyr's own suite is
+unaffected throughout, matching every prior milestone.
+
+## Environment variables added
+
+`BIDPILOT_ANALYSIS_CHUNK_CHARS` (default 40000), `BIDPILOT_ANALYSIS_MAX_CHUNKS_PER_TENDER`
+(default 60), `BIDPILOT_ANALYSIS_MAX_CALLS_PER_COMPANY_PER_DAY` (default 200)
+— all configurable, none hardcoded, per instruction.
+
+## Explicitly not built (per the approved boundary)
+
+Eligibility matching against a company profile, "winning probability," a
+frontend intelligence dashboard, Ask Tender/RAG, automatic tender
+discovery, Telegram, billing UI, OAuth/MFA/SSO, automatic BOQ pricing, and
+— structurally enforced, not just a policy — no code path can produce an
+AI-invented fact without a real, in-chunk page citation.
+
+## Unresolved decisions / deliberate v1 limitations
+
+- **No cross-chunk fuzzy deduplication** — a fact extracted near a chunk
+  boundary could in principle appear twice if it genuinely straddles two
+  chunks' page ranges. Accepted for v1 since chunks don't overlap; revisit
+  if it proves common with real tenders.
+- **No `analysisRun` history table** — current-state model only, per the
+  approved design; `tender_events` carries the activity trail, not a
+  queryable snapshot history.
+- **No partial-chunk-count truncation** — an over-budget tender is refused
+  outright rather than analyzed partially up to the cap. Simpler and safer
+  for v1; could be revisited if refusing a large legitimate tender proves
+  too blunt in practice.
+- **`overviewEvidence`'s per-field evidence is best-effort** — the AI can
+  supply a value without a page citation for overview fields specifically
+  (unlike requirements, where evidence is mandatory); this was a deliberate
+  reading of "evidence-first" as applying most strictly to the
+  compliance-relevant facts (requirements/BOQ/dates/red-flags), with
+  overview metadata held to a slightly softer bar. Worth confirming this
+  reading is correct.
+
+## Suggested next milestone
+
+Per the original product roadmap and this milestone's own explicit
+boundary: **eligibility matching against the company profile** — now that
+tenders reliably carry validated, evidence-backed requirements, the next
+value step is comparing them against `company_profiles` (Milestone 1,
+unused since) to populate `tender_requirements.companyStatus` (`MEETS` /
+`UNKNOWN` / `DOES_NOT_APPEAR_TO_MEET` — never a numeric score, per the
+schema's own standing prohibition). A frontend to actually see any of this
+remains a separate, later milestone either way.

@@ -22,6 +22,11 @@ export const tenderRequirements = pgTable('tender_requirements', {
   tenderId: uuid('tender_id').notNull().references(() => tenders.id, { onDelete: 'cascade' }),
 
   category: requirementCategory('category').notNull(),
+  // Short label (e.g. "Minimum Annual Turnover") — distinct from
+  // description's fuller, structured restatement, which is itself distinct
+  // from evidence.evidenceText's verbatim quote from the tender. Nullable:
+  // pre-Milestone-4 rows (none exist outside tests) never had one.
+  title: text('title'),
   description: text('description').notNull(),
   mandatory: boolean('mandatory').notNull().default(true),
 
