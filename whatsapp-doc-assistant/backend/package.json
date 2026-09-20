@@ -7,9 +7,12 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node --watch server.js",
-    "test": "node --test \"test/*.test.js\"",
+    "test": "node --test \"test/**/*.test.js\"",
     "benchmark": "node test/benchmark.mjs",
-    "digest": "node scripts/digest.mjs"
+    "digest": "node scripts/digest.mjs",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:studio": "drizzle-kit studio"
   },
   "engines": {
     "node": ">=20"
@@ -19,13 +22,16 @@
     "@napi-rs/canvas": "^1.0.2",
     "docx": "^9.0.2",
     "dotenv": "^17.0.0",
+    "drizzle-orm": "^0.45.2",
     "exceljs": "^4.4.0",
     "express": "^5.1.0",
     "openai": "^7.3.0",
     "pdfjs-dist": "^6.2.108",
+    "pg": "^8.23.0",
     "tesseract.js": "^5.1.1"
   },
   "devDependencies": {
+    "drizzle-kit": "^0.31.10",
     "jszip": "^3.10.1",
     "pdfkit": "^0.19.1"
   },

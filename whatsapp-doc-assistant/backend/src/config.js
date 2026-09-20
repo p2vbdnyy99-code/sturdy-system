@@ -175,6 +175,33 @@ export function buildMetricsConfig(env = {}) {
 }
 
 /**
+ * BidPilot's Postgres connection config. Entirely separate from anything Papyr
+ * uses — Papyr's WhatsApp path never reads `config.db` and keeps running with
+ * zero database whether or not this is configured. `url` empty means BidPilot's
+ * persistence layer is simply not wired up yet (e.g. local dev without
+ * Postgres, or this deployment doesn't run BidPilot at all); code that needs it
+ * should fail loudly and specifically, not silently no-op.
+ *
+ * Env:
+ *   DATABASE_URL      postgres://user:pass@host:port/db — required for any
+ *                      BidPilot database operation. Never a hardcoded default.
+ *   DATABASE_POOL_MAX max simultaneous connections this process holds open
+ *                      (default: 10). Render runs this as one long-lived
+ *                      process (not serverless), so a small, fixed pg.Pool is
+ *                      sufficient — no external pooler (pgBouncer etc.) is
+ *                      needed at this scale. If BidPilot later runs multiple
+ *                      instances or background workers, remember the total
+ *                      across ALL of them must stay under Postgres's
+ *                      max_connections — that's a later-milestone concern.
+ */
+export function buildDbConfig(env = {}) {
+  return {
+    url: String(env.DATABASE_URL || ''),
+    poolMax: Math.max(1, Number(env.DATABASE_POOL_MAX) || 10),
+  };
+}
+
+/**
  * A short, pseudonymous tag for a sender — for counting distinct users in logs
  * without ever recording the phone number. Returns '' when no salt is
  * configured, so the phone number is never logged by default. Pure/testable.
@@ -226,6 +253,7 @@ export const config = {
   extract: buildExtractConfig(process.env),
   metrics: buildMetricsConfig(process.env),
   budget: buildBudgetConfig(process.env),
+  db: buildDbConfig(process.env),
 };
 
 /** Warn (but don't crash) about configuration that will break requests. */
