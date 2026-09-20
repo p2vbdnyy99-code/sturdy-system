@@ -282,3 +282,273 @@ async processing states. That exercises the schema under real data before any
 more tables get added on top of it, and is where the "don't blindly process a
 300-page PDF in one request" architecture (already built for Papyr's OCR/
 extraction isolation) gets reused for BidPilot, not rebuilt.
+
+---
+
+# Milestone 2 — Tender Ingestion (vertical slice)
+
+Proves: **PDF upload → secure validation → durable Tender record → page-aware
+extraction/OCR → TenderPage records → durable processing status →
+completion/failure.** Nothing beyond this — no structured AI extraction,
+eligibility, compliance, BOQ intelligence, RAG, web UI, Telegram, or billing.
+Papyr's WhatsApp path remains completely untouched.
+
+## Storage decision
+
+**The database stores metadata and a reference key, never the PDF bytes.**
+Tender documents are commercially sensitive, so all access goes through a
+short-lived signed URL — never a public path or a raw filesystem read.
+
+A small interface (`putObject`, `getSignedDownloadUrl`, `deleteObject`,
+`newKey`) with two backends:
+
+| | `LocalDiskStorage` | `S3Storage` |
+|---|---|---|
+| Use | Dev/testing only | **Production** |
+| Dependencies | None (real local disk) | Any S3-compatible provider — AWS S3, Cloudflare R2, Backblaze B2, Supabase Storage |
+| "Signed URL" | HMAC-signed, time-limited token verified by our own `routes/download.js` — same *shape* of guarantee (expires, unforgeable, unguessable) as a real presigned URL, with zero external service | A real S3 presigned URL — goes straight to the storage provider, never touches this app |
+| **Viable on Render?** | **No.** Render's standard web service disk is ephemeral and is wiped on every redeploy. A tender uploaded today must still be retrievable next month; local disk cannot promise that. | **Yes — this is the only viable production answer**, not a "nice to have later." |
+
+This is a firmer conclusion than "avoid local filesystem dependence" as a
+preference — it's a hard constraint of Render's hosting model. Any real
+BidPilot deployment needs `BIDPILOT_STORAGE_DRIVER=s3` from day one.
+
+**Recommended default provider: Cloudflare R2** — S3-compatible (same code
+path), zero egress fees (relevant for a bootstrapped beta where documents get
+downloaded repeatedly), simple setup. Not hardcoded: `BIDPILOT_S3_ENDPOINT`
+makes any S3-compatible provider a config change, not a code change.
+
+**Testing honesty:** this sandbox has no real cloud credentials.
+`LocalDiskStorage` is tested fully, for real (`test/bidpilot/storage-local.test.js`,
+7 tests against real local disk + real HMAC verification, plus the full
+upload/download round-trip in `upload.test.js`). `S3Storage`
+(`test/bidpilot/storage-s3.test.js`) is tested against a **mocked** `S3Client` —
+it verifies the exact commands and parameters sent (`PutObjectCommand`,
+`DeleteObjectCommand`, key construction, `forcePathStyle` logic), not live
+wire behavior against a real bucket. **Smoke-test `S3Storage` against a real
+bucket before the first production upload** — see "unresolved decisions."
+
+Storage keys are **always server-generated** (`crypto.randomUUID()`), never
+derived from the uploaded filename — this eliminates path traversal by
+construction, not validation. Proven in `upload.test.js` ("a path-traversal
+filename never affects the storage key or leaves the storage dir") and
+directly in `validate.test.js`'s `sanitizeFilename` tests (bypassing any HTTP
+client's own filename normalization, which made an earlier manual check of
+this inconclusive).
+
+## API endpoints
+
+Mounted at `/bidpilot` in `server.js`, entirely separate from Papyr's
+`/webhook` — no shared routes, middleware, or state. If `DATABASE_URL` isn't
+configured, `/bidpilot/*` returns `503` cleanly rather than the server failing
+to boot; a Papyr-only deployment is unaffected either way.
+
+- `POST /bidpilot/tenders/upload` — multipart (`companyId` field + `file`).
+  Returns `{ tenderId, status, processingStatus, duplicate }` immediately;
+  extraction runs after the response is sent.
+- `GET /bidpilot/tenders/:id?companyId=` — status + page count.
+- `GET /bidpilot/tenders/:id/document-url?companyId=` — a signed download URL
+  for the original PDF (5 min expiry).
+- `GET /bidpilot/files/:key` — serves `LocalDiskStorage`-backed downloads;
+  meaningless (never reached) under the `s3` driver, since S3 presigned URLs
+  point directly at the provider.
+
+## ⚠️ Placeholder identity — explicitly not authentication
+
+Every `/tenders/*` route requires an `x-bidpilot-user-id` header naming a real
+`users.id`. **This is not authentication** — no password, no signature, no
+session, no expiry. It exists only so this milestone's tenant-scope
+enforcement (`CompanyScope`) has a real identity to test against, without
+pretending a login system exists. See `src/bidpilot/routes/auth.js`'s
+docblock. **Do not expose these routes to real traffic** until a real auth
+milestone (password/session/JWT — `users.passwordHash` is already there for
+this) replaces it.
+
+The download route (`/bidpilot/files/:key`) deliberately requires **no**
+identity header at all — a signed URL is meant to be self-authorizing. Getting
+this right required a real fix: an earlier draft mounted the identity
+middleware unscoped (`router.use(requireIdentity())`), which — because both
+routers share the `/bidpilot` prefix — silently intercepted download requests
+too. Fixed by scoping it explicitly (`router.use('/tenders', requireIdentity())`);
+caught via a manual end-to-end smoke test before it reached the automated
+suite.
+
+## Processing state machine
+
+`tenders.status` (business lifecycle) and `tenders.processingStatus`
+(pipeline state) stay independent, per Milestone 1's design. This milestone
+drives `processingStatus` through:
+
+```
+UPLOADED → PROCESSING → EXTRACTING → COMPLETED
+                                   ↘ FAILED (processingError set, capped at 500 chars)
+```
+
+`ANALYZING` is defined in the schema (Milestone 1) but unused until the
+structured-AI milestone.
+
+## Extraction flow (100% reused, nothing rewritten)
+
+`src/bidpilot/ingestion/pipeline.js` calls `extractStructured()` from
+`src/pdf.js` completely unmodified — the same isolated, heap-capped,
+page-aware, per-page-OCR-fallback engine Papyr already uses. This file's only
+job is mapping that output onto `tender_pages` rows (`pageNumber`, `rawText`
+via `spansToText()`, `ocrUsed`). No new extraction code was written.
+
+The buffer is validated and stored once at upload time; the async extraction
+step reuses that SAME in-memory buffer (passed directly into the
+`setImmediate` closure) rather than reading it back from storage — this keeps
+the storage interface small (no generic "read bytes" method that `S3Storage`
+would otherwise need to expose for no other reason).
+
+## Security controls
+
+- **Untrusted input, checked at multiple layers**: magic-byte check
+  (`%PDF-` header, not just the declared MIME type — a renamed non-PDF is
+  caught), size cap (`BIDPILOT_MAX_UPLOAD_MB`, both multer's own limit and an
+  independent check in `validateUpload`), filename sanitization for display
+  only (storage keys are never derived from it).
+- **No path traversal possible by construction** — storage keys are always
+  `crypto.randomUUID()`-generated; `LocalDiskStorage._resolve()` additionally
+  verifies the resolved path stays inside the storage directory as defense in
+  depth, even though the key is never attacker-controlled.
+- **Tenant isolation** reuses Milestone 1's `CompanyScope` unmodified — every
+  route calls `requireCompanyAccess()` before touching a resource. A user
+  naming a `companyId` they don't belong to gets `403`; a user who legitimately
+  belongs to company A but names a tender that belongs to company B gets
+  `404` — deliberately indistinguishable from "doesn't exist," never a
+  distinguishable 403 that would leak the id's validity. (An early draft of
+  this milestone's own test suite asserted the wrong status here — 403 instead
+  of 404 — which is itself evidence the design is intentional and specific,
+  not accidental.)
+- **No internals leaked in responses** — every route funnels errors through
+  a single `handleError()` that returns a generic message; `ValidationError`
+  gets its own safe message, everything else is `500` with no stack trace,
+  path, or credential ever serialized to the client. Proven in
+  `upload.test.js`'s malformed-file test, which asserts the response body
+  contains no `node_modules`/stack-frame patterns.
+- **Extraction failures never leak document content** — `processingError` is
+  the caught error's `message` only, capped at 500 characters, matching the
+  existing "safe generic message" discipline `pdf.js` already uses elsewhere.
+
+## Duplicate strategy
+
+Keyed on **sha256 content hash**, scoped **per company** (the same file
+uploaded by two different companies is two separate tenders — see the schema
+doc's dedupe note). Rule: if the company already has a document with this
+hash attached to a tender that is **not** `FAILED`, the upload is treated as
+that same tender (`200`, `duplicate: true`, nothing new written, no
+reprocessing). If the only match is on a `FAILED` tender, a fresh attempt is
+allowed — retrying after a failure is exactly what should happen.
+
+**Concurrency**: a naive "check for a duplicate, then insert" has a real
+TOCTOU race under truly simultaneous uploads (two requests can both miss each
+other's not-yet-committed rows). Closed with a small in-process lock
+(`src/bidpilot/ingestion/uploadLock.js`) serializing ingestion per
+`(companyId, contentHash)` — a **new**, narrowly-scoped implementation, not a
+reuse of `src/dedupe.js` (that module drops old WhatsApp message ids on a
+TTL; this needs two concurrent callers to resolve to the *same* outcome,
+a different shape of problem). Proven with a genuine `Promise.all()` of three
+simultaneous identical uploads in `upload.test.js` — exactly one creates the
+tender, the other two see it as a duplicate.
+
+Tender + TenderDocument creation is wrapped in a single DB transaction — if
+the document insert failed after the tender committed, the tender would be an
+orphan stuck at `UPLOADED` forever (nothing would ever trigger its
+processing). A transaction failing instead leaves an orphaned blob in storage,
+the better failure mode: invisible to users, cheap to garbage-collect later,
+versus a phantom business record.
+
+## Large-document test results
+
+A synthetic 40-page PDF (`upload.test.js`, "large-document handling") ran the
+full pipeline end-to-end in well under a second in this sandbox: uploaded,
+extracted via the existing isolated child-process pipeline, all 40 pages
+persisted with correct sequential page numbers. Confirms the page-aware,
+process-isolated architecture (already proven for Papyr) carries over to
+BidPilot's ingestion without modification — no whole-document AI prompt, no
+uncontrolled single memory operation.
+
+## Papyr regression results
+
+Full existing suite (131 tests) plus Milestone 1's 33 DB tests: **unmodified,
+all still passing**, both with and without `DATABASE_URL` set.
+
+## Queue/scaling decision — and exactly when it stops being enough
+
+**Not introduced this milestone**, per instruction. Extraction runs
+**in-process**, fire-and-forget via `setImmediate` — the identical idiom
+`server.js` already uses for the WhatsApp webhook ("acknowledge immediately,
+do the real work off the request path"). This is honestly **not a durable
+queue**: if the process restarts mid-extraction (a Render redeploy, a crash),
+that tender is stuck in `PROCESSING`/`EXTRACTING` forever, with nothing to
+detect or retry it. For a single Render instance at this milestone's traffic
+level, that's an acceptable, explicit gap — not a silent one.
+
+**Introduce a durable job queue (BullMQ + Redis, or a DB-polled job table) at
+the point where any of these becomes true:**
+1. **Horizontal scaling** — more than one server instance, requiring
+   cross-instance job coordination (in-process `setImmediate` has no
+   visibility across processes).
+2. **Processing time regularly approaches a redeploy's likelihood** — long
+   enough that a mid-flight crash/restart losing a job becomes a real user
+   complaint, not a theoretical one.
+3. **Stuck-job detection becomes a product requirement** — "why has my
+   180-page tender been 'processing' for an hour" needs an answer, which
+   requires a job system with visibility and retry, not silent in-process
+   fire-and-forget.
+
+None of these are true yet. Building BullMQ/Redis now would be exactly the
+premature infrastructure this milestone was scoped to avoid.
+
+## Unresolved decisions (deliberately left for later milestones)
+
+- **`S3Storage` needs a live smoke test against a real bucket** before first
+  production use — this sandbox has no cloud credentials, so its wire-level
+  correctness is verified against a mocked client, not proven end-to-end.
+- **Real authentication** — the placeholder identity header must be replaced
+  before any public exposure (see above).
+- **Stuck-job detection / retry** — no watchdog for a tender stuck in
+  `PROCESSING`/`EXTRACTING` after a crash; see "queue/scaling decision."
+- **Switching `BIDPILOT_STORAGE_DRIVER` after documents already exist under
+  the old driver** requires a manual migration/backfill of existing rows'
+  files — not automated.
+- **Data retention / deletion** (product spec PHASE 23) — `deleteObject()`
+  exists on the storage interface, but no retention job or "delete this
+  tender's file" trigger is wired up yet.
+
+## Tests
+
+`test/bidpilot/*.test.js` (48 tests):
+- `storage-local.test.js` (7) — real local disk: round-trip, signed-URL
+  verify/tamper/expiry/wrong-key, delete, constructor validation.
+- `storage-s3.test.js` (5) — mocked `S3Client`: correct commands/params,
+  key format, `forcePathStyle` logic, constructor validation.
+- `validate.test.js` (~19) — magic-byte/size/MIME checks, and `sanitizeFilename`
+  tested directly against raw path-traversal strings (not filtered through an
+  HTTP client's own filename handling).
+- `upload.test.js` (17) — the full vertical slice over real HTTP (ephemeral
+  port), real Postgres, real `LocalDiskStorage`, real extraction: the golden
+  path, OCR fallback (genuinely scanned fixture), malformed/oversized
+  rejection, tenant isolation (including a 404-vs-403 distinction proven
+  deliberate), sequential AND concurrent duplicate handling, path-traversal
+  filename safety, the full signed-URL round-trip (byte-exact, tamper
+  rejected), and the 40-page large-document case.
+
+Running the DB-backed suites (Milestone 1 + Milestone 2) together surfaced a
+real test-infrastructure gap: Node's test runner parallelizes across files by
+default, and every DB test file shares one physical dev database with no
+isolation — one file's `truncateAll()` could wipe rows another file's test was
+using mid-flight. Fixed with `--test-concurrency=1` in `npm test`; documented
+here rather than left as a mysterious intermittent failure for later.
+
+## Suggested next milestone
+
+**Structured AI extraction** (the product spec's Milestone 4) — now that
+`tender_pages` reliably holds real, page-numbered text for any uploaded
+tender, the next value step is running it through a schema-validated
+extraction pipeline (requirements, dates, EMD, eligibility criteria) using
+the existing `ai/provider.js` transport, writing into
+`tender_requirements` + `tender_requirement_evidence` via the
+evidence-first `createRequirementWithEvidence()` already built in
+Milestone 1. `ANALYZING` (defined, unused until now) becomes real.

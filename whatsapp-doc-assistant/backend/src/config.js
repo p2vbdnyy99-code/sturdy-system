@@ -202,6 +202,54 @@ export function buildDbConfig(env = {}) {
 }
 
 /**
+ * BidPilot ingestion config — storage backend selection, upload limits, and
+ * the placeholder identity header (see routes/auth.js — NOT real
+ * authentication, see its docblock). Kept fully separate from Papyr's config;
+ * Papyr's WhatsApp path never reads any of this.
+ *
+ * Env:
+ *   BIDPILOT_STORAGE_DRIVER      'local' (dev/test) | 's3' (production).
+ *                                 Default: 'local'.
+ *   BIDPILOT_LOCAL_STORAGE_DIR   Where LocalDiskStorage writes files
+ *                                 (default: <dataDir>/bidpilot-files).
+ *   BIDPILOT_LOCAL_SIGNING_SECRET  Secret used to sign local download URLs.
+ *                                 Required when the driver is 'local'.
+ *   BIDPILOT_PUBLIC_BASE_URL     This service's own public URL, used to build
+ *                                 local signed download links (e.g.
+ *                                 https://papyr.onrender.com). Not needed for
+ *                                 the 's3' driver (S3 URLs are absolute).
+ *   BIDPILOT_S3_BUCKET / _REGION / _ENDPOINT / _ACCESS_KEY_ID /
+ *   _SECRET_ACCESS_KEY           S3-compatible credentials. _ENDPOINT is only
+ *                                 needed for a non-AWS provider (R2, Backblaze,
+ *                                 ...); leave blank for real AWS S3.
+ *   BIDPILOT_MAX_UPLOAD_MB       Reject tender PDFs larger than this
+ *                                 (default: 50 — larger than Papyr's 20MB
+ *                                 WhatsApp cap; tenders can legitimately run
+ *                                 hundreds of pages).
+ *   BIDPILOT_IDENTITY_HEADER     Header name the placeholder identity
+ *                                 middleware reads (default: x-bidpilot-user-id).
+ */
+export function buildBidpilotConfig(env = {}) {
+  return {
+    storageDriver: String(env.BIDPILOT_STORAGE_DRIVER || 'local'),
+    localStorage: {
+      dir: env.BIDPILOT_LOCAL_STORAGE_DIR || path.resolve(env.DATA_DIR || './data', 'bidpilot-files'),
+      publicBaseUrl: env.BIDPILOT_PUBLIC_BASE_URL || `http://localhost:${env.PORT || 8788}`,
+      signingSecret: env.BIDPILOT_LOCAL_SIGNING_SECRET || '',
+    },
+    s3: {
+      bucket: env.BIDPILOT_S3_BUCKET || '',
+      region: env.BIDPILOT_S3_REGION || '',
+      endpoint: env.BIDPILOT_S3_ENDPOINT || '',
+      accessKeyId: env.BIDPILOT_S3_ACCESS_KEY_ID || '',
+      secretAccessKey: env.BIDPILOT_S3_SECRET_ACCESS_KEY || '',
+    },
+    maxUploadBytes: (Math.max(1, Number(env.BIDPILOT_MAX_UPLOAD_MB) || 50)) * 1024 * 1024,
+    identityHeader: String(env.BIDPILOT_IDENTITY_HEADER || 'x-bidpilot-user-id').toLowerCase(),
+  };
+}
+
+/**
  * A short, pseudonymous tag for a sender — for counting distinct users in logs
  * without ever recording the phone number. Returns '' when no salt is
  * configured, so the phone number is never logged by default. Pure/testable.
@@ -254,6 +302,7 @@ export const config = {
   metrics: buildMetricsConfig(process.env),
   budget: buildBudgetConfig(process.env),
   db: buildDbConfig(process.env),
+  bidpilot: buildBidpilotConfig(process.env),
 };
 
 /** Warn (but don't crash) about configuration that will break requests. */

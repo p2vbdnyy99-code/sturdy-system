@@ -16,6 +16,8 @@ import { handleMessage } from './src/router.js';
 import { ensureDataDir } from './src/storage.js';
 import { isDuplicate } from './src/dedupe.js';
 import { allow } from './src/ratelimit.js';
+import { createTendersRouter } from './src/bidpilot/routes/tenders.js';
+import { createDownloadRouter } from './src/bidpilot/routes/download.js';
 
 const app = express();
 app.disable('x-powered-by');
@@ -141,6 +143,23 @@ async function processWebhook(body) {
       }
     }
   }
+}
+
+// ─── BidPilot (separate product, same engine) ───────────────────────────────
+// Entirely independent of the WhatsApp webhook above — no shared routes,
+// middleware, or state with Papyr's message handling. See
+// whatsapp-doc-assistant/BIDPILOT_ARCHITECTURE.md.
+//
+// Mounted only when DATABASE_URL is configured; otherwise these routes 503
+// cleanly rather than the server failing to boot. A Papyr-only deployment
+// (no DATABASE_URL) is completely unaffected either way.
+if (config.db.url) {
+  app.use('/bidpilot', createTendersRouter());
+  app.use('/bidpilot', createDownloadRouter());
+} else {
+  app.use('/bidpilot', (_req, res) => {
+    res.status(503).json({ error: 'BidPilot is not configured on this deployment.' });
+  });
 }
 
 // ─── Fallbacks + start ───────────────────────────────────────────────────────

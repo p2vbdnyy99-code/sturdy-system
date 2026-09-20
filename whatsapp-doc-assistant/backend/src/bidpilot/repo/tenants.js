@@ -56,6 +56,14 @@ export class CompanyScope {
     this.role = role;
   }
 
+  /** Same company/role, bound to a different db handle — used to run
+   *  repository calls inside a transaction: `scope.withDb(tx)`. Plain object
+   *  spread (`{ ...scope, db: tx }`) would silently lose these methods since
+   *  they live on the prototype, not as own properties — always use this. */
+  withDb(db) {
+    return new CompanyScope(db, this.companyId, this.role);
+  }
+
   /** All rows of `table` owned by this scope's company. */
   async listOwned(table, companyIdColumn) {
     return this.db.select().from(table).where(eq(companyIdColumn, this.companyId));

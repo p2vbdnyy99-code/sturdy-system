@@ -66,13 +66,24 @@ export const tenderDocuments = pgTable('tender_documents', {
   id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
   tenderId: uuid('tender_id').notNull().references(() => tenders.id, { onDelete: 'cascade' }),
   filename: text('filename').notNull(),
-  // Local disk path today (matches the existing storage.js pattern); an
-  // object-storage URL later is a value change, not a schema change.
+  // A backend-relative object KEY (local filename or S3 key), never a raw
+  // filesystem path and never derived from user input — see
+  // src/bidpilot/storage/*.js's newKey(). The database never stores the file
+  // bytes, only this reference. NOTE: switching BIDPILOT_STORAGE_DRIVER after
+  // documents already exist under the old driver requires a migration/backfill
+  // of existing rows' files — not handled automatically.
   storagePath: text('storage_path').notNull(),
   mimeType: text('mime_type'),
   sizeBytes: integer('size_bytes'),
+  // sha256 of the file content — the dedupe key (see
+  // src/bidpilot/repo/documents.js findDuplicate()). Not unique at the DB
+  // level: the same file hash CAN legitimately recur across different
+  // companies, or after a prior attempt FAILED — dedupe logic decides what to
+  // do with a match, the schema just makes the lookup possible.
+  contentHash: text('content_hash'),
   uploadedBy: uuid('uploaded_by').references(() => users.id, { onDelete: 'set null' }),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 }, (t) => [
   index('tender_documents_tender_idx').on(t.tenderId),
+  index('tender_documents_content_hash_idx').on(t.contentHash),
 ]);
