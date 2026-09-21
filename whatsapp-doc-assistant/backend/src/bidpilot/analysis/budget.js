@@ -71,3 +71,40 @@ export async function recordChunkUsage(db, { companyId, tenderId, metadata }) {
     metadata: metadata || null,
   });
 }
+
+// ─── Eligibility checks — a separate cost center from analysis above ───────
+
+export const ELIGIBILITY_USAGE_KIND = 'tender_eligibility_check';
+
+/** Always exactly one AI call per eligibility run (unlike analysis, which is
+ *  chunked) — no per-tender size cap needed, just the daily company cap. */
+export async function assertEligibilityBudget(db, companyId) {
+  const { maxCallsPerCompanyPerDay } = config.bidpilot.eligibility;
+  const since = new Date(Date.now() - 24 * 60 * 60 * 1000);
+  const [row] = await db
+    .select({ used: sql`coalesce(sum(${usageRecords.quantity}), 0)` })
+    .from(usageRecords)
+    .where(and(
+      eq(usageRecords.companyId, companyId),
+      eq(usageRecords.kind, ELIGIBILITY_USAGE_KIND),
+      gte(usageRecords.createdAt, since),
+    ));
+  const used = Number(row?.used || 0);
+
+  if (used + 1 > maxCallsPerCompanyPerDay) {
+    throw new AnalysisBudgetError(
+      `This company has used ${used}/${maxCallsPerCompanyPerDay} eligibility checks in the last 24h.`,
+      'company_daily_cap',
+    );
+  }
+}
+
+export async function recordEligibilityUsage(db, { companyId, tenderId, metadata }) {
+  await db.insert(usageRecords).values({
+    companyId,
+    tenderId,
+    kind: ELIGIBILITY_USAGE_KIND,
+    quantity: 1,
+    metadata: metadata || null,
+  });
+}

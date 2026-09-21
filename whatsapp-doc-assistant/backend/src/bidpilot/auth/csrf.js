@@ -44,11 +44,27 @@ export function verifyCsrfToken(sessionTokenHash, providedToken) {
  *  methods for a cookie-authenticated request. Call AFTER session
  *  verification (req.bidpilotSession must already be set). GET/HEAD/OPTIONS
  *  are exempt (never state-changing, and this is what lets a plain link/tab
- *  open work without a token). */
+ *  open work without a token).
+ *
+ *  Skipped entirely when req.bidpilotAuthMethod === 'apiToken' (set by
+ *  requireSession() in routes/auth.js): CSRF protection exists specifically
+ *  to stop a forged cross-site request from riding on a browser's AMBIENT
+ *  cookies, which it attaches automatically without the attacker needing to
+ *  know anything secret. An API-token request has no such ambient
+ *  attachment — the token must be deliberately read and placed in an
+ *  Authorization header by JS that already had it, which a cross-site
+ *  attacker cannot do without a DIFFERENT vulnerability (XSS) that CSRF
+ *  protection was never meant to address anyway. This is an even cleaner
+ *  argument than it would be for a bearer-token-shaped session cookie: the
+ *  API token is a wholly separate, short-lived credential with no shared
+ *  identity with the browser's cookie session at all. Cookie-authenticated
+ *  requests (the existing frontend) are completely unaffected — still fully
+ *  enforced below, exactly as before. */
 export function requireCsrf() {
   const SAFE_METHODS = new Set(['GET', 'HEAD', 'OPTIONS']);
   return (req, res, next) => {
     if (SAFE_METHODS.has(req.method)) return next();
+    if (req.bidpilotAuthMethod === 'apiToken') return next();
     const provided = req.get('x-csrf-token');
     if (!req.bidpilotSession || !verifyCsrfToken(req.bidpilotSession.tokenHash, provided)) {
       return res.status(403).json({ error: 'Invalid or missing CSRF token.' });

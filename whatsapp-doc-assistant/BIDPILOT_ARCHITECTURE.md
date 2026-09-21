@@ -1811,3 +1811,200 @@ clear filters, log out). No behavior change.
 - Full backend 3x-configuration regression suite re-run despite this being
   a frontend-only, CSS-only change, per standing discipline.
 - Secret-leak scan of the diff — no matches.
+
+# Milestone 6 — Eligibility Engine + External API Auth (corrected design)
+
+**This supersedes an earlier M6 implementation that was reviewed and
+rejected before being committed.** The rejected draft (i) returned the
+existing 30-day HttpOnly session token directly in a JSON response body,
+so a cross-origin caller's JavaScript could read a credential the cookie
+mechanism was specifically designed to keep out of JS reach, and (ii) let
+the AI supply both a company-profile field NAME and its claimed VALUE for
+an eligibility verdict, with the server only checking the field existed —
+never verifying the AI's claimed value against the real profile. Neither
+implementation detail was ever committed; both are corrected below. See
+the review transcript for the full original findings; this section
+describes only the corrected, approved design.
+
+## Authentication: two credentials, not one shared two ways
+
+```
+Browser (existing frontend)          External frontend (e.g. Lovable)
+        │                                      │
+   POST /login                            POST /login {issueApiToken: true}
+        │                                      │
+   30-day session (sessions table)        30-day session (sessions table, same as always)
+        │                                      │      +
+   HttpOnly cookie ONLY                   NEW: api_access_tokens row (20 min)
+   (never in JSON, unchanged from M3)     JSON body: { apiToken, apiTokenExpiresAt }
+```
+
+**The 30-day session token is never returned in a JSON response body, for
+any caller, under any condition** — the actual fix. It only ever leaves the
+server as the `bidpilot_session` HttpOnly cookie, exactly as before this
+milestone. A cross-origin caller instead gets a *separate*, short-lived
+(`BIDPILOT_API_TOKEN_TTL_MINUTES`, default 20) credential from its own
+table (`api_access_tokens`, new — `unique` constraint on `token_hash`, same
+hash-only-storage discipline as `sessions`), minted only on an explicit
+opt-in flag on the *same* password-verified login call — not a second
+login system. `requireSession()` checks `Authorization: Bearer` against
+`api_access_tokens` and the cookie against `sessions`; the two never
+cross-validate (tested explicitly both directions). `req.bidpilotAuthMethod`
+(`'cookie' | 'apiToken'`) records which one authenticated a request.
+
+`CompanyScope`/`requireCompanyAccess` are completely unaffected — both
+credentials resolve to the same `req.bidpilotUserId`, and tenant membership
+is re-verified fresh on every request regardless of transport (tested for
+both). CSRF is skipped only for `authMethod === 'apiToken'` (no ambient
+cookie attachment for a cross-site attacker to ride on) and remains fully
+enforced for `authMethod === 'cookie'`, unchanged. `POST /logout` revokes
+whichever credential actually authenticated it — verified to leave the
+*other* credential (from the same login call) still valid, proving the two
+are independently revocable, not two names for one row.
+
+CORS (`auth/cors.js`) is unchanged in design from the earlier review: an
+explicit `BIDPILOT_CORS_ORIGINS` allowlist (empty/unset by default — fully
+closed, not wildcard), never `Access-Control-Allow-Credentials`.
+
+## Eligibility evidence: the AI names a fact, the server supplies it
+
+`POST /tenders/:id/eligibility` (unchanged endpoint shape) now requires a
+`MEETS`/`DOES_NOT_APPEAR_TO_MEET` verdict to survive server-side
+verification against the real `company_profiles` row before being
+persisted, not just the AI's say-so:
+
+```
+AI: {"status": "MEETS", "companyEvidence": [{"field": "annualTurnover", "reason": "covers the ₹5cr minimum"}]}
+                    ↓
+Server: is "annualTurnover" a real, whitelisted profile field?
+        does it have a real, non-empty value in THIS company's actual profile?
+        did the AI give a non-empty reason connecting it to this requirement?
+                    ↓
+   ALL YES → persisted as {field, value: <SERVER-READ value>, label, reason: <AI's reason>}
+   ANY NO  → verdict forcibly downgraded to UNKNOWN, no evidence persisted
+```
+
+The AI is never asked for and never supplies the field's *value* — the
+prompt explicitly tells it any value it writes will be ignored, and the
+server reads the real value fresh from the profile it already has in hand
+(tested: a mock AI response with a deliberately fabricated value is
+confirmed never to reach the database). This closes the actual gap the
+review identified — the server no longer trusts "the field exists" as
+sufficient; it separately verifies the field is non-empty and that a
+reason was given, and substitutes its own value unconditionally.
+
+**Deliberate scope limit, stated plainly**: the server verifies a cited
+field is real, non-empty, and paired with a non-blank reason — it does
+NOT independently judge whether that reason is *topically relevant* to
+the specific requirement (an AI could, in principle, cite a real,
+non-empty, plausible-sounding-reason field that doesn't actually address
+the requirement — e.g. citing turnover for a certification requirement).
+Judging that semantic connection is the AI's job, made *auditable* (the
+`reason` text is persisted and visible), not independently re-verified by
+a second AI call — building that would be a materially larger, separate
+feature, not something this milestone's approved scope calls for.
+
+**New column**: `tender_requirements.company_evidence` (jsonb, nullable) —
+array of `{field, value, label, reason}`. Not a new child table: this is a
+small, always-replaced-wholesale-per-run evidence MAP, the same shape of
+thing `tenders.overview_evidence` already is, not a durable, independently
+extracted FACT like `tender_requirement_evidence` (which this milestone
+never touches — tender-side evidence needed no schema change at all,
+`GET /tenders/:id`'s existing `requirements[].evidence` already serves it).
+Migration `0006_opposite_scrambler.sql` (generated via `drizzle-kit
+generate`, reviewed before applying) — purely additive (one new table, one
+nullable column), no data migration, no risk to any existing row.
+
+`applyEligibilityResults()` touches only `companyStatus`/`actionRequired`/
+`companyEvidence` — verified by a test asserting `category`/`title`/
+`description`/`mandatory`/the requirement's own `tender_requirement_evidence`
+rows are byte-identical before and after a run. A **failed** run (unparseable
+AI output) leaves a **previous successful** result completely untouched
+(tested explicitly: run once successfully, then force a failure, confirm
+the prior verdict and evidence survive unchanged). A **successful** re-run
+fully **replaces** the previous evidence, never appends or retains stale
+entries (tested: change the profile, re-run, confirm the new evidence
+reflects the new profile state and the old evidence is gone, not merged).
+
+**Fixed a related gap found during design review**: `GET /tenders/:id`
+previously never included `companyStatus`/`actionRequired` at all (a
+pre-existing omission, present since M1/M4, just never consequential until
+this milestone actually populated those columns) — an eligibility result
+would have been invisible outside the one-shot `POST .../eligibility`
+response. Now included in every `requirements[]` entry alongside the
+existing `evidence` array, verified by a dedicated test.
+
+## Tests
+
+40 new tests across the three files below (all passing — matches the
+regression suite's exact pass-count delta, 418 vs. the 378 baseline),
+covering
+exactly the matrix the review required plus the additional re-run-
+replacement case:
+
+- `test/bidpilot/auth.test.js` (+15 new subtests on the existing HTTP
+  integration suite): pre-M6 login body shape unchanged
+  when `issueApiToken` is absent; `apiToken`/`apiTokenExpiresAt` returned
+  correctly when requested, alongside the unconditional session cookie;
+  the two credentials are never equal; **wrong credential namespace**
+  rejected both directions (session token as bearer → 401; apiToken as
+  cookie → 401); a valid apiToken works with zero cookies; a garbage
+  apiToken → 401; **malformed Authorization headers** (`Bearer` alone,
+  `Bearer ` with trailing space, `NotBearer xyz`, `Basic ...`, empty) all
+  → 401, not a crash; an **expired** apiToken → 401; CSRF skipped for
+  apiToken auth / still enforced for cookie auth (both directions); an
+  apiToken-authenticated logout revokes only that token, leaving the
+  cookie session from the same login still valid; CORS allowlist/
+  non-allowlist/preflight behavior.
+- `test/bidpilot/eligibility.test.js` (new file, +25 test-runner-counted
+  entries — 1 unit test, 14 pipeline-level cases under one parent, 8 HTTP
+  integration cases under another): shape validation; no-requirements
+  and no-profile short-circuits (zero AI spend); a verified MEETS with
+  real evidence; **the AI's fabricated value is proven never used** (a
+  mock response includes a deliberately wrong "value" field the pipeline
+  must ignore); a verdict with no evidence, a non-whitelisted field, an
+  empty-but-real field, and a missing reason are each independently
+  proven to downgrade to UNKNOWN; an omitted requirement stays UNKNOWN;
+  **original requirement fields provably unchanged** after a run; a
+  malformed AI reply throws and writes nothing; **a failed run preserves
+  the previous successful result**; **a re-run replaces (not appends)**
+  evidence after a profile change; budget cap enforcement; the full HTTP
+  route including **apiToken-based tenant isolation** (User A's apiToken
+  cannot reach Company B's tender) and the `GET /tenders/:id` evidence-
+  surfacing fix.
+- `test/db/connection.test.js` — updated the hardcoded "21 tables" count
+  to 22 (the new `api_access_tokens` table); this is the one pre-existing
+  test that legitimately needed updating, not a regression.
+
+Full backend 3x-configuration regression suite, run against the corrected
+implementation after reverting the rejected draft back to the clean M5d +
+design-pass baseline first (per the review's explicit procedural
+instruction) — zero unexpected drift, every delta explained:
+- `DATABASE_URL` + `BIDPILOT_CSRF_SECRET` set: 418 pass / 0 fail / 1 skip
+  (378 baseline + 40 new tests)
+- `DATABASE_URL` only: 268 pass / 0 fail / 16 skip (267 baseline + 1 new
+  unconditional unit test; all CSRF-gated new tests correctly skip)
+- neither set (pure Papyr): 228 pass / 0 fail / 22 skip (same +1 pattern)
+
+Frontend `tsc -b` + `vite build` re-verified clean (untouched this
+milestone). Secret-leak scan of the diff — no matches (the one regex hit
+was the `rawToken` variable declaration in `apiTokenService.js`, not a
+literal secret value).
+
+## Explicitly not built (per this milestone's approved scope)
+
+Frontend UI for any of this (Lovable's job). A "list/revoke my active API
+tokens" endpoint — the 20-minute natural expiry was judged sufficient for
+this milestone; flagged as a deliberate omission, not an oversight, if a
+future milestone wants it. Refresh-token rotation — explicitly deferred by
+the review ("no refresh token yet"); a Lovable session re-authenticates
+every ~20 minutes for now. Semantic re-verification of the AI's cited
+`reason` text (see the "deliberate scope limit" note above). Production
+deployment, Supabase migration, transactional email, S3/R2 storage — all
+still open from the M5f audit, untouched by this milestone.
+
+## Next
+
+Per explicit instruction: this milestone stops here. Not committed pending
+final review of this corrected design. M7 (or any further milestone) is
+not to begin until this is explicitly approved and committed.

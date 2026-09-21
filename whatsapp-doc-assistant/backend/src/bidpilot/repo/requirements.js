@@ -65,3 +65,27 @@ export async function listEvidenceForRequirement(scope, requirementId) {
     .from(tenderRequirementEvidence)
     .where(eq(tenderRequirementEvidence.requirementId, requirementId));
 }
+
+/** Bulk-write eligibility results for a tender's requirements (Milestone 6).
+ *  `results` is an array of {requirementId, companyStatus, actionRequired,
+ *  companyEvidence} — each requirementId MUST already be one of this
+ *  tender's own requirement ids (the caller, analysis/eligibilityPipeline.js,
+ *  is responsible for that mapping AND for verifying companyEvidence against
+ *  the real company_profiles row before it ever reaches here — this function
+ *  trusts its input the same way replaceAnalysis() trusts already-validated
+ *  aggregated results). Touches ONLY these three columns — category, title,
+ *  description, mandatory, and tender_requirement_evidence are never written
+ *  by this function, by construction (they're not in the SET clause). Caller
+ *  must have already confirmed tenderId ownership, same pattern as
+ *  listRequirements(). */
+export async function applyEligibilityResults(scope, results) {
+  if (!results.length) return;
+  await scope.db.transaction(async (tx) => {
+    for (const { requirementId, companyStatus, actionRequired, companyEvidence } of results) {
+      await tx
+        .update(tenderRequirements)
+        .set({ companyStatus, actionRequired, companyEvidence, updatedAt: new Date() })
+        .where(eq(tenderRequirements.id, requirementId));
+    }
+  });
+}

@@ -30,11 +30,23 @@ export const tenderRequirements = pgTable('tender_requirements', {
   description: text('description').notNull(),
   mandatory: boolean('mandatory').notNull().default(true),
 
-  // Set by the (future) eligibility engine comparing this requirement against
-  // the company profile. UNKNOWN until that runs — never inferred at write
-  // time, and never a numeric "probability".
+  // Set by the eligibility engine (Milestone 6) comparing this requirement
+  // against the company profile. UNKNOWN until that runs — never inferred at
+  // write time, and never a numeric "probability".
   companyStatus: eligibilityStatus('company_status').notNull().default('UNKNOWN'),
   actionRequired: text('action_required'),
+  // Structured trace for a MEETS/DOES_NOT_APPEAR_TO_MEET verdict — array of
+  // { field, value, label, reason }. `field`/`value` are SERVER-derived (the
+  // AI names a company_profiles field, the server reads its real value —
+  // never the AI's own claimed value; see analysis/eligibilityPipeline.js).
+  // `reason` is the AI's explanation connecting that field to this specific
+  // requirement. Null/empty for UNKNOWN — by definition, nothing conclusive
+  // was found. Small (jsonb, not a child table) and always fully REPLACED on
+  // each eligibility run — same pattern as tenders.overview_evidence, not
+  // tender_requirement_evidence (that one is a durable, evidence-first
+  // extracted FACT; this is a per-run pointer into data that already lives
+  // in company_profiles, not a new fact of its own).
+  companyEvidence: jsonb('company_evidence'),
 
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),

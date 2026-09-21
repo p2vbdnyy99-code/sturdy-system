@@ -14,14 +14,16 @@ import pg from 'pg';
 import { dbAvailable, DB_URL, testDb, closeTestDb, truncateAll } from '../db/helpers.js';
 import { setDb, closeDb } from '../../src/db/client.js';
 import { cookieParserMiddleware } from '../../src/bidpilot/auth/cookies.js';
+import { bidpilotCors } from '../../src/bidpilot/auth/cors.js';
 import { createAuthRouter } from '../../src/bidpilot/routes/auth.js';
 import { registerUser, verifyEmail, findUserByEmail, RegistrationError } from '../../src/bidpilot/repo/users.js';
 import { hashPassword, verifyPassword, isPasswordAcceptable } from '../../src/bidpilot/auth/passwordHash.js';
 import { generateToken, hashToken } from '../../src/bidpilot/auth/tokens.js';
 import { createSession, getSessionByToken, destroySessionByToken } from '../../src/bidpilot/auth/sessionService.js';
+import { createApiToken, getApiTokenByToken } from '../../src/bidpilot/auth/apiTokenService.js';
 import { csrfTokenFor, verifyCsrfToken } from '../../src/bidpilot/auth/csrf.js';
 import { allowLoginAttempt, clearLoginAttempts, _reset as resetLoginLimiter } from '../../src/bidpilot/auth/loginRateLimit.js';
-import { sessions, users } from '../../src/db/schema/index.js';
+import { sessions, apiAccessTokens, users } from '../../src/db/schema/index.js';
 import { eq } from 'drizzle-orm';
 
 const CSRF_CONFIGURED = Boolean(process.env.BIDPILOT_CSRF_SECRET);
@@ -235,6 +237,9 @@ test('BidPilot authentication (full HTTP integration)', { skip: SKIP_REASON, tim
     const appPool = new pg.Pool({ connectionString: DB_URL, max: 5 });
     setDb(appPool);
     const app = express();
+    // Fixed allowlist for the CORS tests below — see bidpilotCors()'s
+    // injectable-origins param, same pattern as setProvider().
+    app.use('/bidpilot', bidpilotCors(['https://allowed.example']));
     app.use('/bidpilot', cookieParserMiddleware);
     app.use('/bidpilot', createAuthRouter());
     server = http.createServer(app);
@@ -270,7 +275,7 @@ test('BidPilot authentication (full HTTP integration)', { skip: SKIP_REASON, tim
         res.on('end', () => {
           let json;
           try { json = JSON.parse(Buffer.concat(chunks).toString('utf8')); } catch { json = undefined; }
-          resolve({ status: res.statusCode, json, setCookie: res.headers['set-cookie'] || [] });
+          resolve({ status: res.statusCode, json, setCookie: res.headers['set-cookie'] || [], headers: res.headers });
         });
       });
       r.on('error', reject);
@@ -293,8 +298,10 @@ test('BidPilot authentication (full HTTP integration)', { skip: SKIP_REASON, tim
     return reg.json.userId;
   }
 
-  async function login(email, password = 'a-real-password-123') {
-    const res = await req('POST', '/bidpilot/login', { body: { email, password } });
+  async function login(email, password = 'a-real-password-123', { issueApiToken } = {}) {
+    const body = { email, password };
+    if (issueApiToken) body.issueApiToken = true;
+    const res = await req('POST', '/bidpilot/login', { body });
     return {
       status: res.status,
       json: res.json,
@@ -390,6 +397,134 @@ test('BidPilot authentication (full HTTP integration)', { skip: SKIP_REASON, tim
   await t.test('a forged/garbage session cookie is rejected, not a 500', async () => {
     const res = await req('GET', '/bidpilot/me', { cookies: { bidpilot_session: 'garbage-not-a-real-token' } });
     assert.equal(res.status, 401);
+  });
+
+  // ── Milestone 6 — short-lived API access tokens (separate from the
+  // 30-day session) + CORS ──────────────────────────────────────────────
+
+  await t.test('login WITHOUT issueApiToken returns the exact pre-Milestone-6 body shape', async () => {
+    await registerAndVerify('noapitoken@example.com');
+    const { json } = await login('noapitoken@example.com');
+    assert.deepEqual(Object.keys(json).sort(), ['email', 'emailVerified', 'status', 'userId'].sort());
+    assert.equal('apiToken' in json, false);
+    assert.equal('sessionToken' in json, false, 'the rejected M6 design\'s field name must not reappear either');
+  });
+
+  await t.test('login WITH issueApiToken returns a usable apiToken + expiry, and the 30-day cookie is still set', async () => {
+    await registerAndVerify('withapitoken@example.com');
+    const { json, sessionCookie, csrfCookie } = await login('withapitoken@example.com', undefined, { issueApiToken: true });
+    assert.equal(typeof json.apiToken, 'string');
+    assert.ok(json.apiToken.length > 10);
+    assert.ok(json.apiTokenExpiresAt);
+    assert.ok(sessionCookie, 'the ordinary session cookie is still created on every login, unconditionally');
+    assert.ok(csrfCookie);
+  });
+
+  await t.test('the apiToken is never the same value as the session cookie token', async () => {
+    await registerAndVerify('distincttokens@example.com');
+    const { json, sessionCookie } = await login('distincttokens@example.com', undefined, { issueApiToken: true });
+    assert.notEqual(json.apiToken, sessionCookie);
+  });
+
+  await t.test('wrong credential namespace: the 30-day session token used as a Bearer header is rejected', async () => {
+    await registerAndVerify('wrongns1@example.com');
+    const { sessionCookie } = await login('wrongns1@example.com');
+    const res = await req('GET', '/bidpilot/me', { headers: { authorization: `Bearer ${sessionCookie}` } });
+    assert.equal(res.status, 401, 'a sessions-table token must not validate against api_access_tokens');
+  });
+
+  await t.test('wrong credential namespace: an apiToken used as the session cookie is rejected', async () => {
+    await registerAndVerify('wrongns2@example.com');
+    const { json } = await login('wrongns2@example.com', undefined, { issueApiToken: true });
+    const res = await req('GET', '/bidpilot/me', { cookies: { bidpilot_session: json.apiToken } });
+    assert.equal(res.status, 401, 'an api_access_tokens token must not validate against sessions');
+  });
+
+  await t.test('a valid apiToken works via Authorization: Bearer with zero cookies', async () => {
+    await registerAndVerify('bearerworks@example.com');
+    const { json } = await login('bearerworks@example.com', undefined, { issueApiToken: true });
+    const res = await req('GET', '/bidpilot/me', { headers: { authorization: `Bearer ${json.apiToken}` } });
+    assert.equal(res.status, 200);
+    assert.equal(res.json.email, 'bearerworks@example.com');
+  });
+
+  await t.test('a garbage apiToken is rejected with 401, not a 500', async () => {
+    const res = await req('GET', '/bidpilot/me', { headers: { authorization: 'Bearer not-a-real-token' } });
+    assert.equal(res.status, 401);
+  });
+
+  await t.test('malformed Authorization headers are rejected (401), not a crash', async () => {
+    const cases = ['Bearer', 'Bearer ', 'NotBearer xyz', 'Basic dXNlcjpwYXNz', ''];
+    for (const authorization of cases) {
+      const res = await req('GET', '/bidpilot/me', { headers: { authorization } });
+      assert.equal(res.status, 401, `case: ${JSON.stringify(authorization)}`);
+    }
+  });
+
+  await t.test('an expired apiToken is rejected with 401', async () => {
+    const userId = await registerAndVerify('expiredapi@example.com');
+    const { rawToken } = await createApiToken(db, userId);
+    // Force it into the past directly — createApiToken always uses the
+    // configured TTL, so this is the only way to test expiry without
+    // waiting or mutating global config mid-suite.
+    await db.update(apiAccessTokens).set({ expiresAt: new Date(Date.now() - 1000) })
+      .where(eq(apiAccessTokens.tokenHash, hashToken(rawToken)));
+    const res = await req('GET', '/bidpilot/me', { headers: { authorization: `Bearer ${rawToken}` } });
+    assert.equal(res.status, 401);
+    assert.equal(await getApiTokenByToken(db, rawToken), undefined, 'getApiTokenByToken itself excludes expired rows');
+  });
+
+  await t.test('CSRF is skipped for an apiToken-authenticated state-changing request', async () => {
+    await registerAndVerify('apicsrf@example.com');
+    const { json } = await login('apicsrf@example.com', undefined, { issueApiToken: true });
+    // No x-csrf-token header at all — would be 403 for a cookie-authenticated
+    // request (see 'logout requires CSRF' above), but must succeed here.
+    const res = await req('POST', '/bidpilot/logout', { headers: { authorization: `Bearer ${json.apiToken}` } });
+    assert.equal(res.status, 200);
+  });
+
+  await t.test('an apiToken-authenticated logout revokes ONLY the api token — the cookie session stays valid', async () => {
+    await registerAndVerify('independent@example.com');
+    // A single login mints BOTH credentials, so this proves they're
+    // independently revocable, not just "two names for one row."
+    const { json, sessionCookie, csrfCookie } = await login('independent@example.com', undefined, { issueApiToken: true });
+
+    const logoutRes = await req('POST', '/bidpilot/logout', { headers: { authorization: `Bearer ${json.apiToken}` } });
+    assert.equal(logoutRes.status, 200);
+
+    const apiTokenAfter = await req('GET', '/bidpilot/me', { headers: { authorization: `Bearer ${json.apiToken}` } });
+    assert.equal(apiTokenAfter.status, 401, 'the api token itself is now dead');
+
+    const cookieAfter = await req('GET', '/bidpilot/me', { cookies: { bidpilot_session: sessionCookie } });
+    assert.equal(cookieAfter.status, 200, 'the cookie session survives — the two credentials are truly independent');
+
+    // Clean up the surviving cookie session so it doesn't leak into other tests.
+    await req('POST', '/bidpilot/logout', { cookies: { bidpilot_session: sessionCookie }, headers: { 'x-csrf-token': csrfCookie } });
+  });
+
+  await t.test('CSRF is still fully enforced for cookie-authenticated requests (apiToken support changes nothing here)', async () => {
+    await registerAndVerify('cookiecsrf@example.com');
+    const { sessionCookie } = await login('cookiecsrf@example.com');
+    const res = await req('POST', '/bidpilot/logout', { cookies: { bidpilot_session: sessionCookie } });
+    assert.equal(res.status, 403);
+  });
+
+  await t.test('an allowed CORS origin gets Access-Control-Allow-Origin echoed back, never credentialed', async () => {
+    const res = await req('GET', '/bidpilot/me', { headers: { origin: 'https://allowed.example' } });
+    assert.equal(res.headers['access-control-allow-origin'], 'https://allowed.example');
+    assert.equal(res.headers['access-control-allow-credentials'], undefined, 'never credentialed — API tokens only');
+  });
+
+  await t.test('a non-allowlisted origin gets no CORS headers at all', async () => {
+    const res = await req('GET', '/bidpilot/me', { headers: { origin: 'https://evil.example' } });
+    assert.equal(res.headers['access-control-allow-origin'], undefined);
+  });
+
+  await t.test('an OPTIONS preflight from an allowed origin gets a 204 with the right headers', async () => {
+    const res = await req('OPTIONS', '/bidpilot/tenders', { headers: { origin: 'https://allowed.example' } });
+    assert.equal(res.status, 204);
+    assert.equal(res.headers['access-control-allow-origin'], 'https://allowed.example');
+    assert.match(res.headers['access-control-allow-headers'], /Authorization/);
   });
 
   await t.test('registering twice with the same email returns 409, not a duplicate account', async () => {

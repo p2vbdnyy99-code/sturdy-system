@@ -23,6 +23,7 @@ import { getStorage } from '../storage/index.js';
 import { chunkPages } from '../analysis/chunker.js';
 import { assertAnalysisBudget, AnalysisBudgetError } from '../analysis/budget.js';
 import { runAnalysis } from '../analysis/pipeline.js';
+import { runEligibility, EligibilityError } from '../analysis/eligibilityPipeline.js';
 import { config } from '../../config.js';
 import { tenderStatus, tenderAnalysisStatus } from '../../db/schema/enums.js';
 import { OVERVIEW_FIELDS } from '../analysis/schema.js';
@@ -130,6 +131,13 @@ export function createTendersRouter() {
             extractedValue: e.extractedValue,
             confidence: e.confidence,
           })),
+          // Milestone 6 — previously written by POST .../eligibility but
+          // never surfaced here, so a result was invisible outside the
+          // one-shot response of the run that produced it. Fixed as part of
+          // the eligibility-evidence redesign.
+          companyStatus: r.companyStatus,
+          actionRequired: r.actionRequired,
+          companyEvidence: r.companyEvidence || [],
         })),
       );
 
@@ -256,6 +264,36 @@ export function createTendersRouter() {
       const url = await getStorage().getSignedDownloadUrl({ key: document.storagePath });
       return res.json({ url, expiresInSeconds: 300 });
     } catch (err) {
+      handleError(res, err);
+    }
+  });
+
+  // Milestone 6 — always exactly one AI call, so this runs synchronously on
+  // the request path (unlike /analyze's 202-then-poll pattern, which exists
+  // specifically because a chunked analysis can take a long time). See
+  // analysis/eligibilityPipeline.js's file header for why budget/AI errors
+  // are surfaced here rather than swallowed-and-logged, and for the
+  // server-side evidence-verification step that's the actual fix from this
+  // milestone's security review.
+  router.post('/tenders/:id/eligibility', async (req, res) => {
+    try {
+      const db = getDb();
+      const scope = await requireCompanyAccess(db, {
+        userId: req.bidpilotUserId,
+        companyId: req.body?.companyId,
+      });
+      const tender = await getTender(scope, req.params.id);
+      if (!tender) return res.status(404).json({ error: 'Not found.' });
+
+      const { evaluated, results } = await runEligibility(scope, tender.id);
+      return res.json({ tenderId: tender.id, evaluated, requirements: results });
+    } catch (err) {
+      if (err instanceof AnalysisBudgetError) {
+        return res.status(429).json({ error: err.message });
+      }
+      if (err instanceof EligibilityError) {
+        return res.status(502).json({ error: err.message });
+      }
       handleError(res, err);
     }
   });

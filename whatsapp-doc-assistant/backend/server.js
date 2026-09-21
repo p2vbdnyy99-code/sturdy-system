@@ -25,6 +25,7 @@ import { createAuthRouter } from './src/bidpilot/routes/auth.js';
 import { createDashboardRouter } from './src/bidpilot/routes/dashboard.js';
 import { createCompaniesRouter } from './src/bidpilot/routes/companies.js';
 import { cookieParserMiddleware } from './src/bidpilot/auth/cookies.js';
+import { bidpilotCors } from './src/bidpilot/auth/cors.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 // Sibling of backend/, not inside it — verified against the actual
@@ -201,6 +202,7 @@ async function processWebhook(body) {
 // cleanly rather than the server failing to boot. A Papyr-only deployment
 // (no DATABASE_URL) is completely unaffected either way.
 if (config.db.url) {
+  app.use('/bidpilot', bidpilotCors());
   app.use('/bidpilot', cookieParserMiddleware);
   app.use('/bidpilot', createAuthRouter());
   app.use('/bidpilot', createCompaniesRouter());

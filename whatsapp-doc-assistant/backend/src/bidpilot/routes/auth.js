@@ -23,6 +23,7 @@ import { companyMembers, companies } from '../../db/schema/index.js';
 import { registerUser, verifyEmail, findUserByEmail, findUserById, RegistrationError } from '../repo/users.js';
 import { verifyPassword } from '../auth/passwordHash.js';
 import { createSession, getSessionByToken, destroySessionByToken } from '../auth/sessionService.js';
+import { createApiToken, getApiTokenByToken, destroyApiToken } from '../auth/apiTokenService.js';
 import { allowLoginAttempt, clearLoginAttempts } from '../auth/loginRateLimit.js';
 import { csrfTokenFor, requireCsrf } from '../auth/csrf.js';
 import {
@@ -33,7 +34,26 @@ import {
 // ─── The real session-verifying middleware ──────────────────────────────────
 
 /** Every protected BidPilot route depends on this. Sets req.bidpilotUserId
- *  and req.bidpilotSession (the latter needed by requireCsrf downstream). */
+ *  and (for a cookie-authenticated request) req.bidpilotSession, needed by
+ *  requireCsrf downstream.
+ *
+ *  Accepts EITHER of two, deliberately DIFFERENT, credentials:
+ *  - the existing bidpilot_session cookie (same-origin frontend, unchanged —
+ *    a 30-day, HttpOnly, sliding-idle session; see sessionService.js)
+ *  - an `Authorization: Bearer <token>` header carrying a SEPARATE, short-
+ *    lived API access token (api_access_tokens/apiTokenService.js — default
+ *    20 minutes, never sliding, independently revocable) — for a cross-
+ *    origin caller such as a Lovable-built frontend (see auth/cors.js).
+ *
+ *  These are NOT the same credential presented two ways (an earlier design
+ *  did that and was rejected in review — see BIDPILOT_ARCHITECTURE.md's
+ *  Milestone 6 section — because it meant the 30-day HttpOnly session token
+ *  ended up readable by cross-origin JavaScript). The 30-day session token
+ *  is NEVER returned in any JSON response, only ever set as an HttpOnly
+ *  cookie, exactly as before this milestone. req.bidpilotAuthMethod records
+ *  which credential authenticated this request ('cookie' | 'apiToken') so
+ *  requireCsrf() (cookie-specific protection — see csrf.js's docblock on
+ *  why) and logout (below) know which store to act on. */
 export function requireSession() {
   return async (req, res, next) => {
     let db;
@@ -43,20 +63,37 @@ export function requireSession() {
       return res.status(503).json({ error: 'BidPilot database is not configured.' });
     }
 
-    const rawToken = req.cookies?.[SESSION_COOKIE_NAME];
-    const session = await getSessionByToken(db, rawToken);
-    if (!session) {
-      return res.status(401).json({ error: 'Not authenticated.' });
+    const bearerMatch = /^Bearer\s+(.+)$/i.exec(req.get('authorization') || '');
+    let userId, rawToken, authMethod, session;
+
+    if (bearerMatch) {
+      authMethod = 'apiToken';
+      rawToken = bearerMatch[1];
+      const token = await getApiTokenByToken(db, rawToken);
+      if (!token) {
+        return res.status(401).json({ error: 'Not authenticated.' });
+      }
+      userId = token.userId;
+    } else {
+      authMethod = 'cookie';
+      rawToken = req.cookies?.[SESSION_COOKIE_NAME];
+      session = await getSessionByToken(db, rawToken);
+      if (!session) {
+        return res.status(401).json({ error: 'Not authenticated.' });
+      }
+      userId = session.userId;
     }
 
-    const user = await findUserById(db, session.userId);
+    const user = await findUserById(db, userId);
     if (!user || user.status === 'SUSPENDED') {
       return res.status(403).json({ error: 'Account is not active.' });
     }
 
     req.bidpilotUserId = user.id;
-    req.bidpilotSession = session;
+    req.bidpilotSession = session; // only set for authMethod === 'cookie'
     req.bidpilotUser = user;
+    req.bidpilotRawToken = rawToken;
+    req.bidpilotAuthMethod = authMethod;
     return next();
   };
 }
@@ -124,7 +161,7 @@ export function createAuthRouter() {
   router.post('/login', async (req, res) => {
     try {
       const db = getDb();
-      const { email, password } = req.body || {};
+      const { email, password, issueApiToken } = req.body || {};
       if (!email || !password) {
         return res.status(400).json({ error: 'Email and password are required.' });
       }
@@ -144,17 +181,35 @@ export function createAuthRouter() {
       if (!ok) return invalid();
 
       clearLoginAttempts(rateKey);
+      // The 30-day session is created for EVERY login, unconditionally —
+      // this is the existing M3 browser-session flow, byte-identical to
+      // before Milestone 6. Its raw token is NEVER put in the response body,
+      // only ever the HttpOnly cookie below.
       const { rawToken, session } = await createSession(db, user.id, { userAgent: req.get('user-agent') });
 
       res.cookie(SESSION_COOKIE_NAME, rawToken, sessionCookieOptions(config.bidpilot.sessionTtlMs));
       res.cookie(CSRF_COOKIE_NAME, csrfTokenFor(session.tokenHash), csrfCookieOptions(config.bidpilot.sessionTtlMs));
 
-      return res.json({
+      const body = {
         userId: user.id,
         email: user.email,
         status: user.status,
         emailVerified: Boolean(user.emailVerifiedAt),
-      });
+      };
+
+      // A SEPARATE, short-lived, independently-revocable credential — minted
+      // ONLY on explicit opt-in (not a second login system; this still runs
+      // after the same password check above), never the normal response
+      // shape a browser login gets. For a cross-origin caller (e.g. a
+      // Lovable-built frontend) that has no usable way to receive the
+      // HttpOnly cookie above anyway. See auth/apiTokenService.js.
+      if (issueApiToken === true) {
+        const { rawToken: apiToken, token } = await createApiToken(db, user.id, { userAgent: req.get('user-agent') });
+        body.apiToken = apiToken;
+        body.apiTokenExpiresAt = token.expiresAt;
+      }
+
+      return res.json(body);
     } catch (err) {
       log.error('bidpilot login error:', err);
       return res.status(500).json({ error: 'Internal server error.' });
@@ -164,7 +219,15 @@ export function createAuthRouter() {
   router.post('/logout', requireSession(), requireCsrf(), async (req, res) => {
     try {
       const db = getDb();
-      await destroySessionByToken(db, req.cookies?.[SESSION_COOKIE_NAME]);
+      // Destroy whichever credential actually authenticated this request —
+      // an apiToken-authenticated logout must revoke ITS OWN token, not the
+      // (possibly nonexistent, in a cross-origin call) session cookie; a
+      // cookie-authenticated logout behaves exactly as before Milestone 6.
+      if (req.bidpilotAuthMethod === 'apiToken') {
+        await destroyApiToken(db, req.bidpilotRawToken);
+      } else {
+        await destroySessionByToken(db, req.bidpilotRawToken);
+      }
       res.clearCookie(SESSION_COOKIE_NAME, { path: '/' });
       res.clearCookie(CSRF_COOKIE_NAME, { path: '/' });
       return res.json({ loggedOut: true });

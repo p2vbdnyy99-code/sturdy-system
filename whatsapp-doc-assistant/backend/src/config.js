@@ -261,6 +261,28 @@ export function buildDbConfig(env = {}) {
  *                                 unlike the login-attempt limiter it must
  *                                 survive a restart and stay accurate under
  *                                 concurrent instances.
+ *   BIDPILOT_ELIGIBILITY_MAX_CALLS_PER_COMPANY_PER_DAY  Same rolling-window
+ *                                 spend control as analysis above, but its own
+ *                                 separate cost center/counter (default: 100)
+ *                                 — an eligibility-check spree can never eat
+ *                                 into a company's analysis budget or vice
+ *                                 versa.
+ *   BIDPILOT_API_TOKEN_TTL_MINUTES  Lifetime of a short-lived API access
+ *                                 token (default: 20). Deliberately separate
+ *                                 from BIDPILOT_SESSION_TTL_DAYS — this token
+ *                                 is the credential a cross-origin caller
+ *                                 (e.g. a Lovable-built frontend) uses as an
+ *                                 Authorization: Bearer header; it is NEVER
+ *                                 the 30-day browser session token, and is
+ *                                 only ever issued when a login request
+ *                                 explicitly opts in (see routes/auth.js).
+ *   BIDPILOT_CORS_ORIGINS        Comma-separated list of origins allowed to
+ *                                 call the API cross-origin using the API
+ *                                 access token above. Empty/unset by default
+ *                                 — cross-origin requests are refused unless
+ *                                 explicitly opted in; the existing same-
+ *                                 origin cookie-based frontend is entirely
+ *                                 unaffected either way.
  */
 export function buildBidpilotConfig(env = {}) {
   return {
@@ -282,11 +304,19 @@ export function buildBidpilotConfig(env = {}) {
     sessionTtlMs: Math.max(1, Number(env.BIDPILOT_SESSION_TTL_DAYS) || 30) * 24 * 60 * 60 * 1000,
     sessionTouchThresholdMs: Math.max(1, Number(env.BIDPILOT_SESSION_TOUCH_MINUTES) || 10) * 60 * 1000,
     verificationTokenTtlMs: Math.max(1, Number(env.BIDPILOT_VERIFICATION_TOKEN_TTL_HOURS) || 24) * 60 * 60 * 1000,
+    apiTokenTtlMs: Math.max(1, Number(env.BIDPILOT_API_TOKEN_TTL_MINUTES) || 20) * 60 * 1000,
     analysis: {
       chunkChars: Math.max(2000, Number(env.BIDPILOT_ANALYSIS_CHUNK_CHARS) || 40_000),
       maxChunksPerTender: Math.max(1, Number(env.BIDPILOT_ANALYSIS_MAX_CHUNKS_PER_TENDER) || 60),
       maxCallsPerCompanyPerDay: Math.max(1, Number(env.BIDPILOT_ANALYSIS_MAX_CALLS_PER_COMPANY_PER_DAY) || 200),
     },
+    eligibility: {
+      maxCallsPerCompanyPerDay: Math.max(1, Number(env.BIDPILOT_ELIGIBILITY_MAX_CALLS_PER_COMPANY_PER_DAY) || 100),
+    },
+    corsOrigins: String(env.BIDPILOT_CORS_ORIGINS || '')
+      .split(',')
+      .map((o) => o.trim())
+      .filter(Boolean),
   };
 }
 
