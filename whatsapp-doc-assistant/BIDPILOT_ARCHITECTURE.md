@@ -1238,3 +1238,196 @@ automatic BOQ pricing, a PDF page viewer, analytics.
 M5b (frontend foundation) is unscoped for implementation until this
 report is reviewed and approved — same "implement → test → report/diff →
 approval → commit" discipline as every prior milestone.
+
+# Milestone 5b — Frontend Foundation
+
+React + Vite + TypeScript, at `whatsapp-doc-assistant/frontend/` — a
+sibling of `backend/`, not nested inside it. This was verified against
+the actual filesystem before writing any code (the M5b audit had
+originally assumed this layout; a review comment questioned it, assuming
+`server.js` lived at the repo root — checking found the original layout
+was in fact correct, and `path.join(__dirname, '../frontend/dist')` from
+`backend/server.js` resolves correctly). No `frontend/` directory existed
+before this milestone.
+
+## What M5b delivers
+
+An end-to-end, working browser app over the real Milestone 5a API — no
+mocked data, no stubbed endpoints:
+
+```
+Register -> Verify email -> Login -> GET /me
+  -> 0 companies  -> Create Company -> Dashboard (placeholder)
+  -> 1 company    -> Dashboard (placeholder), auto-selected
+  -> >1 companies -> company selector -> Dashboard (placeholder)
+Logout
+Visiting /dashboard while logged out -> /login?next=/dashboard -> back to
+  /dashboard after a successful login
+```
+
+No tender list, no tender-detail intelligence UI, no company-profile UI —
+those are M5c/M5d/M5e, per the approved boundary. The Dashboard page is a
+genuine placeholder (confirms which company is selected, nothing else).
+
+## Directory layout
+
+```
+frontend/
+  src/
+    api/           client.ts (CSRF + JSON + 401 handling), auth.ts,
+                   companies.ts, tenders.ts, dashboard.ts
+    auth/          SessionProvider, RequireSession, RedirectIfAuthenticated,
+                   CompanyGate
+    components/    AppHeader
+    config/        product.ts (PRODUCT_NAME/PRODUCT_TAGLINE — the one
+                   place "Tenderlytic" is defined; every page imports it
+                   rather than hardcoding the string)
+    pages/         auth/{Login,Register,VerifyEmail}, onboarding/CreateCompany,
+                   Dashboard
+    routes.tsx, App.tsx, main.tsx, index.css
+  package.json, package-lock.json   (own dependency tree — not a workspace)
+  vite.config.ts, tsconfig*.json, index.html
+```
+
+`tenders.ts` and `dashboard.ts` are built and fully typed against the real
+M5a response shapes even though no M5b page calls them yet — approved as
+infrastructure M5c/M5d build directly on top of, rather than adding a
+fourth API-client file mid-milestone later.
+
+A separate `frontend/package.json`/`package-lock.json` (not npm/pnpm
+workspaces) — one backend app plus one frontend app doesn't need monorepo
+tooling. `frontend/package-lock.json` is committed so `npm ci` is
+reproducible.
+
+## Session flow and company resolution
+
+`GET /me` runs once on mount; `SessionProvider` exposes a `status` of
+`loading` / `unauthenticated` / `authenticated` — `loading` renders a
+neutral state, never a login-page flicker, so a slow `/me` response can't
+be mistaken for "not logged in." A 401 from *any* API call (not just
+`/me`) dispatches a `tenderlytic:session-expired` window event that
+`SessionProvider` listens for, so an expired session reflects immediately
+across the app.
+
+Company selection is exactly the approved M5 contract — no new backend
+concept:
+
+```
+session -> user -> companyId supplied by the frontend on each request
+  -> requireCompanyAccess(user, companyId) -> CompanyScope -> query
+```
+
+0 companies -> redirect to onboarding; 1 -> auto-selected; >1 -> a plain
+selector, held in React state only (no localStorage, no "active company"
+server-side). The selected `companyId` is never treated as authorization
+by the backend — every M5a route independently re-verifies membership via
+`requireCompanyAccess` regardless of what the client sent; this was
+already true of M5a and nothing in M5b changes it.
+
+## CSRF
+
+No new backend mechanism — `api/client.ts`'s `request()` reads the
+`bidpilot_csrf` cookie and attaches it as `x-csrf-token` only on
+`POST`/`PUT`/`PATCH`/`DELETE`, matching `csrf.js`'s own safe-method list
+exactly (not "every non-GET request").
+
+## Same-origin serving and the Express 5 SPA fallback
+
+`server.js` now: serves `frontend/dist/` via `express.static()`, then a
+SPA-fallback middleware, then the existing JSON 404 — in that order, and
+only after every existing route (webhook, health, privacy, `/bidpilot/*`).
+Two things worth recording precisely because they were nearly gotten
+wrong:
+
+- **`app.get('*', ...)` throws** under the actually-installed Express
+  5.2.1 / path-to-regexp 8.4.2 (`Missing parameter name at index 1: *`) —
+  confirmed empirically before writing the fallback, not assumed from
+  Express 4 habits. The fallback instead uses a path-less `app.use(...)`
+  (the same idiom this file's own pre-existing 404 handler already uses),
+  which sidesteps path-to-regexp entirely.
+- The fallback explicitly excludes `/bidpilot/*` (so a mistyped API path
+  falls through to a real 404/503, never silently returns HTML) and any
+  path with a file extension that `express.static` didn't already serve
+  (so a stale/missing hashed asset 404s honestly instead of masking a real
+  deploy problem as the SPA shell).
+
+`server.js` now exports `app` (auto-start is guarded behind an
+`import.meta.url === entrypoint` check) specifically so
+`test/spa-fallback.test.js` can exercise the real, fully-wired app rather
+than a reconstructed copy that could drift from production behavior. That
+test proves: frontend routes serve the SPA, `/bidpilot/*` misses don't,
+`/health`/`/privacy` are unaffected, a missing asset 404s, a real built
+asset serves with the right content type, and the CSP header is present
+with no `unsafe-inline`.
+
+If `frontend/dist/` doesn't exist (a checkout that hasn't run `npm run
+build`, or a pre-Milestone-5b checkout), `server.js` skips mounting the
+static/fallback routes entirely rather than crashing — a Papyr-only
+deployment is unaffected either way.
+
+## Content-Security-Policy
+
+Applied globally (harmless on Papyr's JSON responses): `default-src
+'self'; script-src 'self'; style-src 'self'; img-src 'self' data:;
+font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self';
+frame-ancestors 'none'`. No third-party script/style/font/analytics
+origins — deliberate, given this product handles commercially sensitive
+tender documents.
+
+Getting a strict `style-src` (no `unsafe-inline`) to actually work
+required a real implementation decision: every component was written
+using plain CSS classes (`src/index.css`) rather than React's `style={{}}`
+prop. A `style={{}}` prop compiles to the HTML `style` attribute, which a
+strict CSP blocks via `style-src`/`style-src-attr` exactly like an inline
+`<style>` tag — this was caught and fixed *before* the browser smoke test
+below, not discovered by it.
+
+**Verified with a real browser** (Playwright/Chromium against the actual
+built bundle, not just curl): the production JS and CSS load, React
+renders the login page, computed styles match the stylesheet
+(`body`'s background-color and `.page`'s max-width both matched exactly),
+an API call to `/bidpilot/me` completes (401, as expected when logged
+out — not blocked by CSP), and zero CSP-violation console messages were
+observed.
+
+## Render deployment
+
+Root Directory stays `backend/` (unchanged). Render's dashboard **Build
+Command** needs to change to `npm install && npm run build` (previously
+just the zero-config default, effectively `npm install`); **Start Command
+stays `npm start`, unchanged**. `backend/package.json`'s new `build`
+script (`npm --prefix ../frontend ci && npm --prefix ../frontend run
+build`) installs and builds the frontend using its own committed lockfile.
+This ordering — backend deps installed, frontend deps installed +
+built, server started, in that order — was verified locally (`npm run
+build` from `backend/` produces `frontend/dist/` correctly) but **the
+actual Render dashboard setting has not been changed or verified from
+this environment** — no `render.yaml` exists and this environment has no
+Render API access. Documented as a required manual step in
+`OPERATIONS.md`, with the exact string to set.
+
+## What was deliberately not done
+
+No logo or brand image assets (only `PRODUCT_NAME`/`PRODUCT_TAGLINE` text
+constants). No UI component library, no Tailwind, no CSS-in-JS, no
+Storybook, no design-token system — plain CSS classes only. No state
+management library (Redux/Zustand/React Query) — a thin `fetch` client
+plus React context is enough for what M5b actually needs. No dashboard
+data, no tender list/detail UI, no company-profile UI.
+
+## Tests
+
+9 new backend tests (`test/spa-fallback.test.js`) covering the static/SPA-
+fallback/CSP behavior described above, against the real `server.js` app.
+Full suite validated clean across all three deployment configurations.
+No frontend unit/component test framework was introduced this milestone —
+validation was the real TypeScript build (`tsc -b`), the real production
+`vite build`, and the real-browser smoke test described above, which
+together cover what mattered most for a foundation milestone: does the
+actual bundle work, not whether an isolated component renders correctly
+in a mocked test harness.
+
+## Next
+
+M5c (Dashboard + tender list) is unscoped for implementation until this
+report is reviewed and approved.

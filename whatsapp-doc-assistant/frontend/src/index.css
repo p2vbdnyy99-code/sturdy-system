@@ -1,0 +1,132 @@
+/* Minimal, unbranded base styles — no design system yet (see M5b scope).
+   Plain classes, not inline style props: a strict CSP (style-src 'self',
+   no 'unsafe-inline') blocks the style="" attribute React's style={{}} prop
+   compiles to, so every visual rule lives here instead. */
+:root {
+  color-scheme: light;
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: #fafafa;
+  color: #1a1a1a;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+button {
+  font: inherit;
+}
+
+input {
+  font: inherit;
+}
+
+a {
+  color: inherit;
+}
+
+.page {
+  max-width: 420px;
+  margin: 4rem auto;
+  padding: 0 1rem;
+}
+
+.page--wide {
+  max-width: 720px;
+}
+
+.page-loading {
+  padding: 3rem;
+  text-align: center;
+  color: #666;
+}
+
+.tagline {
+  color: #666;
+  margin-top: -0.5rem;
+}
+
+.muted {
+  color: #666;
+}
+
+.field {
+  display: block;
+  margin-top: 1rem;
+}
+
+.field-hint {
+  color: #999;
+}
+
+.field input {
+  display: block;
+  width: 100%;
+  padding: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+.error-text {
+  color: #b00020;
+}
+
+.notice {
+  background: #fff3cd;
+  padding: 0.75rem;
+  border-radius: 4px;
+}
+
+.submit-button {
+  margin-top: 1rem;
+  padding: 0.6rem 1.2rem;
+}
+
+.footer-note {
+  margin-top: 1.5rem;
+}
+
+.company-list {
+  list-style: none;
+  padding: 0;
+}
+
+.company-list li {
+  margin-bottom: 0.5rem;
+}
+
+.company-option {
+  width: 100%;
+  padding: 0.75rem;
+  text-align: left;
+}
+
+.app-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid #e5e5e5;
+}
+
+.app-header-user {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.page-body {
+  padding: 2rem 1.5rem;
+}
+
+.not-found {
+  text-align: center;
+}

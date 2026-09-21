@@ -1,0 +1,47 @@
+import { Navigate, Route, Routes } from 'react-router-dom';
+import { RequireSession } from './auth/RequireSession';
+import { RedirectIfAuthenticated } from './auth/RedirectIfAuthenticated';
+import { CompanyGate } from './auth/CompanyGate';
+import { LoginPage } from './pages/auth/Login';
+import { RegisterPage } from './pages/auth/Register';
+import { VerifyEmailPage } from './pages/auth/VerifyEmail';
+import { CreateCompanyPage } from './pages/onboarding/CreateCompany';
+import { DashboardPage } from './pages/Dashboard';
+
+// M5b's route set only — no /tenders/:id or /settings/company yet (M5d/M5e).
+export function AppRoutes() {
+  return (
+    <Routes>
+      <Route element={<RedirectIfAuthenticated />}>
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
+      </Route>
+      {/* Verifying a link must work regardless of auth state (the user may
+          not be logged in yet on the device that receives the email). */}
+      <Route path="/verify-email" element={<VerifyEmailPage />} />
+
+      <Route element={<RequireSession />}>
+        <Route path="/onboarding/create-company" element={<CreateCompanyPage />} />
+        <Route
+          path="/dashboard"
+          element={
+            <CompanyGate>
+              <DashboardPage />
+            </CompanyGate>
+          }
+        />
+      </Route>
+
+      <Route path="/" element={<Navigate to="/dashboard" replace />} />
+      <Route path="*" element={<NotFound />} />
+    </Routes>
+  );
+}
+
+function NotFound() {
+  return (
+    <div className="page not-found">
+      <h1>Page not found</h1>
+    </div>
+  );
+}

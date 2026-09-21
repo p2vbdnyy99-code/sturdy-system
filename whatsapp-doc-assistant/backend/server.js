@@ -9,6 +9,9 @@
 // asynchronously, because Meta retries webhooks that don't return quickly.
 
 import express from 'express';
+import path from 'node:path';
+import fs from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { config, warnOnMissingConfig } from './src/config.js';
 import { log } from './src/logger.js';
 import { verifyWebhook, verifySignature } from './src/whatsapp.js';
@@ -23,6 +26,15 @@ import { createDashboardRouter } from './src/bidpilot/routes/dashboard.js';
 import { createCompaniesRouter } from './src/bidpilot/routes/companies.js';
 import { cookieParserMiddleware } from './src/bidpilot/auth/cookies.js';
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+// Sibling of backend/, not inside it — verified against the actual
+// filesystem before writing this (whatsapp-doc-assistant/{backend,frontend}/),
+// not assumed from a diagram. Doesn't exist on a Papyr-only deployment that
+// never ran `npm run build` (see the frontendDistExists guard below) or on
+// a checkout that predates Milestone 5b.
+const FRONTEND_DIST = path.join(__dirname, '../frontend/dist');
+const frontendDistExists = fs.existsSync(path.join(FRONTEND_DIST, 'index.html'));
+
 const app = express();
 app.disable('x-powered-by');
 // Render terminates TLS at its edge and proxies plain HTTP to this process —
@@ -30,6 +42,32 @@ app.disable('x-powered-by');
 // silently breaks Secure-cookie behavior (auth/cookies.js). Harmless for
 // Papyr's WhatsApp routes, which don't use cookies at all.
 app.set('trust proxy', 1);
+
+// Strict CSP for the Tenderlytic frontend — this product handles
+// commercially sensitive tender documents, so no third-party script/style/
+// font/analytics origins are allowlisted. Harmless on Papyr's JSON-only
+// webhook responses (a CSP header on a non-HTML response is simply ignored
+// by the browser). script-src/style-src deliberately omit 'unsafe-inline':
+// the frontend has no inline <script> and uses plain CSS classes rather
+// than React style={{}} props specifically so this can stay strict — see
+// frontend/src/index.css's header comment.
+app.use((_req, res, next) => {
+  res.setHeader(
+    'Content-Security-Policy',
+    [
+      "default-src 'self'",
+      "script-src 'self'",
+      "style-src 'self'",
+      "img-src 'self' data:",
+      "font-src 'self'",
+      "connect-src 'self'",
+      "object-src 'none'",
+      "base-uri 'self'",
+      "frame-ancestors 'none'",
+    ].join('; '),
+  );
+  next();
+});
 
 // Capture the raw body so we can verify the X-Hub-Signature-256 HMAC. Express
 // still parses JSON into req.body as usual.
@@ -175,6 +213,32 @@ if (config.db.url) {
   });
 }
 
+// ─── Tenderlytic frontend (Milestone 5b) ────────────────────────────────────
+// Same-origin static serving — see BIDPILOT_ARCHITECTURE.md's Milestone 5b
+// entry for why (SameSite=Lax cookies would never reach a separately-hosted
+// frontend). Registered AFTER every API route above, so nothing here can
+// ever shadow /webhook, /health, /privacy, or /bidpilot/*.
+if (frontendDistExists) {
+  app.use(express.static(FRONTEND_DIST));
+
+  // SPA fallback: Express 5 (path-to-regexp 8) rejects a bare '*' route
+  // pattern ("Missing parameter name") — verified against the actual
+  // installed version before writing this, not assumed from Express 4
+  // habits. A path-less app.use() (already this file's own 404-handler
+  // idiom, below) sidesteps path-to-regexp entirely, so it's used here too.
+  app.use((req, res, next) => {
+    if (req.method !== 'GET' && req.method !== 'HEAD') return next();
+    // Never intercept a BidPilot API path — an unmatched /bidpilot/* route
+    // must fall through to the JSON 404 below, not silently return HTML.
+    if (req.path.startsWith('/bidpilot')) return next();
+    // A path with a file extension that express.static didn't already
+    // serve is a genuinely missing asset (e.g. a stale hashed bundle
+    // reference) — 404 it honestly rather than masking the problem as HTML.
+    if (/\.[^/]+$/.test(req.path)) return next();
+    res.sendFile(path.join(FRONTEND_DIST, 'index.html'));
+  });
+}
+
 // ─── Fallbacks + start ───────────────────────────────────────────────────────
 
 app.use((_req, res) => {
@@ -216,7 +280,16 @@ async function start() {
   startKeepAlive();
 }
 
-start().catch((err) => {
-  log.error('Failed to start:', err);
-  process.exit(1);
-});
+// Exported so tests can exercise the real, fully-wired app (route ordering,
+// CSP, static/SPA-fallback logic) without also binding a port or touching
+// the data dir — see test/spa-fallback.test.js. Only auto-starts when this
+// file is the actual entrypoint (`node server.js` / `npm start`), the
+// standard Node ESM "is this the main module" check.
+export { app };
+
+if (import.meta.url === `file://${process.argv[1]}`) {
+  start().catch((err) => {
+    log.error('Failed to start:', err);
+    process.exit(1);
+  });
+}

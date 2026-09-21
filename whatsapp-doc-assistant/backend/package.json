@@ -7,6 +7,7 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node --watch server.js",
+    "build": "npm --prefix ../frontend ci && npm --prefix ../frontend run build",
     "test": "node --test --test-concurrency=1 \"test/**/*.test.js\"",
     "benchmark": "node test/benchmark.mjs",
     "digest": "node scripts/digest.mjs",

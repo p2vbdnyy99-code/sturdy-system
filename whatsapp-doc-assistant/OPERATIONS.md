@@ -12,11 +12,27 @@ written to disk.
 ## Deploy
 
 - Code lives on branch `claude/whatsapp-ai-document-assistant-*`; Render builds
-  from the connected repo and runs `npm start` (`backend/`).
+  from the connected repo, with **Root Directory = `backend/`**.
 - Pushing new commits triggers a Render deploy. **Avoid pushing several commits
   in quick succession** — overlapping deploys create a window where messages
   sent mid-rollover are dropped (seen in beta). Push, let one deploy finish,
   then test.
+- **Since Milestone 5b (Tenderlytic frontend):** Render's dashboard **Build
+  Command** must be set to `npm install && npm run build` (was previously
+  whatever Render's zero-config Node default was — effectively just `npm
+  install`). `npm run build` (backend's own `package.json`) installs and
+  builds `frontend/` via `npm --prefix ../frontend`, producing
+  `frontend/dist/`, which `server.js` then serves statically. **Start
+  Command stays `npm start`, unchanged.** This ordering matters: backend
+  dependencies must finish installing before the frontend build step runs
+  (the build script assumes nothing from `npm install`, but Render's own
+  deploy sequence must still do `install` before `build` before `start`).
+  A Papyr-only checkout that never runs the build step is unaffected —
+  `server.js` checks for `frontend/dist/index.html` before mounting any
+  frontend routes and simply skips them if it's absent.
+  This dashboard change has not been applied or verified against the live
+  Render service from this environment (no `render.yaml`/API access here) —
+  apply it in the Render dashboard directly.
 
 ## The two things that silently break it
 
