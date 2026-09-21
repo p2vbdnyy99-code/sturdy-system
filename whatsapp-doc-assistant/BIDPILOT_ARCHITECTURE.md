@@ -1045,13 +1045,14 @@ AI-invented fact without a real, in-chunk page citation.
   outright rather than analyzed partially up to the cap. Simpler and safer
   for v1; could be revisited if refusing a large legitimate tender proves
   too blunt in practice.
-- **`overviewEvidence`'s per-field evidence is best-effort** — the AI can
-  supply a value without a page citation for overview fields specifically
-  (unlike requirements, where evidence is mandatory); this was a deliberate
-  reading of "evidence-first" as applying most strictly to the
-  compliance-relevant facts (requirements/BOQ/dates/red-flags), with
-  overview metadata held to a slightly softer bar. Worth confirming this
-  reading is correct.
+- ~~`overviewEvidence`'s per-field evidence is best-effort~~ — **resolved
+  before commit**: tightened so every populated overview field requires the
+  same real in-chunk page citation + evidence text as a requirement, no
+  exceptions. These are commercially load-bearing fields (tender value,
+  EMD, deadlines); a wrong number is worse than a missing one. See
+  `schema.js`'s validator — this paragraph is left here, struck through,
+  because it was the actual open question raised for review, and the
+  answer changed the shipped behavior.
 
 ## Suggested next milestone
 
@@ -1063,3 +1064,177 @@ unused since) to populate `tender_requirements.companyStatus` (`MEETS` /
 `UNKNOWN` / `DOES_NOT_APPEAR_TO_MEET` — never a numeric score, per the
 schema's own standing prohibition). A frontend to actually see any of this
 remains a separate, later milestone either way.
+
+# Milestone 5a — API/Read Layer (product renamed to Tenderlytic)
+
+Product identity changed from **BidPilot** to **Tenderlytic** at the
+product/UI layer starting this milestone (working name **BidPilot** used
+throughout M1–M4). Per explicit instruction, this is a naming change only —
+no database tables, internal module names, routes, or the `bidpilot`
+code namespace were renamed, to avoid migration/churn risk for no
+functional benefit. The `/bidpilot` route prefix, `bidpilot_session`/
+`bidpilot_csrf` cookie names, `src/bidpilot/` directory, and every schema
+identifier are all deliberately untouched. A deliberate product-code
+rename is a separate, later decision. M5a itself is a pure backend
+API/read layer — no user-facing branding surface exists yet to apply the
+new name to.
+
+**Product identity (Tenderlytic):**
+- Positioning: AI-powered tender intelligence and bid-preparation platform
+  for contractors and businesses.
+- Core promise: upload a tender; understand its requirements, deadlines,
+  documents, BOQ, and risks — with every extracted fact tied back to its
+  source page.
+- Brand direction: professional B2B SaaS, evidence-first, analytical,
+  trustworthy, minimal/utilitarian, built for contractors and SMEs, no
+  "guaranteed wins" positioning.
+- Primary tagline: "AI-powered tender intelligence."
+- Logo: a custom Tenderlytic wordmark + analytical tender/document symbol
+  (T + document + signal mark) — not built yet; no reuse of Papyr's brand
+  assets (`whatsapp-doc-assistant/brand/`), which remain Papyr-only.
+
+## What this milestone closes
+
+The M5 architecture audit found several real product gaps: `listTenders()`
+existed but had no route (no way to see "all your tenders"), `GET
+/tenders/:id` returned only status fields (none of the M4 intelligence —
+overview, requirements, BOQ, dates, red flags — was ever exposed over
+HTTP), there was no BOQ read function at all, and there was no way for an
+authenticated user to create a company (onboarding was structurally
+impossible — `createCompanyWithOwner()` creates a new user, the wrong
+shape for someone already logged in). None of this — the M5a scope as
+originally approved — needed a schema change; it needed routes and a
+handful of small repo functions reading data that already existed. A
+schema change did end up happening in this milestone, but for a different
+reason: see "A real bug found and fixed along the way" below.
+**M5a introduced one corrective migration (`0005_hot_devos.sql`) to
+resolve a pre-existing Milestone 4 type mismatch discovered during
+integration testing — not a schema change for M5a's own feature scope.
+No new tables or columns were introduced; the migration only changes the
+type of three existing columns.**
+
+## New endpoints
+
+- **`GET /tenders`** — paginated (`page`/`limit`, capped at 100),
+  filterable (`status`, `analysisStatus`, validated against the real enum
+  values so a bad filter is a 400, never a raw Postgres error), searchable
+  (`search`, ILIKE across title/organization/tenderNumber), sortable
+  (`sortBy`: `deadline`|`createdAt`, `sortOrder`: `asc`|`desc`). Backed by
+  `listTendersPaginated()` — a new repo function alongside the existing
+  unbounded `listTenders()`, not a replacement for it.
+- **`GET /dashboard/summary`** — the "what needs attention" aggregate:
+  total/processing/awaitingAnalysis/analysed counts, upcoming-deadline
+  count (configurable window, default 14 days), and the 5 most recent
+  tenders. Computed as one SQL aggregate (`getDashboardSummary()`, using
+  `count(*) filter (where ...)`) rather than derived client-side from a
+  page of the tender list, which — once paginated — can never hold a
+  correct total.
+- **`GET /tenders/:id`** — rewritten from a summary-only response into the
+  unified tender-intelligence read the M5 audit's "product-level
+  representation, not database-shaped endpoints" decision asked for: one
+  response carrying metadata, processing/analysis status, overview (merged
+  with its per-field evidence), requirements+evidence, BOQ, dates, red
+  flags, document metadata (not the signed URL itself — that stays a
+  separate, short-lived call to the existing `/document-url` route), and
+  the last 20 activity events. Every previously-existing field is still
+  present at the same key — purely additive, so nothing that already read
+  this endpoint (the `/analyze` polling loop in M4's own tests) needed to
+  change.
+- **`POST /companies`** — onboarding: an authenticated user creates a
+  company and becomes its `owner` in one transaction
+  (`createCompanyForUser()`, new — distinct from `createCompanyWithOwner()`
+  which creates the user too). Deliberately not gated on email
+  verification, consistent with M3's standing decision that
+  `PENDING_VERIFICATION` users can use the product. Takes `name` (required)
+  and optional `industry`/`businessType`, which land on the lazily-created
+  `company_profiles` row.
+- **`GET`/`PATCH /companies/:id/profile`** — thin wrappers over M1's
+  existing `getCompanyProfile`/`upsertCompanyProfile`, unused until now.
+  `PATCH` accepts a partial body whitelisted against the real
+  `company_profiles` columns (an unknown field is silently dropped, never
+  written) and merges rather than overwrites, so onboarding can ask for
+  almost nothing and the rest gets filled in progressively later, per the
+  approved design.
+
+Also added: `listBoq()` (the missing read path for `tender_boq_items`) and
+`listEvents()` (newest-first, bounded to 20 — an activity feed, not a full
+audit export; `audit_logs` remains that).
+
+## Onboarding contact information — dropped, not deferred silently
+
+The approved onboarding form asked for company name plus "optional basic
+contact information." `companies` has only `id`/`name`/timestamps, and
+`company_profiles` has no generic contact fields either — every field
+there is a business/eligibility fact (GSTIN, turnover, certifications,
+...), not a phone/contact-email. Adding one would have been a schema
+change, which was set as a hard boundary for this milestone. Resolved by
+dropping contact information from the onboarding form entirely (asking
+only name + optional industry/businessType, both of which map to real
+columns) — surfaced to the user as an explicit decision before
+implementation, not decided unilaterally.
+
+## A real bug found and fixed along the way
+
+Building the unified tender-detail response surfaced a pre-existing defect
+in Milestone 4's `replaceAnalysis()`: it wrote every AI-extracted overview
+value directly into its `tenders` column with no type handling. Of the 9
+overview fields, only 4 were `text`; `estimatedValue`, `emd`, and
+`tenderFee` were `numeric`, and `submissionDeadline`/`openingDate` were
+`timestamp`. The AI extraction prompt asks for all 9 uniformly as free
+text (e.g. `"₹5 crore"` — the same reasoning `contractDuration` already
+used for staying text). The moment the AI returned a non-empty value for
+any of the 5 typed fields, the `UPDATE` threw a raw Postgres type error and
+the *entire* analysis run was marked `FAILED` — despite extraction,
+validation, and every other field having succeeded. M4's own tests never
+caught this because their mocked AI responses only ever populated
+`organization`, a text field.
+
+Not patched inline — this touches already-committed, already-approved M4
+design, so it was raised for a decision before continuing. Fixed as:
+- **`estimatedValue`/`emd`/`tenderFee`**: columns changed from `numeric` to
+  `text` (migration `0005_hot_devos.sql`, a single-statement `ALTER COLUMN
+  ... SET DATA TYPE text` per column — reviewed before applying, same
+  discipline as every prior migration). Matches `contractDuration`'s
+  existing precedent exactly; nothing else in the codebase depended on
+  these being numeric.
+- **`submissionDeadline`/`openingDate`**: no column-type change (both are
+  still used for sorting/filtering/the dashboard's upcoming-deadline
+  aggregate, so they stay real `timestamp` columns) — instead,
+  `replaceAnalysis()` now mirrors `tender_dates.parsedDate`'s own
+  established pattern: the AI's value is written to the typed column only
+  when it calendar-parses (`Date.parse`), and left `null` otherwise —
+  never a fabricated date. The raw text is preserved either way, in
+  `overviewEvidence[field].rawValue`, so an honest non-calendar answer
+  (`"within 30 days of tender opening"`) is never silently dropped just
+  because it doesn't fit a `timestamp` column. `GET /tenders/:id` prefers
+  the typed value and falls back to `rawValue` only when the typed column
+  is null, so the frontend gets a real `Date` whenever one exists and the
+  honest source text otherwise.
+
+## Tests
+
+47 new tests across 4 files (`tenders-list`, `dashboard-summary`,
+`companies`, `tender-detail`), covering: pagination boundaries (including
+the 100-item cap), every filter/sort/search path, tenant isolation on
+every new route (list/summary/detail all confirmed to return 403 or 404 —
+never leak another company's data by naming its id), the onboarding
+company-creation path including the PENDING_VERIFICATION case, profile
+whitelist enforcement, and — specifically for the bug above — a
+calendar-parseable-deadline case and a deliberately non-parseable one,
+both asserting the analysis still completes and the right value survives
+to the response. Full suite validated clean across all three deployment
+configurations (both BidPilot env vars set / `DATABASE_URL` only / neither
+— pure Papyr): 369/369, 258/258, 218/218, zero failures. No test calls a
+real AI API.
+
+## Explicitly not built (per the approved M5 scope)
+
+Frontend (M5b onward), eligibility matching, tender discovery/scraping,
+Ask Tender/RAG, Telegram, billing/subscriptions, OAuth/MFA/SSO, AI chat,
+automatic BOQ pricing, a PDF page viewer, analytics.
+
+## Next
+
+M5b (frontend foundation) is unscoped for implementation until this
+report is reviewed and approved — same "implement → test → report/diff →
+approval → commit" discipline as every prior milestone.

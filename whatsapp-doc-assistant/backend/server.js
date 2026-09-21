@@ -19,6 +19,8 @@ import { allow } from './src/ratelimit.js';
 import { createTendersRouter } from './src/bidpilot/routes/tenders.js';
 import { createDownloadRouter } from './src/bidpilot/routes/download.js';
 import { createAuthRouter } from './src/bidpilot/routes/auth.js';
+import { createDashboardRouter } from './src/bidpilot/routes/dashboard.js';
+import { createCompaniesRouter } from './src/bidpilot/routes/companies.js';
 import { cookieParserMiddleware } from './src/bidpilot/auth/cookies.js';
 
 const app = express();
@@ -163,6 +165,8 @@ async function processWebhook(body) {
 if (config.db.url) {
   app.use('/bidpilot', cookieParserMiddleware);
   app.use('/bidpilot', createAuthRouter());
+  app.use('/bidpilot', createCompaniesRouter());
+  app.use('/bidpilot', createDashboardRouter());
   app.use('/bidpilot', createTendersRouter());
   app.use('/bidpilot', createDownloadRouter());
 } else {

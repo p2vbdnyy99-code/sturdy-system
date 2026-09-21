@@ -15,7 +15,7 @@ export const REQUIREMENT_CATEGORIES = [
   'MANPOWER', 'EQUIPMENT', 'OEM', 'DOCUMENT', 'GEOGRAPHIC', 'SPECIAL_CONDITION', 'OTHER',
 ];
 
-const OVERVIEW_FIELDS = [
+export const OVERVIEW_FIELDS = [
   'organization', 'tenderNumber', 'location', 'estimatedValue', 'emd',
   'tenderFee', 'contractDuration', 'submissionDeadline', 'openingDate',
 ];

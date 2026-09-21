@@ -4,7 +4,7 @@
 // query against a tender (and anything hanging off it) MUST be scoped by it.
 // See src/bidpilot/repo/tenants.js.
 
-import { pgTable, uuid, text, integer, numeric, boolean, timestamp, jsonb, index, unique } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, text, integer, boolean, timestamp, jsonb, index, unique } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
 import { companies, users } from './identity.js';
 import { tenderStatus, tenderProcessingStatus, tenderAnalysisStatus } from './enums.js';
@@ -18,9 +18,15 @@ export const tenders = pgTable('tenders', {
   tenderNumber: text('tender_number'),
   location: text('location'),
 
-  estimatedValue: numeric('estimated_value'),
-  emd: numeric('emd'),
-  tenderFee: numeric('tender_fee'),
+  // Free text, not numeric — same reasoning as contractDuration below: real
+  // tenders describe these as "₹5 crore" or "₹5 crore or equivalent in USD",
+  // and a numeric column would either reject that or silently truncate the
+  // qualifier. (Originally typed numeric; found to reject the AI's own
+  // extracted values during Milestone 5a and corrected here — see
+  // BIDPILOT_ARCHITECTURE.md.)
+  estimatedValue: text('estimated_value'),
+  emd: text('emd'),
+  tenderFee: text('tender_fee'),
   // Prose, deliberately not an interval: real tenders describe this as
   // "12 months from LOI" or "2 years, extendable" — free text is honest about
   // what's actually extractable; a rigid interval type would force fabrication.

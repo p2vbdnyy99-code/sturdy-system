@@ -9,9 +9,14 @@ import { log } from '../../logger.js';
 import { requireSession } from './auth.js';
 import { requireCsrf } from '../auth/csrf.js';
 import { requireCompanyAccess, TenantAccessError } from '../repo/tenants.js';
-import { getTender, startAnalysis } from '../repo/tenders.js';
+import { getTender, startAnalysis, listTendersPaginated } from '../repo/tenders.js';
 import { listPages } from '../repo/pages.js';
 import { listDocumentsForTender } from '../repo/documents.js';
+import { listRequirements, listEvidenceForRequirement } from '../repo/requirements.js';
+import { listBoq } from '../repo/boq.js';
+import { listDates } from '../repo/dates.js';
+import { listRedFlags } from '../repo/redFlags.js';
+import { listEvents } from '../repo/events.js';
 import { ingestUpload, processExtraction } from '../ingestion/pipeline.js';
 import { ValidationError } from '../ingestion/validate.js';
 import { getStorage } from '../storage/index.js';
@@ -19,6 +24,8 @@ import { chunkPages } from '../analysis/chunker.js';
 import { assertAnalysisBudget, AnalysisBudgetError } from '../analysis/budget.js';
 import { runAnalysis } from '../analysis/pipeline.js';
 import { config } from '../../config.js';
+import { tenderStatus, tenderAnalysisStatus } from '../../db/schema/enums.js';
+import { OVERVIEW_FIELDS } from '../analysis/schema.js';
 
 // multer buffers the upload in memory (never touches disk itself) — fine at
 // this size ceiling (BIDPILOT_MAX_UPLOAD_MB, default 50MB); a much larger
@@ -56,6 +63,40 @@ export function createTendersRouter() {
     });
   });
 
+  router.get('/tenders', async (req, res) => {
+    try {
+      const db = getDb();
+      const scope = await requireCompanyAccess(db, {
+        userId: req.bidpilotUserId,
+        companyId: req.query.companyId,
+      });
+
+      const { status, analysisStatus, search, sortBy, sortOrder } = req.query;
+      if (status && !tenderStatus.enumValues.includes(status)) {
+        return res.status(400).json({ error: `Invalid status. Must be one of: ${tenderStatus.enumValues.join(', ')}` });
+      }
+      if (analysisStatus && !tenderAnalysisStatus.enumValues.includes(analysisStatus)) {
+        return res.status(400).json({ error: `Invalid analysisStatus. Must be one of: ${tenderAnalysisStatus.enumValues.join(', ')}` });
+      }
+      if (sortBy && !['deadline', 'createdAt'].includes(sortBy)) {
+        return res.status(400).json({ error: "sortBy must be 'deadline' or 'createdAt'." });
+      }
+      if (sortOrder && !['asc', 'desc'].includes(sortOrder)) {
+        return res.status(400).json({ error: "sortOrder must be 'asc' or 'desc'." });
+      }
+
+      const page = Number.parseInt(req.query.page, 10) || 1;
+      const limit = Number.parseInt(req.query.limit, 10) || 20;
+
+      const result = await listTendersPaginated(scope, {
+        page, limit, status, analysisStatus, search, sortBy, sortOrder,
+      });
+      return res.json(result);
+    } catch (err) {
+      handleError(res, err);
+    }
+  });
+
   router.get('/tenders/:id', async (req, res) => {
     try {
       const db = getDb();
@@ -65,17 +106,83 @@ export function createTendersRouter() {
       });
       const tender = await getTender(scope, req.params.id);
       if (!tender) return res.status(404).json({ error: 'Not found.' });
-      const pages = await listPages(scope, tender.id);
+
+      const [pages, requirements, boq, dates, redFlags, documents, activity] = await Promise.all([
+        listPages(scope, tender.id),
+        listRequirements(scope, tender.id),
+        listBoq(scope, tender.id),
+        listDates(scope, tender.id),
+        listRedFlags(scope, tender.id),
+        listDocumentsForTender(scope, tender.id),
+        listEvents(scope, tender.id),
+      ]);
+
+      const requirementsWithEvidence = await Promise.all(
+        requirements.map(async (r) => ({
+          id: r.id,
+          category: r.category,
+          title: r.title,
+          description: r.description,
+          mandatory: r.mandatory,
+          evidence: (await listEvidenceForRequirement(scope, r.id)).map((e) => ({
+            sourcePage: e.sourcePage,
+            evidenceText: e.evidenceText,
+            extractedValue: e.extractedValue,
+            confidence: e.confidence,
+          })),
+        })),
+      );
+
+      const overviewEvidence = tender.overviewEvidence || {};
+      const overview = {};
+      for (const field of OVERVIEW_FIELDS) {
+        const evidence = overviewEvidence[field];
+        // submissionDeadline/openingDate: the typed column is null whenever
+        // the AI's extracted text didn't calendar-parse — fall back to the
+        // raw text rather than reporting the field as not-found (see
+        // repo/analysis.js's DATE_OVERVIEW_FIELDS comment). Every other field
+        // is plain text, so tender[field] alone is always the whole answer.
+        const value = tender[field] ?? evidence?.rawValue ?? null;
+        if (value === null || value === undefined) {
+          overview[field] = null;
+          continue;
+        }
+        overview[field] = {
+          value,
+          sourcePage: evidence?.sourcePage ?? null,
+          evidenceText: evidence?.evidenceText ?? null,
+        };
+      }
+
+      const document = documents[0]
+        ? {
+            filename: documents[0].filename,
+            mimeType: documents[0].mimeType,
+            sizeBytes: documents[0].sizeBytes,
+            uploadedAt: documents[0].createdAt,
+          }
+        : null;
+
       return res.json({
         id: tender.id,
         title: tender.title,
+        source: tender.source,
         status: tender.status,
         processingStatus: tender.processingStatus,
         processingError: tender.processingError,
-        pageCount: pages.length,
         analysisStatus: tender.analysisStatus,
         analysisError: tender.analysisError,
         analyzedAt: tender.analyzedAt,
+        pageCount: pages.length,
+        createdAt: tender.createdAt,
+        updatedAt: tender.updatedAt,
+        overview,
+        requirements: requirementsWithEvidence,
+        boq,
+        dates,
+        redFlags,
+        document,
+        activity,
       });
     } catch (err) {
       handleError(res, err);

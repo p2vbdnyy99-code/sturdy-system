@@ -38,6 +38,31 @@ export async function createCompanyWithOwner(db, { companyName, userEmail, userN
   return { user, company, membership };
 }
 
+/**
+ * Onboarding: an already-authenticated, already-existing user creates a
+ * company and becomes its owner — distinct from createCompanyWithOwner()
+ * above, which creates the USER too (that one's for tests/scripts standing
+ * up a whole tenant from nothing; this one's for a logged-in person). One
+ * transaction: a company row without its owner membership (or vice versa)
+ * should never be observable, even transiently.
+ * industry/businessType are optional and land on company_profiles (created
+ * lazily) rather than companies — per M5's onboarding decision, only
+ * name is required; everything else is filled in progressively later.
+ */
+export async function createCompanyForUser(db, userId, { name, industry, businessType } = {}) {
+  return db.transaction(async (tx) => {
+    const company = await createCompany(tx, { name });
+    const membership = await addCompanyMember(tx, { userId, companyId: company.id, role: 'owner' });
+    if (industry || businessType) {
+      await upsertCompanyProfile(tx, company.id, {
+        ...(industry ? { industry } : {}),
+        ...(businessType ? { businessType } : {}),
+      });
+    }
+    return { company, membership };
+  });
+}
+
 export async function getCompanyProfile(db, companyId) {
   const [row] = await db
     .select()

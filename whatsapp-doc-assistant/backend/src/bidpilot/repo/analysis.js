@@ -19,6 +19,19 @@ import { eq } from 'drizzle-orm';
 import { tenders, tenderRequirements, tenderBoqItems, tenderDates, tenderRedFlags, tenderEvents } from '../../db/schema/index.js';
 import { createRequirementWithEvidence } from './requirements.js';
 
+// submissionDeadline/openingDate are the only two overview fields backed by a
+// typed (timestamp) tenders column rather than text — every other overview
+// field is free text and can hold the AI's extracted value verbatim (see
+// tenders.js's schema comment on estimatedValue/emd/tenderFee for why those
+// are text too, not numeric). A date field's AI value is only ever a
+// best-effort ISO-parseable string; same "never invent, never throw on
+// unparseable" reasoning tender_dates.parsedDate already uses. When it
+// doesn't parse, the typed column is left null (never a fabricated date) and
+// the raw text is preserved in overviewEvidence.rawValue instead — otherwise
+// a real, honestly-extracted-but-non-calendar answer like "within 30 days of
+// opening" would just vanish.
+const DATE_OVERVIEW_FIELDS = new Set(['submissionDeadline', 'openingDate']);
+
 /** Delete all AI-derived rows for a tender (requirements, which cascades to
  *  their evidence; BOQ; dates; red flags). Overview fields on `tenders`
  *  itself are overwritten by the subsequent UPDATE, not deleted first. */
@@ -75,8 +88,14 @@ export async function replaceAnalysis(scope, tenderId, aggregated, meta = {}) {
     const overviewUpdate = {};
     const overviewEvidence = {};
     for (const [field, entry] of Object.entries(overview)) {
-      overviewUpdate[field] = entry.value;
-      overviewEvidence[field] = { sourcePage: entry.sourcePage, evidenceText: entry.evidenceText };
+      if (DATE_OVERVIEW_FIELDS.has(field)) {
+        const parsed = entry.value && !Number.isNaN(Date.parse(entry.value)) ? new Date(entry.value) : null;
+        overviewUpdate[field] = parsed;
+        overviewEvidence[field] = { sourcePage: entry.sourcePage, evidenceText: entry.evidenceText, rawValue: entry.value };
+      } else {
+        overviewUpdate[field] = entry.value;
+        overviewEvidence[field] = { sourcePage: entry.sourcePage, evidenceText: entry.evidenceText };
+      }
     }
 
     const [updatedTender] = await tx
