@@ -5,6 +5,12 @@
 # of both backend/ and frontend/, since the build needs both siblings.
 FROM node:20-slim
 
+# argon2 (password hashing) has no prebuilt binary for this platform/node
+# combo and falls back to compiling from source via node-gyp, which needs
+# Python + a C++ toolchain — neither present in the slim base image.
+RUN apt-get update && apt-get install -y --no-install-recommends python3 make g++ \
+  && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
 COPY backend backend
 COPY frontend frontend
