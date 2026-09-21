@@ -3,12 +3,18 @@
 // M5d build against, per the approved API-client-first design.
 import { request } from './client';
 
-export type TenderStatus =
-  | 'NEW' | 'REVIEWING' | 'INTERESTED' | 'PREPARING_BID'
-  | 'SUBMITTED' | 'AWARDED' | 'NOT_AWARDED' | 'CLOSED';
+// Single source for both the TS union type and the runtime array a <select>
+// needs — matches src/db/schema/enums.js's tenderStatus.enumValues exactly.
+export const TENDER_STATUSES = [
+  'NEW', 'REVIEWING', 'INTERESTED', 'PREPARING_BID',
+  'SUBMITTED', 'AWARDED', 'NOT_AWARDED', 'CLOSED',
+] as const;
+export type TenderStatus = (typeof TENDER_STATUSES)[number];
+
+export const ANALYSIS_STATUSES = ['NOT_STARTED', 'ANALYZING', 'COMPLETED', 'FAILED'] as const;
+export type AnalysisStatus = (typeof ANALYSIS_STATUSES)[number];
 
 export type ProcessingStatus = 'UPLOADED' | 'PROCESSING' | 'EXTRACTING' | 'ANALYZING' | 'COMPLETED' | 'FAILED';
-export type AnalysisStatus = 'NOT_STARTED' | 'ANALYZING' | 'COMPLETED' | 'FAILED';
 
 // GET /tenders returns full tenders rows (no column projection) — see
 // repo/tenders.js's listTendersPaginated().
@@ -57,6 +63,25 @@ export type TenderListQuery = {
 export function listTenders(query: TenderListQuery) {
   const { companyId, ...rest } = query;
   return request<TenderListResult>('/bidpilot/tenders', { query: { companyId, ...rest } });
+}
+
+// Matches routes/tenders.js's handleUpload() exactly — verified against the
+// committed route (not assumed) before writing this: field name "file",
+// companyId as a form field (not query/JSON), 201 on a new tender / 200 on
+// a detected duplicate, and the response body carries `status` (business
+// status) and `duplicate`, not just processingStatus.
+export type UploadTenderResult = {
+  tenderId: string;
+  status: TenderStatus;
+  processingStatus: ProcessingStatus;
+  duplicate: boolean;
+};
+
+export function uploadTender(file: File, companyId: string) {
+  const form = new FormData();
+  form.append('file', file);
+  form.append('companyId', companyId);
+  return request<UploadTenderResult>('/bidpilot/tenders/upload', { method: 'POST', body: form });
 }
 
 // An overview field is null when nothing was extracted; otherwise it always

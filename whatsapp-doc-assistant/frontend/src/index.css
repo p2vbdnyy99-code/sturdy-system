@@ -130,3 +130,145 @@ a {
 .not-found {
   text-align: center;
 }
+
+.dashboard-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.dashboard-tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 1rem;
+  margin: 1.5rem 0;
+}
+
+.dashboard-tile {
+  border: 1px solid #e5e5e5;
+  border-radius: 6px;
+  padding: 1rem;
+  background: #fff;
+}
+
+.dashboard-tile-value {
+  font-size: 1.75rem;
+  font-weight: 600;
+}
+
+.dashboard-tile-label {
+  color: #666;
+  font-size: 0.85rem;
+}
+
+.dashboard-recent {
+  list-style: none;
+  padding: 0;
+  margin: 0.5rem 0 1.5rem;
+}
+
+.dashboard-recent li {
+  padding: 0.4rem 0;
+  border-bottom: 1px solid #f0f0f0;
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.filters-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.filters-bar select,
+.filters-bar input {
+  padding: 0.4rem;
+}
+
+.tender-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.tender-table th,
+.tender-table td {
+  text-align: left;
+  padding: 0.6rem;
+  border-bottom: 1px solid #eee;
+  vertical-align: top;
+}
+
+.tender-table th {
+  color: #666;
+  font-weight: 500;
+  font-size: 0.85rem;
+}
+
+.tender-table th button {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  font-weight: 500;
+  color: inherit;
+  cursor: pointer;
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+
+.badge-neutral {
+  background: #eef0f3;
+  color: #444;
+}
+
+.badge-warning {
+  background: #fff3cd;
+  color: #7a5b00;
+}
+
+.badge-danger {
+  background: #fbe1e1;
+  color: #a3231f;
+}
+
+.badge-success {
+  background: #e3f5e6;
+  color: #1c6b2c;
+}
+
+.empty-state {
+  padding: 2rem 0;
+  text-align: center;
+}
+
+.empty-state-title {
+  font-weight: 500;
+  margin-bottom: 0.25rem;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
+
+.pagination {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  margin-top: 1rem;
+}

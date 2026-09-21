@@ -36,6 +36,10 @@ type RequestOptions = {
   query?: Record<string, string | number | undefined>;
 };
 
+function isFormData(body: unknown): body is FormData {
+  return typeof FormData !== 'undefined' && body instanceof FormData;
+}
+
 function buildUrl(path: string, query?: RequestOptions['query']): string {
   if (!query) return path;
   const params = new URLSearchParams();
@@ -49,9 +53,13 @@ function buildUrl(path: string, query?: RequestOptions['query']): string {
 export async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
   const method = options.method ?? 'GET';
   const headers: Record<string, string> = {};
-  let body: string | undefined;
+  let body: string | FormData | undefined;
 
-  if (options.body !== undefined) {
+  if (isFormData(options.body)) {
+    // Never set content-type manually for multipart — the browser must
+    // generate the boundary itself (used by uploadTender()'s file upload).
+    body = options.body;
+  } else if (options.body !== undefined) {
     headers['content-type'] = 'application/json';
     body = JSON.stringify(options.body);
   }

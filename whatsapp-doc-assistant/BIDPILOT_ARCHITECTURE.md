@@ -1431,3 +1431,178 @@ in a mocked test harness.
 
 M5c (Dashboard + tender list) is unscoped for implementation until this
 report is reviewed and approved.
+
+# Milestone 5c — Onboarding + Dashboard
+
+Frontend-only milestone, exactly as scoped: **zero backend files changed.**
+Every action (list/filter/sort/search, upload, analyze, poll) goes through
+M5a's already-committed, already-tested API — `api/tenders.ts` and
+`api/dashboard.ts`, built in M5b but unused until now, are the only API
+surface this milestone consumes (plus one small addition, `uploadTender()`,
+to `api/tenders.ts` — see below).
+
+## What was verified before writing code
+
+Per explicit instruction, the upload route's response contract was
+verified against the actual committed `routes/tenders.js` (not assumed
+from the M5c audit's shorthand). The real contract is `201/200 {tenderId,
+status, processingStatus, duplicate}` — carrying the business `status` and
+a `duplicate` flag the audit's wording had omitted — and `companyId` is a
+multipart **form field**, not a query/JSON parameter. `api/tenders.ts`'s
+new `uploadTender()` matches this exactly.
+
+## New files
+
+```
+frontend/src/dashboard/
+  attentionState.ts        — pure derivation function, zero React/DOM deps
+  attentionState.test.ts   — 15 unit tests, runs via `node --test` directly
+                              (Node 22's native TS type-stripping — no
+                              frontend test framework added)
+  useTenderPolling.ts       — bounded polling hook (2s interval, 120s cap
+                              per phase, timeout is never treated as FAILED
+                              and never auto-retries)
+  TenderRow.tsx             — per-row rendering + polling wiring + Analyze
+                              action (kept as its own file — genuinely
+                              non-trivial hook wiring, not architectural
+                              appearance)
+frontend/src/components/
+  EmptyState.tsx            — deliberately generic (title/message/action
+                              props only, zero tender-specific logic — the
+                              caller decides copy)
+  AttentionBadge.tsx        — tiny, reusable (M5d will want it too)
+frontend/src/pages/Dashboard.tsx  — REPLACED (was M5b's placeholder):
+                              summary tiles, recent-tenders list, filter
+                              bar, paginated table, upload action — kept as
+                              one file rather than splitting into
+                              SummaryTiles/TenderTable/UploadButton per the
+                              explicit instruction not to fragment for its
+                              own sake
+```
+
+`frontend/tsconfig.test.json` (new) — an isolated tsconfig for `*.test.ts`
+files (Node types, kept out of the browser app's `tsconfig.app.json`
+entirely) — needed once a real dependency-free unit test file existed;
+`tsc -b`'s project-reference build no longer drags Node-only globals into
+the app bundle's type-check, or vice versa.
+
+## Attention states — implemented exactly as specified
+
+`deriveAttentionState()` is the priority-ordered table from the M5
+product review, unchanged: PROCESSING > PROCESSING_FAILED >
+ANALYSIS_REQUIRED > ANALYSIS_IN_PROGRESS > ANALYSIS_FAILED >
+DEADLINE_APPROACHING > READY. The deadline window is exactly `now <=
+deadline <= now + 7 days`, inclusive both ends; a past deadline is not a
+separate "overdue" state (falls through to READY, as instructed); no
+deadline means no warning. A non-calendar-parseable deadline string
+(the rare case from M5a's `submissionDeadline` fallback) safely falls
+through to READY rather than throwing — `Invalid Date` comparisons are
+always `false` in JS, never a crash. 15 unit tests cover every branch and
+both window boundaries exactly at the edge (inclusive).
+
+This module interprets only status enums and a timestamp the backend
+already computed — it never infers or re-derives a tender fact, preserving
+the M4/M5a evidence-first boundary exactly as instructed.
+
+## Default sort — deadline ascending, matching the backend
+
+Per the explicit correction: the table's default sort is the backend's own
+`sortBy=deadline&sortOrder=asc` — attention state is informational only,
+never the sort key. Sorting/pagination stay server-authoritative; nothing
+client-side reorders a page after the server returns it.
+
+## Polling — bounded per phase, timeout is not failure
+
+Each row polls independently (its own `useTenderPolling` instance,
+2s interval, 120s cap) so multiple simultaneous uploads/analyses each get
+their own budget from their own trigger moment. On timeout: polling stops,
+the row shows "Still processing/analyzing — refresh or try again later."
+with a "Check again" button that restarts the 120s budget — it never
+auto-retries and never marks the row FAILED. Verified with a real ~120s
+wall-clock wait in the browser verification pass below, not simulated.
+
+## Upload -> processing -> analysis flow
+
+`+ Upload Tender` -> native file picker (PDF only, matching the backend's
+own validation) -> `uploadTender()` -> row appears immediately (a full
+list+summary refetch after upload, not a hand-constructed optimistic row)
+-> per-row polling picks up `processingStatus` until it settles ->
+`[Analyze]` appears once `Analysis required` -> `analyzeTender()` -> polling
+switches to `analysisStatus` until it settles. No AI analysis auto-triggers
+on upload — the explicit click remains the only trigger, unchanged from
+M4's standing decision. A settled poll result also refreshes the summary
+tiles (a completed tender changes `awaitingAnalysis`/`analysed` counts,
+which would otherwise go stale).
+
+## Empty/loading/error states
+
+Three genuinely distinct dashboard states, not one generic "empty" message:
+`total === 0` with no active filter/search -> "No tenders yet. Upload your
+first tender to get started." (with the upload action attached);
+`total === 0` with an active filter/search -> "No tenders match your
+filters." (with a "Clear filters" action) — never conflated, verified in
+the browser pass by triggering both and confirming the correct one renders
+each time. List/summary fetch failures get a retry-capable error state via
+the same generic `EmptyState` component. 401 mid-session is already
+handled globally by M5b's `SESSION_EXPIRED_EVENT` — no new logic needed;
+confirmed still correct in the browser pass (clearing the session cookie
+and reloading redirects to `/login`).
+
+## Known pre-existing issue (introduced in Milestone 3, not M5c) — surfaced by, but not caused by, this milestone
+
+Development-mode verification email/link targets the backend verification
+endpoint rather than the frontend `/verify-email` page. Verification
+itself functions correctly. No M5c backend change was made. Future polish
+item.
+
+Detail: the real end-to-end browser verification below surfaced that the
+dev-mode email-verification link — `routes/auth.js`'s
+`devDeliverVerificationLink()`, written in Milestone 3, before any
+frontend existed to link to — emits a URL pointing at the raw backend API
+endpoint (`/bidpilot/verify-email?token=...`), not the frontend's
+`/verify-email` page built in this milestone. Clicking it shows a JSON
+response instead of the styled confirmation page. The verification itself
+still succeeds (the API call works); only the dev-convenience link's
+*target* is wrong, and `devVerificationUrl` never appears in a production
+response at all (see `routes/auth.js`'s own guard). This predates M5c
+entirely — M5c did not introduce it, could not have caused it (zero
+backend files changed this milestone, verified above), and per M5c's
+explicit "no backend changes" boundary it was **not fixed** here. Flagged
+for a future tiny polish (pointing the dev link at the frontend route
+instead) rather than touched now, and recorded here specifically so a
+later milestone audit doesn't mistake it for an M5c-introduced defect.
+
+## Tests / acceptance
+
+- 15 unit tests (`attentionState.test.ts`) — pure logic, every branch and
+  boundary, `node --test`, zero dependencies.
+- `tsc -b` and production `vite build` — clean.
+- `oxlint` — clean (only pre-existing warning classes already present
+  before this milestone, e.g. the same `set-state-in-effect` pattern
+  `SessionProvider.tsx` already used in M5b).
+- **Real-browser verification pass** (Playwright/Chromium against the
+  actual built bundle and a real Postgres, AI provider mocked via the
+  existing `setProvider()` seam — never a live API call; not committed as
+  a project test file, same as M5b's CSP pass): **18/18 checks passed**,
+  covering the complete approved acceptance list — register -> dev-verify
+  -> login -> onboarding (0 companies) -> company creation -> dashboard
+  first-time-empty state -> real PDF upload -> real extraction to
+  `Analysis required` -> mocked-AI analyze -> `Ready` -> summary tiles
+  reflecting the change -> filtered-empty vs first-empty distinction ->
+  seeded `PROCESSING_FAILED` and `ANALYSIS_FAILED` rendering (with a Retry
+  action) -> a genuine ~120-second poll-timeout wait, confirmed non-failure
+  -> session-cookie-cleared reload correctly redirecting to `/login`.
+- Full backend 3x-configuration regression re-run despite zero backend
+  changes, per standing discipline.
+
+## Explicitly not built (per the approved M5c boundary)
+
+The `/tenders/:id` route (M5d), company-profile UI (M5e), any Render
+Build Command changes beyond what M5b already documented (M5f), any tender
+fact interpretation beyond consuming backend-supplied status/summary
+fields.
+
+## Next
+
+M5d (tender intelligence UI) is unscoped for implementation until this
+report is reviewed and approved.
