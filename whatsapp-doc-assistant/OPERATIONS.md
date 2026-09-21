@@ -34,6 +34,41 @@ written to disk.
   Render service from this environment (no `render.yaml`/API access here) —
   apply it in the Render dashboard directly.
 
+## Tenderlytic backend deploy (Fly.io) — separate from Papyr above
+
+Tenderlytic (the BidPilot product) is now deployed independently of the
+Papyr WhatsApp bot's Render service, on Fly.io — chosen specifically for
+its persistent volumes, which let `BIDPILOT_STORAGE_DRIVER=local` survive
+redeploys without needing an S3/R2 dependency (Render's standard web
+service disk is ephemeral and would lose every uploaded tender PDF on the
+next deploy). Config: `../Dockerfile` and `../fly.toml` (repo root's
+sibling of `backend/`/`frontend/`, since the Docker build needs both).
+
+**Not yet verified end-to-end from this environment**: this sandbox has no
+privileged Docker daemon access (`dockerd` fails to start — `ulimit:
+error setting limit (Operation not permitted)`), so the Docker build
+itself has not been test-built here, only reasoned about — it's a thin
+wrapper around `npm run build`, the exact command already proven working
+repeatedly throughout this project's history. Nor does this environment
+have a Fly.io account/API token, so nothing has actually been deployed.
+The first real build+deploy, wherever it happens, is the first real test.
+
+**One-time setup** (from `whatsapp-doc-assistant/`):
+```
+fly launch --no-deploy          # creates the app; decline Fly's own Postgres
+                                 # offer if using an external DB
+fly volumes create tenderlytic_data --size 1
+fly secrets set \
+  DATABASE_URL=... \
+  BIDPILOT_CSRF_SECRET=$(openssl rand -hex 32) \
+  BIDPILOT_LOCAL_SIGNING_SECRET=$(openssl rand -hex 32) \
+  AI_PROVIDER=openai OPENAI_API_KEY=... \
+  BIDPILOT_CORS_ORIGINS=https://<your-lovable-app>.lovable.app
+fly deploy
+```
+Every subsequent deploy is just `fly deploy`. `fly.toml`'s comments carry
+the same instructions inline.
+
 ## The two things that silently break it
 
 Both present the same way to a user — **no reply** — but have different causes
