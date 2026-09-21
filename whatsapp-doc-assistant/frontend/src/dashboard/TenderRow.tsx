@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { analyzeTender, type TenderListItem } from '../api/tenders';
 import { ApiError } from '../api/client';
 import { deriveAttentionState } from './attentionState';
@@ -60,7 +61,7 @@ export function TenderRow({ tender, companyId, onUpdate }: TenderRowProps) {
 
   return (
     <tr>
-      <td>{tender.title || 'Untitled tender'}</td>
+      <td><Link to={`/tenders/${tender.id}`}>{tender.title || 'Untitled tender'}</Link></td>
       <td>{tender.organization || '—'}</td>
       <td>{formatDeadline(tender.submissionDeadline)}</td>
       <td><AttentionBadge state={attention} /></td>

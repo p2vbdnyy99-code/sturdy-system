@@ -1606,3 +1606,163 @@ fields.
 
 M5d (tender intelligence UI) is unscoped for implementation until this
 report is reviewed and approved.
+
+# Milestone 5d — Tender Intelligence UI
+
+Frontend-only milestone, exactly as scoped: **zero backend files changed.**
+The entire tab UI consumes M5a's already-committed `GET /tenders/:id`
+(returns the full `TenderDetail` shape) and `GET
+/tenders/:id/document-url` — both built in M5a, neither previously
+consumed by any frontend page until now.
+
+## What was verified before writing code
+
+The `document-url` endpoint's exact response contract was re-verified
+directly against the committed `routes/tenders.js` before adding a client
+function for it: `{url, expiresInSeconds}`, `companyId` via query string.
+`api/tenders.ts`'s new `getDocumentUrl()` matches this exactly.
+
+## New files
+
+```
+frontend/src/components/
+  EvidenceTooltip.tsx       — the product differentiator made visible: a
+                              value with source-page + quote evidence gets
+                              a small "p.N" chip that click-toggles (not
+                              hover-only — works on touch) an evidence
+                              popover. A value with neither sourcePage nor
+                              evidenceText renders as plain text (overview
+                              fields can legitimately have no evidence;
+                              requirements/dates/red flags always do, per
+                              M4's evidence-first enforcement, but the
+                              component doesn't assume that).
+frontend/src/pages/TenderDetail.tsx  — page shell: fetch-on-mount,
+                              loading/404/error states, the attention
+                              badge (reusing M5c's deriveAttentionState
+                              with the identical raw-deadline parse guard
+                              TenderRow.tsx already uses), an
+                              "Analysis not yet complete" notice for any
+                              tender whose analysisStatus isn't COMPLETED,
+                              and a local-state tab bar.
+frontend/src/tenderDetail/
+  OverviewTab.tsx            — the 9 overview fields, each through
+                              EvidenceTooltip; "Not extracted" for a null
+                              field rather than blank space
+  RequirementsTab.tsx        — grouped by category, each requirement card
+                              shows its primary evidence via
+                              EvidenceTooltip plus any additional evidence
+                              entries below (a requirement can have more
+                              than one evidence row; EvidenceTooltip only
+                              carries one source/quote pair)
+  BoqTab.tsx                 — BOQ line items as a table, description
+                              carries the evidence chip (BOQ evidence is
+                              sourcePage-only, no separate quote field)
+  DatesTab.tsx                — key dates as a table, parsedDate formatted
+                              when present else the raw extracted text
+  RedFlagsTab.tsx             — red flag cards, each through EvidenceTooltip
+  DocumentTab.tsx             — document metadata + a Download button that
+                              fetches a fresh signed URL on every click
+                              (never cached/persisted client-side, matching
+                              the backend's own short-lived-URL design
+                              intent) and opens it in a new tab; "No
+                              document" empty state when the tender has
+                              none
+```
+
+`frontend/src/api/tenders.ts` — one addition, `getDocumentUrl()`.
+`frontend/src/dashboard/TenderRow.tsx` — the title cell is now a real
+`<Link to="/tenders/:id">` (M5c had deliberately left it inert, explicitly
+deferring this to M5d). `frontend/src/routes.tsx` — `/tenders/:id`
+registered inside the existing `RequireSession` + `CompanyGate` guard,
+alongside `/dashboard`. `frontend/src/index.css` — tab bar, evidence
+chip/popover, overview list, and requirement-card classes added; no inline
+`style={{}}` anywhere, same CSP constraint as every prior milestone.
+
+## The one scoped product decision — in-progress tenders show partial state, never block
+
+Per the M5d audit's flagged decision (approved by proceeding): a tender
+whose `analysisStatus` isn't `COMPLETED` is still fully navigable to its
+detail page. The tabs render whatever has actually been extracted so far
+(which may be nothing) rather than blocking navigation until analysis
+finishes, and a banner above the tabs makes the incomplete state explicit
+("the tabs below only show what has actually been extracted so far, not
+the absence of a finding") so an empty tab is never misread as "nothing
+was found" when analysis simply hasn't run yet.
+
+## Evidence-first UI, verified end-to-end
+
+Every requirement, BOQ item, date, and red flag persisted via M4's
+`createRequirementWithEvidence()`-style evidence-first write paths carries
+its evidence through to the UI without exception — verified in the
+real-browser pass below by expanding evidence chips across every tab and
+confirming the page number and quote shown match what was seeded/extracted
+for that row. Overview fields (the one place a value can legitimately lack
+evidence, per M4/M5a) render "Not extracted" for a null field and a plain
+value with no chip when a field has a value but no evidence — never a chip
+pointing at nothing.
+
+## Bug found and fixed during real-browser verification
+
+The Overview tab initially rendered `submissionDeadline` and `openingDate`
+as raw ISO timestamp strings (e.g. `2026-09-25T15:09:13.877Z`) instead of
+a formatted date. Every other overview field is free text extracted
+verbatim, so `OverviewTab.tsx`'s first draft rendered `field.value`
+unformatted for all nine fields — missing that these two specific fields
+are the only ones backed by a typed timestamp column (see
+`db/schema/tenders.js`) and need the same display formatting
+`DatesTab.tsx`/`TenderRow.tsx` already apply. Fixed by formatting only
+those two field keys (parse-and-format when the value calendar-parses,
+else fall back to the raw string — same non-throwing guard pattern used
+throughout M5c/M5d for dates). Caught by the real-browser screenshot pass,
+not by `tsc`/`oxlint`/unit tests, none of which would have caught a
+display-formatting choice.
+
+## Tests / acceptance
+
+- `tsc -b` and production `vite build` — clean.
+- `oxlint` — clean (only pre-existing warning classes already present
+  before this milestone, e.g. the same `set-state-in-effect` pattern
+  `Dashboard.tsx`/`SessionProvider.tsx` already used, now also present in
+  `TenderDetail.tsx`'s identical fetch-on-mount pattern).
+- `attentionState.test.ts` (M5c's 15 unit tests) — still green, unaffected.
+- **Real-browser verification pass** (Playwright/Chromium against the
+  actual built bundle and a real, isolated Postgres database created
+  solely for this pass — never touching the regression suite's database —
+  a real demo user registered/verified/logged in through the live API, a
+  real PDF uploaded and extracted through the live API, with
+  requirements/BOQ/dates/red-flags/overview-evidence hand-seeded directly
+  in that isolated database in place of a live AI call, since no AI
+  provider key is configured in this environment; not committed as a
+  project test file, same precedent as every prior milestone's browser
+  pass): dashboard row navigates to `/tenders/:id` -> all 6 tabs render
+  correct data -> evidence chips expand and show the correct page/quote on
+  every tab -> Document tab's Download button fetches a real signed URL
+  from the live endpoint -> the "Analysis not yet complete" banner logic
+  verified by code review against `tender.analysisStatus` (the seeded
+  demo tender was COMPLETED, so the banner's absence was the expected,
+  verified state for that case). Screenshots captured and reviewed frame
+  by frame, which is how the ISO-timestamp bug above was caught.
+- Full backend 3x-configuration regression suite re-run despite zero
+  backend changes, per standing discipline — **zero drift, exact match to
+  the M5b/M5c baseline**:
+  - `DATABASE_URL` + `BIDPILOT_CSRF_SECRET` set: 378 pass / 0 fail / 1 skip
+  - `DATABASE_URL` only: 267 pass / 0 fail / 14 skip
+  - neither set (pure Papyr): 227 pass / 0 fail / 20 skip
+- Secret-leak scan of the full diff — no matches.
+- No lingering server/test/browser processes; the isolated verification
+  database was dropped after use; Postgres confirmed stable throughout.
+
+## Explicitly not built (per the approved M5d boundary)
+
+Company-profile UI (M5e), eligibility-engine UI (M6), tender
+discovery/scraping (M7), bid drafting (M8), any backend route/schema
+change, any change to the AI analysis pipeline itself.
+
+## Next
+
+The resequenced roadmap proposed alongside this milestone's audit (M5d ->
+M5f production-integration polish moved up -> M6 eligibility -> M7
+discovery -> M5e profile deferred -> M8 bid drafting) has not yet been
+explicitly re-confirmed with the user beyond the "Both" that approved
+producing this audit — that sequencing decision should be revisited before
+assuming what's unscoped next.

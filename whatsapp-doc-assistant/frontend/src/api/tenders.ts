@@ -181,3 +181,13 @@ export function analyzeTender(tenderId: string, companyId: string) {
     { method: 'POST', body: { companyId } },
   );
 }
+
+// Short-lived, self-authorizing signed URL (routes/tenders.js) — fetch on
+// click, never cache/persist client-side. Matches the backend's own design
+// intent verbatim (see M5 audit's security section).
+export function getDocumentUrl(tenderId: string, companyId: string) {
+  return request<{ url: string; expiresInSeconds: number }>(
+    `/bidpilot/tenders/${tenderId}/document-url`,
+    { query: { companyId } },
+  );
+}

@@ -7,8 +7,9 @@ import { RegisterPage } from './pages/auth/Register';
 import { VerifyEmailPage } from './pages/auth/VerifyEmail';
 import { CreateCompanyPage } from './pages/onboarding/CreateCompany';
 import { DashboardPage } from './pages/Dashboard';
+import { TenderDetailPage } from './pages/TenderDetail';
 
-// M5b's route set only — no /tenders/:id or /settings/company yet (M5d/M5e).
+// M5d adds /tenders/:id — no /settings/company yet (M5e).
 export function AppRoutes() {
   return (
     <Routes>
@@ -27,6 +28,14 @@ export function AppRoutes() {
           element={
             <CompanyGate>
               <DashboardPage />
+            </CompanyGate>
+          }
+        />
+        <Route
+          path="/tenders/:id"
+          element={
+            <CompanyGate>
+              <TenderDetailPage />
             </CompanyGate>
           }
         />
