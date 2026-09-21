@@ -145,7 +145,7 @@ export function DashboardPage() {
               onChange={onFileSelected}
               className="visually-hidden"
             />
-            <button type="button" onClick={onUploadClick} disabled={uploading}>
+            <button type="button" className="btn-primary" onClick={onUploadClick} disabled={uploading}>
               {uploading ? 'Uploading…' : '+ Upload Tender'}
             </button>
           </div>

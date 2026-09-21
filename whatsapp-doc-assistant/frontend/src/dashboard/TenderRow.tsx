@@ -67,7 +67,7 @@ export function TenderRow({ tender, companyId, onUpdate }: TenderRowProps) {
       <td><AttentionBadge state={attention} /></td>
       <td>
         {(attention === 'ANALYSIS_REQUIRED' || attention === 'ANALYSIS_FAILED') && (
-          <button type="button" onClick={onAnalyzeClick} disabled={analyzing}>
+          <button type="button" className="btn-primary" onClick={onAnalyzeClick} disabled={analyzing}>
             {analyzing ? 'Starting…' : attention === 'ANALYSIS_FAILED' ? 'Retry analysis' : 'Analyze'}
           </button>
         )}

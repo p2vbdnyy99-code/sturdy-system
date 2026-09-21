@@ -1766,3 +1766,48 @@ discovery -> M5e profile deferred -> M8 bid drafting) has not yet been
 explicitly re-confirmed with the user beyond the "Both" that approved
 producing this audit — that sequencing decision should be revisited before
 assuming what's unscoped next.
+
+# Visual design pass (post-M5d)
+
+Requested directly by the user ("smooth, sophisticated, easy to eye UI"),
+scoped to visual polish only — no new pages, no new API calls, no backend
+changes, no new component library. Touches every page indirectly by
+rewriting `index.css`'s design tokens and base element styles; every
+existing class name is preserved so no component needed restructuring.
+
+## What changed
+
+`frontend/src/index.css` — full rewrite, still plain CSS (no Tailwind, no
+CSS-in-JS, matching the standing constraint): a token system on `:root`
+(neutral gray scale, one indigo accent color used consistently for every
+interactive/primary element, status colors, spacing/radius/shadow
+constants); styled base `button`/`input`/`select`/`a` elements so even
+unclassed elements (the dashboard's pagination/sort/clear-filters buttons,
+which never had a class) pick up a consistent look; soft card shadows and
+rounded corners on tiles, tables, badges, requirement cards, and the
+evidence popover; hover/focus/active transitions throughout; a visible
+focus ring (`box-shadow`, not `outline: none` with nothing replacing it)
+for keyboard accessibility. No external fonts — the CSP's `font-src
+'self'` was not touched, so the system font stack (`-apple-system, Segoe
+UI, system-ui, Roboto`) is used deliberately, not as a placeholder for a
+future webfont.
+
+`frontend/src/pages/Dashboard.tsx` and
+`frontend/src/dashboard/TenderRow.tsx` — one `className="btn-primary"`
+addition each, on the "+ Upload Tender" and "Analyze"/"Retry analysis"
+buttons respectively, the two primary calls-to-action that previously had
+no class and rendered identically to every secondary button (pagination,
+clear filters, log out). No behavior change.
+
+## Verification
+
+- `tsc -b` + `vite build` — clean.
+- `oxlint` — clean, same pre-existing warning classes as M5c/M5d, no new
+  ones.
+- Real-browser screenshot pass across every page (login, dashboard, all
+  six tender-detail tabs including the evidence popover) using the same
+  isolated-database + real-API-registration approach as M5d's verification
+  — reviewed frame by frame before considering this done.
+- Full backend 3x-configuration regression suite re-run despite this being
+  a frontend-only, CSS-only change, per standing discipline.
+- Secret-leak scan of the diff — no matches.
