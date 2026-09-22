@@ -2230,20 +2230,54 @@ real-browser pass (16/16). Secret-leak scan of the full diff — no matches.
 
 ## Phase 7 — Production verification
 
-**Blocked in this session on missing credentials, not a code or design
-issue.** The existing production deployment (`https://tenderlytic-api.fly.dev/`,
-from the earlier M6/deploy work) is confirmed still live and healthy
-(`GET /health` → `{"ok":true}`), but this session has no stored Fly.io
-access token (`flyctl auth whoami` → "no access token available") — a
-fresh sandbox container, not a credential that persists across sessions.
-Deploying the Beta Readiness changes and re-running the production
-verification (health/auth/CORS/tender-flow, one real production tender
-end-to-end measured against the Phase 1 baseline) needs either a fresh
-Fly.io token from the user or the user deploying this branch themselves
-via `flyctl deploy --depot=false` per `OPERATIONS.md`.
+Deployed via `flyctl deploy --depot=false -a tenderlytic-api` (user
+provided a fresh Personal Access Token after this session's own had
+expired — see the Phase 7 note below on why that blocked the first pass).
+Build succeeded, rolling update to the single `sin`-region machine
+succeeded, health check green post-deploy.
 
-## Phase 8 — Explicitly not committed
+**A real, previously-undiscovered production bug found during this
+verification, not guessed:** `BIDPILOT_PUBLIC_BASE_URL` was never set as a
+Fly secret, so `config.js` fell back to its dev default
+(`http://localhost:${PORT}`) in production — which both the dev-only
+email-verification-link logger (harmless, gated out of the API response in
+production, see `routes/auth.js`) AND, more seriously,
+`storage/localDisk.js`'s signed document-download URL generator read from.
+**The tender-detail Document tab's download link was broken in production**
+(pointing at `localhost:8788`, unreachable from a real browser) since the
+very first deploy. Config-only fix — `flyctl secrets set
+BIDPILOT_PUBLIC_BASE_URL=https://tenderlytic-api.fly.dev` — no code change,
+redeployed, re-verified.
+
+**Auth**: register → real production log line confirms the dev-verification-
+link path (`[DEV] Email verification link for ...`) still correctly never
+appears in the API response body itself (`NODE_ENV=production` gate
+verified working as designed) → verify-email → login, all green.
+**CORS**: a disallowed `Origin` on a preflight gets zero
+`Access-Control-*` response headers (no reflection) — the security-
+relevant property re-verified.
+
+**One real tender, real AI provider, end-to-end in production** — same
+23-page small tender PDF as the Phase 1 baseline, fresh company created
+for this verification: upload `ms=23`, analysis `chunks=2 failures=0
+chunksMs=27,616 ms=27,963` (server-side `metric bidpilot_analysis` log
+line, not a client-side estimate). Compared to the Phase 1 baseline
+(`ms=52,510`, before Phase 2's concurrency fix) — **46.7% faster in
+production**, and faster than this same tender's local Phase 2 benchmark
+(`ms=35,437`) too, consistent with production's real network path to
+OpenAI outperforming this session's sandboxed dev environment. Confirms
+the Phase 2 optimization is genuinely live and working, not just locally
+measured.
+
+## Phase 8 — Report, approval, commit
 
 Per the milestone's explicit instruction: `git diff --stat`/`git status`
-shown, this file updated, then STOP for explicit commit approval. Nothing
-in this milestone has been committed or pushed.
+shown, this file updated, then held for explicit commit approval before
+anything was committed or pushed — approval given, committed as `3fdf547`
+and pushed. Phase 7's production deploy followed, using a fresh Fly.io
+token the user provided after this session's own had expired (see
+"Errors and fixes"-style note: `flyctl auth whoami` failed at the start of
+Phase 7 with no stored token — this session's container is fresh per
+session, tokens from an earlier session don't carry over — resolved by
+asking the user for a new one rather than guessing or skipping
+verification).
