@@ -8,8 +8,11 @@ import { VerifyEmailPage } from './pages/auth/VerifyEmail';
 import { CreateCompanyPage } from './pages/onboarding/CreateCompany';
 import { DashboardPage } from './pages/Dashboard';
 import { TenderDetailPage } from './pages/TenderDetail';
+import { CompanyProfilePage } from './pages/settings/CompanyProfile';
 
-// M5d adds /tenders/:id — no /settings/company yet (M5e).
+// M5d added /tenders/:id. /company-profile added Beta Readiness — the
+// eligibility engine's other required input had a working API client
+// (api/companies.ts) and backend route since earlier work but no page.
 export function AppRoutes() {
   return (
     <Routes>
@@ -36,6 +39,14 @@ export function AppRoutes() {
           element={
             <CompanyGate>
               <TenderDetailPage />
+            </CompanyGate>
+          }
+        />
+        <Route
+          path="/company-profile"
+          element={
+            <CompanyGate>
+              <CompanyProfilePage />
             </CompanyGate>
           }
         />

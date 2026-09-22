@@ -318,12 +318,17 @@ async function handleUpload(req, res) {
   // another tenant").
   const scope = await requireCompanyAccess(db, { userId: req.bidpilotUserId, companyId });
 
+  const uploadStart = Date.now();
   const { tender, duplicate } = await ingestUpload(scope, {
     buffer: req.file.buffer,
     mimeType: req.file.mimetype,
     filename: req.file.originalname,
     uploadedBy: req.bidpilotUserId,
   });
+  log.info(
+    `metric bidpilot_upload company=${companyId} tender=${tender.id} ` +
+      `bytes=${req.file.buffer.length} duplicate=${duplicate} ms=${Date.now() - uploadStart}`,
+  );
 
   res.status(duplicate ? 200 : 201).json({
     tenderId: tender.id,

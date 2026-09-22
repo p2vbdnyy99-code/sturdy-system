@@ -39,27 +39,67 @@ export async function runAnalysis(scope, tenderId, { isReanalysis } = {}) {
     const pages = await listPages(scope, tenderId);
     const chunks = chunkPages(pages, { maxChars: config.bidpilot.analysis.chunkChars });
 
+    // Bounded worker pool, not unbounded Promise.all(chunks.map(...)) — at
+    // most `concurrency` chunk AI calls are ever in flight for this one
+    // analysis run, so a 150-page tender can't monopolize the provider's
+    // rate limit or this process's outbound connections. Each worker claims
+    // the next index with a single synchronous `nextIndex++` (no `await`
+    // between read and increment), so two workers can never claim the same
+    // chunk despite running concurrently. Results are written into a
+    // pre-sized array by original index — NOT push()'d in completion order
+    // — because aggregateResults() is order-dependent ("first chunk wins"
+    // for overview fields), so callers below still see chunks in original
+    // document order regardless of which one finished first.
+    const outcomes = new Array(chunks.length);
+    const chunkStart = Date.now();
+    let nextIndex = 0;
+
+    async function worker() {
+      for (;;) {
+        const i = nextIndex++;
+        if (i >= chunks.length) return;
+        const chunk = chunks[i];
+        const validPages = new Set(chunk.pages);
+        const callStart = Date.now();
+        try {
+          const raw = await extractChunk(chunk);
+          const ms = Date.now() - callStart;
+          if (raw === null) {
+            outcomes[i] = { ok: false, ms };
+            log.warn(`bidpilot analysis: chunk pages=${chunk.pages.join(',')} produced unparseable output`);
+            continue;
+          }
+          const validated = validateChunkResult(raw, { validPages });
+          await recordChunkUsage(scope.db, {
+            companyId: scope.companyId,
+            tenderId,
+            metadata: { pages: chunk.pages },
+          });
+          outcomes[i] = { ok: true, ms, data: validated };
+        } catch (err) {
+          outcomes[i] = { ok: false, ms: Date.now() - callStart };
+          log.warn(`bidpilot analysis: chunk pages=${chunk.pages.join(',')} failed:`, err.message);
+        }
+      }
+    }
+
+    const concurrency = Math.min(config.bidpilot.analysis.concurrency, chunks.length) || 1;
+    await Promise.all(Array.from({ length: concurrency }, worker));
+    const chunksMs = Date.now() - chunkStart;
+
     const chunkResults = [];
     let chunkFailures = 0;
-
-    for (const chunk of chunks) {
-      const validPages = new Set(chunk.pages);
-      try {
-        const raw = await extractChunk(chunk);
-        if (raw === null) {
-          chunkFailures += 1;
-          log.warn(`bidpilot analysis: chunk pages=${chunk.pages.join(',')} produced unparseable output`);
-          continue;
-        }
-        chunkResults.push(validateChunkResult(raw, { validPages }));
-        await recordChunkUsage(scope.db, {
-          companyId: scope.companyId,
-          tenderId,
-          metadata: { pages: chunk.pages },
-        });
-      } catch (err) {
+    // Per-chunk wall-clock timing — the performance audit's basis for
+    // "individual AI call duration" / "slowest call" / "sequential vs
+    // concurrent" (see BIDPILOT_ARCHITECTURE.md's "Beta Readiness"
+    // milestone). Purely observational; never affects control flow.
+    const chunkTimingsMs = [];
+    for (const outcome of outcomes) {
+      chunkTimingsMs.push(outcome.ms);
+      if (outcome.ok) {
+        chunkResults.push(outcome.data);
+      } else {
         chunkFailures += 1;
-        log.warn(`bidpilot analysis: chunk pages=${chunk.pages.join(',')} failed:`, err.message);
       }
     }
 
@@ -69,14 +109,22 @@ export async function runAnalysis(scope, tenderId, { isReanalysis } = {}) {
       );
     }
 
+    const aggregateStart = Date.now();
     const aggregated = aggregateResults(chunkResults);
-    await replaceAnalysis(scope, tenderId, aggregated, { isReanalysis });
+    const aggregateMs = Date.now() - aggregateStart;
 
+    const dbWriteStart = Date.now();
+    await replaceAnalysis(scope, tenderId, aggregated, { isReanalysis });
+    const dbWriteMs = Date.now() - dbWriteStart;
+
+    const avgChunkMs = Math.round(chunkTimingsMs.reduce((a, b) => a + b, 0) / (chunkTimingsMs.length || 1));
+    const maxChunkMs = Math.max(0, ...chunkTimingsMs);
     log.info(
       `metric bidpilot_analysis company=${scope.companyId} tender=${tenderId} ` +
         `chunks=${chunks.length} failures=${chunkFailures} requirements=${aggregated.requirements.length} ` +
         `boq=${aggregated.boq.length} dates=${aggregated.dates.length} redFlags=${aggregated.redFlags.length} ` +
-        `dropped=${aggregated.droppedCount} ms=${Date.now() - start} status=COMPLETED`,
+        `dropped=${aggregated.droppedCount} chunksMs=${chunksMs} avgChunkMs=${avgChunkMs} maxChunkMs=${maxChunkMs} ` +
+        `aggregateMs=${aggregateMs} dbWriteMs=${dbWriteMs} ms=${Date.now() - start} status=COMPLETED`,
     );
   } catch (err) {
     const message = safeErrorMessage(err);

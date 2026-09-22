@@ -157,6 +157,95 @@ test('replaceAnalysis (repo-level)', { skip: SKIP_REASON }, async (t) => {
     const updated = await getTender(scope, tender.id);
     assert.equal(updated.analysisStatus, 'FAILED');
   });
+
+  // ── Beta Readiness: bounded concurrency (pipeline.js's worker pool) ──────
+
+  // Like mockValidResult(), but sourcePage matches the given page — needed
+  // once a tender has more than one chunk, since validateChunkResult() drops
+  // any evidence citing a page outside that specific chunk (see schema.js's
+  // validPages check) and mockValidResult() alone always hardcodes page 1.
+  function mockResultForPage(pageNumber, { organization, requirementCount = 1 } = {}) {
+    return JSON.stringify({
+      overview: organization ? { organization: { value: organization, sourcePage: pageNumber, evidenceText: 'q' } } : {},
+      requirements: Array.from({ length: requirementCount }, (_, i) => ({
+        category: 'FINANCIAL', title: `Requirement ${i + 1}`, description: `Description ${i + 1}`,
+        mandatory: true, sourcePage: pageNumber, evidenceText: 'quoted evidence', extractedValue: 'Rs 5 crore', confidence: 0.9,
+      })),
+    });
+  }
+
+  await t.test('aggregation follows CHUNK order, not AI-call completion order, under concurrency', async () => {
+    const { user, company } = await createCompanyWithOwner(db, {
+      companyName: 'Concurrency Test Co', userEmail: `${Math.random()}@example.com`, userName: 'U',
+    });
+    const scope = await requireCompanyAccess(db, { userId: user.id, companyId: company.id });
+    const tender = await createTender(scope, { title: 'concurrency.pdf' });
+    // Each page alone exceeds the chunk budget, so chunker.js gives each its
+    // own chunk (same trick the 413 test above uses) — three chunks whose
+    // document order is 1, 2, 3.
+    const bigText = (label) => `${label} ` + 'x'.repeat(config.bidpilot.analysis.chunkChars + 1000);
+    await insertPages(scope, tender.id, [
+      { pageNumber: 1, rawText: bigText('first'), ocrUsed: false },
+      { pageNumber: 2, rawText: bigText('second'), ocrUsed: false },
+      { pageNumber: 3, rawText: bigText('third'), ocrUsed: false },
+    ]);
+
+    // Chunk 1's call is the SLOWEST to resolve, chunk 3's the fastest — so
+    // completion order is 3, 2, 1, the reverse of document order. If the
+    // worker pool pushed results in completion order instead of writing them
+    // to a pre-sized array by original index, "first chunk wins" for
+    // overview.organization would pick 'Third' instead of 'First'.
+    let callIndex = 0;
+    const delaysMs = [60, 30, 5]; // chunk 1, 2, 3 respectively
+    setProvider({
+      name: 'mock-reordered',
+      async complete() {
+        const i = callIndex++;
+        await new Promise((resolve) => setTimeout(resolve, delaysMs[i]));
+        return mockResultForPage(i + 1, { organization: ['First', 'Second', 'Third'][i] });
+      },
+    });
+
+    await runAnalysis(scope, tender.id, { isReanalysis: false });
+    const updated = await getTender(scope, tender.id);
+    assert.equal(updated.analysisStatus, 'COMPLETED');
+    assert.equal(
+      updated.organization, 'First',
+      'overview must reflect document order (chunk 1), not AI-call completion order (chunk 3 finished first)',
+    );
+    // All three chunks' requirements must still be present — concurrency
+    // must not drop or duplicate a chunk's results.
+    assert.equal((await listRequirements(scope, tender.id)).length, 3);
+  });
+
+  await t.test('one chunk failing among several concurrent chunks does not affect the others', async () => {
+    const { user, company } = await createCompanyWithOwner(db, {
+      companyName: 'Partial Failure Co', userEmail: `${Math.random()}@example.com`, userName: 'U',
+    });
+    const scope = await requireCompanyAccess(db, { userId: user.id, companyId: company.id });
+    const tender = await createTender(scope, { title: 'partial-failure.pdf' });
+    const bigText = (label) => `${label} ` + 'x'.repeat(config.bidpilot.analysis.chunkChars + 1000);
+    await insertPages(scope, tender.id, [
+      { pageNumber: 1, rawText: bigText('a'), ocrUsed: false },
+      { pageNumber: 2, rawText: bigText('b'), ocrUsed: false },
+      { pageNumber: 3, rawText: bigText('c'), ocrUsed: false },
+    ]);
+
+    let callIndex = 0;
+    setProvider({
+      name: 'mock-partial-fail',
+      async complete() {
+        const i = callIndex++;
+        if (i === 1) throw new Error('simulated provider error for chunk 2');
+        return mockResultForPage(i + 1, { requirementCount: 1 });
+      },
+    });
+
+    await runAnalysis(scope, tender.id, { isReanalysis: false });
+    const updated = await getTender(scope, tender.id);
+    assert.equal(updated.analysisStatus, 'COMPLETED', 'partial success — the other two chunks still landed');
+    assert.equal((await listRequirements(scope, tender.id)).length, 2, 'exactly the two successful chunks worth');
+  });
 });
 
 // ── Full HTTP integration ───────────────────────────────────────────────────

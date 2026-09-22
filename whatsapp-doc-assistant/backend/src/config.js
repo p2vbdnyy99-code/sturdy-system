@@ -283,6 +283,17 @@ export function buildDbConfig(env = {}) {
  *                                 explicitly opted in; the existing same-
  *                                 origin cookie-based frontend is entirely
  *                                 unaffected either way.
+ *   BIDPILOT_ANALYSIS_CONCURRENCY  How many chunk AI calls one analysis run
+ *                                 is allowed to have in flight at once
+ *                                 (default: 4). Real production measurement
+ *                                 (see BIDPILOT_ARCHITECTURE.md's "Beta
+ *                                 Readiness" milestone) showed AI calls are
+ *                                 ~99.9% of total analysis time and were
+ *                                 running strictly sequentially. Bounded
+ *                                 (never unbounded Promise.all) so one
+ *                                 analysis run can't monopolize the
+ *                                 provider's rate limit or this process's
+ *                                 outbound connections.
  */
 export function buildBidpilotConfig(env = {}) {
   return {
@@ -309,6 +320,7 @@ export function buildBidpilotConfig(env = {}) {
       chunkChars: Math.max(2000, Number(env.BIDPILOT_ANALYSIS_CHUNK_CHARS) || 40_000),
       maxChunksPerTender: Math.max(1, Number(env.BIDPILOT_ANALYSIS_MAX_CHUNKS_PER_TENDER) || 60),
       maxCallsPerCompanyPerDay: Math.max(1, Number(env.BIDPILOT_ANALYSIS_MAX_CALLS_PER_COMPANY_PER_DAY) || 200),
+      concurrency: Math.max(1, Number(env.BIDPILOT_ANALYSIS_CONCURRENCY) || 4),
     },
     eligibility: {
       maxCallsPerCompanyPerDay: Math.max(1, Number(env.BIDPILOT_ELIGIBILITY_MAX_CALLS_PER_COMPANY_PER_DAY) || 100),

@@ -69,7 +69,12 @@ export async function extractChunk(chunk) {
   const raw = await getProvider().complete({
     system: SYSTEM_PROMPT,
     user,
-    maxTokens: 4000,
+    // 4000 was measured (Beta Readiness perf audit, real 154-page tender) to
+    // truncate mid-JSON on dense chunks — 3 of 9 chunks came back with
+    // output_tokens=4000 exactly and unparseable output, silently dropping
+    // real requirements/BOQ/dates. 8000 gives requirement-and-BOQ-heavy
+    // chunks enough room to finish their JSON.
+    maxTokens: 8000,
   });
 
   return safeJson(raw);

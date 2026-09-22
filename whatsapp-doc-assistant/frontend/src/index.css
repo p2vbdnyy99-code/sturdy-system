@@ -255,9 +255,27 @@ a:hover {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
   padding: 1rem 1.75rem;
   background: var(--color-surface);
   border-bottom: 1px solid var(--color-border);
+}
+
+.app-header-nav {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  min-width: 0;
+}
+
+.app-header-brand {
+  color: var(--color-text);
+}
+
+.app-header-brand:hover {
+  color: var(--color-text);
+  text-decoration: none;
 }
 
 .app-header strong {
@@ -270,6 +288,14 @@ a:hover {
   display: flex;
   align-items: center;
   gap: 1rem;
+  min-width: 0;
+}
+
+.app-header-user .muted {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 40vw;
 }
 
 .app-header-user button {
@@ -374,8 +400,14 @@ a:hover {
   min-width: 220px;
 }
 
+.table-scroll {
+  overflow-x: auto;
+  border-radius: var(--radius-md);
+}
+
 .tender-table {
   width: 100%;
+  min-width: 640px;
   border-collapse: separate;
   border-spacing: 0;
   background: var(--color-surface);
@@ -509,6 +541,11 @@ a:hover {
   gap: 0.25rem;
   border-bottom: 1px solid var(--color-border);
   margin-top: 1.5rem;
+  overflow-x: auto;
+}
+
+.tab-bar button {
+  flex-shrink: 0;
 }
 
 .tab-bar button {
@@ -696,4 +733,158 @@ a:hover {
   border-radius: var(--radius-sm);
   margin-top: 0.4rem;
   font-size: 0.85rem;
+}
+
+/* ─── Eligibility (Milestone 6, surfaced Beta Readiness) ────────────────── */
+
+.eligibility-action-bar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
+.eligibility-action-hint {
+  font-size: 0.85rem;
+}
+
+.company-evidence {
+  list-style: none;
+  padding: 0;
+  margin: 0.6rem 0 0;
+}
+
+.company-evidence li {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 0.55rem 0.75rem;
+  border-radius: var(--radius-sm);
+  margin-top: 0.4rem;
+  font-size: 0.85rem;
+}
+
+.company-evidence-positive li {
+  background: var(--color-success-bg);
+}
+
+.company-evidence-negative li {
+  background: var(--color-danger-bg);
+}
+
+.company-evidence-positive .company-evidence-field {
+  color: var(--color-success);
+}
+
+.company-evidence-negative .company-evidence-field {
+  color: var(--color-danger);
+}
+
+.company-evidence-field {
+  font-weight: 600;
+}
+
+.company-evidence-reason {
+  color: var(--color-text);
+}
+
+.company-evidence-action {
+  margin: 0.6rem 0 0;
+  font-size: 0.85rem;
+}
+
+/* ─── Company profile ────────────────────────────────────────────────────── */
+
+.profile-form {
+  max-width: 720px;
+  margin-top: 1.5rem;
+}
+
+.profile-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0 1.5rem;
+}
+
+.experience-rows {
+  list-style: none;
+  padding: 0;
+  margin: 0.5rem 0;
+}
+
+.experience-row {
+  display: grid;
+  grid-template-columns: 2fr 1.2fr 0.8fr 1.2fr auto;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.experience-row input {
+  margin-top: 0;
+}
+
+.experience-row button {
+  padding: 0.4rem 0.7rem;
+  font-size: 0.85rem;
+}
+
+.save-confirmation {
+  color: var(--color-success);
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.profile-form > .submit-button {
+  margin-top: 1.25rem;
+}
+
+/* ─── Responsive ─────────────────────────────────────────────────────────── */
+
+@media (max-width: 640px) {
+  .app-header {
+    padding: 0.85rem 1rem;
+  }
+
+  .app-header-user {
+    gap: 0.5rem;
+  }
+
+  .page-body {
+    padding: 1.25rem 1rem 3rem;
+  }
+
+  h1 {
+    font-size: 1.3rem;
+  }
+
+  .dashboard-header-row {
+    align-items: flex-start;
+  }
+
+  .overview-row {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .overview-row dd {
+    text-align: left;
+  }
+
+  .filters-bar input[type="search"] {
+    min-width: 0;
+    flex: 1 1 100%;
+  }
+
+  .requirement-card-header {
+    flex-wrap: wrap;
+  }
+
+  .profile-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .experience-row {
+    grid-template-columns: 1fr;
+  }
 }

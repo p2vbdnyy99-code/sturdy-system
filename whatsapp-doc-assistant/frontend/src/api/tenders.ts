@@ -96,6 +96,18 @@ export type RequirementEvidence = {
   confidence: string | null;
 };
 
+// Matches src/db/schema/enums.js's eligibilityStatus.enumValues exactly.
+// UNKNOWN is the default until a company-profile check has run — never
+// inferred client-side (see eligibilityPipeline.js's server-side-only
+// verification: the AI supplies a field NAME and a reason, never a value).
+export const ELIGIBILITY_STATUSES = ['MEETS', 'DOES_NOT_APPEAR_TO_MEET', 'UNKNOWN'] as const;
+export type EligibilityStatus = (typeof ELIGIBILITY_STATUSES)[number];
+
+// `value` is always server-read from the real company_profiles row; `reason`
+// is the only AI-authored part of this — see eligibilityPipeline.js's
+// verifyAgainstProfile(). Never trust/display a value from anywhere else.
+export type CompanyEvidenceEntry = { field: string; value: string; label: string; reason: string };
+
 export type Requirement = {
   id: string;
   category: string;
@@ -103,6 +115,9 @@ export type Requirement = {
   description: string;
   mandatory: boolean;
   evidence: RequirementEvidence[];
+  companyStatus: EligibilityStatus;
+  actionRequired: string | null;
+  companyEvidence: CompanyEvidenceEntry[];
 };
 
 export type BoqItem = {
@@ -190,4 +205,16 @@ export function getDocumentUrl(tenderId: string, companyId: string) {
     `/bidpilot/tenders/${tenderId}/document-url`,
     { query: { companyId } },
   );
+}
+
+// Milestone 6's eligibility engine — built on the backend since M6 but never
+// wired to any UI until Beta Readiness. Cross-checks every requirement
+// against the caller's real company_profiles row; the response's per-
+// requirement companyStatus/actionRequired/companyEvidence is what
+// getTender()'s Requirement.* fields carry from then on (persisted, not a
+// one-shot response — see routes/tenders.js's M6 comment).
+export function checkEligibility(tenderId: string, companyId: string) {
+  return request<{ tenderId: string; evaluated: number; requirements: Array<{
+    id: string; companyStatus: EligibilityStatus; actionRequired: string | null; companyEvidence: CompanyEvidenceEntry[];
+  }> }>(`/bidpilot/tenders/${tenderId}/eligibility`, { method: 'POST', body: { companyId } });
 }

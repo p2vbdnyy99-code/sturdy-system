@@ -6,6 +6,7 @@
 import OpenAI from 'openai';
 import { AIProvider } from './provider.js';
 import { AIError, mapProviderError } from './errors.js';
+import { log } from '../logger.js';
 
 export class OpenAIProvider extends AIProvider {
   constructor({ apiKey, model, timeoutMs = 60_000 }) {
@@ -23,6 +24,7 @@ export class OpenAIProvider extends AIProvider {
   }
 
   async complete({ system, user, maxTokens = 1500, reasoningEffort }) {
+    const start = Date.now();
     try {
       const res = await this.client.responses.create({
         model: this.model,
@@ -35,6 +37,18 @@ export class OpenAIProvider extends AIProvider {
         // visible answer. Omitted → the model's default effort.
         ...(reasoningEffort ? { reasoning: { effort: reasoningEffort } } : {}),
       });
+      // Purely observational — never changes complete()'s return shape, so
+      // every existing caller (Papyr's summarize/translate/... and BidPilot's
+      // extract/eligibility) is unaffected. Real usage from the API response,
+      // not an estimate — used for the performance/cost audit in
+      // BIDPILOT_ARCHITECTURE.md's Milestone "Beta Readiness" section.
+      if (res.usage) {
+        log.info(
+          `metric ai_call provider=openai model=${this.model} ` +
+            `input_tokens=${res.usage.input_tokens} output_tokens=${res.usage.output_tokens} ` +
+            `total_tokens=${res.usage.total_tokens} ms=${Date.now() - start}`,
+        );
+      }
       return (res.output_text || '').trim();
     } catch (err) {
       throw mapProviderError(err, 'OpenAI');

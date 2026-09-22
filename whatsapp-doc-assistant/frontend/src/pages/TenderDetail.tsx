@@ -5,8 +5,9 @@ import { EmptyState } from '../components/EmptyState';
 import { AttentionBadge } from '../components/AttentionBadge';
 import { useSession } from '../auth/SessionProvider';
 import { ApiError } from '../api/client';
-import { getTender, type TenderDetail as TenderDetailType } from '../api/tenders';
+import { checkEligibility, getTender, type TenderDetail as TenderDetailType } from '../api/tenders';
 import { deriveAttentionState } from '../dashboard/attentionState';
+import { useTenderPolling, type PollTarget } from '../dashboard/useTenderPolling';
 import { OverviewTab } from '../tenderDetail/OverviewTab';
 import { RequirementsTab } from '../tenderDetail/RequirementsTab';
 import { BoqTab } from '../tenderDetail/BoqTab';
@@ -54,6 +55,22 @@ export function TenderDetailPage() {
 
   useEffect(() => { fetchTender(); }, [fetchTender]);
 
+  // Live-refresh while this tender is still processing/analyzing — without
+  // this, someone linking straight to /tenders/:id (not via the dashboard
+  // row, which already polls) would see a stale in-progress state until
+  // they manually reloaded. Same bounded 2s/120s polling as TenderRow.tsx,
+  // no new mechanism.
+  const isProcessing = !!tender
+    && (tender.processingStatus === 'UPLOADED' || tender.processingStatus === 'PROCESSING' || tender.processingStatus === 'EXTRACTING');
+  const isAnalyzing = !!tender && tender.processingStatus === 'COMPLETED' && tender.analysisStatus === 'ANALYZING';
+  const pollTarget: PollTarget = isProcessing ? 'processing' : 'analysis';
+  const [pollRetryKey, setPollRetryKey] = useState(0);
+  const pollState = useTenderPolling((isProcessing || isAnalyzing) ? (id ?? null) : null, companyId, pollTarget, pollRetryKey);
+
+  useEffect(() => {
+    if (pollState?.status === 'settled') setTender(pollState.tender);
+  }, [pollState]);
+
   return (
     <div>
       <AppHeader />
@@ -67,21 +84,63 @@ export function TenderDetailPage() {
         )}
 
         {!loading && !error && tender && (
-          <TenderDetailBody tender={tender} tab={tab} onTabChange={setTab} companyId={companyId} />
+          <TenderDetailBody
+            tender={tender}
+            tab={tab}
+            onTabChange={setTab}
+            companyId={companyId}
+            onRefetch={fetchTender}
+            pollTimedOut={pollState?.status === 'timeout'}
+            onPollRetry={() => setPollRetryKey((k) => k + 1)}
+          />
         )}
       </div>
     </div>
   );
 }
 
+// Real backend enum values only — never a fabricated percentage or step
+// count (see the Beta Readiness milestone's "no fake progress" rule). Each
+// label states exactly what processingStatus/analysisStatus already is.
+const PROCESSING_STAGE_LABELS: Record<TenderDetailType['processingStatus'], string> = {
+  UPLOADED: 'Upload received, queued for processing.',
+  PROCESSING: 'Extracting pages from the document…',
+  EXTRACTING: 'Extracting pages from the document…',
+  // ANALYZING is a deprecated processingStatus value the backend never
+  // actually sets (see dashboard/attentionState.ts) — covered only so this
+  // Record's type checks against the full enum.
+  ANALYZING: 'Extracting pages from the document…',
+  COMPLETED: 'Document processed.',
+  FAILED: 'Document processing failed.',
+};
+
 function TenderDetailBody({
-  tender, tab, onTabChange, companyId,
+  tender, tab, onTabChange, companyId, onRefetch, pollTimedOut, onPollRetry,
 }: {
   tender: TenderDetailType;
   tab: TabKey;
   onTabChange: (tab: TabKey) => void;
   companyId: string;
+  onRefetch: () => void;
+  pollTimedOut: boolean;
+  onPollRetry: () => void;
 }) {
+  const [checkingEligibility, setCheckingEligibility] = useState(false);
+  const [eligibilityError, setEligibilityError] = useState<string | null>(null);
+
+  async function onCheckEligibility() {
+    setEligibilityError(null);
+    setCheckingEligibility(true);
+    try {
+      await checkEligibility(tender.id, companyId);
+      onRefetch();
+    } catch (err) {
+      setEligibilityError(err instanceof ApiError ? err.message : 'Could not check eligibility.');
+    } finally {
+      setCheckingEligibility(false);
+    }
+  }
+
   const attention = deriveAttentionState({
     processingStatus: tender.processingStatus,
     analysisStatus: tender.analysisStatus,
@@ -102,10 +161,27 @@ function TenderDetailBody({
         <AttentionBadge state={attention} />
       </div>
 
-      {tender.analysisStatus !== 'COMPLETED' && (
+      {tender.processingStatus !== 'COMPLETED' && (
+        <p className="notice">{PROCESSING_STAGE_LABELS[tender.processingStatus]}</p>
+      )}
+      {tender.processingStatus === 'COMPLETED' && tender.analysisStatus === 'ANALYZING' && (
+        <p className="notice">Analyzing the document against your requirements checklist…</p>
+      )}
+      {tender.processingStatus === 'COMPLETED' && tender.analysisStatus === 'NOT_STARTED' && (
         <p className="notice">
-          Analysis is not yet complete for this tender — the tabs below only show what has actually
-          been extracted so far, not the absence of a finding.
+          Extraction is done, but analysis hasn't been run yet — the tabs below have nothing to show
+          until it is.
+        </p>
+      )}
+      {tender.analysisStatus === 'COMPLETED' && (
+        <p className="notice">
+          The tabs below show only what was actually extracted — not the absence of a finding.
+        </p>
+      )}
+      {pollTimedOut && (
+        <p className="muted">
+          Still working — refresh or{' '}
+          <button type="button" onClick={onPollRetry}>check again</button>.
         </p>
       )}
 
@@ -124,7 +200,22 @@ function TenderDetailBody({
 
       <div className="tab-panel">
         {tab === 'overview' && <OverviewTab tender={tender} />}
-        {tab === 'requirements' && <RequirementsTab requirements={tender.requirements} />}
+        {tab === 'requirements' && (
+          <div>
+            {tender.analysisStatus === 'COMPLETED' && tender.requirements.length > 0 && (
+              <div className="eligibility-action-bar">
+                <button type="button" className="btn-primary" onClick={onCheckEligibility} disabled={checkingEligibility}>
+                  {checkingEligibility ? 'Checking against your profile…' : 'Check eligibility against your profile'}
+                </button>
+                <span className="muted eligibility-action-hint">
+                  Cross-checks each requirement against your company profile — never a value the AI made up.
+                </span>
+              </div>
+            )}
+            {eligibilityError && <p role="alert" className="error-text">{eligibilityError}</p>}
+            <RequirementsTab requirements={tender.requirements} />
+          </div>
+        )}
         {tab === 'boq' && <BoqTab items={tender.boq} />}
         {tab === 'dates' && <DatesTab dates={tender.dates} />}
         {tab === 'redFlags' && <RedFlagsTab redFlags={tender.redFlags} />}

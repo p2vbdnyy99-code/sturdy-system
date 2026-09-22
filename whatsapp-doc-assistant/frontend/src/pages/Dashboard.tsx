@@ -227,22 +227,24 @@ export function DashboardPage() {
 
         {!listError && !listLoading && tenders.length > 0 && (
           <>
-            <table className="tender-table">
-              <thead>
-                <tr>
-                  <th>Title</th>
-                  <th>Organization</th>
-                  <th><button type="button" onClick={() => onSort('deadline')}>Deadline</button></th>
-                  <th>Status</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {tenders.map((t) => (
-                  <TenderRow key={t.id} tender={t} companyId={companyId} onUpdate={handleRowUpdate} />
-                ))}
-              </tbody>
-            </table>
+            <div className="table-scroll">
+              <table className="tender-table">
+                <thead>
+                  <tr>
+                    <th>Title</th>
+                    <th>Organization</th>
+                    <th><button type="button" onClick={() => onSort('deadline')}>Deadline</button></th>
+                    <th>Status</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {tenders.map((t) => (
+                    <TenderRow key={t.id} tender={t} companyId={companyId} onUpdate={handleRowUpdate} />
+                  ))}
+                </tbody>
+              </table>
+            </div>
             <div className="pagination">
               <button type="button" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>Previous</button>
               <span className="muted">Page {page} of {totalPages}</span>

@@ -1,10 +1,10 @@
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { logout as apiLogout } from '../api/auth';
 import { useSession } from '../auth/SessionProvider';
 import { PRODUCT_NAME } from '../config/product';
 
 export function AppHeader() {
-  const { me, clear } = useSession();
+  const { me, selectedCompanyId, clear } = useSession();
   const navigate = useNavigate();
 
   async function onLogout() {
@@ -20,7 +20,10 @@ export function AppHeader() {
 
   return (
     <header className="app-header">
-      <strong>{PRODUCT_NAME}</strong>
+      <div className="app-header-nav">
+        <Link to="/dashboard" className="app-header-brand"><strong>{PRODUCT_NAME}</strong></Link>
+        {me && selectedCompanyId && <Link to="/company-profile">Company profile</Link>}
+      </div>
       {me && (
         <div className="app-header-user">
           <span className="muted">{me.email}</span>

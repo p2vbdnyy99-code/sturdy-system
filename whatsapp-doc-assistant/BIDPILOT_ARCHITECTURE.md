@@ -2005,6 +2005,245 @@ still open from the M5f audit, untouched by this milestone.
 
 ## Next
 
-Per explicit instruction: this milestone stops here. Not committed pending
-final review of this corrected design. M7 (or any further milestone) is
-not to begin until this is explicitly approved and committed.
+Committed as `625f40b` after explicit approval. Deployed to production on
+Fly.io shortly after (app `tenderlytic-api`, Postgres `tenderlytic-db`,
+region `sin`) — see `OPERATIONS.md`'s "Tenderlytic backend deploy (Fly.io)"
+section for the Docker/`flyctl` setup (`0924675`, `280fd0b` fixed two real
+build issues found via actual deploy attempts: an oversized build context
+and a missing Python/C++ toolchain `argon2` needs to compile from source).
+Live at `https://tenderlytic-api.fly.dev/`, serving both the API and the
+built frontend from the same origin.
+
+# Milestone "Beta Readiness" — Performance + Premium UI + Core Product Polish
+
+**Scope, verbatim from the approval:** an 8-phase milestone — production
+performance audit against real tender PDFs, optimize the measured
+bottleneck, a premium CSS-only UI/UX pass, product polish, wiring up any
+beta-ready core feature the backend already supports but the frontend
+never exposed, full regression, production verification, and one
+consolidated report. Explicitly out of scope: any new backend architecture,
+any of M7-M19's roadmap features (tender discovery, GeM scraping, bid
+drafting, billing, OAuth/MFA/SSO, etc.), fake progress indicators, and any
+weakening of the security/isolation/CSP model M1-M6 established.
+
+## Phase 1 — Performance audit (real tender PDFs, real AI provider)
+
+Two real public government tender PDFs, not synthetic fixtures: a 23-page
+Dept. of Atomic Energy NIT (727KB) and a 154-page Ministry of External
+Affairs / RITES consultant tender for ICP Bhairahawa construction (10.1MB,
+OCR-triggered). Both run through the real `AI_PROVIDER=openai` pipeline
+(real `OPENAI_API_KEY`, no mock) against a local Postgres, with new
+purely-observational `log.info('metric ...')` lines added to
+`ai/openai.js` (`complete()` — real token usage from the API response
+itself, not an estimate) and `analysis/pipeline.js` (per-chunk timing
+array, `chunksMs`/`avgChunkMs`/`maxChunkMs`/`aggregateMs`/`dbWriteMs`) —
+neither changes any function's return shape or control flow.
+
+**Measured (before any Phase 2 change):**
+
+| | Small (23pp, 2 chunks) | Large (154pp, 9 chunks) |
+|---|---|---|
+| Upload | 18ms | 45ms |
+| Extraction | 1,211ms | 12,366ms (OCR) |
+| AI chunk calls (sequential) | 52,445ms | 302,643ms |
+| — of which failed (truncated) | 0 | **3 of 9** |
+| Aggregation | 0ms | 0ms |
+| DB write | 63ms | 182ms |
+| **Total** | **52,510ms** | **302,827ms** |
+
+AI calls are ~99.9% of total wall-clock time in both cases — extraction,
+aggregation, and DB write are all negligible by comparison, confirming the
+milestone's own stated "preferred optimization order" item #1 (bounded
+concurrency for chunk AI calls) as the correct primary and essentially
+only-necessary lever; items #2-6 (dedup, chunk reduction, prompt
+efficiency, aggregation/DB optimization) would yield negligible additional
+benefit given how small their current footprint already is.
+
+**A second, more serious finding surfaced by the same real run:** 3 of the
+large tender's 9 chunks came back with `output_tokens` exactly at
+`extract.js`'s hardcoded `maxTokens: 4000` cap and unparseable (truncated
+mid-JSON) output — silently counted as failures and dropped, per the
+pipeline's existing partial-success policy. This is real data loss on
+dense, requirement/BOQ-heavy chunks, not a performance issue — classified
+and fixed in Phase 2.
+
+## Phase 2 — Bounded concurrency + the truncation fix
+
+- **`analysis/pipeline.js`**: the sequential `for...of` chunk loop replaced
+  with a bounded worker pool — `Math.min(config.bidpilot.analysis.concurrency,
+  chunks.length)` workers, each claiming the next chunk via a single
+  synchronous `nextIndex++` (no `await` between read and increment, so two
+  workers can never claim the same chunk). Never an unbounded
+  `Promise.all(chunks.map(...))`. Results are written into a pre-sized
+  `outcomes` array **by original chunk index**, not push()'d in completion
+  order — `aggregateResults()`'s "first chunk wins" document-order
+  dependency for overview fields is preserved regardless of which chunk's
+  AI call actually finishes first. All existing per-chunk behavior
+  (`recordChunkUsage`, failure counting, per-chunk timing) is unchanged in
+  substance, just now potentially concurrent.
+- **`config.js`**: new `BIDPILOT_ANALYSIS_CONCURRENCY` env var (default 4),
+  `config.bidpilot.analysis.concurrency`. Budget checks
+  (`assertAnalysisBudget` in `routes/tenders.js`) are unchanged — still a
+  single pre-flight check before any chunk starts, still authoritative.
+- **`analysis/extract.js`**: `maxTokens` raised from the hardcoded 4000 to
+  8000 — the Phase 1 finding's fix. Dense chunks now have enough headroom
+  to finish their JSON instead of being truncated and dropped.
+
+**Re-measured, same two real PDFs, same real AI provider:**
+
+| | Small (2 chunks) | Large (9 chunks) |
+|---|---|---|
+| AI chunk calls (concurrency=4) | 35,359ms (**-32.6%**) | 82,504ms (**-72.7%**, 3.67x) |
+| Failures | 0 | **0** (was 3) |
+| Requirements found | 29 (was 25) | **143** (was 88, **+63%**) |
+| BOQ / dates / red flags | 0/4/12 | 58/32/37 (was 50/21/24) |
+
+The large tender's requirement count jump (88 → 143) is the truncation fix
+recovering real data that was previously silently lost, not a behavior
+change in what counts as a requirement. Chunk timing reduction matches the
+theoretical expectation for concurrency=4 over 9 chunks (~3 sequential
+waves instead of 9).
+
+**New tests** (`test/bidpilot/analysis.test.js`, repo-level, +2): "aggregation
+follows CHUNK order, not AI-call completion order, under concurrency" — three
+forced-into-their-own-chunk pages whose AI calls resolve in the REVERSE of
+document order (chunk 1 slowest, chunk 3 fastest); asserts the persisted
+`overview.organization` reflects chunk 1 (document order), not chunk 3
+(completion order), and that all three chunks' requirements survive. "one
+chunk failing among several concurrent chunks does not affect the others" —
+chunk 2 throws, chunks 1 and 3 still complete and persist, analysis still
+reaches COMPLETED (partial-success policy holds under concurrency too).
+
+## Phase 3 — Premium UI/UX + a real Phase-5 gap found along the way
+
+CSS-only, no new libraries, no external fonts/CDNs (CSP unchanged: `style-src
+'self'`, no `unsafe-inline`):
+
+- **Responsive pass** (previously zero `@media` queries in `index.css`):
+  header wraps and truncates a long email instead of overflowing off-
+  screen at narrow widths; the tender table gets a `.table-scroll` wrapper
+  (horizontal scroll contained to the table, not the page); the tab bar
+  scrolls horizontally instead of wrapping awkwardly; `overview-row`,
+  `profile-grid`, and `experience-row` stack to one column under 640px.
+  Found and fixed via an actual `getBoundingClientRect()` sweep in a real
+  headless-Chromium page at 375px width, not a guess — the real bug was
+  the header's `justify-content: space-between` with no wrap/truncation,
+  which pushed content off-screen on every page since `AppHeader` is
+  shared.
+- **Honest staged processing UX** (`TenderDetail.tsx`): the tender detail
+  page previously had NO live polling at all — only the dashboard row
+  polled — so linking straight to `/tenders/:id` while a tender was still
+  processing/analyzing showed a stale state until a manual reload. Now
+  polls via the same bounded `useTenderPolling` hook (2s/120s, unchanged)
+  and shows the REAL `processingStatus`/`analysisStatus` enum value as
+  text (`"Extracting pages from the document…"`, `"Analyzing the document
+  against your requirements checklist…"`) — never a fabricated percentage
+  or step count, per the milestone's explicit "no fake progress" rule.
+- **Eligibility engine wired to the UI for the first time.** M6 (`625f40b`)
+  built the entire eligibility backend — `POST /tenders/:id/eligibility`,
+  `companyStatus`/`actionRequired`/`companyEvidence` on
+  `GET /tenders/:id` — but zero frontend code ever called it. Fixed:
+  `api/tenders.ts` gained `EligibilityStatus`, `CompanyEvidenceEntry`, and
+  `checkEligibility()`; `RequirementsTab.tsx` renders a status badge per
+  requirement (MEETS/DOES_NOT_APPEAR_TO_MEET/UNKNOWN) plus the server-
+  verified `{label, value, reason}` evidence when a check has run;
+  `TenderDetail.tsx` adds a "Check eligibility against your profile"
+  button on the Requirements tab.
+- **A second, larger Phase-5 gap found while testing the first one:**
+  eligibility checking a real tender through the new button returned
+  UNKNOWN for everything, with `actionRequired: "Complete your company
+  profile..."` — because **there was no way to fill in a company profile
+  at all.** `api/companies.ts` already had a complete, typed
+  `getCompanyProfile()`/`updateCompanyProfile()` client (built in earlier
+  M5-era work) with zero `.tsx` consumers, and the backend's
+  `GET`/`PATCH /companies/:id/profile` routes (whitelisted against the
+  real `company_profiles` columns) were fully built and tested but never
+  reachable from any page — `CreateCompanyPage`'s own comment said "You
+  can fill in the rest of your company profile later," and later never
+  came. New `pages/settings/CompanyProfile.tsx` + `/company-profile`
+  route + a header nav link: scalar fields as plain inputs, list-shaped
+  fields (certifications, licenses, equipment, geography, OEM
+  relationships) as comma-separated inputs, past-project `experience` as
+  repeatable description/value/year/client rows. No new backend
+  capability — 100% existing, already-tested routes, exactly the same
+  category of fix as the eligibility wiring above.
+
+**Real-browser verification** (Playwright/Chromium, real Postgres, real AI
+provider — not mocked, since the point was proving the end-to-end
+eligibility flow against a real profile and a real tender): 16/16 checks —
+login, company-profile save-and-persist-after-reload, eligibility badges
+correctly UNKNOWN before a check and MEETS/DOES_NOT_APPEAR_TO_MEET with
+real server-verified evidence after one (a test certification list
+correctly evaluated as NOT satisfying a Pollution Control Board
+certificate requirement, with the AI's reason correctly explaining why),
+zero horizontal overflow at 375px on dashboard/tender-detail/company-
+profile, zero CSP violations, zero console errors. `tsc -b` + `vite build`
++ `oxlint` clean (only the same pre-existing `set-state-in-effect`/
+`exhaustive-deps` warning classes already present before this milestone).
+
+## Phase 4 — Product polish
+
+Folded into Phase 3's work rather than a separate pass: honest staged-
+status wording (above), the eligibility action bar's explanatory hint
+("never a value the AI made up"), consistent `EmptyState`/error-banner
+patterns reused as-is for the new company-profile page rather than
+inventing new ones, `aria-label` on the experience-row "Remove" button.
+No accessibility or wording regressions found in the existing surface —
+the M5c-era `:focus-visible` treatment, tab semantics, and error-message
+patterns were already solid and are unchanged.
+
+## Phase 5 — Beta-ready core features (existing backend/architecture only)
+
+Audited every route in `src/bidpilot/routes/*.js` against every `.tsx`
+page for an orphaned backend capability. Two found and fixed (eligibility
+UI, company-profile UI — both Phase 3, above). Nothing else: every other
+route (`register`/`verify-email`/`login`/`logout`/`me`, company creation,
+dashboard summary, tender upload/list/detail/analyze/document-url, file
+download) already has a frontend consumer. None of the explicitly-
+forbidden roadmap items (tender discovery, GeM scraping, bid drafting,
+compliance automation, Ask Tender, BOQ pricing, billing, OAuth/MFA/SSO,
+mobile app) were touched.
+
+## Phase 6 — Full regression
+
+Backend 3x-configuration suite, zero drift from the M6 baseline plus the
+two new Phase 2 concurrency tests:
+- `DATABASE_URL` + `BIDPILOT_CSRF_SECRET` set: 420 pass / 0 fail / 1 skip
+  (418 baseline + 2 new)
+- `DATABASE_URL` only: 268 pass / 0 fail / 16 skip (unchanged — the new
+  tests are repo-level and sit under this file's existing CSRF-gated skip,
+  same as every other test in it)
+- neither set (pure Papyr): 228 pass / 0 fail / 22 skip (unchanged)
+
+Frontend: `tsc -b` + `vite build` clean, `oxlint` clean (pre-existing
+warning classes only), `node --test src/dashboard/attentionState.test.ts`
+15/15 (untouched this milestone, re-verified). Of the milestone's 15
+required regression categories: concurrent analysis, duplicate analysis
+requests, cross-company access, evidence preservation, and budget
+enforcement were already covered by existing tests (re-run clean, zero
+drift); "eligibility reruns" and "GET /tenders/:id surfaces
+companyStatus/actionRequired/companyEvidence" were already covered by
+`eligibility.test.js` (M6); concurrent-chunk-processing order-preservation
+and partial-chunk-failure isolation are the two new Phase 2 tests above;
+mobile layout and loading/error states were covered by the Phase 3
+real-browser pass (16/16). Secret-leak scan of the full diff — no matches.
+
+## Phase 7 — Production verification
+
+**Blocked in this session on missing credentials, not a code or design
+issue.** The existing production deployment (`https://tenderlytic-api.fly.dev/`,
+from the earlier M6/deploy work) is confirmed still live and healthy
+(`GET /health` → `{"ok":true}`), but this session has no stored Fly.io
+access token (`flyctl auth whoami` → "no access token available") — a
+fresh sandbox container, not a credential that persists across sessions.
+Deploying the Beta Readiness changes and re-running the production
+verification (health/auth/CORS/tender-flow, one real production tender
+end-to-end measured against the Phase 1 baseline) needs either a fresh
+Fly.io token from the user or the user deploying this branch themselves
+via `flyctl deploy --depot=false` per `OPERATIONS.md`.
+
+## Phase 8 — Explicitly not committed
+
+Per the milestone's explicit instruction: `git diff --stat`/`git status`
+shown, this file updated, then STOP for explicit commit approval. Nothing
+in this milestone has been committed or pushed.
