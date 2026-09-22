@@ -38,8 +38,12 @@ export function sessionCookieOptions(maxAgeMs) {
     secure: SECURE,
     sameSite: 'lax',
     path: '/',
-    maxAge: Math.floor(maxAgeMs / 1000), // res.cookie's maxAge is ms; kept in
-    // ms at the call site for clarity, converted here — see routes/auth.js.
+    // res.cookie's maxAge option is itself in ms (Express divides by 1000
+    // when it builds the Set-Cookie Max-Age attribute) — pass maxAgeMs
+    // straight through. A prior version divided by 1000 here too, which
+    // made Express divide twice: a 30-day TTL was actually set as ~43
+    // minutes in production. See routes/auth.js for the (ms) call site.
+    maxAge: maxAgeMs,
   };
 }
 
@@ -53,7 +57,7 @@ export function csrfCookieOptions(maxAgeMs) {
     secure: SECURE,
     sameSite: 'lax',
     path: '/',
-    maxAge: Math.floor(maxAgeMs / 1000),
+    maxAge: maxAgeMs, // see sessionCookieOptions()'s comment above
   };
 }
 
