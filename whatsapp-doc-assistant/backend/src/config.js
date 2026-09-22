@@ -1,0 +1,418 @@
+// Centralized configuration, read once from the environment.
+// -----------------------------------------------------------------------------
+// Everything the app needs is derived here so the rest of the code never touches
+// `process.env` directly. Missing critical values produce loud warnings rather
+// than silent misbehavior at request time.
+
+import 'dotenv/config';
+import path from 'node:path';
+import crypto from 'node:crypto';
+
+const {
+  WHATSAPP_TOKEN = '',
+  WHATSAPP_PHONE_NUMBER_ID = '',
+  WHATSAPP_VERIFY_TOKEN = '',
+  WHATSAPP_APP_SECRET = '',
+  GRAPH_API_VERSION = 'v21.0',
+  PORT = '8788',
+  DATA_DIR = './data',
+  MAX_PDF_MB = '20',
+  MAX_PDF_PAGES = '300',
+  MAX_TABLES = '50',
+  CONVERSION_TIMEOUT_MS = '45000',
+  SESSION_TTL_MINUTES = '60',
+  RATE_LIMIT_PER_MIN = '20',
+  OWNER_WHATSAPP = '',
+} = process.env;
+
+// ─── AI provider selection ───────────────────────────────────────────────────
+
+export const SUPPORTED_AI_PROVIDERS = ['openai', 'anthropic'];
+
+// Default model per provider, used when AI_MODEL is not set.
+const DEFAULT_MODELS = {
+  openai: 'gpt-5.6-terra',
+  anthropic: 'claude-opus-5',
+};
+
+/**
+ * Build the AI configuration from an environment-like object. Kept pure (takes
+ * `env`, returns an object) so it is easy to unit-test with different inputs.
+ * Throws immediately on an unsupported provider — we never silently fall back.
+ *
+ * Env:
+ *   AI_PROVIDER   openai | anthropic   (default: openai)
+ *   AI_MODEL      model id             (default: per-provider; DEFAULT_MODEL is
+ *                                       accepted as a back-compat alias)
+ *   OPENAI_API_KEY / ANTHROPIC_API_KEY (only the selected provider's is needed)
+ *   AI_TIMEOUT_MS request timeout      (default: 60000)
+ */
+export function buildAiConfig(env = {}) {
+  const provider = String(env.AI_PROVIDER || 'openai').trim().toLowerCase();
+  if (!SUPPORTED_AI_PROVIDERS.includes(provider)) {
+    throw new Error(
+      `Unsupported AI_PROVIDER "${provider}". ` +
+        `Supported providers: ${SUPPORTED_AI_PROVIDERS.join(', ')}.`,
+    );
+  }
+
+  const model = String(
+    env.AI_MODEL || env.DEFAULT_MODEL || DEFAULT_MODELS[provider],
+  ).trim();
+
+  return {
+    provider,
+    model,
+    timeoutMs: Number(env.AI_TIMEOUT_MS) || 60_000,
+    openaiKey: env.OPENAI_API_KEY || '',
+    anthropicKey: env.ANTHROPIC_API_KEY || '',
+  };
+}
+
+/**
+ * Build the OCR configuration from an environment-like object. Kept pure, like
+ * buildAiConfig, so it is easy to unit-test with different inputs.
+ *
+ * Env:
+ *   OCR_DPI                        rasterization resolution (default: 200)
+ *   MAX_OCR_PAGES                  per-document OCR page cap (default: 15)
+ *   SCANNED_CHARS_PER_PAGE         per-page "looks scanned" threshold (default: 40)
+ *   OCR_LOW_CONFIDENCE_THRESHOLD   flag-as-uncertain threshold, 0-100 (default: 45)
+ *   OCR_TIMEOUT_MS                 wall-clock cap on extraction+OCR for one
+ *                                  request (default: 180000 / 3 minutes) —
+ *                                  deliberately separate from
+ *                                  CONVERSION_TIMEOUT_MS: OCR scales with page
+ *                                  count/image complexity in a way DOCX/XLSX
+ *                                  generation doesn't, and needs its own budget.
+ *   OCR_MAX_HEAP_MB                V8 old-space cap for the isolated OCR child
+ *                                  process (default: 256). Keeps a runaway
+ *                                  allocation inside the child, where it dies
+ *                                  as a reportable error, instead of pushing
+ *                                  the whole container over its memory limit
+ *                                  and getting the server SIGKILLed.
+ */
+export function buildOcrConfig(env = {}) {
+  return {
+    dpi: Math.max(72, Number(env.OCR_DPI) || 200),
+    maxPages: Math.max(1, Number(env.MAX_OCR_PAGES) || 15),
+    scannedCharsPerPage: Math.max(1, Number(env.SCANNED_CHARS_PER_PAGE) || 40),
+    lowConfidenceThreshold: Math.max(0, Number(env.OCR_LOW_CONFIDENCE_THRESHOLD) || 45),
+    timeoutMs: Math.max(1000, Number(env.OCR_TIMEOUT_MS) || 180_000),
+    maxHeapMb: Math.max(64, Number(env.OCR_MAX_HEAP_MB) || 256),
+  };
+}
+
+/**
+ * Build the digital-extraction isolation config. The span extractor decodes
+ * every page's embedded images (getOperatorList), which can OOM the server on
+ * a large image-heavy DIGITAL PDF — the same failure class OCR had, but on the
+ * path OCR isolation never covered. It runs in its own killable, heap-capped
+ * child process; these are its bounds. Kept pure/testable like buildOcrConfig.
+ *
+ * Env:
+ *   EXTRACT_TIMEOUT_MS   wall-clock cap on one extraction (default: 120000).
+ *                        Digital parsing is faster than OCR, so its budget is
+ *                        smaller than OCR_TIMEOUT_MS.
+ *   EXTRACT_MAX_HEAP_MB  V8 old-space cap for the extraction child (default:
+ *                        256) — a runaway decode dies in the child, not the
+ *                        server.
+ */
+export function buildExtractConfig(env = {}) {
+  return {
+    timeoutMs: Math.max(1000, Number(env.EXTRACT_TIMEOUT_MS) || 120_000),
+    maxHeapMb: Math.max(64, Number(env.EXTRACT_MAX_HEAP_MB) || 256),
+  };
+}
+
+/**
+ * AI spend caps for the beta — a hard ceiling on paid AI calls (summary / Q&A /
+ * translate / explain / intent-classify) so usage can't run up a surprise bill.
+ * The free features (Word / Excel / OCR) are never capped. Enforced in
+ * budget.js; these are just the numbers. Kept pure/testable like the others.
+ *
+ * A value of 0 (or blank) disables that dimension — "unlimited". Defaults are
+ * beta-safe, not production limits: raise them (or set 0) once you trust spend.
+ *
+ * Env:
+ *   AI_DAILY_CALL_CAP           max paid AI calls across ALL users per UTC day
+ *                               (default: 500)
+ *   AI_MONTHLY_CALL_CAP         max paid AI calls across ALL users per UTC month
+ *                               (default: 5000)
+ *   AI_PER_USER_DAILY_CALL_CAP  max paid AI calls for ONE user per UTC day, so a
+ *                               single enthusiastic tester can't drain the whole
+ *                               budget (default: 50)
+ *
+ * Cost ≈ (calls) × (your model's per-call price). Count is deliberately used
+ * instead of dollars: it's deterministic and doesn't require wiring live
+ * provider pricing. Watch the ACTIONS block in `npm run digest` to see how many
+ * calls real usage drives.
+ */
+export function buildBudgetConfig(env = {}) {
+  const cap = (v, d) => {
+    const x = Number(v);
+    return Number.isFinite(x) && x >= 0 ? Math.floor(x) : d;
+  };
+  return {
+    dailyAiCalls: cap(env.AI_DAILY_CALL_CAP, 500),
+    monthlyAiCalls: cap(env.AI_MONTHLY_CALL_CAP, 5000),
+    perUserDailyAiCalls: cap(env.AI_PER_USER_DAILY_CALL_CAP, 50),
+  };
+}
+
+/**
+ * Metrics config. The only knob is an OPTIONAL salt for pseudonymous
+ * per-user counting. We never log the phone number; with a salt set we log a
+ * short HMAC of it instead, so distinct users can be counted without storing
+ * or exposing any real identifier. No salt → no user tag at all (safe default).
+ *
+ * Env:
+ *   METRICS_HASH_SALT  secret salt enabling the user counter. MUST be a real
+ *                      secret — the phone-number space is small enough that an
+ *                      unsalted or guessable-salt hash could be reversed.
+ */
+export function buildMetricsConfig(env = {}) {
+  return { hashSalt: String(env.METRICS_HASH_SALT || '') };
+}
+
+/**
+ * BidPilot's Postgres connection config. Entirely separate from anything Papyr
+ * uses — Papyr's WhatsApp path never reads `config.db` and keeps running with
+ * zero database whether or not this is configured. `url` empty means BidPilot's
+ * persistence layer is simply not wired up yet (e.g. local dev without
+ * Postgres, or this deployment doesn't run BidPilot at all); code that needs it
+ * should fail loudly and specifically, not silently no-op.
+ *
+ * Env:
+ *   DATABASE_URL      postgres://user:pass@host:port/db — required for any
+ *                      BidPilot database operation. Never a hardcoded default.
+ *   DATABASE_POOL_MAX max simultaneous connections this process holds open
+ *                      (default: 10). Render runs this as one long-lived
+ *                      process (not serverless), so a small, fixed pg.Pool is
+ *                      sufficient — no external pooler (pgBouncer etc.) is
+ *                      needed at this scale. If BidPilot later runs multiple
+ *                      instances or background workers, remember the total
+ *                      across ALL of them must stay under Postgres's
+ *                      max_connections — that's a later-milestone concern.
+ */
+export function buildDbConfig(env = {}) {
+  return {
+    url: String(env.DATABASE_URL || ''),
+    poolMax: Math.max(1, Number(env.DATABASE_POOL_MAX) || 10),
+  };
+}
+
+/**
+ * BidPilot config — storage backend selection, upload limits, and
+ * authentication (Milestone 3: real sessions, replacing the earlier
+ * placeholder identity header entirely). Kept fully separate from Papyr's
+ * config; Papyr's WhatsApp path never reads any of this.
+ *
+ * Env:
+ *   BIDPILOT_STORAGE_DRIVER      'local' (dev/test) | 's3' (production).
+ *                                 Default: 'local'.
+ *   BIDPILOT_LOCAL_STORAGE_DIR   Where LocalDiskStorage writes files
+ *                                 (default: <dataDir>/bidpilot-files).
+ *   BIDPILOT_LOCAL_SIGNING_SECRET  Secret used to sign local download URLs.
+ *                                 Required when the driver is 'local'.
+ *   BIDPILOT_PUBLIC_BASE_URL     This service's own public URL, used to build
+ *                                 local signed download links (e.g.
+ *                                 https://papyr.onrender.com). Not needed for
+ *                                 the 's3' driver (S3 URLs are absolute).
+ *   BIDPILOT_S3_BUCKET / _REGION / _ENDPOINT / _ACCESS_KEY_ID /
+ *   _SECRET_ACCESS_KEY           S3-compatible credentials. _ENDPOINT is only
+ *                                 needed for a non-AWS provider (R2, Backblaze,
+ *                                 ...); leave blank for real AWS S3.
+ *   BIDPILOT_MAX_UPLOAD_MB       Reject tender PDFs larger than this
+ *                                 (default: 50 — larger than Papyr's 20MB
+ *                                 WhatsApp cap; tenders can legitimately run
+ *                                 hundreds of pages).
+ *   BIDPILOT_CSRF_SECRET         Required. HMAC key for the double-submit
+ *                                 CSRF token (csrf.js) — a real secret, not a
+ *                                 placeholder; startup should not proceed with
+ *                                 a blank value in production (see
+ *                                 warnOnMissingConfig below).
+ *   BIDPILOT_SESSION_TTL_DAYS    Absolute session lifetime cap, regardless of
+ *                                 activity (default: 30).
+ *   BIDPILOT_SESSION_TOUCH_MINUTES  Minimum minutes between lastSeenAt writes
+ *                                 for the same session — throttles the sliding
+ *                                 idle timestamp so an active user doesn't
+ *                                 cause a DB write on every single request
+ *                                 (default: 10).
+ *   BIDPILOT_VERIFICATION_TOKEN_TTL_HOURS  How long an email-verification
+ *                                 token stays valid (default: 24).
+ *   BIDPILOT_COOKIE_SECURE       Explicit override for the cookie Secure
+ *                                 flag — see auth/cookies.js. Normally
+ *                                 auto-detected from RENDER_EXTERNAL_URL /
+ *                                 NODE_ENV; only set this for an edge case.
+ *   BIDPILOT_ANALYSIS_CHUNK_CHARS  Character budget per AI analysis chunk
+ *                                 (default: 40000 — leaves headroom under
+ *                                 typical context limits for the system
+ *                                 prompt + schema instructions + output).
+ *   BIDPILOT_ANALYSIS_MAX_CHUNKS_PER_TENDER  Hard ceiling on chunks (= AI
+ *                                 calls) for ONE analysis run (default: 60).
+ *                                 A tender that would exceed this is refused
+ *                                 with a clear error rather than silently
+ *                                 truncated or allowed to run unbounded.
+ *   BIDPILOT_ANALYSIS_MAX_CALLS_PER_COMPANY_PER_DAY  Rolling-window cap on
+ *                                 total analysis AI calls across ALL of a
+ *                                 company's tenders per day (default: 200).
+ *                                 Enforced from usage_records (durable, not
+ *                                 in-memory) — this protects real spend, so
+ *                                 unlike the login-attempt limiter it must
+ *                                 survive a restart and stay accurate under
+ *                                 concurrent instances.
+ *   BIDPILOT_ELIGIBILITY_MAX_CALLS_PER_COMPANY_PER_DAY  Same rolling-window
+ *                                 spend control as analysis above, but its own
+ *                                 separate cost center/counter (default: 100)
+ *                                 — an eligibility-check spree can never eat
+ *                                 into a company's analysis budget or vice
+ *                                 versa.
+ *   BIDPILOT_API_TOKEN_TTL_MINUTES  Lifetime of a short-lived API access
+ *                                 token (default: 20). Deliberately separate
+ *                                 from BIDPILOT_SESSION_TTL_DAYS — this token
+ *                                 is the credential a cross-origin caller
+ *                                 (e.g. a Lovable-built frontend) uses as an
+ *                                 Authorization: Bearer header; it is NEVER
+ *                                 the 30-day browser session token, and is
+ *                                 only ever issued when a login request
+ *                                 explicitly opts in (see routes/auth.js).
+ *   BIDPILOT_CORS_ORIGINS        Comma-separated list of origins allowed to
+ *                                 call the API cross-origin using the API
+ *                                 access token above. Empty/unset by default
+ *                                 — cross-origin requests are refused unless
+ *                                 explicitly opted in; the existing same-
+ *                                 origin cookie-based frontend is entirely
+ *                                 unaffected either way.
+ *   BIDPILOT_ANALYSIS_CONCURRENCY  How many chunk AI calls one analysis run
+ *                                 is allowed to have in flight at once
+ *                                 (default: 4). Real production measurement
+ *                                 (see BIDPILOT_ARCHITECTURE.md's "Beta
+ *                                 Readiness" milestone) showed AI calls are
+ *                                 ~99.9% of total analysis time and were
+ *                                 running strictly sequentially. Bounded
+ *                                 (never unbounded Promise.all) so one
+ *                                 analysis run can't monopolize the
+ *                                 provider's rate limit or this process's
+ *                                 outbound connections.
+ */
+export function buildBidpilotConfig(env = {}) {
+  return {
+    storageDriver: String(env.BIDPILOT_STORAGE_DRIVER || 'local'),
+    localStorage: {
+      dir: env.BIDPILOT_LOCAL_STORAGE_DIR || path.resolve(env.DATA_DIR || './data', 'bidpilot-files'),
+      publicBaseUrl: env.BIDPILOT_PUBLIC_BASE_URL || `http://localhost:${env.PORT || 8788}`,
+      signingSecret: env.BIDPILOT_LOCAL_SIGNING_SECRET || '',
+    },
+    s3: {
+      bucket: env.BIDPILOT_S3_BUCKET || '',
+      region: env.BIDPILOT_S3_REGION || '',
+      endpoint: env.BIDPILOT_S3_ENDPOINT || '',
+      accessKeyId: env.BIDPILOT_S3_ACCESS_KEY_ID || '',
+      secretAccessKey: env.BIDPILOT_S3_SECRET_ACCESS_KEY || '',
+    },
+    maxUploadBytes: (Math.max(1, Number(env.BIDPILOT_MAX_UPLOAD_MB) || 50)) * 1024 * 1024,
+    csrfSecret: String(env.BIDPILOT_CSRF_SECRET || ''),
+    sessionTtlMs: Math.max(1, Number(env.BIDPILOT_SESSION_TTL_DAYS) || 30) * 24 * 60 * 60 * 1000,
+    sessionTouchThresholdMs: Math.max(1, Number(env.BIDPILOT_SESSION_TOUCH_MINUTES) || 10) * 60 * 1000,
+    verificationTokenTtlMs: Math.max(1, Number(env.BIDPILOT_VERIFICATION_TOKEN_TTL_HOURS) || 24) * 60 * 60 * 1000,
+    apiTokenTtlMs: Math.max(1, Number(env.BIDPILOT_API_TOKEN_TTL_MINUTES) || 20) * 60 * 1000,
+    analysis: {
+      chunkChars: Math.max(2000, Number(env.BIDPILOT_ANALYSIS_CHUNK_CHARS) || 40_000),
+      maxChunksPerTender: Math.max(1, Number(env.BIDPILOT_ANALYSIS_MAX_CHUNKS_PER_TENDER) || 60),
+      maxCallsPerCompanyPerDay: Math.max(1, Number(env.BIDPILOT_ANALYSIS_MAX_CALLS_PER_COMPANY_PER_DAY) || 200),
+      concurrency: Math.max(1, Number(env.BIDPILOT_ANALYSIS_CONCURRENCY) || 4),
+    },
+    eligibility: {
+      maxCallsPerCompanyPerDay: Math.max(1, Number(env.BIDPILOT_ELIGIBILITY_MAX_CALLS_PER_COMPANY_PER_DAY) || 100),
+    },
+    corsOrigins: String(env.BIDPILOT_CORS_ORIGINS || '')
+      .split(',')
+      .map((o) => o.trim())
+      .filter(Boolean),
+  };
+}
+
+/**
+ * A short, pseudonymous tag for a sender — for counting distinct users in logs
+ * without ever recording the phone number. Returns '' when no salt is
+ * configured, so the phone number is never logged by default. Pure/testable.
+ */
+export function hashSender(from, salt = config.metrics.hashSalt) {
+  if (!salt || !from) return '';
+  return crypto.createHmac('sha256', salt).update(String(from)).digest('hex').slice(0, 12);
+}
+
+/** The API key for whichever provider is currently selected (may be empty). */
+export function selectedApiKey(ai) {
+  return ai.provider === 'openai' ? ai.openaiKey : ai.anthropicKey;
+}
+
+/** The env var name the selected provider expects, for messages/warnings. */
+export function selectedKeyName(ai) {
+  return ai.provider === 'openai' ? 'OPENAI_API_KEY' : 'ANTHROPIC_API_KEY';
+}
+
+export const config = {
+  whatsapp: {
+    token: WHATSAPP_TOKEN,
+    phoneNumberId: WHATSAPP_PHONE_NUMBER_ID,
+    verifyToken: WHATSAPP_VERIFY_TOKEN,
+    appSecret: WHATSAPP_APP_SECRET,
+    graphVersion: GRAPH_API_VERSION,
+    graphBase: `https://graph.facebook.com/${GRAPH_API_VERSION}`,
+    // Optional: your own number (international format, digits only) to receive
+    // usage pings. Best-effort — WhatsApp only delivers business-initiated
+    // messages inside a 24h window, so keep a chat open with the bot.
+    ownerNumber: String(OWNER_WHATSAPP).replace(/[^\d]/g, ''),
+  },
+  ai: buildAiConfig(process.env),
+  server: {
+    port: Number(PORT) || 8788,
+    dataDir: path.resolve(DATA_DIR),
+    maxPdfBytes: (Number(MAX_PDF_MB) || 20) * 1024 * 1024,
+    // Max pages of a PDF whose text layer we extract (page-bomb / CPU guard).
+    maxPdfPages: Math.max(1, Number(MAX_PDF_PAGES) || 300),
+    // Max tables emitted into one .xlsx (bounds output size / memory).
+    maxTables: Math.max(1, Number(MAX_TABLES) || 50),
+    // Hard wall-clock bound on a single DOCX/XLSX conversion.
+    conversionTimeoutMs: Math.max(1000, Number(CONVERSION_TIMEOUT_MS) || 45000),
+    sessionTtlMs: (Number(SESSION_TTL_MINUTES) || 60) * 60 * 1000,
+    // Max inbound messages processed per sender per minute (abuse/cost guard).
+    rateLimitPerMin: Math.max(1, Number(RATE_LIMIT_PER_MIN) || 20),
+  },
+  ocr: buildOcrConfig(process.env),
+  extract: buildExtractConfig(process.env),
+  metrics: buildMetricsConfig(process.env),
+  budget: buildBudgetConfig(process.env),
+  db: buildDbConfig(process.env),
+  bidpilot: buildBidpilotConfig(process.env),
+};
+
+/** Warn (but don't crash) about configuration that will break requests. */
+export function warnOnMissingConfig(log) {
+  const missing = [];
+  if (!config.whatsapp.token) missing.push('WHATSAPP_TOKEN');
+  if (!config.whatsapp.phoneNumberId) missing.push('WHATSAPP_PHONE_NUMBER_ID');
+  if (!config.whatsapp.verifyToken) missing.push('WHATSAPP_VERIFY_TOKEN');
+  if (!selectedApiKey(config.ai)) missing.push(selectedKeyName(config.ai));
+
+  if (missing.length) {
+    log.warn(
+      `Missing config: ${missing.join(', ')}. ` +
+        'The server will start but related features will fail until these are set.',
+    );
+  }
+  if (!config.whatsapp.appSecret) {
+    log.warn(
+      'WHATSAPP_APP_SECRET is not set — incoming webhook signatures will NOT be ' +
+        'verified. Set it before exposing this server publicly.',
+    );
+  }
+  if (config.db.url && !config.bidpilot.csrfSecret) {
+    log.warn(
+      'BIDPILOT_CSRF_SECRET is not set — BidPilot auth routes will refuse ' +
+        'state-changing requests until it is. Set a real random secret before ' +
+        'exposing this server publicly.',
+    );
+  }
+}

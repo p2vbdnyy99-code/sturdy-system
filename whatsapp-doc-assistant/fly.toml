@@ -1,0 +1,43 @@
+# Fly.io app config for the Tenderlytic backend (Express + Postgres).
+# Deploy from whatsapp-doc-assistant/ (this file's directory) with:
+#   fly launch --no-deploy   (first time only, creates the app; decline its
+#                             own Postgres offer if using an external DB e.g.
+#                             Supabase — set DATABASE_URL as a secret instead)
+#   fly volumes create tenderlytic_data --size 1   (first time only — 1GB,
+#                             raise if you expect a lot of uploaded PDFs)
+#   fly secrets set DATABASE_URL=... BIDPILOT_CSRF_SECRET=... \
+#     BIDPILOT_LOCAL_SIGNING_SECRET=... AI_PROVIDER=... OPENAI_API_KEY=... \
+#     BIDPILOT_CORS_ORIGINS=https://<your-lovable-app>.lovable.app
+#   fly deploy
+#
+# Persistent volume (not S3) for BIDPILOT_STORAGE_DRIVER=local: Fly volumes
+# survive redeploys, unlike Render's standard web service disk — this is
+# WHY Fly was chosen over a platform that would force an S3/R2 dependency
+# just to keep uploaded tender PDFs across deploys. See
+# BIDPILOT_ARCHITECTURE.md's M5f audit for the fuller reasoning.
+
+app = "tenderlytic-api"
+primary_region = "sin" # Singapore — closest to India; change to taste
+
+[build]
+
+[env]
+  PORT = "8788"
+  NODE_ENV = "production"
+  BIDPILOT_STORAGE_DRIVER = "local"
+  DATA_DIR = "/data"
+
+[[mounts]]
+  source = "tenderlytic_data"
+  destination = "/data"
+
+[http_service]
+  internal_port = 8788
+  force_https = true
+  auto_stop_machines = false
+  auto_start_machines = true
+  min_machines_running = 1
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "512mb"
