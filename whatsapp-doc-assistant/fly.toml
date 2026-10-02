@@ -38,6 +38,10 @@ primary_region = "sin" # Singapore — closest to India; change to taste
   auto_start_machines = true
   min_machines_running = 1
 
+# 1GB, not 512MB: headroom for OCR child processes running alongside the
+# main process and several concurrent analyses. (The 1 Oct restart turned out
+# to be a dropped DB connection, not memory.) Raise further before raising
+# BIDPILOT_ANALYSIS_*CONCURRENCY.
 [[vm]]
   size = "shared-cpu-1x"
-  memory = "512mb"
+  memory = "1gb"

@@ -11,6 +11,7 @@
 // uses, not a rewrite.
 
 import { getProvider } from '../../ai/index.js';
+import { config } from '../../config.js';
 import { REQUIREMENT_CATEGORIES } from './schema.js';
 
 const INJECTION_GUARD =
@@ -75,6 +76,12 @@ export async function extractChunk(chunk) {
     // real requirements/BOQ/dates. 8000 gives requirement-and-BOQ-heavy
     // chunks enough room to finish their JSON.
     maxTokens: 8000,
+    // The client-wide 60s timeout (sized for Papyr's short replies) killed
+    // dense 8000-token chunks mid-generation in production QA. One SDK retry
+    // covers transient 429/5xx/timeouts; unparseable output is retried by
+    // the pipeline instead, so the two retry layers never multiply.
+    timeoutMs: config.bidpilot.analysis.aiTimeoutMs,
+    maxRetries: 1,
   });
 
   return safeJson(raw);

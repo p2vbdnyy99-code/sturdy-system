@@ -5,7 +5,7 @@ import { EmptyState } from '../components/EmptyState';
 import { AttentionBadge } from '../components/AttentionBadge';
 import { useSession } from '../auth/SessionProvider';
 import { ApiError } from '../api/client';
-import { checkEligibility, getTender, type TenderDetail as TenderDetailType } from '../api/tenders';
+import { analyzeTender, checkEligibility, getTender, type TenderDetail as TenderDetailType } from '../api/tenders';
 import { deriveAttentionState } from '../dashboard/attentionState';
 import { useTenderPolling, type PollTarget } from '../dashboard/useTenderPolling';
 import { OverviewTab } from '../tenderDetail/OverviewTab';
@@ -127,6 +127,30 @@ function TenderDetailBody({
 }) {
   const [checkingEligibility, setCheckingEligibility] = useState(false);
   const [eligibilityError, setEligibilityError] = useState<string | null>(null);
+  const [startingAnalysis, setStartingAnalysis] = useState(false);
+  const [analysisStartError, setAnalysisStartError] = useState<string | null>(null);
+
+  async function onRunAnalysis() {
+    setAnalysisStartError(null);
+    setStartingAnalysis(true);
+    try {
+      await analyzeTender(tender.id, companyId);
+      onRefetch(); // reloads as ANALYZING, which starts the page's polling
+    } catch (err) {
+      setAnalysisStartError(err instanceof ApiError ? err.message : 'Could not start analysis.');
+    } finally {
+      setStartingAnalysis(false);
+    }
+  }
+
+  const runAnalysisButton = (label: string) => (
+    <button type="button" className="btn-primary notice-action" onClick={onRunAnalysis} disabled={startingAnalysis}>
+      {startingAnalysis ? 'Starting…' : label}
+    </button>
+  );
+
+  const coverage = tender.analysisCoverage;
+  const partial = tender.analysisStatus === 'COMPLETED' && coverage !== null && coverage.failedSections > 0;
 
   async function onCheckEligibility() {
     setEligibilityError(null);
@@ -161,8 +185,14 @@ function TenderDetailBody({
         <AttentionBadge state={attention} />
       </div>
 
-      {tender.processingStatus !== 'COMPLETED' && (
+      {tender.processingStatus !== 'COMPLETED' && tender.processingStatus !== 'FAILED' && (
         <p className="notice">{PROCESSING_STAGE_LABELS[tender.processingStatus]}</p>
+      )}
+      {tender.processingStatus === 'FAILED' && (
+        <p className="notice notice-danger">
+          {tender.processingError || PROCESSING_STAGE_LABELS.FAILED} To try again, upload the PDF again
+          from the dashboard.
+        </p>
       )}
       {tender.processingStatus === 'COMPLETED' && tender.analysisStatus === 'ANALYZING' && (
         <p className="notice">Analyzing the document against your requirements checklist…</p>
@@ -170,14 +200,28 @@ function TenderDetailBody({
       {tender.processingStatus === 'COMPLETED' && tender.analysisStatus === 'NOT_STARTED' && (
         <p className="notice">
           Extraction is done, but analysis hasn't been run yet — the tabs below have nothing to show
-          until it is.
+          until it is. {runAnalysisButton('Analyze')}
         </p>
       )}
-      {tender.analysisStatus === 'COMPLETED' && (
+      {tender.processingStatus === 'COMPLETED' && tender.analysisStatus === 'FAILED' && (
+        <p className="notice notice-danger">
+          Analysis failed{tender.analysisError ? `: ${tender.analysisError}` : '.'}{' '}
+          {runAnalysisButton('Retry analysis')}
+        </p>
+      )}
+      {partial && coverage && (
+        <p className="notice notice-danger">
+          {coverage.failedSections} of {coverage.sections} sections of this document couldn&rsquo;t be
+          read, so some details (possibly the deadline or EMD) may be missing below.{' '}
+          {runAnalysisButton('Re-run analysis')}
+        </p>
+      )}
+      {tender.analysisStatus === 'COMPLETED' && !partial && (
         <p className="notice">
           The tabs below show only what was actually extracted — not the absence of a finding.
         </p>
       )}
+      {analysisStartError && <p role="alert" className="error-text">{analysisStartError}</p>}
       {pollTimedOut && (
         <p className="muted">
           Still working — refresh or{' '}

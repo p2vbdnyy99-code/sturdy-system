@@ -45,8 +45,9 @@ async function deleteAiDerivedData(tx, tenderId) {
 /**
  * @param {{overview, requirements, boq, dates, redFlags}} aggregated — the
  *   output of aggregate.js's aggregateResults()
- * @param {{isReanalysis: boolean}} meta — drives which tender_events entry
- *   gets written ("analysis completed" vs. "tender re-analyzed")
+ * @param {{isReanalysis: boolean, chunkCount?: number, failedChunkCount?: number}} meta —
+ *   isReanalysis drives which tender_events entry gets written ("analysis
+ *   completed" vs. "tender re-analyzed"); the counts are stored on it
  */
 export async function replaceAnalysis(scope, tenderId, aggregated, meta = {}) {
   const { overview, requirements, boq, dates, redFlags } = aggregated;
@@ -122,6 +123,10 @@ export async function replaceAnalysis(scope, tenderId, aggregated, meta = {}) {
         boqCount: boq.length,
         dateCount: dates.length,
         redFlagCount: redFlags.length,
+        // Read back by GET /tenders/:id as analysisCoverage, so a run that
+        // lost sections to AI failures is shown as partial instead of "Ready".
+        ...(meta.chunkCount !== undefined ? { chunkCount: meta.chunkCount } : {}),
+        ...(meta.failedChunkCount !== undefined ? { failedChunkCount: meta.failedChunkCount } : {}),
       },
     });
 

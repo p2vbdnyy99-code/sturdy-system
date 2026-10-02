@@ -49,3 +49,32 @@ test('unknown provider throws AIError(not_configured)', () => {
     (err) => err instanceof AIError && err.code === 'not_configured',
   );
 });
+
+// Per-call timeout/retry overrides reach the SDK as request options (the 2nd
+// argument), and are absent when a caller doesn't ask — so Papyr's calls keep
+// the client-wide defaults. The SDK client is stubbed: no network.
+function stubbedProvider(provider, model) {
+  const p = createProvider({ provider, model, timeoutMs: 60_000, openaiKey: 'sk-openai', anthropicKey: 'sk-ant' });
+  const calls = [];
+  const create = async (body, options) => {
+    calls.push(options);
+    return provider === 'openai' ? { output_text: 'ok' } : { content: [{ type: 'text', text: 'ok' }] };
+  };
+  if (provider === 'openai') p.client = { responses: { create } };
+  else p.client = { messages: { create } };
+  return { p, calls };
+}
+
+for (const provider of ['openai', 'anthropic']) {
+  test(`${provider}: complete() forwards timeoutMs/maxRetries as SDK request options`, async () => {
+    const { p, calls } = stubbedProvider(provider, 'm');
+    await p.complete({ user: 'hi', timeoutMs: 180_000, maxRetries: 1 });
+    assert.deepEqual(calls[0], { timeout: 180_000, maxRetries: 1 });
+  });
+
+  test(`${provider}: complete() without overrides passes no request options`, async () => {
+    const { p, calls } = stubbedProvider(provider, 'm');
+    await p.complete({ user: 'hi' });
+    assert.deepEqual(calls[0], {});
+  });
+}

@@ -221,6 +221,18 @@ a:hover {
   margin-bottom: 1rem;
 }
 
+.notice-danger {
+  background: var(--color-danger-bg);
+  color: var(--color-danger);
+}
+
+.notice-action {
+  margin-left: 0.5rem;
+  padding: 0.3rem 0.75rem;
+  font-size: 0.85rem;
+  vertical-align: middle;
+}
+
 .footer-note {
   margin-top: 1.75rem;
   color: var(--color-text-muted);

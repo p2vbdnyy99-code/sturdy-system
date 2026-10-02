@@ -26,6 +26,8 @@ import { createDashboardRouter } from './src/bidpilot/routes/dashboard.js';
 import { createCompaniesRouter } from './src/bidpilot/routes/companies.js';
 import { cookieParserMiddleware } from './src/bidpilot/auth/cookies.js';
 import { bidpilotCors } from './src/bidpilot/auth/cors.js';
+import { recoverInterruptedWork } from './src/bidpilot/recovery.js';
+import { getDb } from './src/db/client.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 // Sibling of backend/, not inside it — verified against the actual
@@ -273,6 +275,15 @@ function startKeepAlive() {
 async function start() {
   warnOnMissingConfig(log);
   await ensureDataDir();
+  if (config.db.url) {
+    // Before listening, so a fresh request can never race the sweep and have
+    // its just-started analysis marked as interrupted.
+    try {
+      await recoverInterruptedWork(getDb());
+    } catch (err) {
+      log.error('bidpilot recovery: could not reset interrupted tenders (continuing startup):', err);
+    }
+  }
   app.listen(config.server.port, () => {
     log.info(`WhatsApp Document Assistant listening on http://localhost:${config.server.port}`);
     log.info(

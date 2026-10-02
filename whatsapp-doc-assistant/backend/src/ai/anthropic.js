@@ -21,14 +21,19 @@ export class AnthropicProvider extends AIProvider {
     this.client = new Anthropic({ apiKey, timeout: timeoutMs });
   }
 
-  async complete({ system, user, maxTokens = 1500 }) {
+  /** timeoutMs / maxRetries: per-call overrides, same contract as OpenAIProvider. */
+  async complete({ system, user, maxTokens = 1500, timeoutMs, maxRetries }) {
+    const requestOptions = {
+      ...(timeoutMs ? { timeout: timeoutMs } : {}),
+      ...(maxRetries !== undefined ? { maxRetries } : {}),
+    };
     try {
       const message = await this.client.messages.create({
         model: this.model,
         max_tokens: maxTokens,
         ...(system ? { system } : {}),
         messages: [{ role: 'user', content: user }],
-      });
+      }, requestOptions);
       return message.content
         .filter((b) => b.type === 'text')
         .map((b) => b.text)

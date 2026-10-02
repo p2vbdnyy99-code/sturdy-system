@@ -10,6 +10,7 @@
 import pg from 'pg';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { config } from '../config.js';
+import { log } from '../logger.js';
 import * as schema from './schema/index.js';
 
 const { Pool } = pg;
@@ -29,6 +30,13 @@ export function getDb() {
   _pool = new Pool({
     connectionString: config.db.url,
     max: config.db.poolMax,
+  });
+  // Without a listener, an idle connection dropped by the server (DB restart,
+  // proxy reset) is an unhandled 'error' event and kills the process — what
+  // crashed production on 1 Oct. pg already discards the dead client; the next
+  // query gets a fresh one, so logging is all that's needed.
+  _pool.on('error', (err) => {
+    log.warn(`bidpilot db: idle connection dropped (${err.message}); pool will reconnect`);
   });
   _db = drizzle(_pool, { schema });
   return _db;

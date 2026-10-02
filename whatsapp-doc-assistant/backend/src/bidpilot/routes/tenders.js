@@ -16,7 +16,7 @@ import { listRequirements, listEvidenceForRequirement } from '../repo/requiremen
 import { listBoq } from '../repo/boq.js';
 import { listDates } from '../repo/dates.js';
 import { listRedFlags } from '../repo/redFlags.js';
-import { listEvents } from '../repo/events.js';
+import { listEvents, getLatestAnalysisEvent } from '../repo/events.js';
 import { ingestUpload, processExtraction } from '../ingestion/pipeline.js';
 import { ValidationError } from '../ingestion/validate.js';
 import { getStorage } from '../storage/index.js';
@@ -108,7 +108,7 @@ export function createTendersRouter() {
       const tender = await getTender(scope, req.params.id);
       if (!tender) return res.status(404).json({ error: 'Not found.' });
 
-      const [pages, requirements, boq, dates, redFlags, documents, activity] = await Promise.all([
+      const [pages, requirements, boq, dates, redFlags, documents, activity, analysisEvent] = await Promise.all([
         listPages(scope, tender.id),
         listRequirements(scope, tender.id),
         listBoq(scope, tender.id),
@@ -116,7 +116,15 @@ export function createTendersRouter() {
         listRedFlags(scope, tender.id),
         listDocumentsForTender(scope, tender.id),
         listEvents(scope, tender.id),
+        getLatestAnalysisEvent(scope, tender.id),
       ]);
+
+      // Null for runs from before section counts were recorded, and for
+      // tenders never analyzed — the UI shows no coverage warning either way.
+      const meta = analysisEvent?.metadata;
+      const analysisCoverage = meta && Number.isInteger(meta.chunkCount)
+        ? { sections: meta.chunkCount, failedSections: meta.failedChunkCount ?? 0 }
+        : null;
 
       const requirementsWithEvidence = await Promise.all(
         requirements.map(async (r) => ({
@@ -181,6 +189,7 @@ export function createTendersRouter() {
         analysisStatus: tender.analysisStatus,
         analysisError: tender.analysisError,
         analyzedAt: tender.analyzedAt,
+        analysisCoverage,
         pageCount: pages.length,
         createdAt: tender.createdAt,
         updatedAt: tender.updatedAt,

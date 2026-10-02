@@ -246,6 +246,108 @@ test('replaceAnalysis (repo-level)', { skip: SKIP_REASON }, async (t) => {
     assert.equal(updated.analysisStatus, 'COMPLETED', 'partial success — the other two chunks still landed');
     assert.equal((await listRequirements(scope, tender.id)).length, 2, 'exactly the two successful chunks worth');
   });
+
+  // ── Production QA fixes (1 Oct 2026) ─────────────────────────────────────
+
+  async function multiChunkTender(label, pageCount) {
+    const { user, company } = await createCompanyWithOwner(db, {
+      companyName: `${label} Co`, userEmail: `${Math.random()}@example.com`, userName: 'U',
+    });
+    const scope = await requireCompanyAccess(db, { userId: user.id, companyId: company.id });
+    const tender = await createTender(scope, { title: `${label}.pdf` });
+    const bigText = (p) => `page${p} ` + 'x'.repeat(config.bidpilot.analysis.chunkChars + 1000);
+    await insertPages(scope, tender.id, Array.from({ length: pageCount }, (_, i) => ({
+      pageNumber: i + 1, rawText: bigText(i + 1), ocrUsed: false,
+    })));
+    return { scope, tender };
+  }
+
+  async function latestAnalysisMetadata(tenderId) {
+    const events = await db.select().from(tenderEvents).where(eq(tenderEvents.tenderId, tenderId));
+    return events.find((e) => e.eventType === 'analysis_completed')?.metadata;
+  }
+
+  await t.test('an unparseable chunk is retried once, and the retry\'s result is kept', async () => {
+    const { scope, tender } = await multiChunkTender('retry', 1);
+    let calls = 0;
+    setProvider({
+      name: 'mock-flaky',
+      async complete() {
+        calls += 1;
+        return calls === 1 ? 'not json' : mockResultForPage(1, { organization: 'Recovered Org' });
+      },
+    });
+
+    await runAnalysis(scope, tender.id, { isReanalysis: false });
+    const updated = await getTender(scope, tender.id);
+    assert.equal(calls, 2);
+    assert.equal(updated.analysisStatus, 'COMPLETED');
+    assert.equal(updated.organization, 'Recovered Org', 'the overview survives a one-off malformed reply');
+    assert.deepEqual(
+      { chunkCount: 1, failedChunkCount: 0 },
+      (({ chunkCount, failedChunkCount }) => ({ chunkCount, failedChunkCount }))(await latestAnalysisMetadata(tender.id)),
+    );
+  });
+
+  await t.test('a chunk that is unparseable twice is counted as failed in the analysis event', async () => {
+    const { scope, tender } = await multiChunkTender('twice', 3);
+    setProvider({
+      name: 'mock-one-bad-chunk',
+      async complete({ user }) {
+        const page = Number(/\[PAGE (\d+)\]/.exec(user)[1]);
+        return page === 1 ? 'still not json' : mockResultForPage(page);
+      },
+    });
+
+    await runAnalysis(scope, tender.id, { isReanalysis: false });
+    assert.equal((await getTender(scope, tender.id)).analysisStatus, 'COMPLETED');
+    const meta = await latestAnalysisMetadata(tender.id);
+    assert.equal(meta.chunkCount, 3);
+    assert.equal(meta.failedChunkCount, 1);
+  });
+
+  await t.test('chunk extraction asks the provider for the long timeout and one SDK retry', async () => {
+    const { scope, tender } = await multiChunkTender('timeout', 1);
+    const seen = [];
+    setProvider({ name: 'mock-args', async complete(args) { seen.push(args); return mockResultForPage(1); } });
+
+    await runAnalysis(scope, tender.id, { isReanalysis: false });
+    assert.equal(seen.length, 1);
+    assert.equal(seen[0].timeoutMs, config.bidpilot.analysis.aiTimeoutMs);
+    assert.equal(seen[0].maxRetries, 1);
+    assert.equal(config.bidpilot.analysis.aiTimeoutMs, 180_000, 'default is 3 minutes, not the 60s client default');
+  });
+
+  await t.test('two analyses at once never exceed the server-wide AI call cap', async () => {
+    const previous = config.bidpilot.analysis.globalConcurrency;
+    config.bidpilot.analysis.globalConcurrency = 2;
+    try {
+      const a = await multiChunkTender('global-a', 4);
+      const b = await multiChunkTender('global-b', 4);
+      let inFlight = 0;
+      let maxInFlight = 0;
+      setProvider({
+        name: 'mock-slow',
+        async complete({ user }) {
+          inFlight += 1;
+          maxInFlight = Math.max(maxInFlight, inFlight);
+          await new Promise((resolve) => setTimeout(resolve, 20));
+          inFlight -= 1;
+          return mockResultForPage(Number(/\[PAGE (\d+)\]/.exec(user)[1]));
+        },
+      });
+
+      await Promise.all([
+        runAnalysis(a.scope, a.tender.id, { isReanalysis: false }),
+        runAnalysis(b.scope, b.tender.id, { isReanalysis: false }),
+      ]);
+      assert.equal(maxInFlight, 2, 'per-run concurrency is 4, so without the global cap this would reach 8');
+      assert.equal((await getTender(a.scope, a.tender.id)).analysisStatus, 'COMPLETED');
+      assert.equal((await getTender(b.scope, b.tender.id)).analysisStatus, 'COMPLETED');
+    } finally {
+      config.bidpilot.analysis.globalConcurrency = previous;
+    }
+  });
 });
 
 // ── Full HTTP integration ───────────────────────────────────────────────────

@@ -2281,3 +2281,126 @@ Phase 7 with no stored token — this session's container is fresh per
 session, tokens from an earlier session don't carry over — resolved by
 asking the user for a new one rather than guessing or skipping
 verification).
+
+# Milestone "Production QA fixes" (Oct 2026)
+
+**Trigger:** internal QA on 1 Oct ran five real public tenders through
+production. Three of the four that finished were accurate on the facts that
+matter (EMD, deadlines, eligibility), but the run exposed defects that a beta
+user's first large tender would hit. Scope approved as "narrow fixes for the
+blockers"; nothing else changed.
+
+## What QA found (verified, not guessed)
+
+1. **Tenders stuck forever after a restart.** Production restarted
+   mid-analysis; both affected tenders stayed `ANALYZING`, `POST /analyze`
+   answered 409 "already in progress", and the UI only offers Retry for
+   FAILED. Nothing reset in-flight state at boot.
+2. **The server crashed mid-analysis.** First suspected to be memory (512 MB,
+   two analyses at once). With a new Fly token the logs showed otherwise:
+   `oom_killed=false`, and Node exited with code 1 on an unhandled `'error'`
+   event from an idle Postgres client. `getDb()`'s pool had no `'error'`
+   listener, so a connection dropped by the database killed the process.
+   Reproduced locally with `pg_terminate_backend` on a pooled connection
+   (same crash, exit 1).
+3. **Silent partial analyses.** On a 131-page Gujarat Informatics tender the
+   pages 1–23 chunk returned malformed JSON. Overview values come from the
+   earliest chunk that has them, so every overview field (deadline, EMD,
+   organization) was blank, while the tender still showed "Ready".
+4. **60s AI timeout vs 8000-token outputs.** Beta Readiness raised
+   `maxTokens` to 8000, but the OpenAI client kept its 60s timeout; one chunk
+   took 91s and another timed out. A regression from that milestone.
+5. **Node 20 in production.** pdfjs-dist 6 calls
+   `ArrayBuffer.prototype.transferToFixedLength` (Node 21+). Measured locally
+   with both runtimes on the same PDFs: IIT Kanpur (70 pages) extracts in
+   7.0s on Node 22 vs 181.7s on Node 20; Gujarat (131 pages) 7.3s vs 183.4s.
+   On Node 20 the OCR worker hangs until `OCR_TIMEOUT_MS` (180s) kills it, so
+   OCR never runs. Production logged 188s for both. Local dev runs Node 22,
+   which is why earlier OCR benchmarks looked fine.
+
+Correction to the 1 Oct QA report: the 154-page MEA tender is not a scanned
+document (1 page needs OCR). The real OCR cases were IIT Kanpur and Gujarat.
+
+## Fixes
+
+- `src/bidpilot/recovery.js` + `server.js`: before listening, tenders left
+  in `ANALYZING` become FAILED ("interrupted by a server restart"), and those
+  left in UPLOADED/PROCESSING/EXTRACTING become processing-FAILED (re-upload
+  works because duplicate detection ignores FAILED tenders). Previous
+  analysis data is untouched; one `*_interrupted` event per tender.
+  Single-process assumption documented in the file.
+- `analysis/pipeline.js`: an unparseable chunk is retried once; a
+  process-wide limiter (`BIDPILOT_ANALYSIS_GLOBAL_CONCURRENCY`, default 4)
+  caps AI calls in flight across all runs (slot hand-off on release, so it
+  can't overshoot); chunk/failed counts are passed to `replaceAnalysis`.
+- `repo/analysis.js` stores `chunkCount`/`failedChunkCount` in the existing
+  analysis event's metadata (jsonb). No schema change, so no manual
+  production migration. `GET /tenders/:id` returns
+  `analysisCoverage: {sections, failedSections} | null` from the latest
+  successful analysis event (`repo/events.js` `getLatestAnalysisEvent`).
+- `ai/openai.js`, `ai/anthropic.js`: `complete()` accepts per-call
+  `timeoutMs`/`maxRetries`, forwarded as SDK request options; absent unless
+  asked, so Papyr's calls are unchanged. `analysis/extract.js` uses 180s
+  (`BIDPILOT_ANALYSIS_AI_TIMEOUT_MS`) and one SDK retry.
+- Tender page (`TenderDetail.tsx`): a red notice with "Re-run analysis" when
+  sections failed; failed analysis shows its error with "Retry analysis";
+  failed processing shows its error and re-upload guidance; not-yet-analyzed
+  tenders get an "Analyze" button.
+- `db/client.js`: the pool gets an `'error'` listener that logs and lets pg
+  discard the dead client; the next query reconnects.
+- `Dockerfile` → `node:22-slim`; `engines` → `>=22`; `fly.toml` → 1 GB
+  (headroom for OCR + concurrent analyses, not the crash cause).
+
+## Verification
+
+- Backend 3x suite: **443/0/1, 286/0/16, 239/0/24** (from 427/275/235; +16
+  new tests: recovery 6, analysis 4, tender detail 1, providers 4, pool 1). The new
+  analysis tests were run against the previous pipeline and fail there.
+- Frontend: `tsc -b` + `vite build` clean, oxlint 10 warnings / 0 errors
+  (unchanged), `attentionState` 15/15.
+- **Crash reproduced locally:** analysis started on a harness whose AI never
+  answers, process SIGKILLed (tender left `ANALYZING`), real `server.js`
+  restarted → tender FAILED with the interrupted message, event written,
+  `POST /analyze` → 202 (production answered 409).
+- **Browser (Playwright, real pipeline, stand-in AI):** 13/13 — partial
+  warning with real counts, Re-run → Analyzing → live refresh, failed
+  analysis/processing notices, Analyze button, no overflow at 375px, no CSP
+  violations, no console errors.
+
+## Deployed (2 Oct 2026)
+
+Deployed from the working tree with `fly deploy --depot=false`, before this
+milestone was committed. Verified on production:
+
+- Machine: 1024 MB, Node v22.23.3 (`node:22-slim` built cleanly), `/` and
+  `/health` 200.
+- Boot recovery ran: "marked 2 interrupted analysis run(s) and 0
+  interrupted extraction(s) as FAILED" — the two tenders stuck since 1 Oct
+  can be retried.
+- Extraction run inside the production container on the stored QA PDFs:
+  Gujarat (131 pages) **11.0s** (was ~188s), IIT Kanpur (70 pages) **9.7s**.
+  OCR completes on every image page. Page count, OCR pages and OCR text match
+  local Node 22 byte-for-byte; those pages simply contain little text.
+- Pool-error fix: reproduced locally (`pg_terminate_backend` on a pooled
+  connection → exit 1 before, survives and reconnects after); covered by
+  `test/db/pool-errors.test.js`, which fails without the fix.
+
+## Still blocked
+
+- **OpenAI credit exhausted**: a 16-token request from the production
+  container still returns 429 `credit_balance_exhausted` (2 Oct, after the
+  deploy). Every real analysis fails until it is topped up; then re-run the
+  Gujarat tender to confirm the overview comes back.
+- The deploy token is scoped to the app; database-machine events weren't
+  visible, so why Postgres dropped the connection on 1 Oct is unknown. The
+  server now survives it either way.
+
+## Known follow-ups (not in scope)
+
+- Dashboard and header badge still say "Ready" for a partial analysis.
+- Eligibility check caps output at 2000 tokens; a 167-requirement tender
+  very likely truncates. Untested (no credit).
+- Out-of-credit errors are reported as "rate limit exceeded".
+- Every requirement comes back "Mandatory"; heavy over-extraction (167
+  requirements for a ₹9-lakh job). Better tuned against beta feedback.
+- Migrations aren't run on deploy (see OPERATIONS.md).

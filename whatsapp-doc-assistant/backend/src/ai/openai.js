@@ -23,8 +23,17 @@ export class OpenAIProvider extends AIProvider {
     this.client = new OpenAI({ apiKey, timeout: timeoutMs });
   }
 
-  async complete({ system, user, maxTokens = 1500, reasoningEffort }) {
+  /**
+   * @param {number} [timeoutMs] per-call override of the client-wide timeout,
+   *   for callers whose outputs are legitimately long (tender extraction).
+   * @param {number} [maxRetries] per-call override of the SDK's retry count.
+   */
+  async complete({ system, user, maxTokens = 1500, reasoningEffort, timeoutMs, maxRetries }) {
     const start = Date.now();
+    const requestOptions = {
+      ...(timeoutMs ? { timeout: timeoutMs } : {}),
+      ...(maxRetries !== undefined ? { maxRetries } : {}),
+    };
     try {
       const res = await this.client.responses.create({
         model: this.model,
@@ -36,7 +45,7 @@ export class OpenAIProvider extends AIProvider {
         // classification), pass it through so reasoning doesn't crowd out the
         // visible answer. Omitted → the model's default effort.
         ...(reasoningEffort ? { reasoning: { effort: reasoningEffort } } : {}),
-      });
+      }, requestOptions);
       // Purely observational — never changes complete()'s return shape, so
       // every existing caller (Papyr's summarize/translate/... and BidPilot's
       // extract/eligibility) is unaffected. Real usage from the API response,

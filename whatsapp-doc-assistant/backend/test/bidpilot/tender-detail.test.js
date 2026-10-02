@@ -22,6 +22,7 @@ import { csrfTokenFor } from '../../src/bidpilot/auth/csrf.js';
 import { cookieParserMiddleware, SESSION_COOKIE_NAME } from '../../src/bidpilot/auth/cookies.js';
 import { createAuthRouter } from '../../src/bidpilot/routes/auth.js';
 import { createTendersRouter } from '../../src/bidpilot/routes/tenders.js';
+import { config } from '../../src/config.js';
 
 const SKIP_REASON = !dbAvailable()
   ? 'DATABASE_URL not set — see test/db/helpers.js'
@@ -150,6 +151,7 @@ test('GET /tenders/:id (HTTP integration)', { skip: SKIP_REASON, timeout: 30_000
     assert.deepEqual(res.json.dates, []);
     assert.deepEqual(res.json.redFlags, []);
     assert.deepEqual(res.json.activity, []);
+    assert.equal(res.json.analysisCoverage, null, 'never analyzed: no coverage, so no warning');
     assert.equal(res.json.document, null);
     for (const field of ['organization', 'tenderNumber', 'location', 'estimatedValue', 'emd', 'tenderFee', 'contractDuration', 'submissionDeadline', 'openingDate']) {
       assert.equal(res.json.overview[field], null, `overview.${field} should be null, not a placeholder object`);
@@ -202,6 +204,27 @@ test('GET /tenders/:id (HTTP integration)', { skip: SKIP_REASON, timeout: 30_000
 
     assert.ok(final.activity.length >= 1);
     assert.equal(final.activity[0].eventType, 'analysis_completed');
+    assert.deepEqual(final.analysisCoverage, { sections: 1, failedSections: 0 });
+  });
+
+  await t.test('a partial analysis reports which share of the document could not be read', async () => {
+    const scopeA = await requireCompanyAccess(db, { userId: userA.id, companyId: companyA.id });
+    const tender = await createTender(scopeA, { title: 'Partly Unreadable Tender' });
+    const big = 'x'.repeat(config.bidpilot.analysis.chunkChars + 1000); // one chunk per page
+    await insertPages(scopeA, tender.id, [
+      { pageNumber: 1, rawText: `p1 ${big}`, ocrUsed: false },
+      { pageNumber: 2, rawText: `p2 ${big}`, ocrUsed: false },
+    ]);
+    await updateProcessingStatus(scopeA, tender.id, 'COMPLETED');
+    setProvider({
+      name: 'mock-page2-garbage',
+      async complete({ user }) { return user.includes('[PAGE 2]') ? 'garbage' : mockValidResult(); },
+    });
+
+    await req('POST', `/bidpilot/tenders/${tender.id}/analyze`, { auth: authA, body: { companyId: companyA.id } });
+    const final = await waitForAnalysis(tender.id);
+    assert.equal(final.analysisStatus, 'COMPLETED');
+    assert.deepEqual(final.analysisCoverage, { sections: 2, failedSections: 1 });
   });
 
   await t.test('overview submissionDeadline: a calendar-parseable AI value lands in the typed column', async () => {

@@ -19,7 +19,11 @@ export class AIProvider {
    * and ignores it otherwise. It lets callers ask a reasoning model to spend
    * little effort on simple tasks (e.g. intent classification).
    *
-   * @param {{ system?: string, user: string, maxTokens?: number, reasoningEffort?: string }} _args
+   * `timeoutMs` / `maxRetries` optionally override the provider's client-wide
+   * timeout and SDK retry count for this one call.
+   *
+   * @param {{ system?: string, user: string, maxTokens?: number, reasoningEffort?: string,
+   *           timeoutMs?: number, maxRetries?: number }} _args
    * @returns {Promise<string>}
    */
   // eslint-disable-next-line no-unused-vars

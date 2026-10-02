@@ -44,14 +44,34 @@ service disk is ephemeral and would lose every uploaded tender PDF on the
 next deploy). Config: `../Dockerfile` and `../fly.toml` (repo root's
 sibling of `backend/`/`frontend/`, since the Docker build needs both).
 
-**Not yet verified end-to-end from this environment**: this sandbox has no
-privileged Docker daemon access (`dockerd` fails to start — `ulimit:
-error setting limit (Operation not permitted)`), so the Docker build
-itself has not been test-built here, only reasoned about — it's a thin
-wrapper around `npm run build`, the exact command already proven working
-repeatedly throughout this project's history. Nor does this environment
-have a Fly.io account/API token, so nothing has actually been deployed.
-The first real build+deploy, wherever it happens, is the first real test.
+**Live** at https://tenderlytic-api.fly.dev/ (app `tenderlytic-api`, Postgres
+`tenderlytic-db`, region `sin`, one machine). Notes from running it:
+
+- **Deploying from the Claude Code sandbox needs `fly deploy --depot=false`**.
+  The default Depot builder's long-lived tunnel gets cut by the sandbox's
+  outbound proxy. From a normal machine plain `fly deploy` works.
+- **Node 22 is required** (Dockerfile). On Node 20 the PDF library's OCR
+  worker hangs until the 3-minute OCR timeout kills it: scanned pages get no
+  text, and any PDF with an image page takes ~3 minutes to extract.
+- **1 GB memory** (fly.toml): headroom for OCR child processes alongside
+  concurrent analyses.
+- **A dropped database connection used to crash the server** (1 Oct: the
+  process exited mid-analysis). Fixed: the pool now logs
+  `bidpilot db: idle connection dropped` and reconnects. If that warning
+  shows up often, look at the `tenderlytic-db` machine.
+- **Required secret beyond the list below:** `BIDPILOT_PUBLIC_BASE_URL=https://tenderlytic-api.fly.dev`.
+  Without it, signed document-download links point at `localhost`.
+- **Migrations are NOT run on deploy.** New `drizzle/` migrations must be
+  applied by hand: `fly proxy 15432:5432 --app tenderlytic-db`, then run
+  drizzle-orm's migrator against `localhost:15432` with the production
+  credentials. Deploy the migration before the code that needs it.
+- **Restarts are recoverable.** On boot, any tender left mid-extraction or
+  mid-analysis is marked FAILED ("interrupted by a server restart"), so users
+  can retry instead of being stuck. This assumes one machine; running two
+  would need a different mechanism (see `backend/src/bidpilot/recovery.js`).
+- **Watch the OpenAI credit balance.** When it runs out, every analysis and
+  eligibility check fails, and the app reports it as "OpenAI rate limit
+  exceeded".
 
 **One-time setup** (from `whatsapp-doc-assistant/`):
 ```

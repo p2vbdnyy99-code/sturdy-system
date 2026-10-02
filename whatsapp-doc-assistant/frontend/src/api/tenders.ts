@@ -164,6 +164,9 @@ export type TenderDetail = {
   analysisStatus: AnalysisStatus;
   analysisError: string | null;
   analyzedAt: string | null;
+  // How much of the document the currently shown analysis actually read.
+  // null for analyses that predate section tracking, or that never ran.
+  analysisCoverage: { sections: number; failedSections: number } | null;
   pageCount: number;
   createdAt: string;
   updatedAt: string;

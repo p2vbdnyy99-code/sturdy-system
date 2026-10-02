@@ -29,6 +29,36 @@ import { replaceAnalysis, markAnalysisFailed } from '../repo/analysis.js';
 const MAX_ERROR_CHARS = 500;
 const safeErrorMessage = (err) => String(err?.message || err || 'Unknown error').slice(0, MAX_ERROR_CHARS);
 
+// Process-wide cap on chunk AI calls in flight across every concurrent run
+// (BIDPILOT_ANALYSIS_GLOBAL_CONCURRENCY). release() hands the slot straight
+// to the next waiter instead of decrementing, so a caller arriving between
+// a release and the waiter resuming can never push `active` past the limit.
+let activeSlots = 0;
+const slotWaiters = [];
+
+async function acquireSlot() {
+  if (activeSlots < config.bidpilot.analysis.globalConcurrency) {
+    activeSlots += 1;
+    return;
+  }
+  await new Promise((resolve) => slotWaiters.push(resolve));
+}
+
+function releaseSlot() {
+  const next = slotWaiters.shift();
+  if (next) next();
+  else activeSlots -= 1;
+}
+
+async function extractWithSlot(chunk) {
+  await acquireSlot();
+  try {
+    return await extractChunk(chunk);
+  } finally {
+    releaseSlot();
+  }
+}
+
 /**
  * @param {boolean} isReanalysis — whether a previous COMPLETED analysis
  *   already exists (drives the tender_events wording — see repo/analysis.js)
@@ -62,11 +92,18 @@ export async function runAnalysis(scope, tenderId, { isReanalysis } = {}) {
         const validPages = new Set(chunk.pages);
         const callStart = Date.now();
         try {
-          const raw = await extractChunk(chunk);
+          let raw = await extractWithSlot(chunk);
+          if (raw === null) {
+            // Malformed JSON is usually a one-off from the model; one retry
+            // recovers it. Losing the first chunk silently blanks the whole
+            // Overview (deadline, EMD), so this is worth a second call.
+            log.warn(`bidpilot analysis: chunk pages=${chunk.pages.join(',')} produced unparseable output, retrying once`);
+            raw = await extractWithSlot(chunk);
+          }
           const ms = Date.now() - callStart;
           if (raw === null) {
             outcomes[i] = { ok: false, ms };
-            log.warn(`bidpilot analysis: chunk pages=${chunk.pages.join(',')} produced unparseable output`);
+            log.warn(`bidpilot analysis: chunk pages=${chunk.pages.join(',')} produced unparseable output again, giving up`);
             continue;
           }
           const validated = validateChunkResult(raw, { validPages });
@@ -114,7 +151,11 @@ export async function runAnalysis(scope, tenderId, { isReanalysis } = {}) {
     const aggregateMs = Date.now() - aggregateStart;
 
     const dbWriteStart = Date.now();
-    await replaceAnalysis(scope, tenderId, aggregated, { isReanalysis });
+    await replaceAnalysis(scope, tenderId, aggregated, {
+      isReanalysis,
+      chunkCount: chunks.length,
+      failedChunkCount: chunkFailures,
+    });
     const dbWriteMs = Date.now() - dbWriteStart;
 
     const avgChunkMs = Math.round(chunkTimingsMs.reduce((a, b) => a + b, 0) / (chunkTimingsMs.length || 1));

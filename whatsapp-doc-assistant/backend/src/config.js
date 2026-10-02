@@ -294,6 +294,16 @@ export function buildDbConfig(env = {}) {
  *                                 analysis run can't monopolize the
  *                                 provider's rate limit or this process's
  *                                 outbound connections.
+ *   BIDPILOT_ANALYSIS_GLOBAL_CONCURRENCY  Cap on chunk AI calls in flight
+ *                                 across ALL analysis runs in this process
+ *                                 (default: 4). BIDPILOT_ANALYSIS_CONCURRENCY
+ *                                 bounds one run; this bounds the server, so
+ *                                 two big tenders analyzed at once share the
+ *                                 same 4 slots instead of taking 8.
+ *   BIDPILOT_ANALYSIS_AI_TIMEOUT_MS  Per-call timeout for chunk extraction
+ *                                 (default: 180000). Longer than the global
+ *                                 AI_TIMEOUT_MS because a dense chunk's 8000-
+ *                                 token output can legitimately take 90s+.
  */
 export function buildBidpilotConfig(env = {}) {
   return {
@@ -321,6 +331,8 @@ export function buildBidpilotConfig(env = {}) {
       maxChunksPerTender: Math.max(1, Number(env.BIDPILOT_ANALYSIS_MAX_CHUNKS_PER_TENDER) || 60),
       maxCallsPerCompanyPerDay: Math.max(1, Number(env.BIDPILOT_ANALYSIS_MAX_CALLS_PER_COMPANY_PER_DAY) || 200),
       concurrency: Math.max(1, Number(env.BIDPILOT_ANALYSIS_CONCURRENCY) || 4),
+      globalConcurrency: Math.max(1, Number(env.BIDPILOT_ANALYSIS_GLOBAL_CONCURRENCY) || 4),
+      aiTimeoutMs: Math.max(1000, Number(env.BIDPILOT_ANALYSIS_AI_TIMEOUT_MS) || 180_000),
     },
     eligibility: {
       maxCallsPerCompanyPerDay: Math.max(1, Number(env.BIDPILOT_ELIGIBILITY_MAX_CALLS_PER_COMPANY_PER_DAY) || 100),
