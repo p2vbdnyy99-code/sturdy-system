@@ -4,7 +4,7 @@
 // cannot be located, do not manufacture it."
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { validateChunkResult, REQUIREMENT_CATEGORIES } from '../../src/bidpilot/analysis/schema.js';
+import { validateChunkResult, normalizeBoqQuantity, REQUIREMENT_CATEGORIES } from '../../src/bidpilot/analysis/schema.js';
 
 const validPages = new Set([1, 2, 3]);
 
@@ -184,5 +184,55 @@ test('validateChunkResult — malformed top-level input never throws', async (t)
     const out = validateChunkResult({ requirements: [null, 'string', 42, { category: 'OTHER', description: 'ok', sourcePage: 1, evidenceText: 'q' }] }, { validPages });
     assert.equal(out.requirements.length, 1);
     assert.equal(out.droppedCount, 3);
+  });
+});
+
+// tender_boq_items.quantity is numeric; anything stored there must be a plain
+// number, and anything that can't safely be read as one is kept as written.
+test('normalizeBoqQuantity', async (t) => {
+  const q = (raw, unit = null) => normalizeBoqQuantity(raw, unit);
+
+  await t.test('plain numbers and real thousands groupings become numbers', () => {
+    assert.deepEqual(q('420'), { quantity: '420', unit: null, asWritten: null });
+    assert.equal(q('2,150').quantity, '2150');
+    assert.equal(q('1,27,300.50').quantity, '127300.50');
+    assert.equal(q('12,34,56,789').quantity, '123456789');
+    assert.equal(q('127,300').quantity, '127300');
+    assert.equal(q(' 7 ').quantity, '7');
+  });
+
+  await t.test('a number followed by its unit is split, when the unit agrees', () => {
+    assert.deepEqual(q('1 No.'), { quantity: '1', unit: 'No.', asWritten: null });
+    assert.deepEqual(q('2,150 sqm'), { quantity: '2150', unit: 'sqm', asWritten: null });
+    assert.equal(q('420 Cum.', 'cum').quantity, '420');
+  });
+
+  await t.test('never guesses: ambiguous values are kept as written, quantity null', () => {
+    for (const raw of ['LS', 'As required', '1,5', '10,20', '12 345', '10 x 20']) {
+      assert.deepEqual(q(raw), { quantity: null, unit: null, asWritten: raw }, raw);
+    }
+    // A multiplier is not a unit, and a unit that contradicts the given one can't be resolved.
+    assert.deepEqual(q('1.5 lakh', 'cum'), { quantity: null, unit: null, asWritten: '1.5 lakh' });
+    assert.deepEqual(q('10 sqm', 'cum'), { quantity: null, unit: null, asWritten: '10 sqm' });
+  });
+
+  await t.test('blank and dash mean no quantity, with nothing to keep', () => {
+    for (const raw of [null, undefined, '', '  ', '-', '—']) {
+      assert.deepEqual(q(raw), { quantity: null, unit: null, asWritten: null });
+    }
+  });
+
+  await t.test('validateChunkResult keeps the original text in remarks', () => {
+    const out = validateChunkResult({
+      boq: [
+        { description: 'Shifting', quantity: 'LS', sourcePage: 1 },
+        { description: 'Dewatering', quantity: 'As required', remarks: 'If needed', sourcePage: 1 },
+        { description: 'Gate', quantity: 1, sourcePage: 1 },
+      ],
+    }, { validPages });
+    assert.equal(out.boq[0].quantity, null);
+    assert.equal(out.boq[0].remarks, 'Quantity as written: LS');
+    assert.equal(out.boq[1].remarks, 'If needed; quantity as written: As required');
+    assert.equal(out.boq[2].quantity, '1');
   });
 });

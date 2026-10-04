@@ -2486,15 +2486,59 @@ framework, system fonts (font-src 'self').
 
 ## Found, not fixed (outside this milestone)
 
-- **A non-numeric BOQ quantity fails the whole analysis.**
-  `tender_boq_items.quantity` is `numeric`, and `schema.js` passes the AI's
-  quantity string through untouched. A value like `2,150` (Indian thousands
-  separator), `1 No.` or `LS` makes the insert in `replaceAnalysis` throw, so
-  the transaction rolls back and the tender ends up "Analysis failed".
-  Reproduced locally with the stand-in AI returning `"2,150"`. Earlier real
-  runs happened to get plain numbers. Fix: normalise in `validateChunkResult`
-  (strip commas; if still not a number, keep the text in `remarks` and store
-  quantity as null).
+- A non-numeric BOQ quantity failed the whole analysis: fixed in the next
+  milestone below.
 - Dev-mode `devVerificationUrl` points at the backend JSON endpoint
   (`/bidpilot/verify-email`), not the frontend `/verify-email` page.
   Dev-only; unchanged.
+
+# Fix: BOQ quantities that aren't plain numbers (Oct 2026)
+
+Found while building the visual-refresh demo data; fixed on request.
+
+## The bug
+
+`tender_boq_items.quantity` is `numeric`, and `validateChunkResult` passed
+the AI's quantity string straight through. BOQs routinely write `2,150`,
+`1,27,300.50`, `1 No.`, `LS` or `As required`; any of them made the insert in
+`replaceAnalysis` throw, the transaction rolled back, and the tender showed
+"Analysis failed" even though every section had been read. Reproduced
+through the real pipeline (mock AI returning `"2,150"` → FAILED).
+
+A second problem in the same path: the stored `analysisError` was drizzle's
+own message, i.e. `Failed query: insert into "tender_boq_items" ... params:
+...` — raw SQL plus tender text, shown on the tender page after "Analysis
+failed:".
+
+## Fix
+
+- `analysis/schema.js` `normalizeBoqQuantity(raw, givenUnit)`. Never guesses:
+  - plain numbers pass; commas are removed only in a real grouping (Indian
+    `1,27,300`, Western `127,300`); `1,5`, `10,20`, `12 345` are not read as
+    numbers;
+  - a number followed by a unit (`1 No.`, `2,150 sqm`) is split when no unit
+    was given separately or it is the same unit; a multiplier (`1.5 lakh`) or
+    a different unit (`10 sqm` with unit `cum`) is not;
+  - otherwise quantity is null and the original text is kept in remarks
+    ("Quantity as written: LS", appended to any existing remarks);
+  - blank and dashes mean no quantity.
+- `analysis/pipeline.js`: a database error is stored as "The analysis
+  finished but its results could not be saved. Please run it again." and
+  logged server-side with the underlying Postgres message only (no SQL, no
+  parameters). Other errors are unchanged.
+- Frontend BOQ tab shows quantities with Indian digit grouping
+  (`formatQuantity`: 127300.50 → 1,27,300.5).
+
+## Verification
+
+- New tests: `normalizeBoqQuantity` (5 groups) and remarks handling in
+  `analysis-schema.test.js`; a pipeline test over real Postgres with five
+  real-world quantities (`analysis.test.js`), which ended FAILED before the
+  fix and COMPLETED after; `safeErrorMessage` hides a drizzle-style error.
+  All fail against the previous code. `formatQuantity` unit test.
+- End to end on the local harness: the stand-in AI returning `2,150` and
+  `LS` (the exact input that failed the demo) → analysis COMPLETED, 2150
+  stored as a number, `LS` kept in remarks, BOQ tab shows "2,150".
+- Backend 3x: **451/0/1, 293/0/16, 246/0/24** (from 443/286/239).
+  Frontend: `tsc -b` + build clean, oxlint 10 warnings / 0 errors, unit
+  tests 22/22.

@@ -21,6 +21,49 @@ export const OVERVIEW_FIELDS = [
 ];
 
 const isNonEmptyString = (v) => typeof v === 'string' && v.trim().length > 0;
+
+const PLAIN_NUMBER = /^[+-]?\d+(\.\d+)?$/;
+const NUMBER_THEN_UNIT = /^([+-]?\d+(?:\.\d+)?)\s*([A-Za-z][A-Za-z.\s/]*)$/;
+const INDIAN_GROUPING = /^[+-]?\d{1,2}(,\d{2})*,\d{3}$/;
+const WESTERN_GROUPING = /^[+-]?\d{1,3}(,\d{3})+$/;
+const MULTIPLIER_WORDS = /^(lakhs?|lacs?|crores?|cr|thousands?|hundreds?|k|mn|million)\b/i;
+
+/**
+ * tender_boq_items.quantity is a numeric column, but BOQs write quantities
+ * as "2,150", "1,27,300.50", "1 No." or "LS". Any non-number used to make
+ * the insert throw and fail the whole analysis. Returns what to store:
+ * a plain number string, a unit split off "1 No." when none was given, and
+ * otherwise null with the text as written kept for the remarks — never a
+ * guessed number.
+ */
+export function normalizeBoqQuantity(raw, givenUnit = null) {
+  if (!isNonEmptyString(raw)) return { quantity: null, unit: null, asWritten: null };
+  const text = raw.trim();
+  if (/^[-\u2013\u2014]+$/.test(text)) return { quantity: null, unit: null, asWritten: null };
+  // Thousands separators, but only in a real grouping: Indian 1,27,300 or
+  // Western 127,300. Anything else with a comma ("1,5", "10,20") is kept as
+  // written rather than guessed.
+  const lead = text.match(/^([+-]?[\d,]+)(.*)$/s);
+  let compact = text;
+  if (lead && lead[1].includes(',')) {
+    if (!INDIAN_GROUPING.test(lead[1]) && !WESTERN_GROUPING.test(lead[1])) {
+      return { quantity: null, unit: null, asWritten: text };
+    }
+    compact = lead[1].replace(/,/g, '') + lead[2];
+  }
+  if (PLAIN_NUMBER.test(compact)) return { quantity: compact, unit: null, asWritten: null };
+  const withUnit = compact.match(NUMBER_THEN_UNIT);
+  if (withUnit) {
+    const unit = withUnit[2].trim();
+    const norm = (u) => u.toLowerCase().replace(/[.\s]/g, '');
+    // "1.5 lakh" is a multiplier, not a unit; and a trailing word that
+    // disagrees with the unit given separately can't be resolved safely.
+    const isMultiplier = MULTIPLIER_WORDS.test(unit);
+    const agrees = !isNonEmptyString(givenUnit) || norm(givenUnit) === norm(unit);
+    if (!isMultiplier && agrees) return { quantity: withUnit[1], unit, asWritten: null };
+  }
+  return { quantity: null, unit: null, asWritten: text };
+}
 const isPositiveInt = (v) => Number.isInteger(v) && v > 0;
 const isConfidence = (v) => v === undefined || v === null || (typeof v === 'number' && v >= 0 && v <= 1);
 
@@ -84,13 +127,17 @@ export function validateChunkResult(raw, { validPages }) {
     if (!b || typeof b !== 'object') { dropped += 1; continue; }
     if (!isNonEmptyString(b.description)) { dropped += 1; continue; }
     if (!pageOk(b.sourcePage)) { dropped += 1; continue; }
+    const qty = normalizeBoqQuantity(typeof b.quantity === 'number' ? String(b.quantity) : b.quantity, b.unit);
+    const remarks = isNonEmptyString(b.remarks) ? b.remarks.trim() : null;
     boq.push({
       itemNumber: isNonEmptyString(b.itemNumber) ? b.itemNumber.trim() : null,
       description: b.description.trim(),
-      quantity: isNonEmptyString(b.quantity) ? b.quantity.trim() : null,
-      unit: isNonEmptyString(b.unit) ? b.unit.trim() : null,
+      quantity: qty.quantity,
+      unit: isNonEmptyString(b.unit) ? b.unit.trim() : qty.unit,
       technicalSpecification: isNonEmptyString(b.technicalSpecification) ? b.technicalSpecification.trim() : null,
-      remarks: isNonEmptyString(b.remarks) ? b.remarks.trim() : null,
+      remarks: qty.asWritten
+        ? (remarks ? `${remarks}; quantity as written: ${qty.asWritten}` : `Quantity as written: ${qty.asWritten}`)
+        : remarks,
       sourcePage: b.sourcePage,
     });
   }

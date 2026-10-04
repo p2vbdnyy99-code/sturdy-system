@@ -27,7 +27,15 @@ import { listPages } from '../repo/pages.js';
 import { replaceAnalysis, markAnalysisFailed } from '../repo/analysis.js';
 
 const MAX_ERROR_CHARS = 500;
-const safeErrorMessage = (err) => String(err?.message || err || 'Unknown error').slice(0, MAX_ERROR_CHARS);
+// The message is stored on the tender and shown on its page. A database
+// error's message is the raw SQL plus bound parameters (drizzle's "Failed
+// query: ..."), which means nothing to a user and carries tender text, so it
+// stays in the server log and the user gets a plain sentence instead.
+const SAVE_FAILED_MESSAGE = 'The analysis finished but its results could not be saved. Please run it again.';
+const isDatabaseError = (err) => /^Failed query:/.test(String(err?.message ?? '')) || typeof err?.cause?.code === 'string';
+export const safeErrorMessage = (err) => (isDatabaseError(err)
+  ? SAVE_FAILED_MESSAGE
+  : String(err?.message || err || 'Unknown error').slice(0, MAX_ERROR_CHARS));
 
 // Process-wide cap on chunk AI calls in flight across every concurrent run
 // (BIDPILOT_ANALYSIS_GLOBAL_CONCURRENCY). release() hands the slot straight
@@ -168,6 +176,9 @@ export async function runAnalysis(scope, tenderId, { isReanalysis } = {}) {
         `aggregateMs=${aggregateMs} dbWriteMs=${dbWriteMs} ms=${Date.now() - start} status=COMPLETED`,
     );
   } catch (err) {
+    if (isDatabaseError(err)) {
+      log.error(`bidpilot analysis: saving results failed for tender=${tenderId}: ${err.cause?.message ?? 'unknown database error'}`);
+    }
     const message = safeErrorMessage(err);
     await markAnalysisFailed(scope, tenderId, message).catch((persistErr) => {
       log.error(`bidpilot: could not persist FAILED analysis status for tender=${tenderId}:`, persistErr);

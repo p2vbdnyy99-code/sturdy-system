@@ -1,6 +1,7 @@
 import { EvidenceTooltip } from '../components/EvidenceTooltip';
 import { EmptyState } from '../components/EmptyState';
 import type { BoqItem } from '../api/tenders';
+import { formatQuantity } from '../format';
 
 export function BoqTab({ items }: { items: BoqItem[] }) {
   if (items.length === 0) {
@@ -27,7 +28,7 @@ export function BoqTab({ items }: { items: BoqItem[] }) {
             <td>
               <EvidenceTooltip value={item.description} sourcePage={item.sourcePage} evidenceText={null} />
             </td>
-            <td>{item.quantity || '—'}</td>
+            <td>{formatQuantity(item.quantity) ?? '—'}</td>
             <td>{item.unit || '—'}</td>
             <td>{item.technicalSpecification || '—'}</td>
             <td>{item.remarks || '—'}</td>

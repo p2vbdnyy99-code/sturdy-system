@@ -2,7 +2,7 @@
 // dashboard/attentionState.test.ts.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { daysUntil, displayTitle, formatDate, humanizeEnum, relativeDays } from './format.ts';
+import { daysUntil, displayTitle, formatDate, formatQuantity, humanizeEnum, relativeDays } from './format.ts';
 
 const NOW = new Date(2026, 9, 4, 15, 30); // 4 Oct 2026, 15:30 local
 
@@ -45,4 +45,13 @@ test('humanizeEnum', () => {
   assert.equal(humanizeEnum('PREPARING_BID'), 'Preparing bid');
   assert.equal(humanizeEnum('NOT_STARTED'), 'Not started');
   assert.equal(humanizeEnum('NEW'), 'New');
+});
+
+test('formatQuantity uses Indian digit grouping', () => {
+  assert.equal(formatQuantity('127300.50'), '1,27,300.5');
+  assert.equal(formatQuantity('2150'), '2,150');
+  assert.equal(formatQuantity('0.125'), '0.125');
+  assert.equal(formatQuantity(null), null);
+  assert.equal(formatQuantity(''), null);
+  assert.equal(formatQuantity('abc'), 'abc');
 });

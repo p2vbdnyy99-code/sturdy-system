@@ -16,7 +16,7 @@ import { listRequirements, listEvidenceForRequirement } from '../../src/bidpilot
 import { listDates } from '../../src/bidpilot/repo/dates.js';
 import { listRedFlags } from '../../src/bidpilot/repo/redFlags.js';
 import { replaceAnalysis, markAnalysisFailed } from '../../src/bidpilot/repo/analysis.js';
-import { runAnalysis } from '../../src/bidpilot/analysis/pipeline.js';
+import { runAnalysis, safeErrorMessage } from '../../src/bidpilot/analysis/pipeline.js';
 import { setProvider } from '../../src/ai/index.js';
 import { setDb, closeDb } from '../../src/db/client.js';
 import { createSession } from '../../src/bidpilot/auth/sessionService.js';
@@ -86,6 +86,40 @@ test('replaceAnalysis (repo-level)', { skip: SKIP_REASON }, async (t) => {
     assert.equal(dates.length, 1);
     const flags = await listRedFlags(scope, tender.id);
     assert.equal(flags.length, 1);
+  });
+
+  // tender_boq_items.quantity is numeric: one quantity written the way Indian
+  // BOQs write it used to throw inside replaceAnalysis and fail the whole run.
+  await t.test('real-world BOQ quantities are stored, not fatal to the analysis', async () => {
+    const { scope, tender } = await setupTender();
+    setProvider({
+      name: 'mock',
+      async complete() {
+        return JSON.stringify({
+          boq: [
+            { itemNumber: '1', description: 'Plastering', quantity: '2,150', unit: 'sqm', sourcePage: 1 },
+            { itemNumber: '2', description: 'Earthwork', quantity: '1,27,300.50', unit: 'cum', sourcePage: 1 },
+            { itemNumber: '3', description: 'Main gate', quantity: '1 No.', sourcePage: 1 },
+            { itemNumber: '4', description: 'Shifting of services', quantity: 'LS', sourcePage: 1 },
+            { itemNumber: '5', description: 'Dewatering', quantity: 'As required', remarks: 'If needed', sourcePage: 1 },
+          ],
+        });
+      },
+    });
+    await runAnalysis(scope, tender.id, { isReanalysis: false });
+
+    const updated = await getTender(scope, tender.id);
+    assert.equal(updated.analysisStatus, 'COMPLETED', updated.analysisError ?? '');
+    const boq = await scope.db.select().from(tenderBoqItems).where(eq(tenderBoqItems.tenderId, tender.id));
+    const byItem = Object.fromEntries(boq.map((b) => [b.itemNumber, b]));
+    assert.equal(Number(byItem['1'].quantity), 2150);
+    assert.equal(Number(byItem['2'].quantity), 127300.5);
+    assert.equal(Number(byItem['3'].quantity), 1);
+    assert.equal(byItem['3'].unit, 'No.');
+    assert.equal(byItem['4'].quantity, null);
+    assert.equal(byItem['4'].remarks, 'Quantity as written: LS');
+    assert.equal(byItem['5'].quantity, null);
+    assert.equal(byItem['5'].remarks, 'If needed; quantity as written: As required');
   });
 
   await t.test('re-analysis REPLACES, never duplicates', async () => {
@@ -522,4 +556,17 @@ test('POST /tenders/:id/analyze (HTTP integration)', { skip: SKIP_REASON, timeou
     const res = await req('POST', `/bidpilot/tenders/${tender.id}/analyze`, { body: { companyId: companyA.id } });
     assert.equal(res.status, 401);
   });
+});
+
+// What the tender page shows after "Analysis failed:". A database error's own
+// message is the SQL plus bound parameters (tender text) — never shown.
+test('safeErrorMessage hides database errors from users', () => {
+  const dbErr = new Error('Failed query: insert into "tender_boq_items" ... params: 1,Cement,2,150');
+  dbErr.cause = Object.assign(new Error('invalid input syntax for type numeric: "2,150"'), { code: '22P02' });
+  const shown = safeErrorMessage(dbErr);
+  assert.ok(!/insert|params|numeric|Cement/i.test(shown), shown);
+  assert.match(shown, /could not be saved\. Please run it again\./);
+
+  assert.equal(safeErrorMessage(new Error('OpenAI rate limit exceeded')), 'OpenAI rate limit exceeded');
+  assert.equal(safeErrorMessage(new Error('x'.repeat(900))).length, 500);
 });

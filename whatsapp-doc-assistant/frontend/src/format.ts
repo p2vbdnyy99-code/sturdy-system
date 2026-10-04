@@ -47,3 +47,11 @@ export function humanizeEnum(value: string): string {
   const s = value.toLowerCase().replace(/_/g, ' ');
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
+
+/** BOQ quantities come back as numeric strings ("127300.50"); show them with
+ *  Indian digit grouping ("1,27,300.5"). Anything else is shown as-is. */
+export function formatQuantity(value: string | null | undefined): string | null {
+  if (value === null || value === undefined || value.trim() === '') return null;
+  const n = Number(value);
+  return Number.isFinite(n) ? n.toLocaleString('en-IN', { maximumFractionDigits: 3 }) : value;
+}
