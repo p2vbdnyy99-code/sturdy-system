@@ -1,13 +1,10 @@
 import { EvidenceTooltip } from '../components/EvidenceTooltip';
 import { EmptyState } from '../components/EmptyState';
 import type { TenderDate } from '../api/tenders';
+import { formatDate as formatCalendarDate } from '../format';
 
 function formatDate(date: TenderDate): string {
-  if (date.parsedDate) {
-    const d = new Date(date.parsedDate);
-    if (!Number.isNaN(d.getTime())) return d.toLocaleDateString();
-  }
-  return date.rawText;
+  return formatCalendarDate(date.parsedDate) ?? date.rawText;
 }
 
 export function DatesTab({ dates }: { dates: TenderDate[] }) {
@@ -16,6 +13,7 @@ export function DatesTab({ dates }: { dates: TenderDate[] }) {
   }
 
   return (
+    <div className="table-scroll">
     <table className="tender-table">
       <thead>
         <tr>
@@ -38,5 +36,6 @@ export function DatesTab({ dates }: { dates: TenderDate[] }) {
         ))}
       </tbody>
     </table>
+    </div>
   );
 }

@@ -1,4 +1,4 @@
-import { Navigate, Route, Routes } from 'react-router-dom';
+import { Link, Route, Routes } from 'react-router-dom';
 import { RequireSession } from './auth/RequireSession';
 import { RedirectIfAuthenticated } from './auth/RedirectIfAuthenticated';
 import { CompanyGate } from './auth/CompanyGate';
@@ -9,6 +9,7 @@ import { CreateCompanyPage } from './pages/onboarding/CreateCompany';
 import { DashboardPage } from './pages/Dashboard';
 import { TenderDetailPage } from './pages/TenderDetail';
 import { CompanyProfilePage } from './pages/settings/CompanyProfile';
+import { HomePage } from './pages/Home';
 
 // M5d added /tenders/:id. /company-profile added Beta Readiness — the
 // eligibility engine's other required input had a working API client
@@ -52,7 +53,8 @@ export function AppRoutes() {
         />
       </Route>
 
-      <Route path="/" element={<Navigate to="/dashboard" replace />} />
+      {/* Public homepage; it sends signed-in users on to /dashboard itself. */}
+      <Route path="/" element={<HomePage />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
@@ -62,6 +64,8 @@ function NotFound() {
   return (
     <div className="page not-found">
       <h1>Page not found</h1>
+      <p className="muted">The link may be old or mistyped.</p>
+      <Link to="/" className="btn-link btn-primary">Go to the homepage</Link>
     </div>
   );
 }

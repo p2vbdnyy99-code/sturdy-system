@@ -4,6 +4,7 @@ import { createCompany } from '../../api/companies';
 import { ApiError } from '../../api/client';
 import { useSession } from '../../auth/SessionProvider';
 import { PRODUCT_NAME } from '../../config/product';
+import { AuthLayout } from '../../components/AuthLayout';
 
 // Deliberately just name + optional industry/businessType — no contact
 // fields (there's no column for them; see BIDPILOT_ARCHITECTURE.md's M5a
@@ -38,12 +39,11 @@ export function CreateCompanyPage() {
   }
 
   return (
-    <div className="page">
-      <h1>Set up your company</h1>
-      <p className="muted">
-        This is what {PRODUCT_NAME} will show your tenders under. You can fill in the rest of your
-        company profile later.
-      </p>
+    <AuthLayout
+      title="Set up your company"
+      subtitle={<>This is what {PRODUCT_NAME} will show your tenders under. You can fill in the rest of
+        your company profile later.</>}
+    >
       <form onSubmit={onSubmit}>
         <label className="field">
           Company name
@@ -65,6 +65,6 @@ export function CreateCompanyPage() {
           {submitting ? 'Creating…' : 'Create company'}
         </button>
       </form>
-    </div>
+    </AuthLayout>
   );
 }

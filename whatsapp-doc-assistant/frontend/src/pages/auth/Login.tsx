@@ -3,7 +3,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { login } from '../../api/auth';
 import { ApiError } from '../../api/client';
 import { useSession } from '../../auth/SessionProvider';
-import { PRODUCT_NAME, PRODUCT_TAGLINE } from '../../config/product';
+import { AuthLayout } from '../../components/AuthLayout';
 
 export function LoginPage() {
   const [email, setEmail] = useState('');
@@ -37,9 +37,11 @@ export function LoginPage() {
   }
 
   return (
-    <div className="page">
-      <h1>{PRODUCT_NAME}</h1>
-      <p className="tagline">{PRODUCT_TAGLINE}</p>
+    <AuthLayout
+      title="Welcome back"
+      subtitle="Log in to see your tenders."
+      footer={<>New to Tenderlytic? <Link to="/register">Create a free account</Link></>}
+    >
       <form onSubmit={onSubmit}>
         <label className="field">
           Email
@@ -56,9 +58,6 @@ export function LoginPage() {
           {submitting ? 'Logging in…' : 'Log in'}
         </button>
       </form>
-      <p className="footer-note">
-        No account? <Link to="/register">Register</Link>
-      </p>
-    </div>
+    </AuthLayout>
   );
 }

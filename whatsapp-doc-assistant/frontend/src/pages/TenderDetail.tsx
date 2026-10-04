@@ -14,6 +14,9 @@ import { BoqTab } from '../tenderDetail/BoqTab';
 import { DatesTab } from '../tenderDetail/DatesTab';
 import { RedFlagsTab } from '../tenderDetail/RedFlagsTab';
 import { DocumentTab } from '../tenderDetail/DocumentTab';
+import { KeyFacts } from '../tenderDetail/KeyFacts';
+import { Icon } from '../components/Icon';
+import { displayTitle, formatDate } from '../format';
 
 type TabKey = 'overview' | 'requirements' | 'boq' | 'dates' | 'redFlags' | 'document';
 
@@ -22,7 +25,7 @@ const TABS: Array<{ key: TabKey; label: string }> = [
   { key: 'requirements', label: 'Requirements' },
   { key: 'boq', label: 'BOQ' },
   { key: 'dates', label: 'Dates' },
-  { key: 'redFlags', label: 'Red Flags' },
+  { key: 'redFlags', label: 'Red flags' },
   { key: 'document', label: 'Document' },
 ];
 
@@ -75,7 +78,7 @@ export function TenderDetailPage() {
     <div>
       <AppHeader />
       <div className="page-body">
-        <p><Link to="/dashboard">&larr; Back to dashboard</Link></p>
+        <Link to="/dashboard" className="back-link"><Icon name="arrowLeft" />Back to dashboard</Link>
 
         {loading && <p className="muted">Loading tender…</p>}
 
@@ -143,6 +146,13 @@ function TenderDetailBody({
     }
   }
 
+  const counts: Partial<Record<TabKey, number>> = tender.analysisStatus === 'COMPLETED'
+    ? { requirements: tender.requirements.length, boq: tender.boq.length, dates: tender.dates.length, redFlags: tender.redFlags.length }
+    : {};
+  const organization = tender.overview.organization?.value;
+  const uploaded = formatDate(tender.createdAt);
+  const analysed = formatDate(tender.analyzedAt);
+
   const runAnalysisButton = (label: string) => (
     <button type="button" className="btn-primary notice-action" onClick={onRunAnalysis} disabled={startingAnalysis}>
       {startingAnalysis ? 'Starting…' : label}
@@ -180,46 +190,66 @@ function TenderDetailBody({
 
   return (
     <div>
-      <div className="dashboard-header-row">
-        <h1>{tender.title || 'Untitled tender'}</h1>
-        <AttentionBadge state={attention} />
+      <div className="tender-head">
+        <div className="tender-head-title">
+          <h1>{displayTitle(tender.title)}</h1>
+          <AttentionBadge state={attention} />
+        </div>
+        <p className="tender-head-meta">
+          {organization && <span>{organization}</span>}
+          {tender.pageCount > 0 && <span>{tender.pageCount} pages</span>}
+          {uploaded && <span>Uploaded {uploaded}</span>}
+          {analysed && tender.analysisStatus === 'COMPLETED' && <span>Analysed {analysed}</span>}
+        </p>
       </div>
 
       {tender.processingStatus !== 'COMPLETED' && tender.processingStatus !== 'FAILED' && (
-        <p className="notice">{PROCESSING_STAGE_LABELS[tender.processingStatus]}</p>
+        <div className="notice notice-info notice-progress">
+          <span className="notice-spinner" aria-hidden="true" />
+          <span className="notice-text">{PROCESSING_STAGE_LABELS[tender.processingStatus]}</span>
+        </div>
       )}
       {tender.processingStatus === 'FAILED' && (
-        <p className="notice notice-danger">
-          {tender.processingError || PROCESSING_STAGE_LABELS.FAILED} To try again, upload the PDF again
-          from the dashboard.
-        </p>
+        <div className="notice notice-danger">
+          <Icon name="alert" />
+          <span className="notice-text">
+            {tender.processingError || PROCESSING_STAGE_LABELS.FAILED} To try again, upload the PDF again
+            from the dashboard.
+          </span>
+        </div>
       )}
       {tender.processingStatus === 'COMPLETED' && tender.analysisStatus === 'ANALYZING' && (
-        <p className="notice">Analyzing the document against your requirements checklist…</p>
+        <div className="notice notice-info notice-progress">
+          <span className="notice-spinner" aria-hidden="true" />
+          <span className="notice-text">Analyzing the document against your requirements checklist…</span>
+        </div>
       )}
       {tender.processingStatus === 'COMPLETED' && tender.analysisStatus === 'NOT_STARTED' && (
-        <p className="notice">
-          Extraction is done, but analysis hasn't been run yet — the tabs below have nothing to show
-          until it is. {runAnalysisButton('Analyze')}
-        </p>
+        <div className="notice notice-info">
+          <Icon name="info" />
+          <span className="notice-text">
+            Extraction is done, but analysis hasn't been run yet — the tabs below have nothing to show
+            until it is.
+          </span>
+          {runAnalysisButton('Analyze')}
+        </div>
       )}
       {tender.processingStatus === 'COMPLETED' && tender.analysisStatus === 'FAILED' && (
-        <p className="notice notice-danger">
-          Analysis failed{tender.analysisError ? `: ${tender.analysisError}` : '.'}{' '}
+        <div className="notice notice-danger">
+          <Icon name="alert" />
+          <span className="notice-text">Analysis failed{tender.analysisError ? `: ${tender.analysisError}` : '.'}</span>
           {runAnalysisButton('Retry analysis')}
-        </p>
+        </div>
       )}
       {partial && coverage && (
-        <p className="notice notice-danger">
-          {coverage.failedSections} of {coverage.sections} sections of this document couldn&rsquo;t be
-          read, so some details (possibly the deadline or EMD) may be missing below.{' '}
+        <div className="notice notice-danger">
+          <Icon name="alert" />
+          <span className="notice-text">
+            {coverage.failedSections} of {coverage.sections} sections of this document couldn&rsquo;t be
+            read, so some details (possibly the deadline or EMD) may be missing below.
+          </span>
           {runAnalysisButton('Re-run analysis')}
-        </p>
-      )}
-      {tender.analysisStatus === 'COMPLETED' && !partial && (
-        <p className="notice">
-          The tabs below show only what was actually extracted — not the absence of a finding.
-        </p>
+        </div>
       )}
       {analysisStartError && <p role="alert" className="error-text">{analysisStartError}</p>}
       {pollTimedOut && (
@@ -229,15 +259,26 @@ function TenderDetailBody({
         </p>
       )}
 
-      <div className="tab-bar">
+      {tender.analysisStatus === 'COMPLETED' && <KeyFacts overview={tender.overview} />}
+      {tender.analysisStatus === 'COMPLETED' && !partial && (
+        <p className="analysis-footnote">
+          <Icon name="info" />
+          The tabs below show only what was actually extracted — not the absence of a finding.
+        </p>
+      )}
+
+      <div className="tab-bar" role="tablist">
         {TABS.map((t) => (
           <button
             key={t.key}
             type="button"
+            role="tab"
+            aria-selected={t.key === tab}
             className={t.key === tab ? 'tab-active' : ''}
             onClick={() => onTabChange(t.key)}
           >
             {t.label}
+            {counts[t.key] !== undefined && <span className="tab-count">{counts[t.key]}</span>}
           </button>
         ))}
       </div>

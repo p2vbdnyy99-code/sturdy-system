@@ -75,7 +75,7 @@ export function RequirementsTab({ requirements }: { requirements: Requirement[] 
     <div>
       {groupByCategory(requirements).map(([category, items]) => (
         <div key={category} className="requirement-group">
-          <h2>{category}</h2>
+          <h2>{category.replace(/_/g, ' ')} <span className="requirement-group-count">{items.length}</span></h2>
           <ul className="requirement-list">
             {items.map((req) => (
               <RequirementCard key={req.id} requirement={req} />

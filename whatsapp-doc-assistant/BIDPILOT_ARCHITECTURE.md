@@ -2404,3 +2404,97 @@ milestone was committed. Verified on production:
 - Every requirement comes back "Mandatory"; heavy over-extraction (167
   requirements for a ₹9-lakh job). Better tuned against beta feedback.
 - Migrations aren't run on deploy (see OPERATIONS.md).
+
+# Milestone "Visual refresh" (Oct 2026)
+
+Requested after the QA fixes: "improve my website look". Approved scope: login
+and register, app header, dashboard, tender page, plus a public homepage, in
+navy + saffron. Frontend only; no API, schema or backend change. Same rules as
+before: plain CSS classes (no inline styles, strict CSP unchanged), no UI
+framework, system fonts (font-src 'self').
+
+## What changed
+
+- **Brand:** `index.css` tokens moved from indigo to navy (primary, every
+  interactive element) with saffron as the accent. New `components/Logo.tsx`
+  (saffron tile, document, navy check) and matching `public/favicon.svg`
+  (was Vite's default logo). `components/Icon.tsx`: small inline-SVG stroke
+  icon set (presentation attributes only, so CSP-safe).
+- **Homepage (`pages/Home.tsx`, route `/`):** previously `/` redirected to
+  `/dashboard`, so a shared link landed on a bare login form. Signed-out
+  visitors now get a homepage (hero, features, how it works, "AI that shows
+  its work", call to action). Signed-in users are still sent straight to
+  `/dashboard`. Copy describes only current behaviour: no testimonials,
+  customer logos or usage numbers; the hero illustration is HTML/CSS and is
+  labelled "Example".
+- **Auth/first-run (`components/AuthLayout.tsx`):** login, register (+ the
+  "check your email" state), verify email, create company and the company
+  chooser share a navy brand panel + form card; on phones the panel becomes
+  a compact banner. Register shows the real password rule (8+ characters,
+  `minLength` matches `MIN_PASSWORD_LENGTH`).
+- **Header:** navy bar with logo, Dashboard / Company profile (`NavLink`
+  active state), company name + email, log out. Phones show the mark, links
+  and a log-out icon.
+- **Dashboard:** icon tiles; the deadlines tile turns saffron when it is
+  non-zero. The unlabelled filename list (which showed "—" for every missing
+  deadline and looked broken) is now "Recently uploaded" with links, due date
+  or "No deadline found yet", and status badges. Table: tender name with the
+  organisation underneath, deadline with "in N days", empty "Action" header
+  replaced by a screen-reader-only label, whole row clickable (title stays a
+  real link; clicks on the row's own buttons/links pass through). Filter
+  options read "Preparing bid" instead of `PREPARING_BID`. On phones each
+  row becomes a card instead of a sideways-scrolling table.
+- **Tender page:** title (without ".pdf") with the status badge beside it
+  and a details line (organisation, pages, uploaded, analysed). New
+  `tenderDetail/KeyFacts.tsx` strip: deadline (saffron, "Closes in N days"
+  within 7 days), EMD, estimated value, tender fee, with the same evidence
+  chips; a missing value says "Not found in document". Notices are flex rows
+  with an icon and the action button on the right. Tabs show item counts.
+  Overview lists found fields and names the missing ones in one line instead
+  of a column of "Not extracted". Red flags: count line + red-edged cards.
+- **Dates everywhere:** `format.ts` `formatDate()` renders "9 Oct 2026".
+  `toLocaleDateString()` gave 10/9/2026 (US) or 9/10/2026 depending on the
+  browser, ambiguous for a deadline. Also `displayTitle()`, `relativeDays()`,
+  `humanizeEnum()`; 6 unit tests in `format.test.ts` (`node --test`, like
+  `attentionState.test.ts`).
+- **Existing bugs fixed on the way:** the BOQ and Dates tables overflowed
+  the page on phones (now inside `.table-scroll`); `.table-scroll` gets
+  `position: relative` because the absolutely positioned visually-hidden
+  "Actions" header otherwise widened the page to 541px at a 375px viewport.
+
+## Verification
+
+- Before/after screenshots of 10 screens at 1280px and 375px, against a
+  local harness (real app + pipeline, stand-in AI returning realistic data,
+  since the OpenAI account has no credit). After: no horizontal overflow, no
+  CSP violations, no console errors on any screen (before: BOQ overflowed on
+  phones).
+- Playwright, through the real UI: 24/24 — homepage for signed-out visitors,
+  new favicon, Start free → register → check email → verify page → login →
+  company setup → empty dashboard; company name in header; `/` still sends
+  signed-in users to the dashboard; log out; date format and relative days;
+  ".pdf" dropped; deadline tile highlight; row click opens the tender; row
+  Analyze button still works and the run completes; key facts present; tab
+  counts equal the API's array lengths; overview found/missing split; key
+  fact evidence chip opens; red-flag count and cards; document tab; 404 link.
+  Plus 5/5 on notices (partial "1 of 3 sections" + Re-run, failed analysis +
+  Retry, failed processing + re-upload guidance, footnote hidden when
+  partial, no CSP violations).
+- Frontend: `tsc -b` + `vite build` clean; oxlint 10 warnings / 0 errors
+  (the same 10 as before); unit tests 21/21 (15 + 6 new).
+- Backend 3x suite unchanged: 443/0/1, 286/0/16, 239/0/24.
+
+## Found, not fixed (outside this milestone)
+
+- **A non-numeric BOQ quantity fails the whole analysis.**
+  `tender_boq_items.quantity` is `numeric`, and `schema.js` passes the AI's
+  quantity string through untouched. A value like `2,150` (Indian thousands
+  separator), `1 No.` or `LS` makes the insert in `replaceAnalysis` throw, so
+  the transaction rolls back and the tender ends up "Analysis failed".
+  Reproduced locally with the stand-in AI returning `"2,150"`. Earlier real
+  runs happened to get plain numbers. Fix: normalise in `validateChunkResult`
+  (strip commas; if still not a number, keep the text in `remarks` and store
+  quantity as null).
+- Dev-mode `devVerificationUrl` points at the backend JSON endpoint
+  (`/bidpilot/verify-email`), not the frontend `/verify-email` page.
+  Dev-only; unchanged.

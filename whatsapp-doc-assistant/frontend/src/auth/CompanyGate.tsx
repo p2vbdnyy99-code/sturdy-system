@@ -6,6 +6,7 @@ import { type ReactNode } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useSession } from './SessionProvider';
 import { PRODUCT_NAME } from '../config/product';
+import { AuthLayout } from '../components/AuthLayout';
 
 export function CompanyGate({ children }: { children: ReactNode }) {
   const { me, selectedCompanyId, selectCompany } = useSession();
@@ -18,9 +19,10 @@ export function CompanyGate({ children }: { children: ReactNode }) {
 
   if (me.companies.length > 1 && !selectedCompanyId) {
     return (
-      <div className="page">
-        <h1>Choose a company</h1>
-        <p>You belong to more than one company on {PRODUCT_NAME}. Which one do you want to work in?</p>
+      <AuthLayout
+        title="Choose a company"
+        subtitle={<>You belong to more than one company on {PRODUCT_NAME}. Which one do you want to work in?</>}
+      >
         <ul className="company-list">
           {me.companies.map((c) => (
             <li key={c.companyId}>
@@ -30,7 +32,7 @@ export function CompanyGate({ children }: { children: ReactNode }) {
             </li>
           ))}
         </ul>
-      </div>
+      </AuthLayout>
     );
   }
 

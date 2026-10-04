@@ -1,6 +1,11 @@
 import { useCallback, useEffect, useRef, useState, type ChangeEvent } from 'react';
 import { AppHeader } from '../components/AppHeader';
+import { Link } from 'react-router-dom';
 import { EmptyState } from '../components/EmptyState';
+import { AttentionBadge } from '../components/AttentionBadge';
+import { Icon, type IconName } from '../components/Icon';
+import { deriveAttentionState } from '../dashboard/attentionState';
+import { displayTitle, formatDate, humanizeEnum } from '../format';
 import { TenderRow } from '../dashboard/TenderRow';
 import { useSession } from '../auth/SessionProvider';
 import { ApiError } from '../api/client';
@@ -13,8 +18,9 @@ import {
 const PAGE_SIZE = 20;
 
 export function DashboardPage() {
-  const { selectedCompanyId } = useSession();
+  const { me, selectedCompanyId } = useSession();
   const companyId = selectedCompanyId as string; // CompanyGate guarantees this
+  const companyName = me?.companies.find((c) => c.companyId === companyId)?.name;
 
   // Summary tiles — independent fetch from the tender list below.
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
@@ -136,7 +142,10 @@ export function DashboardPage() {
       <AppHeader />
       <div className="page-body">
         <div className="dashboard-header-row">
-          <h1>Dashboard</h1>
+          <div>
+            <h1>Dashboard</h1>
+            {companyName && <p className="page-subtitle">{companyName}</p>}
+          </div>
           <div>
             <input
               ref={fileInputRef}
@@ -146,7 +155,8 @@ export function DashboardPage() {
               className="visually-hidden"
             />
             <button type="button" className="btn-primary" onClick={onUploadClick} disabled={uploading}>
-              {uploading ? 'Uploading…' : '+ Upload Tender'}
+              <Icon name="upload" />
+              {uploading ? 'Uploading…' : 'Upload tender'}
             </button>
           </div>
         </div>
@@ -156,31 +166,44 @@ export function DashboardPage() {
         {!summaryError && (
           <>
             <div className="dashboard-tiles">
-              <SummaryTile label="Total tenders" value={summary?.totalTenders} loading={summaryLoading} />
-              <SummaryTile label="Processing" value={summary?.processing} loading={summaryLoading} />
-              <SummaryTile label="Awaiting analysis" value={summary?.awaitingAnalysis} loading={summaryLoading} />
-              <SummaryTile label="Analysed" value={summary?.analysed} loading={summaryLoading} />
+              <SummaryTile icon="layers" label="Total tenders" value={summary?.totalTenders} loading={summaryLoading} />
+              <SummaryTile icon="clock" label="Processing" value={summary?.processing} loading={summaryLoading} />
+              <SummaryTile icon="search" label="Awaiting analysis" value={summary?.awaitingAnalysis} loading={summaryLoading} />
+              <SummaryTile icon="check" label="Analysed" value={summary?.analysed} loading={summaryLoading} />
               <SummaryTile
-                label={`Upcoming deadlines (${summary?.upcomingDeadlines.withinDays ?? 14}d)`}
+                icon="calendar"
+                label={`Deadlines in the next ${summary?.upcomingDeadlines.withinDays ?? 14} days`}
                 value={summary?.upcomingDeadlines.count}
                 loading={summaryLoading}
+                highlight={(summary?.upcomingDeadlines.count ?? 0) > 0}
               />
             </div>
             {summary && summary.recentTenders.length > 0 && (
-              <ul className="dashboard-recent">
-                {summary.recentTenders.map((t) => (
-                  <li key={t.id}>
-                    <span>{t.title || 'Untitled tender'}</span>
-                    <span className="muted">
-                      {t.submissionDeadline ? new Date(t.submissionDeadline).toLocaleDateString() : '—'}
-                    </span>
-                  </li>
-                ))}
-              </ul>
+              <section className="dashboard-recent-panel" aria-labelledby="recent-heading">
+                <h2 id="recent-heading" className="section-heading">Recently uploaded</h2>
+                <ul className="dashboard-recent">
+                  {summary.recentTenders.map((t) => {
+                    const due = formatDate(t.submissionDeadline);
+                    return (
+                      <li key={t.id}>
+                        <Link to={`/tenders/${t.id}`} className="dashboard-recent-title">
+                          <Icon name="file" />
+                          <span>{displayTitle(t.title)}</span>
+                        </Link>
+                        <span className="dashboard-recent-meta">
+                          <span className="muted">{due ? `Due ${due}` : 'No deadline found yet'}</span>
+                          <AttentionBadge state={deriveAttentionState(t)} />
+                        </span>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </section>
             )}
           </>
         )}
 
+        <h2 className="section-heading">All tenders</h2>
         <div className="filters-bar">
           <input
             type="search"
@@ -190,14 +213,14 @@ export function DashboardPage() {
           />
           <select value={status} onChange={(e) => { setStatus(e.target.value as TenderStatus | ''); setPage(1); }}>
             <option value="">All statuses</option>
-            {TENDER_STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
+            {TENDER_STATUSES.map((s) => <option key={s} value={s}>{humanizeEnum(s)}</option>)}
           </select>
           <select
             value={analysisStatus}
             onChange={(e) => { setAnalysisStatus(e.target.value as AnalysisStatus | ''); setPage(1); }}
           >
             <option value="">All analysis states</option>
-            {ANALYSIS_STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
+            {ANALYSIS_STATUSES.map((s) => <option key={s} value={s}>{humanizeEnum(s)}</option>)}
           </select>
           {hasActiveFilters && (
             <button type="button" onClick={clearFilters}>Clear filters</button>
@@ -214,7 +237,7 @@ export function DashboardPage() {
           <EmptyState
             title="No tenders yet"
             message="Upload your first tender to get started."
-            action={{ label: '+ Upload Tender', onClick: onUploadClick }}
+            action={{ label: 'Upload tender', onClick: onUploadClick }}
           />
         )}
 
@@ -228,14 +251,17 @@ export function DashboardPage() {
         {!listError && !listLoading && tenders.length > 0 && (
           <>
             <div className="table-scroll">
-              <table className="tender-table">
+              <table className="tender-table tender-table-cards">
                 <thead>
                   <tr>
-                    <th>Title</th>
-                    <th>Organization</th>
-                    <th><button type="button" onClick={() => onSort('deadline')}>Deadline</button></th>
+                    <th>Tender</th>
+                    <th aria-sort={sortBy === 'deadline' ? (sortOrder === 'asc' ? 'ascending' : 'descending') : 'none'}>
+                      <button type="button" onClick={() => onSort('deadline')}>
+                        Deadline {sortBy === 'deadline' ? (sortOrder === 'asc' ? '\u2191' : '\u2193') : ''}
+                      </button>
+                    </th>
                     <th>Status</th>
-                    <th>Action</th>
+                    <th><span className="visually-hidden">Actions</span></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -257,9 +283,12 @@ export function DashboardPage() {
   );
 }
 
-function SummaryTile({ label, value, loading }: { label: string; value: number | undefined; loading: boolean }) {
+function SummaryTile({ icon, label, value, loading, highlight = false }: {
+  icon: IconName; label: string; value: number | undefined; loading: boolean; highlight?: boolean;
+}) {
   return (
-    <div className="dashboard-tile">
+    <div className={`dashboard-tile${highlight ? ' dashboard-tile-highlight' : ''}`}>
+      <span className="dashboard-tile-icon"><Icon name={icon} /></span>
       <div className="dashboard-tile-value">{loading ? '…' : (value ?? 0)}</div>
       <div className="dashboard-tile-label">{label}</div>
     </div>

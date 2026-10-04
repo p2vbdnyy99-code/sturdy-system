@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { verifyEmail } from '../../api/auth';
 import { ApiError } from '../../api/client';
+import { AuthLayout } from '../../components/AuthLayout';
 
 type State = { status: 'verifying' } | { status: 'verified'; email: string } | { status: 'error'; message: string };
 
@@ -25,24 +26,24 @@ export function VerifyEmailPage() {
       );
   }, [token]);
 
+  const title = state.status === 'verified' ? 'Email verified'
+    : state.status === 'error' ? 'Verification failed' : 'Verifying your email…';
+
   return (
-    <div className="page">
-      {state.status === 'verifying' && <p>Verifying…</p>}
+    <AuthLayout title={title}>
+      {state.status === 'verifying' && <p className="muted">One moment…</p>}
       {state.status === 'verified' && (
         <>
-          <h1>Email verified</h1>
-          <p>
-            <strong>{state.email}</strong> is now verified. <Link to="/login">Log in</Link>
-          </p>
+          <p><strong>{state.email}</strong> is now verified.</p>
+          <Link to="/login" className="btn-link btn-primary">Log in</Link>
         </>
       )}
       {state.status === 'error' && (
         <>
-          <h1>Verification failed</h1>
           <p role="alert" className="error-text">{state.message}</p>
           <p><Link to="/login">Back to login</Link></p>
         </>
       )}
-    </div>
+    </AuthLayout>
   );
 }

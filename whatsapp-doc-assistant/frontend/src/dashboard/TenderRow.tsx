@@ -1,10 +1,11 @@
-import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useEffect, useState, type MouseEvent } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { analyzeTender, type TenderListItem } from '../api/tenders';
 import { ApiError } from '../api/client';
 import { deriveAttentionState } from './attentionState';
 import { useTenderPolling, type PollTarget } from './useTenderPolling';
 import { AttentionBadge } from '../components/AttentionBadge';
+import { daysUntil, displayTitle, formatDate, relativeDays } from '../format';
 
 type TenderRowProps = {
   tender: TenderListItem;
@@ -12,14 +13,20 @@ type TenderRowProps = {
   onUpdate: (tenderId: string, patch: Partial<TenderListItem>) => void;
 };
 
-function formatDeadline(value: string | null): string {
-  if (!value) return '—';
-  const d = new Date(value);
-  return Number.isNaN(d.getTime()) ? '—' : d.toLocaleDateString();
-}
-
 export function TenderRow({ tender, companyId, onUpdate }: TenderRowProps) {
   const attention = deriveAttentionState(tender);
+  const navigate = useNavigate();
+  const detailPath = `/tenders/${tender.id}`;
+
+  // The whole row opens the tender; the title stays a real link for keyboard
+  // and screen-reader users, and clicks on the row's own buttons/links pass.
+  function onRowClick(e: MouseEvent<HTMLTableRowElement>) {
+    if ((e.target as HTMLElement).closest('a, button')) return;
+    navigate(detailPath);
+  }
+
+  const due = formatDate(tender.submissionDeadline);
+  const dueIn = daysUntil(tender.submissionDeadline);
   const [analyzing, setAnalyzing] = useState(false);
   const [analyzeError, setAnalyzeError] = useState<string | null>(null);
   const [retryKey, setRetryKey] = useState(0);
@@ -60,12 +67,23 @@ export function TenderRow({ tender, companyId, onUpdate }: TenderRowProps) {
   }
 
   return (
-    <tr>
-      <td><Link to={`/tenders/${tender.id}`}>{tender.title || 'Untitled tender'}</Link></td>
-      <td>{tender.organization || '—'}</td>
-      <td>{formatDeadline(tender.submissionDeadline)}</td>
-      <td><AttentionBadge state={attention} /></td>
+    <tr className="row-link" onClick={onRowClick}>
       <td>
+        <Link to={detailPath} className="tender-cell-title">{displayTitle(tender.title)}</Link>
+        <span className="tender-cell-sub">{tender.organization || 'Organisation not found yet'}</span>
+      </td>
+      <td>
+        {due ? (
+          <>
+            <span className="tender-cell-date">{due}</span>
+            <span className={`tender-cell-sub${dueIn !== null && dueIn >= 0 && dueIn <= 7 ? ' tender-cell-due-soon' : ''}`}>
+              {relativeDays(tender.submissionDeadline)}
+            </span>
+          </>
+        ) : <span className="muted">&mdash;</span>}
+      </td>
+      <td><AttentionBadge state={attention} /></td>
+      <td className="tender-cell-actions">
         {(attention === 'ANALYSIS_REQUIRED' || attention === 'ANALYSIS_FAILED') && (
           <button type="button" className="btn-primary" onClick={onAnalyzeClick} disabled={analyzing}>
             {analyzing ? 'Starting…' : attention === 'ANALYSIS_FAILED' ? 'Retry analysis' : 'Analyze'}

@@ -8,6 +8,7 @@ export function BoqTab({ items }: { items: BoqItem[] }) {
   }
 
   return (
+    <div className="table-scroll">
     <table className="tender-table">
       <thead>
         <tr>
@@ -34,5 +35,6 @@ export function BoqTab({ items }: { items: BoqItem[] }) {
         ))}
       </tbody>
     </table>
+    </div>
   );
 }

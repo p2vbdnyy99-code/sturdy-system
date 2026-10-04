@@ -2,7 +2,7 @@ import { useState, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { register, type RegisterResult } from '../../api/auth';
 import { ApiError } from '../../api/client';
-import { PRODUCT_NAME } from '../../config/product';
+import { AuthLayout } from '../../components/AuthLayout';
 
 export function RegisterPage() {
   const [email, setEmail] = useState('');
@@ -28,9 +28,11 @@ export function RegisterPage() {
 
   if (result) {
     return (
-      <div className="page">
-        <h1>Check your email</h1>
-        <p>We've sent a verification link to <strong>{result.email}</strong>.</p>
+      <AuthLayout
+        title="Check your email"
+        footer={<>Already verified? <Link to="/login">Log in</Link></>}
+      >
+        <p>We've sent a verification link to <strong>{result.email}</strong>. Open it to activate your account.</p>
         {/* devVerificationUrl only ever appears outside production — see
             routes/auth.js's devDeliverVerificationLink(). Real deployments
             never see this branch render. */}
@@ -40,19 +42,19 @@ export function RegisterPage() {
             <a href={result.devVerificationUrl}>Click here to verify</a>.
           </p>
         )}
-        <p>
-          Already verified? <Link to="/login">Log in</Link>
-        </p>
-      </div>
+      </AuthLayout>
     );
   }
 
   return (
-    <div className="page">
-      <h1>Create your {PRODUCT_NAME} account</h1>
+    <AuthLayout
+      title="Create your free account"
+      subtitle="Upload your first tender in under a minute."
+      footer={<>Already have an account? <Link to="/login">Log in</Link></>}
+    >
       <form onSubmit={onSubmit}>
         <label className="field">
-          Name
+          Your name <span className="field-hint">(optional)</span>
           <input type="text" autoComplete="name" value={name}
             onChange={(e) => setName(e.target.value)} />
         </label>
@@ -62,18 +64,15 @@ export function RegisterPage() {
             onChange={(e) => setEmail(e.target.value)} />
         </label>
         <label className="field">
-          Password
-          <input type="password" required autoComplete="new-password" value={password}
+          Password <span className="field-hint">(at least 8 characters)</span>
+          <input type="password" required minLength={8} autoComplete="new-password" value={password}
             onChange={(e) => setPassword(e.target.value)} />
         </label>
         {error && <p role="alert" className="error-text">{error}</p>}
         <button type="submit" disabled={submitting} className="submit-button">
-          {submitting ? 'Creating account…' : 'Register'}
+          {submitting ? 'Creating account…' : 'Create account'}
         </button>
       </form>
-      <p className="footer-note">
-        Already have an account? <Link to="/login">Log in</Link>
-      </p>
-    </div>
+    </AuthLayout>
   );
 }
