@@ -2743,3 +2743,22 @@ but the overview, and so the key-facts strip, was empty.
   verification, so users can still get in, but the message misleads.
 - The dev-mode verification link (with its token) is written to the
   production log on every sign-up.
+
+# Fix: sign-up promised an email that never came; token in production log (Oct 2026)
+
+No email provider is connected, so the "Check your email — we've sent a
+verification link" screen after sign-up was false, and every sign-up wrote
+the verification link, token included, to the production log.
+
+- `pages/auth/Register.tsx`: after a successful sign-up the user is signed in
+  automatically (login doesn't require a verified address) and sent to
+  `/dashboard`, which CompanyGate forwards to company setup. If that sign-in
+  fails, the page says "Your account is ready" with a Log in button. No
+  email is promised.
+- `routes/auth.js`: the dev verification link is now only built, logged and
+  returned outside production (it used to be logged always and returned
+  only outside production). Verification tokens are still created, ready
+  for when an email provider is connected; `/verify-email` is unchanged.
+- Test: in production mode, registration returns no link, logs no
+  `verify-email?token=`, and the new user can log in at once (fails on the
+  previous code). Flow check: sign-up lands on company setup.

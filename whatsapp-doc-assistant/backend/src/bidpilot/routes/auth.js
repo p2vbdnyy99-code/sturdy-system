@@ -126,13 +126,15 @@ export function createAuthRouter() {
         return res.status(400).json({ error: 'A valid email is required.' });
       }
       const { user, rawVerificationToken } = await registerUser(db, { email, password, name });
-      const devLink = devDeliverVerificationLink(user.email, rawVerificationToken);
 
       const body = { userId: user.id, email: user.email, status: user.status };
-      // The dev verification link is ONLY ever included in a non-production
-      // response — never something a real deployment should echo back.
+      // The dev verification link is ONLY ever built, logged and returned
+      // outside production. In production no email provider is connected
+      // yet, so the token is simply unused: it must not end up in the server
+      // log either (it was, until Oct 2026). Login doesn't require
+      // verification, so the user can sign in straight away.
       if (!config.bidpilot.csrfSecret || process.env.NODE_ENV !== 'production') {
-        body.devVerificationUrl = devLink;
+        body.devVerificationUrl = devDeliverVerificationLink(user.email, rawVerificationToken);
       }
       return res.status(201).json(body);
     } catch (err) {

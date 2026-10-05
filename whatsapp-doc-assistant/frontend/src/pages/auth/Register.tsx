@@ -1,48 +1,54 @@
 import { useState, type FormEvent } from 'react';
-import { Link } from 'react-router-dom';
-import { register, type RegisterResult } from '../../api/auth';
+import { Link, useNavigate } from 'react-router-dom';
+import { login, register } from '../../api/auth';
 import { ApiError } from '../../api/client';
 import { AuthLayout } from '../../components/AuthLayout';
 import { FREE_TRIAL_TENDERS } from '../../config/site';
+import { useSession } from '../../auth/SessionProvider';
 
 export function RegisterPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [error, setError] = useState<string | null>(null);
-  const [result, setResult] = useState<RegisterResult | null>(null);
+  // Set when the account was created but signing in automatically failed.
+  const [createdEmail, setCreatedEmail] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const { refresh } = useSession();
+  const navigate = useNavigate();
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
     setError(null);
     setSubmitting(true);
+    let created: string;
     try {
-      const res = await register({ email, password, name: name || undefined });
-      setResult(res);
+      created = (await register({ email, password, name: name || undefined })).email;
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Something went wrong. Please try again.');
-    } finally {
+      setSubmitting(false);
+      return;
+    }
+    // No email provider is connected and login doesn't require a verified
+    // address, so sign the new user straight in rather than promising an
+    // email that never arrives. CompanyGate sends a new user on to set up
+    // their company.
+    try {
+      await login({ email, password });
+      await refresh();
+      navigate('/dashboard', { replace: true });
+    } catch {
+      setCreatedEmail(created);
       setSubmitting(false);
     }
   }
 
-  if (result) {
+  if (createdEmail) {
     return (
-      <AuthLayout
-        title="Check your email"
-        footer={<>Already verified? <Link to="/login">Log in</Link></>}
-      >
-        <p>We've sent a verification link to <strong>{result.email}</strong>. Open it to activate your account.</p>
-        {/* devVerificationUrl only ever appears outside production — see
-            routes/auth.js's devDeliverVerificationLink(). Real deployments
-            never see this branch render. */}
-        {result.devVerificationUrl && (
-          <p className="notice">
-            Dev mode — no email provider configured.{' '}
-            <a href={result.devVerificationUrl}>Click here to verify</a>.
-          </p>
-        )}
+      <AuthLayout title="Your account is ready">
+        <p>Your account for <strong>{createdEmail}</strong> has been created. Log in to set up your company and
+          upload your first tender.</p>
+        <Link to="/login" className="btn-link btn-primary">Log in</Link>
       </AuthLayout>
     );
   }

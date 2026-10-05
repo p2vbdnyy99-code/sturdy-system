@@ -339,6 +339,27 @@ test('BidPilot authentication (full HTTP integration)', { skip: SKIP_REASON, tim
     assert.equal(wrongPw.json.error, noSuchUser.json.error, 'identical error message either way');
   });
 
+  // Production has no email provider: the verification link must not be
+  // returned to the browser or written to the server log.
+  await t.test('in production, registration never returns or logs the verification link', async () => {
+    const previousEnv = process.env.NODE_ENV;
+    const originalLog = console.log;
+    const logged = [];
+    process.env.NODE_ENV = 'production';
+    console.log = (...args) => { logged.push(args.join(' ')); };
+    try {
+      const reg = await req('POST', '/bidpilot/register', { body: { email: 'prodlog@example.com', password: 'a-real-password-123' } });
+      assert.equal(reg.status, 201);
+      assert.equal(reg.json.devVerificationUrl, undefined);
+      assert.ok(!logged.some((line) => /verify-email\?token=/.test(line)), logged.join('\n'));
+    } finally {
+      console.log = originalLog;
+      process.env.NODE_ENV = previousEnv;
+    }
+    const login = await req('POST', '/bidpilot/login', { body: { email: 'prodlog@example.com', password: 'a-real-password-123' } });
+    assert.equal(login.status, 200, 'can log in straight away without verifying');
+  });
+
   await t.test('an unverified (PENDING_VERIFICATION) user CAN still log in', async () => {
     await req('POST', '/bidpilot/register', { body: { email: 'unverified@example.com', password: 'a-real-password-123' } });
     const { status, json } = await login('unverified@example.com');
