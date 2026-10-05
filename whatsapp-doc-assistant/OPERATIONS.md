@@ -90,6 +90,9 @@ sibling of `backend/`/`frontend/`, since the Docker build needs both).
   ACTIVE subscription may analyse `BIDPILOT_TRIAL_TENDERS` different tenders
   (default 5, the free trial); re-running a counted tender is free, and `0`
   switches the trial limit off.
+- **Search and link previews.** Each public page's title and description
+  live in `backend/src/seo.js`. `BIDPILOT_REDIRECT_HOSTS` (comma-separated)
+  sends www and .com page loads to `BIDPILOT_PUBLIC_BASE_URL`.
 - **Giving a paying company unlimited tenders** (until payments are built):
   insert a subscription row, e.g. in `fly ssh console`:
   `insert into subscriptions (company_id, plan, status) values ('<company id>', 'GROWTH', 'ACTIVE');`

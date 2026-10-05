@@ -2816,3 +2816,45 @@ Tenders analysed before this change have no `trial_tender` row, so they
 don't count. Production has one real company (2 analysed tenders). A one-off
 backfill (one row per tender that already has analysis usage) makes them
 count; it is run separately, not on deploy.
+
+# Search and link previews (Oct 2026)
+
+Every URL served the same `index.html` with only `<title>TenderTez</title>`:
+no description, no preview image, no robots.txt or sitemap, and the site
+answered on four hostnames. Links shared on WhatsApp or LinkedIn showed
+nothing useful, and search engines had nothing to go on.
+
+- `backend/src/seo.js` (new):
+  - `PUBLIC_PAGES` holds the title and description for `/`, `/pricing`,
+    `/faq`, `/about` and `/register`. Descriptions only repeat what those
+    pages already say.
+  - `renderIndexHtml()` replaces the plain title on those pages with title,
+    description, canonical URL, Open Graph and Twitter-card tags. Every other
+    path (app pages, login, 404) gets `noindex`.
+  - `robotsTxt()` blocks `/bidpilot/` and the app pages and points to the
+    sitemap. `sitemapXml()` lists the public pages.
+  - `canonicalHostRedirect()` 301-redirects page loads on the hosts in
+    `BIDPILOT_REDIRECT_HOSTS` (set on Fly to www.tendertez.in, tendertez.com
+    and www.tendertez.com) to `BIDPILOT_PUBLIC_BASE_URL`. Only GET/HEAD
+    requests are redirected; unlisted hosts, including fly.dev, are untouched.
+- `server.js`: `express.static(..., { index: false })` so `/` also reaches
+  the fallback; `/robots.txt` and `/sitemap.xml` are served from the
+  main base URL; the SPA fallback sends the rendered `index.html`, read once
+  at startup. The base URL is the existing `BIDPILOT_PUBLIC_BASE_URL`.
+- `frontend/public/og-image.png`: a 1200×630 preview card in the site's navy
+  and saffron. It contains only text the site already shows.
+- Client-side navigation keeps whatever title the first page load had;
+  every public URL loaded directly (as search engines and link previews do)
+  gets its own tags.
+
+## Verification
+
+- New `test/seo.test.js`: tags on public pages, a bare-domain canonical
+  for `/`, the same tags for a trailing slash, noindex elsewhere, sensible
+  description lengths, robots and sitemap contents, the redirect (path and
+  query kept, case-insensitive host, main host and fly.dev untouched, POST
+  not redirected), and the config parsing. `spa-fallback.test.js` now checks
+  the served HTML per page, plus robots.txt, the sitemap and the image.
+- Backend 3x: **490/0/1, 327/0/16, 272/0/25**. Frontend build, lint and unit
+  tests 22/22. The 23-check UI run passes on the harness (homepage at `/`,
+  no CSP violations or console errors).

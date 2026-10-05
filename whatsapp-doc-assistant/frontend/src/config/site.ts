@@ -16,8 +16,8 @@ export const FOUNDER: { name: string; city: string; story: string[] } | null = {
 };
 
 /** Early-access free trial: how many tenders a new account gets free.
- *  Shown on the public pages; not enforced in code yet (there is no paid
- *  plan to move to), so the promise is simply "at least this many free". */
+ *  Shown on the public pages. The server enforces its own number
+ *  (BIDPILOT_TRIAL_TENDERS, default 5); keep the two the same. */
 export const FREE_TRIAL_TENDERS = 5;
 
 /** Planned paid plans, shown on /pricing as "after your free trial". Nothing

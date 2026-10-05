@@ -51,11 +51,39 @@ test('same-origin static serving + SPA fallback (server.js)', { skip: SKIP_REASO
 
   const indexHtml = fs.readFileSync(FRONTEND_DIST_INDEX, 'utf8');
 
-  await t.test('a frontend route (no file extension) serves the SPA index.html', async () => {
+  await t.test('a frontend route (no file extension) serves the SPA index.html, kept out of search', async () => {
     const res = await req('/dashboard');
     assert.equal(res.status, 200);
     assert.match(res.contentType, /text\/html/);
-    assert.equal(res.body, indexHtml);
+    assert.equal(res.body, indexHtml.replace('</title>', '</title>\n    <meta name="robots" content="noindex" />'));
+  });
+
+  await t.test('public pages get their own title, description and link-preview tags', async () => {
+    for (const [path, title] of [['/', 'TenderTez: read a government tender in minutes'], ['/pricing', 'Pricing | TenderTez'], ['/faq/', 'Questions and answers | TenderTez']]) {
+      const res = await req(path);
+      assert.equal(res.status, 200, path);
+      assert.ok(res.body.includes(`<title>${title}</title>`), path);
+      assert.match(res.body, /<meta name="description" content="[^"]{40,}" \/>/, path);
+      assert.match(res.body, /<meta property="og:image" content="[^"]+\/og-image\.png" \/>/, path);
+      assert.doesNotMatch(res.body, /noindex/, path);
+      assert.match(res.body, /<div id="root"><\/div>/, `${path} is still the SPA shell`);
+    }
+  });
+
+  await t.test('robots.txt, sitemap.xml and the preview image are served', async () => {
+    const robots = await req('/robots.txt');
+    assert.equal(robots.status, 200);
+    assert.match(robots.contentType, /text\/plain/);
+    assert.match(robots.body, /Disallow: \/bidpilot\//);
+    assert.match(robots.body, /Sitemap: .+\/sitemap\.xml/);
+    const sitemap = await req('/sitemap.xml');
+    assert.equal(sitemap.status, 200);
+    assert.match(sitemap.contentType, /xml/);
+    assert.match(sitemap.body, /<loc>[^<]+\/pricing<\/loc>/);
+    assert.doesNotMatch(sitemap.body, /dashboard|login/);
+    const image = await req('/og-image.png');
+    assert.equal(image.status, 200);
+    assert.match(image.contentType, /image\/png/);
   });
 
   await t.test('a nested frontend route also serves the SPA (client-side routing)', async () => {

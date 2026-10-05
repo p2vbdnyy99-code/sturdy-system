@@ -218,6 +218,12 @@ export function buildDbConfig(env = {}) {
  *                                 local signed download links (e.g.
  *                                 https://papyr.onrender.com). Not needed for
  *                                 the 's3' driver (S3 URLs are absolute).
+ *                                 Also the website's main address in search
+ *                                 results, link previews and the sitemap.
+ *   BIDPILOT_REDIRECT_HOSTS      Comma-separated other hostnames for the same
+ *                                 site (e.g. www.tendertez.in,tendertez.com),
+ *                                 permanently redirected to
+ *                                 BIDPILOT_PUBLIC_BASE_URL. Empty by default.
  *   BIDPILOT_S3_BUCKET / _REGION / _ENDPOINT / _ACCESS_KEY_ID /
  *   _SECRET_ACCESS_KEY           S3-compatible credentials. _ENDPOINT is only
  *                                 needed for a non-AWS provider (R2, Backblaze,
@@ -356,6 +362,10 @@ export function buildBidpilotConfig(env = {}) {
     eligibility: {
       maxCallsPerCompanyPerDay: Math.max(1, Number(env.BIDPILOT_ELIGIBILITY_MAX_CALLS_PER_COMPANY_PER_DAY) || 100),
     },
+    redirectHosts: String(env.BIDPILOT_REDIRECT_HOSTS || '')
+      .split(',')
+      .map((h) => h.trim())
+      .filter(Boolean),
     corsOrigins: String(env.BIDPILOT_CORS_ORIGINS || '')
       .split(',')
       .map((o) => o.trim())

@@ -28,6 +28,7 @@ import { cookieParserMiddleware } from './src/bidpilot/auth/cookies.js';
 import { bidpilotCors } from './src/bidpilot/auth/cors.js';
 import { recoverInterruptedWork } from './src/bidpilot/recovery.js';
 import { getDb } from './src/db/client.js';
+import { canonicalHostRedirect, renderIndexHtml, robotsTxt, sitemapXml } from './src/seo.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 // Sibling of backend/, not inside it — verified against the actual
@@ -71,6 +72,11 @@ app.use((_req, res, next) => {
   );
   next();
 });
+
+// The site's main address, without a trailing slash: canonical URLs, link
+// previews, the sitemap, and where www/.com page loads are redirected.
+const SITE_BASE_URL = config.bidpilot.localStorage.publicBaseUrl.replace(/\/+$/, '');
+app.use(canonicalHostRedirect(config.bidpilot.redirectHosts, SITE_BASE_URL));
 
 // Capture the raw body so we can verify the X-Hub-Signature-256 HMAC. Express
 // still parses JSON into req.body as usual.
@@ -223,7 +229,12 @@ if (config.db.url) {
 // frontend). Registered AFTER every API route above, so nothing here can
 // ever shadow /webhook, /health, /privacy, or /bidpilot/*.
 if (frontendDistExists) {
-  app.use(express.static(FRONTEND_DIST));
+  // index: false so "/" reaches the fallback below and gets its own head tags.
+  app.use(express.static(FRONTEND_DIST, { index: false }));
+
+  app.get('/robots.txt', (_req, res) => res.type('text/plain').send(robotsTxt(SITE_BASE_URL)));
+  app.get('/sitemap.xml', (_req, res) => res.type('application/xml').send(sitemapXml(SITE_BASE_URL)));
+  const indexHtml = fs.readFileSync(path.join(FRONTEND_DIST, 'index.html'), 'utf8');
 
   // SPA fallback: Express 5 (path-to-regexp 8) rejects a bare '*' route
   // pattern ("Missing parameter name") — verified against the actual
@@ -239,7 +250,7 @@ if (frontendDistExists) {
     // serve is a genuinely missing asset (e.g. a stale hashed bundle
     // reference) — 404 it honestly rather than masking the problem as HTML.
     if (/\.[^/]+$/.test(req.path)) return next();
-    res.sendFile(path.join(FRONTEND_DIST, 'index.html'));
+    res.type('html').send(renderIndexHtml(indexHtml, req.path, SITE_BASE_URL));
   });
 }
 
