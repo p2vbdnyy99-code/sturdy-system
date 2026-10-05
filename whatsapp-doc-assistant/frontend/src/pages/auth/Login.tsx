@@ -4,6 +4,7 @@ import { login } from '../../api/auth';
 import { ApiError } from '../../api/client';
 import { useSession } from '../../auth/SessionProvider';
 import { AuthLayout } from '../../components/AuthLayout';
+import { PRODUCT_NAME } from '../../config/product';
 
 export function LoginPage() {
   const [email, setEmail] = useState('');
@@ -40,7 +41,7 @@ export function LoginPage() {
     <AuthLayout
       title="Welcome back"
       subtitle="Log in to see your tenders."
-      footer={<>New to Tenderlytic? <Link to="/register">Create a free account</Link></>}
+      footer={<>New to {PRODUCT_NAME}? <Link to="/register">Create a free account</Link></>}
     >
       <form onSubmit={onSubmit}>
         <label className="field">

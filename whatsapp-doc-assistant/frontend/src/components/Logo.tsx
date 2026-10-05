@@ -18,13 +18,14 @@ export function LogoMark({ size = 32 }: { size?: number }) {
 
 /** Mark + wordmark. `tone="light"` for dark (navy) backgrounds. */
 export function Logo({ tone = 'dark', size = 32 }: { tone?: 'dark' | 'light'; size?: number }) {
-  // Wordmark split assumes PRODUCT_NAME ends in "lytic"; falls back to plain text otherwise.
-  const split = PRODUCT_NAME.endsWith('lytic');
+  // "Tender" in the base colour, the rest (e.g. "pe") in saffron; any other
+  // name is shown plain.
+  const split = PRODUCT_NAME.startsWith('Tender') && PRODUCT_NAME.length > 6;
   return (
     <span className={`logo logo-${tone}`}>
       <LogoMark size={size} />
       <span className="logo-word">
-        {split ? <>{PRODUCT_NAME.slice(0, -5)}<span className="logo-word-accent">lytic</span></> : PRODUCT_NAME}
+        {split ? <>Tender<span className="logo-word-accent">{PRODUCT_NAME.slice(6)}</span></> : PRODUCT_NAME}
       </span>
     </span>
   );

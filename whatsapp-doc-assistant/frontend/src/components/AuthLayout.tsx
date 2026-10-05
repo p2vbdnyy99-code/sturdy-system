@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { Logo } from './Logo';
 import { Icon } from './Icon';
+import { PRODUCT_NAME } from '../config/product';
 
 // Shared frame for the signed-out pages (login, register, verify email) and
 // the first-run steps (create/choose company): a navy brand panel beside the
@@ -21,7 +22,7 @@ export function AuthLayout({ title, subtitle, children, footer }: {
   return (
     <div className="auth-shell">
       <aside className="auth-brand">
-        <Link to="/" className="auth-brand-logo" aria-label="Tenderlytic home">
+        <Link to="/" className="auth-brand-logo" aria-label={`${PRODUCT_NAME} home`}>
           <Logo tone="light" />
         </Link>
         <div className="auth-brand-body">

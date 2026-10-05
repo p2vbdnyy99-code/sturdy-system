@@ -2,6 +2,7 @@ import { Link, Navigate } from 'react-router-dom';
 import { useSession } from '../auth/SessionProvider';
 import { Logo } from '../components/Logo';
 import { Icon, type IconName } from '../components/Icon';
+import { PRODUCT_NAME } from '../config/product';
 
 // Public homepage at "/". Signed-in users keep the old behaviour of "/"
 // (straight to the dashboard). Copy describes only what the product does
@@ -17,7 +18,7 @@ const FEATURES: Array<{ icon: IconName; title: string; body: string }> = [
 
 const STEPS = [
   { title: 'Upload the tender PDF', body: 'Any tender document from CPPP, GeM or a state e-procurement portal. Scanned pages are read too.' },
-  { title: 'Tenderlytic reads every page', body: 'The whole document is analysed section by section, usually in a few minutes.' },
+  { title: `${PRODUCT_NAME} reads every page`, body: 'The whole document is analysed section by section, usually in a few minutes.' },
   { title: 'Decide whether to bid', body: 'Review the key facts, eligibility and risks, then open the source page for anything you want to confirm.' },
 ];
 
@@ -29,7 +30,7 @@ export function HomePage() {
     <div className="home">
       <header className="home-nav">
         <div className="home-container home-nav-inner">
-          <Link to="/" className="home-nav-brand" aria-label="Tenderlytic home"><Logo /></Link>
+          <Link to="/" className="home-nav-brand" aria-label={`${PRODUCT_NAME} home`}><Logo /></Link>
           <nav className="home-nav-links" aria-label="Main">
             <a href="#features">Features</a>
             <a href="#how-it-works">How it works</a>
@@ -45,7 +46,7 @@ export function HomePage() {
             <span className="home-eyebrow">Free during the beta</span>
             <h1>Understand a 150-page tender in minutes, not days</h1>
             <p className="home-hero-lead">
-              Upload a government tender PDF. Tenderlytic pulls out the deadline, EMD, eligibility
+              Upload a government tender PDF. {PRODUCT_NAME} pulls out the deadline, EMD, eligibility
               conditions, BOQ and risky clauses, each linked to the page it came from.
             </p>
             <div className="home-hero-actions">
@@ -98,7 +99,7 @@ export function HomePage() {
             <p className="home-kicker">Built to be checked</p>
             <h2 className="home-heading">AI that shows its work</h2>
             <p className="home-trust-lead">
-              Tender mistakes are expensive, so Tenderlytic never asks you to take its word for it.
+              Tender mistakes are expensive, so {PRODUCT_NAME} never asks you to take its word for it.
             </p>
           </div>
           <ul className="home-trust-list">
@@ -120,7 +121,7 @@ export function HomePage() {
         <div className="home-container home-footer-inner">
           <Logo size={24} />
           <p>AI can make mistakes. Always confirm important details on the source page before you bid.</p>
-          <p>&copy; {new Date().getFullYear()} Tenderlytic</p>
+          <p>&copy; {new Date().getFullYear()} {PRODUCT_NAME}</p>
         </div>
       </footer>
     </div>

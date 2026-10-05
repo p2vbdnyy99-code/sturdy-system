@@ -2598,3 +2598,24 @@ needed beyond the secret).
   off. Config test: defaults and overrides. The new tests fail without the
   change.
 - Backend 3x: **460/0/1, 301/0/16, 254/0/24** (from 451/293/246).
+
+# Rename: Tenderlytic → Tenderpe (Oct 2026)
+
+User-visible name only. `PRODUCT_NAME` (`frontend/src/config/product.ts`) is
+now "Tenderpe"; the few hardcoded mentions (homepage copy, login footer,
+logo aria-labels, footer) now read `PRODUCT_NAME`, so a future rename is one
+line plus `index.html`'s `<title>`. The logo wordmark accents whatever
+follows "Tender" ("pe" in saffron). Unchanged on purpose: the internal
+`bidpilot` namespace, the Fly app/hostname (`tenderlytic-api.fly.dev`;
+renaming means a new app and moving the volume, so a custom domain is the
+route instead), the DB, and the `tenderlytic:session-expired` event name.
+
+Name checks (web search, 5 Oct 2026): TenderSaathi, BidSaathi, BidMitra (a
+Pune AI tender-evaluation company, close competitor), TenderLens, Nivida and
+BidKaro are taken; no tender product found as Tenderpe. Not a trademark
+search — check ipindia.gov.in before investing in the name.
+
+Verified: frontend build clean, 0 lint errors, unit 22/22; local screenshots
+at 1280/375 with no overflow, CSP violations or console errors; backend 3x
+460/301/254 with 0 failures. Deployed: live `/` and `/login` titled
+"Tenderpe", logo "Tenderpe", old name absent; live check 11/11.
