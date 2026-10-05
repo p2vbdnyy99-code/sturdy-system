@@ -165,6 +165,7 @@ test('GET /dashboard/summary (HTTP integration)', { skip: SKIP_REASON }, async (
     assert.equal(res.json.totalTenders, 0);
     assert.ok('upcomingDeadlines' in res.json);
     assert.ok(Array.isArray(res.json.recentTenders));
+    assert.deepEqual(res.json.trial, { limit: 5, used: 0, remaining: 5 }, 'a new company starts with the full free trial');
   });
 
   await t.test('a caller cannot read another company\'s summary by naming its id (403)', async () => {

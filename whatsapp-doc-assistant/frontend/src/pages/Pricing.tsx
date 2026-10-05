@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { PublicLayout, PageIntro } from '../components/PublicLayout';
 import { Icon } from '../components/Icon';
 import { PRODUCT_NAME } from '../config/product';
-import { FREE_TRIAL_TENDERS, PLANNED_PLANS } from '../config/site';
+import { CONTACT_EMAIL, FREE_TRIAL_TENDERS, PLANNED_PLANS } from '../config/site';
 
 // Nothing is billed today: there is no payment code. Early access starts
 // with a free trial; the paid plans are shown as planned, so contractors can
@@ -62,12 +62,16 @@ export function PricingPage() {
           <div className="pricing-questions">
             <div>
               <h3>What counts as one tender?</h3>
-              <p>One tender PDF analysed. Checking eligibility against your company profile is included.</p>
+              <p>One tender PDF analysed. Re-running the same tender and checking eligibility against your company
+                profile are included.</p>
             </div>
             <div>
               <h3>What happens after my free trial?</h3>
-              <p>Your company profile and analysed tenders stay in your account. Paid plans aren&rsquo;t live yet, and
-                we&rsquo;ll contact you before anything changes.</p>
+              <p>Your company profile and analysed tenders stay in your account, and you can still open and re-run
+                them. Paid plans aren&rsquo;t live yet;
+                {CONTACT_EMAIL
+                  ? <> to analyse more tenders, email <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>.</>
+                  : <> we&rsquo;ll contact you before anything changes.</>}</p>
             </div>
             <div>
               <h3>Have a view on the price?</h3>

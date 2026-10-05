@@ -17,6 +17,8 @@ export type DashboardSummary = {
     processingStatus: ProcessingStatus;
     analysisStatus: AnalysisStatus;
   }>;
+  /** Free-trial tenders; null when the company has no trial limit (paid plan). */
+  trial: { limit: number; used: number; remaining: number } | null;
 };
 
 export function getDashboardSummary(companyId: string) {

@@ -84,6 +84,16 @@ sibling of `backend/`/`frontend/`, since the Docker build needs both).
   `grep "metric ai_flex_fallback"`; `metric ai_call ... tier=` shows which
   tier served each call. If fallbacks are frequent, analyses are slower and
   cost close to full price: set `BIDPILOT_ANALYSIS_FLEX=false`.
+- **Spend limits.** Each company may make
+  `BIDPILOT_ANALYSIS_MAX_CALLS_PER_COMPANY_PER_DAY` analysis calls in any
+  24 hours (set to 40 on Fly, about 5–8 tenders). Each company without an
+  ACTIVE subscription may analyse `BIDPILOT_TRIAL_TENDERS` different tenders
+  (default 5, the free trial); re-running a counted tender is free, and `0`
+  switches the trial limit off.
+- **Giving a paying company unlimited tenders** (until payments are built):
+  insert a subscription row, e.g. in `fly ssh console`:
+  `insert into subscriptions (company_id, plan, status) values ('<company id>', 'GROWTH', 'ACTIVE');`
+  Insert a newer row with status `CANCELED` to end it; the latest row wins.
 
 **One-time setup** (from `whatsapp-doc-assistant/`):
 ```

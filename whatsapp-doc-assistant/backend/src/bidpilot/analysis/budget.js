@@ -8,9 +8,9 @@
 // before allowing more. Both limits are configurable (config.bidpilot.analysis),
 // never hardcoded.
 
-import { and, eq, gte, sql } from 'drizzle-orm';
+import { and, desc, eq, gte, sql } from 'drizzle-orm';
 import { config } from '../../config.js';
-import { usageRecords } from '../../db/schema/index.js';
+import { subscriptions, usageRecords } from '../../db/schema/index.js';
 
 export const USAGE_KIND = 'tender_analysis_chunk';
 
@@ -18,7 +18,7 @@ export class AnalysisBudgetError extends Error {
   constructor(message, reason) {
     super(message);
     this.name = 'AnalysisBudgetError';
-    this.reason = reason; // 'tender_too_large' | 'company_daily_cap'
+    this.reason = reason; // 'tender_too_large' | 'company_daily_cap' | 'trial_exhausted'
   }
 }
 
@@ -69,6 +69,76 @@ export async function recordChunkUsage(db, { companyId, tenderId, metadata }) {
     kind: USAGE_KIND,
     quantity: 1,
     metadata: metadata || null,
+  });
+}
+
+// ─── Free trial: the first N different tenders per company ─────────────────
+// One usage row per tender, written when that tender's first analysis
+// starts. Counting these rows (not tenders) means deleting an analysed
+// tender doesn't hand the slot back: the row survives with tender_id set to
+// null. Re-running a tender that already has a row is free, so a failed
+// analysis can be retried without using another slot. A company whose
+// latest subscription is ACTIVE (a paid plan) has no trial limit.
+
+export const TRIAL_USAGE_KIND = 'trial_tender';
+
+async function hasActivePlan(db, companyId) {
+  const [latest] = await db
+    .select({ status: subscriptions.status })
+    .from(subscriptions)
+    .where(eq(subscriptions.companyId, companyId))
+    .orderBy(desc(subscriptions.createdAt))
+    .limit(1);
+  return latest?.status === 'ACTIVE';
+}
+
+async function countTrialTenders(db, companyId) {
+  const [row] = await db
+    .select({ used: sql`count(*)::int` })
+    .from(usageRecords)
+    .where(and(eq(usageRecords.companyId, companyId), eq(usageRecords.kind, TRIAL_USAGE_KIND)));
+  return Number(row?.used || 0);
+}
+
+/** For the dashboard. null when the company has no trial limit (paid plan,
+ *  or the limit is switched off). */
+export async function getTrialStatus(db, companyId) {
+  const limit = config.bidpilot.analysis.trialTenders;
+  if (!limit || await hasActivePlan(db, companyId)) return null;
+  const used = Math.min(limit, await countTrialTenders(db, companyId));
+  return { limit, used, remaining: limit - used };
+}
+
+/**
+ * Takes a trial slot for this tender, or confirms it already has one.
+ * Throws AnalysisBudgetError('trial_exhausted') when every slot is used.
+ * Runs under a row lock on the company, so two Analyze clicks on different
+ * tenders at 4/5 can't both get the last slot.
+ */
+export async function claimTrialTender(db, companyId, tenderId) {
+  const limit = config.bidpilot.analysis.trialTenders;
+  if (!limit) return;
+  await db.transaction(async (tx) => {
+    await tx.execute(sql`select id from companies where id = ${companyId} for update`);
+    if (await hasActivePlan(tx, companyId)) return;
+    const [already] = await tx
+      .select({ id: usageRecords.id })
+      .from(usageRecords)
+      .where(and(
+        eq(usageRecords.companyId, companyId),
+        eq(usageRecords.kind, TRIAL_USAGE_KIND),
+        eq(usageRecords.tenderId, tenderId),
+      ))
+      .limit(1);
+    if (already) return;
+    if (await countTrialTenders(tx, companyId) >= limit) {
+      throw new AnalysisBudgetError(
+        `Your free trial covers ${limit} tenders, and all ${limit} have been used. ` +
+          'Tenders you have already analysed can still be re-run. To analyse new tenders, please contact us about a paid plan.',
+        'trial_exhausted',
+      );
+    }
+    await tx.insert(usageRecords).values({ companyId, tenderId, kind: TRIAL_USAGE_KIND, quantity: 1 });
   });
 }
 

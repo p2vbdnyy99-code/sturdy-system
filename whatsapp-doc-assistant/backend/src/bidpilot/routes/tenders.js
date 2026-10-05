@@ -21,7 +21,7 @@ import { ingestUpload, processExtraction } from '../ingestion/pipeline.js';
 import { ValidationError } from '../ingestion/validate.js';
 import { getStorage } from '../storage/index.js';
 import { chunkPages } from '../analysis/chunker.js';
-import { assertAnalysisBudget, AnalysisBudgetError } from '../analysis/budget.js';
+import { assertAnalysisBudget, AnalysisBudgetError, claimTrialTender } from '../analysis/budget.js';
 import { runAnalysis } from '../analysis/pipeline.js';
 import { runEligibility, EligibilityError } from '../analysis/eligibilityPipeline.js';
 import { config } from '../../config.js';
@@ -229,9 +229,12 @@ export function createTendersRouter() {
       const chunks = chunkPages(pages, { maxChars: config.bidpilot.analysis.chunkChars });
       try {
         await assertAnalysisBudget(db, scope.companyId, chunks.length);
+        // Last, so a tender refused by the checks above never uses a slot.
+        await claimTrialTender(db, scope.companyId, tender.id);
       } catch (err) {
         if (err instanceof AnalysisBudgetError) {
-          return res.status(err.reason === 'tender_too_large' ? 413 : 429).json({ error: err.message });
+          const status = { tender_too_large: 413, trial_exhausted: 402 }[err.reason] ?? 429;
+          return res.status(status).json({ error: err.message, code: err.reason });
         }
         throw err;
       }

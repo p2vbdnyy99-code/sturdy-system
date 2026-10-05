@@ -7,6 +7,7 @@ import { log } from '../../logger.js';
 import { requireSession } from './auth.js';
 import { requireCompanyAccess, TenantAccessError } from '../repo/tenants.js';
 import { getDashboardSummary } from '../repo/tenders.js';
+import { getTrialStatus } from '../analysis/budget.js';
 
 export function createDashboardRouter() {
   const router = express.Router();
@@ -20,7 +21,7 @@ export function createDashboardRouter() {
         companyId: req.query.companyId,
       });
       const summary = await getDashboardSummary(scope);
-      return res.json(summary);
+      return res.json({ ...summary, trial: await getTrialStatus(db, scope.companyId) });
     } catch (err) {
       if (err instanceof TenantAccessError) {
         return res.status(403).json({ error: 'Not authorized for this company.' });

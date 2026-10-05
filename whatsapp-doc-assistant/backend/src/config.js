@@ -312,6 +312,11 @@ export function buildDbConfig(env = {}) {
  *   BIDPILOT_ANALYSIS_FLEX_TIMEOUT_MS  How long to wait for a Flex answer
  *                                 before retrying on standard (default:
  *                                 120000; standard chunks measured 20-50s).
+ *   BIDPILOT_TRIAL_TENDERS       How many different tenders a company without
+ *                                 an ACTIVE subscription may analyse (default:
+ *                                 5, the "first 5 tenders free" trial). Re-
+ *                                 running a tender already counted is free.
+ *                                 "0" switches the limit off.
  */
 export function buildBidpilotConfig(env = {}) {
   return {
@@ -343,6 +348,10 @@ export function buildBidpilotConfig(env = {}) {
       aiTimeoutMs: Math.max(1000, Number(env.BIDPILOT_ANALYSIS_AI_TIMEOUT_MS) || 180_000),
       flex: String(env.BIDPILOT_ANALYSIS_FLEX ?? 'true').toLowerCase() !== 'false',
       flexTimeoutMs: Math.max(1000, Number(env.BIDPILOT_ANALYSIS_FLEX_TIMEOUT_MS) || 120_000),
+      // "0" switches the trial limit off; anything else unset/invalid is 5.
+      trialTenders: String(env.BIDPILOT_TRIAL_TENDERS ?? '').trim() === '0'
+        ? 0
+        : Math.max(1, Math.floor(Number(env.BIDPILOT_TRIAL_TENDERS)) || 5),
     },
     eligibility: {
       maxCallsPerCompanyPerDay: Math.max(1, Number(env.BIDPILOT_ELIGIBILITY_MAX_CALLS_PER_COMPANY_PER_DAY) || 100),

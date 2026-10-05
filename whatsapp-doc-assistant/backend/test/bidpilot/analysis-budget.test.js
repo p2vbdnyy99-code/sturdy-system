@@ -4,7 +4,13 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { dbAvailable, testDb, closeTestDb, truncateAll } from '../db/helpers.js';
 import { createCompanyWithOwner } from '../../src/bidpilot/repo/companies.js';
-import { assertAnalysisBudget, recordChunkUsage, AnalysisBudgetError } from '../../src/bidpilot/analysis/budget.js';
+import { eq } from 'drizzle-orm';
+import {
+  assertAnalysisBudget, recordChunkUsage, AnalysisBudgetError, claimTrialTender, getTrialStatus,
+} from '../../src/bidpilot/analysis/budget.js';
+import { requireCompanyAccess } from '../../src/bidpilot/repo/tenants.js';
+import { createTender } from '../../src/bidpilot/repo/tenders.js';
+import { subscriptions, tenders as tendersTable } from '../../src/db/schema/index.js';
 import { config } from '../../src/config.js';
 
 test('analysis budget guard', { skip: !dbAvailable() && 'DATABASE_URL not set — see test/db/helpers.js' }, async (t) => {
@@ -64,5 +70,74 @@ test('analysis budget guard', { skip: !dbAvailable() && 'DATABASE_URL not set �
     }));
     await db.insert(usageRecords).values(oldRows);
     await assert.doesNotReject(() => assertAnalysisBudget(db, company.id, 5), 'old usage has rolled out of the window');
+  });
+});
+
+test('free trial: first N different tenders per company', { skip: !dbAvailable() && 'DATABASE_URL not set — see test/db/helpers.js' }, async (t) => {
+  const db = testDb();
+  t.after(closeTestDb);
+  t.beforeEach(truncateAll);
+  const limit = config.bidpilot.analysis.trialTenders;
+
+  async function companyWithTenders(email, count) {
+    const { user, company } = await createCompanyWithOwner(db, { companyName: 'Trial Co', userEmail: email, userName: 'T' });
+    const scope = await requireCompanyAccess(db, { userId: user.id, companyId: company.id });
+    const tenders = [];
+    for (let i = 0; i < count; i++) tenders.push(await createTender(scope, { title: `t${i}.pdf` }));
+    return { company, tenders };
+  }
+  const trialExhausted = (err) => err instanceof AnalysisBudgetError && err.reason === 'trial_exhausted';
+
+  await t.test('the default trial is 5 tenders', () => {
+    assert.equal(limit, 5);
+  });
+
+  await t.test('N different tenders are allowed, the next one is refused, and re-running a counted one is free', async () => {
+    const { company, tenders } = await companyWithTenders('trial-a@example.com', limit + 1);
+    for (const tender of tenders.slice(0, limit)) await claimTrialTender(db, company.id, tender.id);
+    assert.deepEqual(await getTrialStatus(db, company.id), { limit, used: limit, remaining: 0 });
+    await assert.rejects(() => claimTrialTender(db, company.id, tenders[limit].id), trialExhausted);
+    await assert.doesNotReject(() => claimTrialTender(db, company.id, tenders[0].id), 're-run of a counted tender');
+    assert.equal((await getTrialStatus(db, company.id)).used, limit, 're-runs never use another slot');
+  });
+
+  await t.test('deleting an analysed tender does not give its slot back', async () => {
+    const { company, tenders } = await companyWithTenders('trial-b@example.com', limit + 1);
+    for (const tender of tenders.slice(0, limit)) await claimTrialTender(db, company.id, tender.id);
+    await db.delete(tendersTable).where(eq(tendersTable.id, tenders[0].id));
+    await assert.rejects(() => claimTrialTender(db, company.id, tenders[limit].id), trialExhausted);
+  });
+
+  await t.test('two tenders racing for the last slot: exactly one gets it', async () => {
+    const { company, tenders } = await companyWithTenders('trial-c@example.com', limit + 1);
+    for (const tender of tenders.slice(0, limit - 1)) await claimTrialTender(db, company.id, tender.id);
+    const results = await Promise.allSettled([
+      claimTrialTender(db, company.id, tenders[limit - 1].id),
+      claimTrialTender(db, company.id, tenders[limit].id),
+    ]);
+    assert.deepEqual(results.map((r) => r.status).sort(), ['fulfilled', 'rejected']);
+    assert.equal((await getTrialStatus(db, company.id)).used, limit);
+  });
+
+  await t.test('the trial is per company', async () => {
+    const a = await companyWithTenders('trial-d@example.com', limit);
+    const b = await companyWithTenders('trial-e@example.com', 1);
+    for (const tender of a.tenders) await claimTrialTender(db, a.company.id, tender.id);
+    await assert.doesNotReject(() => claimTrialTender(db, b.company.id, b.tenders[0].id));
+  });
+
+  await t.test('a company whose latest subscription is ACTIVE has no trial limit', async () => {
+    const { company, tenders } = await companyWithTenders('trial-f@example.com', limit + 1);
+    await db.insert(subscriptions).values({ companyId: company.id, plan: 'GROWTH', status: 'ACTIVE' });
+    for (const tender of tenders) await claimTrialTender(db, company.id, tender.id);
+    assert.equal(await getTrialStatus(db, company.id), null);
+  });
+
+  await t.test('a CANCELED latest subscription puts the trial limit back', async () => {
+    const { company, tenders } = await companyWithTenders('trial-g@example.com', limit + 1);
+    await db.insert(subscriptions).values({ companyId: company.id, plan: 'GROWTH', status: 'ACTIVE', createdAt: new Date(Date.now() - 60_000) });
+    await db.insert(subscriptions).values({ companyId: company.id, plan: 'GROWTH', status: 'CANCELED' });
+    for (const tender of tenders.slice(0, limit)) await claimTrialTender(db, company.id, tender.id);
+    await assert.rejects(() => claimTrialTender(db, company.id, tenders[limit].id), trialExhausted);
   });
 });

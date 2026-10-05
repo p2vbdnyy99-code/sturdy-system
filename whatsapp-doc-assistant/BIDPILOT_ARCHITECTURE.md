@@ -2762,3 +2762,57 @@ the verification link, token included, to the production log.
 - Test: in production mode, registration returns no link, logs no
   `verify-email?token=`, and the new user can log in at once (fails on the
   previous code). Flow check: sign-up lands on company setup.
+
+# Free trial: first 5 tenders per company (Oct 2026)
+
+The site promised "your first 5 tenders are free", but nothing counted them:
+a trial company could analyse any number of tenders, limited only by the
+daily call cap. There is still no payment code; this enforces the trial.
+
+- **What counts.** One different tender analysed. Re-running a tender that
+  already counts is free, so a failed analysis can be retried. Eligibility
+  checks are included (they only work on analysed tenders anyway).
+- **How it is stored.** `analysis/budget.js` `claimTrialTender()` writes one
+  `usage_records` row (`kind = 'trial_tender'`) when a tender's first
+  analysis starts. The trial counts these rows, not tenders: deleting an
+  analysed tender sets the row's `tender_id` to null but keeps the row, so it
+  doesn't hand the slot back. No migration; the table already existed.
+- **Races.** The claim runs in a transaction holding `select … for update` on
+  the company row, so two Analyze clicks on different tenders at 4/5 can't
+  both take the last slot.
+- **Order in `POST /tenders/:id/analyze`.** Size cap → daily cap → trial
+  claim → start. A tender refused by an earlier check never uses a slot. A
+  6th tender gets **402** `{ error, code: 'trial_exhausted' }` and stays
+  NOT_STARTED. The 413/429 responses now also carry `code`.
+- **Paid companies.** A company whose latest `subscriptions` row is ACTIVE has
+  no trial limit. Until payments exist, that row is inserted by hand
+  (OPERATIONS.md). A newer CANCELED row puts the limit back.
+- **Config.** `BIDPILOT_TRIAL_TENDERS` (default 5; `0` switches it off).
+- **UI.** `GET /dashboard/summary` returns `trial: { limit, used, remaining }`,
+  or null when there is no limit. The dashboard shows "Free trial: 3 of 5
+  tenders left to analyse", and when none are left, "You've used all 5…" with
+  the contact email. The Analyze button shows the server's message. The
+  Pricing page now says re-runs are included and what happens after the
+  trial.
+
+## Verification
+
+- New tests: 5 tenders allowed and the 6th refused, with re-runs free; a
+  deleted tender keeps its slot; two tenders racing for the last slot (exactly
+  one wins); per company; ACTIVE subscription means no limit, and a later
+  CANCELED row brings it back; HTTP 402 with `code`, the refused tender left
+  NOT_STARTED, and a counted tender re-run with 202; a 413-refused tender uses
+  no slot; the dashboard summary includes `trial`.
+- Backend 3x: **480/0/1, 317/0/16, 262/0/25**. Frontend build, lint (no new
+  warnings) and unit tests 22/22.
+- Browser on the local harness: "3 of 5 left" after 2 analyses (desktop and
+  phone, no sideways scroll); "used all 5" with the email link; Analyze on a
+  6th tender shows the trial message; re-run returns 202; no CSP violations
+  or console errors. The earlier 23-check UI run still passes.
+
+## Existing data
+
+Tenders analysed before this change have no `trial_tender` row, so they
+don't count. Production has one real company (2 analysed tenders). A one-off
+backfill (one row per tender that already has analysis usage) makes them
+count; it is run separately, not on deploy.

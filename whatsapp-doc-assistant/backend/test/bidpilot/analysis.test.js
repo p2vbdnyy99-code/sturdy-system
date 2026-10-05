@@ -17,6 +17,7 @@ import { listDates } from '../../src/bidpilot/repo/dates.js';
 import { listRedFlags } from '../../src/bidpilot/repo/redFlags.js';
 import { replaceAnalysis, markAnalysisFailed } from '../../src/bidpilot/repo/analysis.js';
 import { runAnalysis, safeErrorMessage } from '../../src/bidpilot/analysis/pipeline.js';
+import { getTrialStatus } from '../../src/bidpilot/analysis/budget.js';
 import { setProvider } from '../../src/ai/index.js';
 import { setDb, closeDb } from '../../src/db/client.js';
 import { createSession } from '../../src/bidpilot/auth/sessionService.js';
@@ -574,6 +575,42 @@ test('POST /tenders/:id/analyze (HTTP integration)', { skip: SKIP_REASON, timeou
     const tender = await makeCompletedTender(scope, pages);
     const res = await req('POST', `/bidpilot/tenders/${tender.id}/analyze`, { auth: authA, body: { companyId: companyA.id } });
     assert.equal(res.status, 413);
+  });
+
+  await t.test('after the free trial, a new tender gets 402 trial_exhausted; a counted one can still be re-run', async () => {
+    const scope = await requireCompanyAccess(db, { userId: userA.id, companyId: companyA.id });
+    setProvider({ name: 'mock', async complete() { return mockValidResult(); } });
+    const counted = [];
+    for (let i = 0; i < config.bidpilot.analysis.trialTenders; i++) {
+      const tender = await makeCompletedTender(scope);
+      const res = await req('POST', `/bidpilot/tenders/${tender.id}/analyze`, { auth: authA, body: { companyId: companyA.id } });
+      assert.equal(res.status, 202, `trial tender ${i + 1}`);
+      await waitForAnalysis(tender.id);
+      counted.push(tender);
+    }
+    const extra = await makeCompletedTender(scope);
+    const refused = await req('POST', `/bidpilot/tenders/${extra.id}/analyze`, { auth: authA, body: { companyId: companyA.id } });
+    assert.equal(refused.status, 402);
+    assert.equal(refused.json.code, 'trial_exhausted');
+    assert.match(refused.json.error, /free trial covers 5 tenders/);
+    const { json: extraDetail } = await req('GET', `/bidpilot/tenders/${extra.id}?companyId=${companyA.id}`, { auth: authA });
+    assert.equal(extraDetail.analysisStatus, 'NOT_STARTED', 'a refused tender is left untouched');
+
+    const rerun = await req('POST', `/bidpilot/tenders/${counted[0].id}/analyze`, { auth: authA, body: { companyId: companyA.id } });
+    assert.equal(rerun.status, 202);
+    await waitForAnalysis(counted[0].id);
+  });
+
+  await t.test('a tender refused as too large does not use a trial slot', async () => {
+    const scope = await requireCompanyAccess(db, { userId: userA.id, companyId: companyA.id });
+    const bigPageText = 'x'.repeat(config.bidpilot.analysis.chunkChars + 1000);
+    const pages = Array.from({ length: config.bidpilot.analysis.maxChunksPerTender + 1 }, (_, i) => ({
+      pageNumber: i + 1, rawText: bigPageText, ocrUsed: false,
+    }));
+    const tender = await makeCompletedTender(scope, pages);
+    const res = await req('POST', `/bidpilot/tenders/${tender.id}/analyze`, { auth: authA, body: { companyId: companyA.id } });
+    assert.equal(res.status, 413);
+    assert.equal((await getTrialStatus(db, companyA.id)).used, 0);
   });
 
   await t.test('Company A cannot analyze Company B\'s tender', async () => {

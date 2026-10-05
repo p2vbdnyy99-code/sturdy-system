@@ -10,6 +10,7 @@ import { TenderRow } from '../dashboard/TenderRow';
 import { useSession } from '../auth/SessionProvider';
 import { ApiError } from '../api/client';
 import { getDashboardSummary, type DashboardSummary } from '../api/dashboard';
+import { CONTACT_EMAIL } from '../config/site';
 import {
   listTenders, uploadTender, TENDER_STATUSES, ANALYSIS_STATUSES,
   type TenderListItem, type TenderStatus, type AnalysisStatus,
@@ -165,6 +166,7 @@ export function DashboardPage() {
         {summaryError && <p role="alert" className="error-text">{summaryError}</p>}
         {!summaryError && (
           <>
+            {summary?.trial && <TrialNotice trial={summary.trial} />}
             <div className="dashboard-tiles">
               <SummaryTile icon="layers" label="Total tenders" value={summary?.totalTenders} loading={summaryLoading} />
               <SummaryTile icon="clock" label="Processing" value={summary?.processing} loading={summaryLoading} />
@@ -279,6 +281,28 @@ export function DashboardPage() {
           </>
         )}
       </div>
+    </div>
+  );
+}
+
+/** Re-running an already-counted tender is free, so the wording is about new tenders. */
+function TrialNotice({ trial }: { trial: NonNullable<DashboardSummary['trial']> }) {
+  if (trial.remaining > 0) {
+    return (
+      <div className="notice notice-info">
+        <span className="notice-text">
+          Free trial: <strong>{trial.remaining} of {trial.limit}</strong> {trial.remaining === 1 ? 'tender' : 'tenders'} left
+          to analyse.
+        </span>
+      </div>
+    );
+  }
+  return (
+    <div className="notice">
+      <span className="notice-text">
+        You&rsquo;ve used all {trial.limit} free-trial tenders. You can still open and re-run them.
+        {CONTACT_EMAIL && <> To analyse new tenders, email <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a> about a paid plan.</>}
+      </span>
     </div>
   );
 }
