@@ -1,8 +1,10 @@
-import { Link, Navigate } from 'react-router-dom';
+import { useEffect } from 'react';
+import { Link, Navigate, useLocation } from 'react-router-dom';
 import { useSession } from '../auth/SessionProvider';
-import { Logo } from '../components/Logo';
+import { PublicLayout } from '../components/PublicLayout';
 import { Icon, type IconName } from '../components/Icon';
 import { PRODUCT_NAME } from '../config/product';
+import { FREE_TRIAL_TENDERS } from '../config/site';
 
 // Public homepage at "/". Signed-in users keep the old behaviour of "/"
 // (straight to the dashboard). Copy describes only what the product does
@@ -17,33 +19,27 @@ const FEATURES: Array<{ icon: IconName; title: string; body: string }> = [
 ];
 
 const STEPS = [
-  { title: 'Upload the tender PDF', body: 'Any tender document from CPPP, GeM or a state e-procurement portal. Scanned pages are read too.' },
+  { title: 'Upload the tender PDF', body: 'A tender document from CPPP, GeM or a state e-procurement portal. Typed PDFs work best; scanned pages are read too.' },
   { title: `${PRODUCT_NAME} reads every page`, body: 'The whole document is analysed section by section, usually in a few minutes.' },
   { title: 'Decide whether to bid', body: 'Review the key facts, eligibility and risks, then open the source page for anything you want to confirm.' },
 ];
 
 export function HomePage() {
   const { status } = useSession();
+  const { hash } = useLocation();
+  // Footer links like /#how-it-works arrive from other pages; the browser
+  // doesn't scroll to the anchor after a client-side navigation, so do it.
+  useEffect(() => {
+    if (hash) document.getElementById(hash.slice(1))?.scrollIntoView();
+  }, [hash]);
   if (status === 'authenticated') return <Navigate to="/dashboard" replace />;
 
   return (
-    <div className="home">
-      <header className="home-nav">
-        <div className="home-container home-nav-inner">
-          <Link to="/" className="home-nav-brand" aria-label={`${PRODUCT_NAME} home`}><Logo /></Link>
-          <nav className="home-nav-links" aria-label="Main">
-            <a href="#features">Features</a>
-            <a href="#how-it-works">How it works</a>
-            <Link to="/login" className="home-nav-login">Log in</Link>
-            <Link to="/register" className="btn-link btn-primary">Start free</Link>
-          </nav>
-        </div>
-      </header>
-
+    <PublicLayout>
       <section className="home-hero">
         <div className="home-container home-hero-inner">
           <div className="home-hero-copy">
-            <span className="home-eyebrow">Free during the beta</span>
+            <span className="home-eyebrow">Early access &middot; first {FREE_TRIAL_TENDERS} tenders free</span>
             <h1>Understand a 150-page tender in minutes, not days</h1>
             <p className="home-hero-lead">
               Upload a government tender PDF. {PRODUCT_NAME} pulls out the deadline, EMD, eligibility
@@ -51,11 +47,11 @@ export function HomePage() {
             </p>
             <div className="home-hero-actions">
               <Link to="/register" className="btn-link btn-accent btn-lg">
-                Analyse your first tender <Icon name="arrowRight" />
+                Start your free trial <Icon name="arrowRight" />
               </Link>
               <Link to="/login" className="btn-link btn-ghost-light btn-lg">Log in</Link>
             </div>
-            <p className="home-hero-note">No credit card. Works on your phone.</p>
+            <p className="home-hero-note">Your first {FREE_TRIAL_TENDERS} tenders are free. No card needed. Works on your phone.</p>
           </div>
           <HeroPreview />
         </div>
@@ -110,21 +106,31 @@ export function HomePage() {
         </div>
       </section>
 
-      <section className="home-cta">
-        <div className="home-container home-cta-inner">
-          <h2>Try it on the next tender you&rsquo;re considering</h2>
-          <Link to="/register" className="btn-link btn-accent btn-lg">Create a free account <Icon name="arrowRight" /></Link>
+      <section className="home-section home-section-alt">
+        <div className="home-container home-teasers">
+          <Link to="/pricing" className="home-teaser">
+            <p className="home-kicker">Pricing</p>
+            <h3>Your first {FREE_TRIAL_TENDERS} tenders free</h3>
+            <p>Every feature in the free trial, no card needed. See the plans for afterwards.</p>
+            <span className="home-teaser-link">See pricing <Icon name="arrowRight" /></span>
+          </Link>
+          <Link to="/faq" className="home-teaser">
+            <p className="home-kicker">FAQ</p>
+            <h3>What happens to my documents?</h3>
+            <p>Plus scanned PDFs, Hindi tenders, accuracy and more, answered plainly.</p>
+            <span className="home-teaser-link">Read the FAQ <Icon name="arrowRight" /></span>
+          </Link>
         </div>
       </section>
 
-      <footer className="home-footer">
-        <div className="home-container home-footer-inner">
-          <Logo size={24} />
-          <p>AI can make mistakes. Always confirm important details on the source page before you bid.</p>
-          <p>&copy; {new Date().getFullYear()} {PRODUCT_NAME}</p>
+      <section className="home-cta">
+        <div className="home-container home-cta-inner">
+          <h2>Try it on the next tender you&rsquo;re considering</h2>
+          <Link to="/register" className="btn-link btn-accent btn-lg">Start your free trial <Icon name="arrowRight" /></Link>
         </div>
-      </footer>
-    </div>
+      </section>
+
+    </PublicLayout>
   );
 }
 

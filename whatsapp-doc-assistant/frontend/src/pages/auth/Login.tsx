@@ -41,7 +41,7 @@ export function LoginPage() {
     <AuthLayout
       title="Welcome back"
       subtitle="Log in to see your tenders."
-      footer={<>New to {PRODUCT_NAME}? <Link to="/register">Create a free account</Link></>}
+      footer={<>New to {PRODUCT_NAME}? <Link to="/register">Start your free trial</Link></>}
     >
       <form onSubmit={onSubmit}>
         <label className="field">

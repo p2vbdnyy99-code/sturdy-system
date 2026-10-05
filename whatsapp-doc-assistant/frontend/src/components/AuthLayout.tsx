@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Logo } from './Logo';
 import { Icon } from './Icon';
 import { PRODUCT_NAME } from '../config/product';
+import { FREE_TRIAL_TENDERS } from '../config/site';
 
 // Shared frame for the signed-out pages (login, register, verify email) and
 // the first-run steps (create/choose company): a navy brand panel beside the
@@ -33,7 +34,7 @@ export function AuthLayout({ title, subtitle, children, footer }: {
             ))}
           </ul>
         </div>
-        <p className="auth-brand-note">Free during the beta</p>
+        <p className="auth-brand-note">Early access &middot; your first {FREE_TRIAL_TENDERS} tenders free</p>
       </aside>
       <main className="auth-main">
         <div className="auth-card">

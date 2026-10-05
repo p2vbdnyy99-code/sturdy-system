@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { register, type RegisterResult } from '../../api/auth';
 import { ApiError } from '../../api/client';
 import { AuthLayout } from '../../components/AuthLayout';
+import { FREE_TRIAL_TENDERS } from '../../config/site';
 
 export function RegisterPage() {
   const [email, setEmail] = useState('');
@@ -48,8 +49,8 @@ export function RegisterPage() {
 
   return (
     <AuthLayout
-      title="Create your free account"
-      subtitle="Upload your first tender in under a minute."
+      title="Start your free trial"
+      subtitle={`Your first ${FREE_TRIAL_TENDERS} tenders are free. No card needed.`}
       footer={<>Already have an account? <Link to="/login">Log in</Link></>}
     >
       <form onSubmit={onSubmit}>
@@ -70,7 +71,7 @@ export function RegisterPage() {
         </label>
         {error && <p role="alert" className="error-text">{error}</p>}
         <button type="submit" disabled={submitting} className="submit-button">
-          {submitting ? 'Creating account…' : 'Create account'}
+          {submitting ? 'Creating account…' : 'Start free trial'}
         </button>
       </form>
     </AuthLayout>

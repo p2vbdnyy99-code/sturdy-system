@@ -2619,3 +2619,63 @@ Verified: frontend build clean, 0 lint errors, unit 22/22; local screenshots
 at 1280/375 with no overflow, CSP violations or console errors; backend 3x
 460/301/254 with 0 failures. Deployed: live `/` and `/login` titled
 "Tenderpe", logo "Tenderpe", old name absent; live check 11/11.
+
+# Rename: Tenderpe → TenderTez, and public site pages (Oct 2026)
+
+## Why Tenderpe was dropped
+
+A domain check after the Tenderpe rename found tenderpe.com (registered
+2022), tenderpe.in and tenderpe.co.in all owned, by TenderPe B2B Web & App
+LLP: an existing Indian B2B marketing app with Android/iOS apps. The earlier
+name search only looked for tender products and missed it. Candidates were
+re-checked by authoritative RDAP status (404 = unregistered) plus a business
+search: TenderJhat, BidJhat and TenderTez had no business found and both .in
+and .com free (5 Oct 2026). The user chose TenderTez (note: "Tez" was Google
+Pay's earlier name in India). tenderlytic.in/.com turned out to be taken too.
+Not a trademark search; check ipindia.gov.in.
+
+## Public pages
+
+- `components/PublicLayout.tsx`: shared header (Pricing, FAQ, About, Log in,
+  Start free; "Open dashboard" when signed in) and footer (product, company,
+  account links; contact email only when set). The phone menu is a
+  `<details>` element: no script, CSP-safe, keyboard-accessible.
+- `/pricing` (`pages/Pricing.tsx`): free beta now; planned plans after the
+  beta from `config/site.ts` `PLANNED_PLANS` — Starter ₹499/5 tenders,
+  Growth ₹999/15, Pro ₹1,999/40 a month. Quotas sized against the measured
+  Flex cost (~₹23–30 per tender) so each plan keeps a margin at full use.
+  Marked "prices may change, GST may apply". No billing code exists.
+- `/faq` (`pages/Faq.tsx`): every answer checked against the product or a
+  source — 50 MB upload (`BIDPILOT_MAX_UPLOAD_MB` default), first 300 pages
+  (`MAX_PDF_PAGES`), OCR English only (`createWorker('eng')`) and up to 15
+  scanned pages (`MAX_OCR_PAGES`), company isolation, OpenAI API data not used
+  for training and kept up to 30 days (OpenAI "your data" docs, linked). The
+  delete-my-data answer only appears once a contact email is set.
+- `/about` (`pages/About.tsx`): company voice; the founder's note and the
+  contact email come from `config/site.ts` (`FOUNDER`, `CONTACT_EMAIL`) and
+  are left out while empty — nothing invented, no placeholders.
+- Homepage moved onto the shared layout; "Scanned pages are read too" now
+  says typed PDFs work best; pricing and FAQ teasers; `/#how-it-works` from
+  other pages scrolls to the section.
+
+## Verification
+
+- Playwright, desktop and 375px: `/`, `/pricing`, `/faq`, `/about` render
+  with the TenderTez brand, no overflow, FAQ answers open, phone menu opens
+  and navigates, footer "How it works" lands on the section, no CSP
+  violations or console errors (15/15). Signed-in app pages unchanged
+  (screens clean; functional checks 24/24).
+- Frontend build clean, 0 lint errors, unit 22/22; backend 3x 460/301/254.
+
+## Copy change: "beta" → "early access" with a free trial
+
+Requested by the user. Every public "beta" wording now says early access, and
+the offer is a free trial of the first `FREE_TRIAL_TENDERS` (5) tenders,
+user's choice over a 14-day trial or "free for all of early access". Shown on
+the homepage, register page, auth panel, pricing ("Start with 5 tenders
+free"; plans are "after your free trial"), FAQ ("Is there a free trial?") and
+About. Not enforced in code: there is no paid plan to move to yet, so the
+pages promise "your first 5 tenders free" and that nothing is charged without
+notice, both true today. A browser scan of /, /pricing, /faq (all answers
+open), /about, /register and /login finds no "beta". Checks: public pages
+15/15, app flows 24/24, backend 3x unchanged.
