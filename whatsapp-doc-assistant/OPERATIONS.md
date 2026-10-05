@@ -59,7 +59,12 @@ sibling of `backend/`/`frontend/`, since the Docker build needs both).
   process exited mid-analysis). Fixed: the pool now logs
   `bidpilot db: idle connection dropped` and reconnects. If that warning
   shows up often, look at the `tenderlytic-db` machine.
-- **Required secret beyond the list below:** `BIDPILOT_PUBLIC_BASE_URL=https://tenderlytic-api.fly.dev`.
+- **Domains:** https://tendertez.in (main), plus www.tendertez.in, tendertez.com and
+  www.tendertez.com, all on Fly certificates (`fly certs list`). DNS is at Hostinger:
+  `@` A `66.241.124.41` and AAAA `2a09:8280:1::196:8804:0`, `www` CNAME to the apex.
+  The original https://tenderlytic-api.fly.dev still works.
+- **Required secret beyond the list below:** `BIDPILOT_PUBLIC_BASE_URL=https://tendertez.in`
+  (was the fly.dev address until the domain went live).
   Without it, signed document-download links point at `localhost`.
 - **Migrations are NOT run on deploy.** New `drizzle/` migrations must be
   applied by hand: `fly proxy 15432:5432 --app tenderlytic-db`, then run

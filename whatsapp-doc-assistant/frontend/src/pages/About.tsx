@@ -47,7 +47,7 @@ export function AboutPage() {
             <aside className="about-founder">
               <p className="home-kicker">From the founder</p>
               {FOUNDER.story.map((para) => <p key={para}>{para}</p>)}
-              <p className="about-founder-sign">{FOUNDER.name}, {FOUNDER.city}</p>
+              <p className="about-founder-sign">{FOUNDER.name}<span>Founder, {PRODUCT_NAME} &middot; {FOUNDER.city}</span></p>
             </aside>
           )}
         </div>

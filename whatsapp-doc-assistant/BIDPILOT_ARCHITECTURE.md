@@ -2679,3 +2679,13 @@ pages promise "your first 5 tenders free" and that nothing is charged without
 notice, both true today. A browser scan of /, /pricing, /faq (all answers
 open), /about, /register and /login finds no "beta". Checks: public pages
 15/15, app flows 24/24, backend 3x unchanged.
+
+## Founder note and contact email
+
+`config/site.ts`: `CONTACT_EMAIL` = the founder's address (shown in the
+About call to action, footer, and the FAQ "Can I delete my data?" answer,
+which only appears once an address is set); `FOUNDER` = Sayali Londhe,
+Mumbai, with a two-paragraph note written only from what the founder
+provided (no invented background), for the founder to edit. Checked: public
+pages 15/15, founder note + footer email + delete-data FAQ present, no
+overflow at 375px.
