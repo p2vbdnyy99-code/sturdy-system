@@ -304,6 +304,14 @@ export function buildDbConfig(env = {}) {
  *                                 (default: 180000). Longer than the global
  *                                 AI_TIMEOUT_MS because a dense chunk's 8000-
  *                                 token output can legitimately take 90s+.
+ *   BIDPILOT_ANALYSIS_FLEX       "true" (default) runs chunk extraction on
+ *                                 OpenAI's Flex tier: same model, half the
+ *                                 price, slower and sometimes out of capacity.
+ *                                 Any Flex failure retries that chunk once on
+ *                                 the standard tier. "false" = standard only.
+ *   BIDPILOT_ANALYSIS_FLEX_TIMEOUT_MS  How long to wait for a Flex answer
+ *                                 before retrying on standard (default:
+ *                                 120000; standard chunks measured 20-50s).
  */
 export function buildBidpilotConfig(env = {}) {
   return {
@@ -333,6 +341,8 @@ export function buildBidpilotConfig(env = {}) {
       concurrency: Math.max(1, Number(env.BIDPILOT_ANALYSIS_CONCURRENCY) || 4),
       globalConcurrency: Math.max(1, Number(env.BIDPILOT_ANALYSIS_GLOBAL_CONCURRENCY) || 4),
       aiTimeoutMs: Math.max(1000, Number(env.BIDPILOT_ANALYSIS_AI_TIMEOUT_MS) || 180_000),
+      flex: String(env.BIDPILOT_ANALYSIS_FLEX ?? 'true').toLowerCase() !== 'false',
+      flexTimeoutMs: Math.max(1000, Number(env.BIDPILOT_ANALYSIS_FLEX_TIMEOUT_MS) || 120_000),
     },
     eligibility: {
       maxCallsPerCompanyPerDay: Math.max(1, Number(env.BIDPILOT_ELIGIBILITY_MAX_CALLS_PER_COMPANY_PER_DAY) || 100),

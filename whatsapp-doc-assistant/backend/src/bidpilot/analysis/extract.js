@@ -82,6 +82,10 @@ export async function extractChunk(chunk) {
     // the pipeline instead, so the two retry layers never multiply.
     timeoutMs: config.bidpilot.analysis.aiTimeoutMs,
     maxRetries: 1,
+    // Bulk of the AI bill: half price on OpenAI's Flex tier, with a fallback
+    // to standard inside the provider (see ai/openai.js). Eligibility checks
+    // stay standard: they are interactive and cost ~1/40th of an analysis.
+    ...(config.bidpilot.analysis.flex ? { flex: { timeoutMs: config.bidpilot.analysis.flexTimeoutMs } } : {}),
   });
 
   return safeJson(raw);

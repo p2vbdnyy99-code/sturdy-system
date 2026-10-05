@@ -20,10 +20,12 @@ export class AIProvider {
    * little effort on simple tasks (e.g. intent classification).
    *
    * `timeoutMs` / `maxRetries` optionally override the provider's client-wide
-   * timeout and SDK retry count for this one call.
+   * timeout and SDK retry count for this one call. `flex` asks for a cheaper,
+   * slower tier where the provider has one (OpenAI's Flex, with a fallback to
+   * standard); providers without one ignore it.
    *
    * @param {{ system?: string, user: string, maxTokens?: number, reasoningEffort?: string,
-   *           timeoutMs?: number, maxRetries?: number }} _args
+   *           timeoutMs?: number, maxRetries?: number, flex?: { timeoutMs: number } }} _args
    * @returns {Promise<string>}
    */
   // eslint-disable-next-line no-unused-vars

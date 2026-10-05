@@ -72,6 +72,13 @@ sibling of `backend/`/`frontend/`, since the Docker build needs both).
 - **Watch the OpenAI credit balance.** When it runs out, every analysis and
   eligibility check fails, and the app reports it as "OpenAI rate limit
   exceeded".
+- **Analysis runs on OpenAI's Flex tier** (`BIDPILOT_ANALYSIS_FLEX`, on by
+  default): same model, half the price. A section Flex can't serve (no
+  capacity, error, or no answer within `BIDPILOT_ANALYSIS_FLEX_TIMEOUT_MS`,
+  default 2 minutes) is retried once on standard. Count fallbacks with
+  `grep "metric ai_flex_fallback"`; `metric ai_call ... tier=` shows which
+  tier served each call. If fallbacks are frequent, analyses are slower and
+  cost close to full price: set `BIDPILOT_ANALYSIS_FLEX=false`.
 
 **One-time setup** (from `whatsapp-doc-assistant/`):
 ```

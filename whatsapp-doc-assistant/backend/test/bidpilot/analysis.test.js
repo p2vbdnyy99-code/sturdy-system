@@ -352,6 +352,24 @@ test('replaceAnalysis (repo-level)', { skip: SKIP_REASON }, async (t) => {
     assert.equal(config.bidpilot.analysis.aiTimeoutMs, 180_000, 'default is 3 minutes, not the 60s client default');
   });
 
+  await t.test('chunk extraction uses the half-price Flex tier by default, and not when switched off', async () => {
+    const { scope, tender } = await multiChunkTender('flex', 1);
+    const seen = [];
+    setProvider({ name: 'mock-args', async complete(args) { seen.push(args); return mockResultForPage(1); } });
+
+    assert.equal(config.bidpilot.analysis.flex, true, 'on by default');
+    await runAnalysis(scope, tender.id, { isReanalysis: false });
+    assert.deepEqual(seen[0].flex, { timeoutMs: 120_000 });
+
+    config.bidpilot.analysis.flex = false;
+    try {
+      await runAnalysis(scope, tender.id, { isReanalysis: true });
+      assert.equal(seen[1].flex, undefined);
+    } finally {
+      config.bidpilot.analysis.flex = true;
+    }
+  });
+
   await t.test('two analyses at once never exceed the server-wide AI call cap', async () => {
     const previous = config.bidpilot.analysis.globalConcurrency;
     config.bidpilot.analysis.globalConcurrency = 2;

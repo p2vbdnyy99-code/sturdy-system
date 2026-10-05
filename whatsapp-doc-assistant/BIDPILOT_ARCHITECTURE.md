@@ -2542,3 +2542,59 @@ failed:".
 - Backend 3x: **451/0/1, 293/0/16, 246/0/24** (from 443/286/239).
   Frontend: `tsc -b` + build clean, oxlint 10 warnings / 0 errors, unit
   tests 22/22.
+
+# Cost: analysis on OpenAI's Flex tier (Oct 2026)
+
+Asked for: remove the AI cost entirely with the same quality and speed. Not
+achievable; options were researched (Oct 2026) and presented:
+
+- Groq free tier: 6,000 tokens/minute; one analysis section is ~14,000
+  tokens, so not even one section fits.
+- OpenRouter free models: ~50 requests/day for the whole app.
+- Gemini free tier: workable limits, but Google may use free-tier inputs to
+  improve its products, which contradicts the homepage's privacy promise;
+  quality untested.
+- Self-hosting: a GPU server costs more than the expected beta AI bill.
+- Rules only: free, but requirements/red flags quality collapses.
+
+Chosen: OpenAI Flex for analysis. Same model (gpt-5.6-terra), so the same
+results, at $1/$6 per million input/output tokens instead of $2/$12 (OpenAI
+pricing page, checked 5 Oct 2026). Measured typical tender ~₹45–60 →
+~₹23–30.
+
+## Implementation
+
+- `ai/openai.js` `complete({ ..., flex: { timeoutMs } })`: sends
+  `service_tier: "flex"` with its own timeout and no SDK retries. If the Flex
+  attempt fails for any reason except exhausted credit (`insufficient_quota`)
+  or bad credentials (401/403), the call is repeated once on standard with the
+  caller's timeout/retries. OpenAI returns `429 Resource Unavailable` when
+  Flex has no capacity and does not bill it. Broad on purpose: a model that
+  refused `service_tier=flex` (400) still completes, so enabling Flex can't
+  fail an analysis standard would have finished. Logged: `metric
+  ai_flex_fallback`, and `tier=` on every `metric ai_call`.
+- `analysis/extract.js` passes `flex` when `config.bidpilot.analysis.flex`
+  (`BIDPILOT_ANALYSIS_FLEX`, default true; `BIDPILOT_ANALYSIS_FLEX_TIMEOUT_MS`,
+  default 120000). Eligibility checks and Papyr stay on standard (interactive;
+  eligibility is ~1/40th of an analysis). Anthropic ignores `flex`.
+
+## Speed — honest expectation
+
+Flex is documented as slower. Standard sections measured 20–50s. Worst case
+per section is the Flex timeout (2 min) plus a standard run; sections still
+run 4 at a time. Not measured on real traffic: the OpenAI account has no
+credit. After the top-up, compare `ms=` on `metric ai_call tier=flex` lines
+with earlier standard runs, and count `ai_flex_fallback`; if Flex is much
+slower or often unavailable, set `BIDPILOT_ANALYSIS_FLEX=false` (no deploy
+needed beyond the secret).
+
+## Verification
+
+- Provider tests (stubbed SDK, no network): flex request shape (tier,
+  120s timeout, no SDK retries); fallback to standard with the caller's
+  options on 429 no-capacity, timeout, 5xx and a 400 refusing flex; no retry
+  on `insufficient_quota` or 401; no `service_tier` without flex.
+- Pipeline test: extraction asks for flex by default and not when switched
+  off. Config test: defaults and overrides. The new tests fail without the
+  change.
+- Backend 3x: **460/0/1, 301/0/16, 254/0/24** (from 451/293/246).

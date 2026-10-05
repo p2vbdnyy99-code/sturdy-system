@@ -114,3 +114,14 @@ test('buildBudgetConfig: beta-safe defaults, overrides, and 0 = unlimited', asyn
   assert.equal(buildBudgetConfig({ AI_DAILY_CALL_CAP: 'nope' }).dailyAiCalls, 500);
   assert.equal(buildBudgetConfig({ AI_MONTHLY_CALL_CAP: '-10' }).monthlyAiCalls, 5000);
 });
+
+test('buildBidpilotConfig: Flex tier for analysis is on by default and can be switched off', async () => {
+  const { buildBidpilotConfig } = await import('../src/config.js');
+  const def = buildBidpilotConfig({}).analysis;
+  assert.equal(def.flex, true);
+  assert.equal(def.flexTimeoutMs, 120_000);
+  assert.equal(buildBidpilotConfig({ BIDPILOT_ANALYSIS_FLEX: 'false' }).analysis.flex, false);
+  assert.equal(buildBidpilotConfig({ BIDPILOT_ANALYSIS_FLEX: 'FALSE' }).analysis.flex, false);
+  assert.equal(buildBidpilotConfig({ BIDPILOT_ANALYSIS_FLEX: 'true' }).analysis.flex, true);
+  assert.equal(buildBidpilotConfig({ BIDPILOT_ANALYSIS_FLEX_TIMEOUT_MS: '90000' }).analysis.flexTimeoutMs, 90_000);
+});

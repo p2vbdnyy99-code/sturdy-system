@@ -78,3 +78,73 @@ for (const provider of ['openai', 'anthropic']) {
     assert.deepEqual(calls[0], {});
   });
 }
+
+// OpenAI Flex tier: half price, same model. Each scripted outcome is one SDK
+// call; an Error is thrown, anything else returned. No network.
+function flexProvider(outcomes) {
+  const p = createProvider({ provider: 'openai', model: 'm', timeoutMs: 60_000, openaiKey: 'sk-openai' });
+  const calls = [];
+  p.client = {
+    responses: {
+      create: async (body, options) => {
+        calls.push({ body, options });
+        const next = outcomes.shift();
+        if (next instanceof Error) throw next;
+        return next ?? { output_text: 'standard answer' };
+      },
+    },
+  };
+  return { p, calls };
+}
+const apiError = (status, code, message = `${status} error`) => Object.assign(new Error(message), { status, code });
+const FLEX = { timeoutMs: 120_000 };
+
+test('openai flex: asks for the flex tier, with its own timeout and no SDK retries', async () => {
+  const { p, calls } = flexProvider([{ output_text: 'flex answer', service_tier: 'flex' }]);
+  const out = await p.complete({ user: 'hi', timeoutMs: 180_000, maxRetries: 1, flex: FLEX });
+  assert.equal(out, 'flex answer');
+  assert.equal(calls.length, 1);
+  assert.equal(calls[0].body.service_tier, 'flex');
+  assert.deepEqual(calls[0].options, { timeout: 120_000, maxRetries: 0 });
+});
+
+test('openai flex: no capacity (429) falls back once to standard with the caller\'s options', async () => {
+  const { p, calls } = flexProvider([apiError(429, 'resource_unavailable', 'Resource Unavailable')]);
+  const out = await p.complete({ user: 'hi', timeoutMs: 180_000, maxRetries: 1, flex: FLEX });
+  assert.equal(out, 'standard answer');
+  assert.equal(calls.length, 2);
+  assert.equal(calls[1].body.service_tier, undefined);
+  assert.deepEqual(calls[1].options, { timeout: 180_000, maxRetries: 1 });
+});
+
+test('openai flex: a flex timeout or server error also falls back to standard', async () => {
+  for (const err of [Object.assign(new Error('Request timed out.'), { name: 'APIConnectionTimeoutError' }), apiError(503)]) {
+    const { p, calls } = flexProvider([err]);
+    assert.equal(await p.complete({ user: 'hi', flex: FLEX }), 'standard answer');
+    assert.equal(calls.length, 2);
+  }
+});
+
+test('openai flex: out of credit is not retried (standard would fail the same way)', async () => {
+  const { p, calls } = flexProvider([apiError(429, 'insufficient_quota')]);
+  await assert.rejects(p.complete({ user: 'hi', flex: FLEX }), (err) => err.code === 'rate_limit');
+  assert.equal(calls.length, 1);
+});
+
+test('openai flex: the model refusing flex (400) still completes on standard', async () => {
+  const { p, calls } = flexProvider([apiError(400, 'invalid_request_error', "service_tier 'flex' is not supported")]);
+  assert.equal(await p.complete({ user: 'hi', flex: FLEX }), 'standard answer');
+  assert.equal(calls.length, 2);
+});
+
+test('openai flex: bad credentials are not retried', async () => {
+  const { p, calls } = flexProvider([apiError(401, 'invalid_api_key')]);
+  await assert.rejects(p.complete({ user: 'hi', flex: FLEX }), (err) => err.code === 'invalid_key');
+  assert.equal(calls.length, 1);
+});
+
+test('openai: without flex the request has no service_tier (Papyr and eligibility unchanged)', async () => {
+  const { p, calls } = flexProvider([]);
+  await p.complete({ user: 'hi' });
+  assert.equal(calls[0].body.service_tier, undefined);
+});
