@@ -236,3 +236,37 @@ test('normalizeBoqQuantity', async (t) => {
     assert.equal(out.boq[2].quantity, '1');
   });
 });
+
+// Production, 5 Oct 2026: the live model returned every overview field with
+// sourcePage "2" (a string), and all nine were dropped, so the key facts
+// strip was empty on every tender.
+test('validateChunkResult — string page numbers and Indian dates (live regression)', async (t) => {
+  await t.test('a numeric-string page is a real page; "p.2" is not', () => {
+    const out = validateChunkResult({
+      overview: {
+        emd: { value: 'Rs. 1,27,300/-', sourcePage: '2', evidenceText: 'EMD: Rs. 1,27,300/-' },
+        tenderFee: { value: 'NIL', sourcePage: 'p.2', evidenceText: 'Cost of Bid Document: NIL' },
+      },
+      requirements: [{ category: 'FINANCIAL', description: 'EMD', sourcePage: '2', evidenceText: 'q' }],
+      dates: [{ label: 'Bid opening', rawText: '04/05/2026', sourcePage: '3' }],
+      redFlags: [{ description: 'No EMD exemption', sourcePage: '2' }],
+    }, { validPages });
+    assert.deepEqual(out.overview.emd, { value: 'Rs. 1,27,300/-', sourcePage: 2, evidenceText: 'EMD: Rs. 1,27,300/-' });
+    assert.equal(out.overview.tenderFee, undefined);
+    assert.equal(out.requirements[0].sourcePage, 2);
+    assert.equal(out.dates[0].sourcePage, 3);
+    assert.equal(out.redFlags.length, 1);
+    assert.equal(out.droppedCount, 1);
+  });
+
+  await t.test('deadline: model ISO date preferred, else the day/month/year text, never US order', () => {
+    const withIso = validateChunkResult({ overview: { submissionDeadline: {
+      value: '02/05/2026 @1500hrs', parsedDate: '2026-05-02T15:00:00+05:30', sourcePage: 2, evidenceText: 'q' } } }, { validPages });
+    assert.equal(withIso.overview.submissionDeadline.parsedDate.toISOString(), '2026-05-02T09:30:00.000Z');
+    const textOnly = validateChunkResult({ overview: { submissionDeadline: {
+      value: '02/05/2026', sourcePage: 2, evidenceText: 'q' } } }, { validPages });
+    assert.equal(textOnly.overview.submissionDeadline.parsedDate.toISOString(), '2026-05-02T00:00:00.000Z', '2 May, not 5 Feb');
+    const usStyleModelDate = validateChunkResult({ dates: [{ label: 'x', rawText: '02/05/2026', parsedDate: '02/05/2026', sourcePage: 1 }] }, { validPages });
+    assert.equal(usStyleModelDate.dates[0].parsedDate.toISOString(), '2026-05-02T00:00:00.000Z');
+  });
+});

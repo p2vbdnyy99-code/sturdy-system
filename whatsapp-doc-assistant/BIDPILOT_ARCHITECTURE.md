@@ -2689,3 +2689,57 @@ Mumbai, with a two-paragraph note written only from what the founder
 provided (no invented background), for the founder to edit. Checked: public
 pages 15/15, founder note + footer email + delete-data FAQ present, no
 overflow at 375px.
+
+# Fix: key facts dropped on every live analysis; deadlines read month-first (Oct 2026)
+
+Found by the first end-to-end run on production with OpenAI credit (5 Oct
+2026, IIT Hyderabad tender, 40 pages): the analysis completed (2 sections,
+both on the Flex tier, 20s and 25s; 44 requirements, 7 dates, 9 red flags)
+but the overview, and so the key-facts strip, was empty.
+
+## Causes (verified, not guessed)
+
+1. A diagnostic call from the production container on the same section
+   showed the model returning all nine overview fields correctly (EMD
+   Rs. 1,27,300/-, estimated cost Rs. 63,63,686/-, deadline
+   "02/05/2026 @1500hrs", all on page 2) but with `"sourcePage": "2"` as a
+   string. `validateChunkResult` requires an integer, so every field was
+   dropped (`dropped=10` in the run's metric). The prompt's own overview
+   example said `sourcePage: 'number'` (a string), unlike every other example.
+2. Overview dates went through `Date.parse`, which reads "02/05/2026" as
+   5 February. This run escaped only because "@1500hrs" made the string
+   unparseable (stored as text). The dates array was correct because the
+   model also returns an ISO `parsedDate` there.
+
+## Fix
+
+- `analysis/dates.js` `parseTenderDate()`: strict reading of dates as Indian
+  tenders write them — ISO; day/month/year with / - or . (never month-first);
+  month names; times like "@1500hrs", "15:00", "3:00 PM" in IST. A date with
+  no time is midnight UTC (the existing convention). Impossible dates and
+  phrases ("within 7 days of award") return null. 6 tests.
+- `analysis/schema.js`: numeric-string page numbers ("2") are accepted on
+  every item; "p.2" still is not. Overview deadline/opening date get
+  `parsedDate` from the model's ISO date, else the value as written, via
+  `parseTenderDate`; the dates array uses it instead of `Date.parse` too.
+- `repo/analysis.js`: stores that `parsedDate`; `Date.parse` removed.
+- `analysis/extract.js` prompt: page numbers are plain numbers; Indian dates
+  are day/month/year; give `parsedDate` (ISO, IST) for deadline/opening date
+  and dates; the overview example now shows real numbers and the date shape.
+
+## Verification
+
+- Regression tests from the live failure (schema: string pages, "p.2"
+  rejected, ISO preferred, never US order; pipeline over Postgres: string
+  pages + "02/05/2026 @1500hrs" → organization, EMD and a deadline of
+  2026-05-02 15:00 IST saved) fail on the previous code and pass now.
+- Backend 3x: **469/0/1, 309/0/16, 262/0/24**.
+- After deploy: re-run the live tender and confirm the key facts appear.
+
+## Also found, not fixed here
+
+- Sign-up says "We've sent a verification link to your email", but no email
+  provider is connected, so nothing arrives. Login does not require
+  verification, so users can still get in, but the message misleads.
+- The dev-mode verification link (with its token) is written to the
+  production log on every sign-up.

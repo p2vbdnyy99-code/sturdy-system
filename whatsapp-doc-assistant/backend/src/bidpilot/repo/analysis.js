@@ -90,8 +90,9 @@ export async function replaceAnalysis(scope, tenderId, aggregated, meta = {}) {
     const overviewEvidence = {};
     for (const [field, entry] of Object.entries(overview)) {
       if (DATE_OVERVIEW_FIELDS.has(field)) {
-        const parsed = entry.value && !Number.isNaN(Date.parse(entry.value)) ? new Date(entry.value) : null;
-        overviewUpdate[field] = parsed;
+        // Parsed strictly in schema.js (day/month/year, IST); never
+        // Date.parse here, which reads 02/05/2026 as 5 February.
+        overviewUpdate[field] = entry.parsedDate ?? null;
         overviewEvidence[field] = { sourcePage: entry.sourcePage, evidenceText: entry.evidenceText, rawValue: entry.value };
       } else {
         overviewUpdate[field] = entry.value;

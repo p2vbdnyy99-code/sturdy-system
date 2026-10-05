@@ -88,6 +88,31 @@ test('replaceAnalysis (repo-level)', { skip: SKIP_REASON }, async (t) => {
     assert.equal(flags.length, 1);
   });
 
+  // Production regression (5 Oct 2026): string page numbers dropped every
+  // overview field, and Date.parse would read 02/05/2026 as 5 February.
+  await t.test('key facts survive string page numbers and day/month/year deadlines', async () => {
+    const { scope, tender } = await setupTender();
+    setProvider({
+      name: 'mock',
+      async complete() {
+        return JSON.stringify({
+          overview: {
+            organization: { value: 'Indian Institute of Technology Hyderabad', sourcePage: '1', evidenceText: 'IIT Hyderabad' },
+            emd: { value: 'Rs. 1,27,300/-', sourcePage: '1', evidenceText: 'EMD: Rs. 1,27,300/-' },
+            submissionDeadline: { value: '02/05/2026 @1500hrs', sourcePage: '1', evidenceText: 'Last Date for Submission of Bids 02/05/2026 @1500hrs' },
+          },
+        });
+      },
+    });
+    await runAnalysis(scope, tender.id, { isReanalysis: false });
+    const updated = await getTender(scope, tender.id);
+    assert.equal(updated.analysisStatus, 'COMPLETED', updated.analysisError ?? '');
+    assert.equal(updated.organization, 'Indian Institute of Technology Hyderabad');
+    assert.equal(updated.emd, 'Rs. 1,27,300/-');
+    assert.equal(updated.submissionDeadline.toISOString(), '2026-05-02T09:30:00.000Z', '2 May 2026, 15:00 IST');
+    assert.equal(updated.overviewEvidence.submissionDeadline.rawValue, '02/05/2026 @1500hrs');
+  });
+
   // tender_boq_items.quantity is numeric: one quantity written the way Indian
   // BOQs write it used to throw inside replaceAnalysis and fail the whole run.
   await t.test('real-world BOQ quantities are stored, not fatal to the analysis', async () => {

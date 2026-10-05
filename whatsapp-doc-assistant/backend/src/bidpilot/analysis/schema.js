@@ -10,6 +10,8 @@
 // Category values are whitelisted against the real DB enum so nothing
 // invalid can ever reach an insert.
 
+import { parseTenderDate } from './dates.js';
+
 export const REQUIREMENT_CATEGORIES = [
   'FINANCIAL', 'TECHNICAL', 'LEGAL', 'EXPERIENCE', 'CERTIFICATION', 'LICENSE',
   'MANPOWER', 'EQUIPMENT', 'OEM', 'DOCUMENT', 'GEOGRAPHIC', 'SPECIAL_CONDITION', 'OTHER',
@@ -21,6 +23,13 @@ export const OVERVIEW_FIELDS = [
 ];
 
 const isNonEmptyString = (v) => typeof v === 'string' && v.trim().length > 0;
+
+// Overview date fields; the model also returns parsedDate for these.
+const DATE_OVERVIEW_FIELDS = new Set(['submissionDeadline', 'openingDate']);
+
+/** Models sometimes write the page as a string ("2"); that is still a real
+ *  page number. Anything else (e.g. "p.2", "2-3") is not accepted. */
+const toPage = (p) => (typeof p === 'string' && /^\d+$/.test(p.trim()) ? Number(p.trim()) : p);
 
 const PLAIN_NUMBER = /^[+-]?\d+(\.\d+)?$/;
 const NUMBER_THEN_UNIT = /^([+-]?\d+(?:\.\d+)?)\s*([A-Za-z][A-Za-z.\s/]*)$/;
@@ -77,6 +86,15 @@ const isConfidence = (v) => v === undefined || v === null || (typeof v === 'numb
  */
 export function validateChunkResult(raw, { validPages }) {
   const pageOk = (p) => isPositiveInt(p) && validPages.has(p);
+  // Normalise string page numbers on every item before validating.
+  for (const key of ['requirements', 'boq', 'dates', 'redFlags']) {
+    if (Array.isArray(raw?.[key])) {
+      for (const item of raw[key]) if (item && typeof item === 'object') item.sourcePage = toPage(item.sourcePage);
+    }
+  }
+  if (raw?.overview && typeof raw.overview === 'object') {
+    for (const entry of Object.values(raw.overview)) if (entry && typeof entry === 'object') entry.sourcePage = toPage(entry.sourcePage);
+  }
   let dropped = 0;
 
   const overview = {};
@@ -98,6 +116,11 @@ export function validateChunkResult(raw, { validPages }) {
         sourcePage: entry.sourcePage,
         evidenceText: entry.evidenceText.trim(),
       };
+      if (DATE_OVERVIEW_FIELDS.has(field)) {
+        // Strict Indian reading (day/month/year, IST) of the model's date,
+        // falling back to the value as written; null if neither is a date.
+        overview[field].parsedDate = parseTenderDate(entry.parsedDate) ?? parseTenderDate(entry.value);
+      }
     }
   }
 
@@ -147,8 +170,8 @@ export function validateChunkResult(raw, { validPages }) {
     if (!d || typeof d !== 'object') { dropped += 1; continue; }
     if (!isNonEmptyString(d.label) || !isNonEmptyString(d.rawText)) { dropped += 1; continue; }
     if (!pageOk(d.sourcePage)) { dropped += 1; continue; }
-    const parsedDate = isNonEmptyString(d.parsedDate) && !Number.isNaN(Date.parse(d.parsedDate))
-      ? new Date(d.parsedDate) : null;
+    // Never Date.parse: it reads 02/05/2026 as 5 February. See dates.js.
+    const parsedDate = parseTenderDate(d.parsedDate) ?? parseTenderDate(d.rawText);
     dates.push({
       label: d.label.trim(),
       rawText: d.rawText.trim(),

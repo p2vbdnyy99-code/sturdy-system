@@ -29,6 +29,10 @@ const SYSTEM_PROMPT =
   'the text below, and MUST include the supporting quoted/paraphrased text. ' +
   'These are commercially important fields — an incorrect value could lead ' +
   'a contractor to act on a wrong deadline or financial figure. ' +
+  'sourcePage is always a plain number (2, not "2" or "p.2"). Indian tenders ' +
+  'write dates day/month/year: 02/05/2026 is 2 May 2026. For submissionDeadline, ' +
+  'openingDate and every date entry, also give parsedDate as ISO 8601 in Indian ' +
+  'time (e.g. 2026-05-02T15:00:00+05:30) when the date is clear; omit it otherwise. ' +
   'If you cannot find a real page and real supporting text for something, ' +
   'OMIT it entirely rather than guessing or fabricating a citation. ' +
   `Valid requirement categories are exactly: ${REQUIREMENT_CATEGORIES.join(', ')}. ` +
@@ -37,8 +41,9 @@ const SYSTEM_PROMPT =
   'values):\n' +
   JSON.stringify({
     overview: {
-      organization: { value: 'string', sourcePage: 'number', evidenceText: 'string' },
-      tenderNumber: '... same shape for tenderNumber, location, estimatedValue, emd, tenderFee, contractDuration, submissionDeadline, openingDate',
+      organization: { value: 'string', sourcePage: 2, evidenceText: 'string' },
+      submissionDeadline: { value: 'the date and time as written', parsedDate: '2026-05-02T15:00:00+05:30', sourcePage: 2, evidenceText: 'string' },
+      tenderNumber: '... same { value, sourcePage, evidenceText } shape for tenderNumber, location, estimatedValue, emd, tenderFee, contractDuration; openingDate like submissionDeadline',
     },
     requirements: [{
       category: 'one of the valid categories',
@@ -51,7 +56,7 @@ const SYSTEM_PROMPT =
       confidence: 0.9,
     }],
     boq: [{ itemNumber: '1', description: 'string', quantity: 'string', unit: 'string', technicalSpecification: 'string', remarks: 'string', sourcePage: 1 }],
-    dates: [{ label: 'e.g. Pre-bid meeting', rawText: 'the exact date phrase as written', parsedDate: 'ISO date if confidently parseable, else omit', sourcePage: 1, evidenceText: 'string' }],
+    dates: [{ label: 'e.g. Pre-bid meeting', rawText: 'the exact date phrase as written', parsedDate: 'ISO 8601 in Indian time if clear, else omit', sourcePage: 1, evidenceText: 'string' }],
     redFlags: [{ description: 'a concerning clause or condition worth a human reviewing', sourcePage: 1, evidenceText: 'string' }],
   }) +
   INJECTION_GUARD;
