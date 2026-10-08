@@ -2858,3 +2858,48 @@ nothing useful, and search engines had nothing to go on.
 - Backend 3x: **490/0/1, 327/0/16, 272/0/25**. Frontend build, lint and unit
   tests 22/22. The 23-check UI run passes on the harness (homepage at `/`,
   no CSP violations or console errors).
+
+# Privacy policy page (Oct 2026)
+
+TenderTez had no privacy policy. `/privacy` served the WhatsApp assistant's
+old page, which describes a different product. A policy is also expected
+before running ads that lead to a sign-up form.
+
+- `frontend/src/pages/Privacy.tsx` at `/privacy-policy`, linked from the
+  public footer. Twelve short sections. Every statement was checked against
+  the code and hosting before writing:
+  - Passwords are argon2id hashes (`auth/passwordHash.js`).
+  - Sessions store the browser's user agent and no IP address
+    (`schema/sessions.js`).
+  - The company-profile fields listed are those in
+    `schema/company_profiles`.
+  - Analysis sends the document text to OpenAI; an eligibility check sends
+    the requirements plus the company profile (`eligibilityPipeline.js`).
+  - The OpenAI retention wording matches the FAQ's, with the same link.
+  - The only cookies are the session and CSRF cookies; the session lasts
+    30 days and is httpOnly.
+  - There are no analytics or third-party scripts (the CSP allows none).
+  - The app server and uploads volume are on Fly.io in Singapore. The
+    database's region could not be confirmed with the app-scoped token, so
+    the page names no country for it.
+  - Deletion is by email; there is no in-app delete.
+  - Nothing is claimed about legal compliance, backups or reply times.
+- Change the page whenever any of those facts change (new providers,
+  analytics, payments, email sending). `LAST_UPDATED` is at the top of the
+  file.
+- `seo.js`: `/privacy-policy` added to the public pages and sitemap. The
+  robots.txt entry `/settings` (no such route) became `/company-profile`.
+- `server.js`: on the site's own host (`BIDPILOT_PUBLIC_BASE_URL`), `/privacy`
+  now 301-redirects to `/privacy-policy`. Other hosts still get the WhatsApp
+  assistant's page, so another deployment's Meta app keeps its policy URL.
+
+## Verification
+
+- Tests: the redirect on the site host; the policy page's own title; the
+  updated robots and noindex lists. Backend 3x: **491/0/1, 328/0/16,
+  273/0/25**. Frontend build, lint (no warnings in new files) and unit tests
+  22/22.
+- Browser, harness (16 checks): the footer link opens the page; all 12
+  sections and the key facts are shown; the mail links work; no sideways
+  scroll on a phone; title and description in the served HTML; listed in the
+  sitemap; `/privacy` redirects; no CSP violations or console errors.

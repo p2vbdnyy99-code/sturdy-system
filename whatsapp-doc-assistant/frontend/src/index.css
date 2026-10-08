@@ -2264,6 +2264,54 @@ a:hover {
   margin: 0;
 }
 
+/* Privacy policy */
+
+.legal-section {
+  padding-top: 2.5rem;
+}
+
+.legal-container > * {
+  max-width: 46rem;
+}
+
+.legal-block {
+  margin-bottom: 2rem;
+}
+
+.legal-block h2 {
+  font-size: 1.25rem;
+  color: var(--navy-900);
+  margin-bottom: 0.6rem;
+}
+
+.legal-block p,
+.legal-block li {
+  font-size: 1rem;
+  line-height: 1.7;
+  color: var(--color-text);
+}
+
+.legal-block p {
+  margin-bottom: 0.8rem;
+}
+
+.legal-block ul {
+  padding-left: 1.25rem;
+  margin: 0 0 0.8rem;
+}
+
+.legal-block li {
+  margin-bottom: 0.45rem;
+  overflow-wrap: anywhere;
+}
+
+.legal-updated {
+  color: var(--color-text-muted);
+  font-size: 0.92rem;
+  border-top: 1px solid var(--color-border);
+  padding-top: 1rem;
+}
+
 /* FAQ */
 
 .faq-section {

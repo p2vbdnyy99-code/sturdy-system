@@ -13,6 +13,7 @@ import { HomePage } from './pages/Home';
 import { PricingPage } from './pages/Pricing';
 import { FaqPage } from './pages/Faq';
 import { AboutPage } from './pages/About';
+import { PrivacyPage } from './pages/Privacy';
 
 // M5d added /tenders/:id. /company-profile added Beta Readiness — the
 // eligibility engine's other required input had a working API client
@@ -61,6 +62,7 @@ export function AppRoutes() {
       <Route path="/pricing" element={<PricingPage />} />
       <Route path="/faq" element={<FaqPage />} />
       <Route path="/about" element={<AboutPage />} />
+      <Route path="/privacy-policy" element={<PrivacyPage />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );

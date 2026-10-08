@@ -14,6 +14,7 @@ import http from 'node:http';
 import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { app } from '../server.js';
+import { config } from '../src/config.js';
 
 const FRONTEND_DIST_INDEX = fileURLToPath(new URL('../../frontend/dist/index.html', import.meta.url));
 const SKIP_REASON = fs.existsSync(FRONTEND_DIST_INDEX)
@@ -110,6 +111,19 @@ test('same-origin static serving + SPA fallback (server.js)', { skip: SKIP_REASO
     assert.equal(res.status, 200);
     assert.match(res.contentType, /text\/html/);
     assert.match(res.body, /Privacy Policy/);
+  });
+
+  await t.test('on the site\'s own host, /privacy goes to the TenderTez privacy policy page', async () => {
+    const res = await new Promise((resolve, reject) => {
+      http.get(`${baseUrl}/privacy`, { headers: { host: new URL(config.bidpilot.localStorage.publicBaseUrl).host } }, (r) => {
+        r.resume(); r.on('end', () => resolve({ status: r.statusCode, location: r.headers.location }));
+      }).on('error', reject);
+    });
+    assert.equal(res.status, 301);
+    assert.equal(res.location, '/privacy-policy');
+    const page = await req('/privacy-policy');
+    assert.equal(page.status, 200);
+    assert.ok(page.body.includes('<title>Privacy policy | TenderTez</title>'));
   });
 
   await t.test('a missing hashed asset (has a file extension) 404s honestly instead of returning the SPA shell', async () => {

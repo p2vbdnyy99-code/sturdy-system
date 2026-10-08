@@ -31,6 +31,11 @@ export const PUBLIC_PAGES = {
     description: 'TenderTez is built in Mumbai by founder Sayali Londhe, so deciding whether to bid on a '
       + 'government tender no longer means a full day of reading first.',
   },
+  '/privacy-policy': {
+    title: 'Privacy policy | TenderTez',
+    description: 'What TenderTez collects, why, who it is shared with, and how to have it deleted. Your tenders '
+      + 'are used only to analyse them for you, and nothing on the site tracks you.',
+  },
   '/register': {
     title: 'Start your free trial | TenderTez',
     description: 'Create a TenderTez account and analyse your first 5 tenders free. No card needed.',
@@ -76,7 +81,7 @@ export function robotsTxt(baseUrl) {
     'Disallow: /bidpilot/',
     'Disallow: /dashboard',
     'Disallow: /tenders/',
-    'Disallow: /settings',
+    'Disallow: /company-profile',
     'Disallow: /onboarding/',
     'Disallow: /verify-email',
     '',

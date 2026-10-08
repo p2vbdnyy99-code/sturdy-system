@@ -101,7 +101,11 @@ app.get('/health', (_req, res) => {
 // Meta requires a reachable HTML privacy-policy URL before an app can go Live.
 // This serves a minimal, honest policy page for the assistant.
 
-app.get('/privacy', (_req, res) => {
+// On the TenderTez site itself, /privacy is TenderTez's own policy page; the
+// page below is the WhatsApp assistant's, kept for other deployments.
+const SITE_HOSTNAME = new URL(SITE_BASE_URL).hostname;
+app.get('/privacy', (req, res) => {
+  if (frontendDistExists && req.hostname === SITE_HOSTNAME) return res.redirect(301, '/privacy-policy');
   res.type('html').send(`<!doctype html>
 <html lang="en">
 <head>

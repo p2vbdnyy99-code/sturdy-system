@@ -64,6 +64,7 @@ export function PublicLayout({ children }: { children: ReactNode }) {
             <div>
               <p className="public-footer-heading">Company</p>
               <Link to="/about">About</Link>
+              <Link to="/privacy-policy">Privacy policy</Link>
               {CONTACT_EMAIL && <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>}
             </div>
             <div>

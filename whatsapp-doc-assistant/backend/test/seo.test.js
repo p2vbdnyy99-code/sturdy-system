@@ -23,7 +23,7 @@ test('the home page canonical is the bare domain, and a trailing slash maps to t
 });
 
 test('app pages, login and unknown paths are kept out of search', () => {
-  for (const path of ['/dashboard', '/tenders/abc', '/login', '/settings/company', '/no-such-page']) {
+  for (const path of ['/dashboard', '/tenders/abc', '/login', '/company-profile', '/privacy', '/no-such-page']) {
     const html = renderIndexHtml(INDEX, path, BASE);
     assert.ok(html.includes('<meta name="robots" content="noindex" />'), path);
     assert.ok(html.includes('<title>TenderTez</title>'), path);
@@ -40,7 +40,7 @@ test('every description is a sensible length for search results', () => {
 
 test('robots.txt blocks the API and app pages and points to the sitemap', () => {
   const robots = robotsTxt(BASE);
-  for (const p of ['/bidpilot/', '/dashboard', '/tenders/', '/settings', '/onboarding/']) assert.ok(robots.includes(`Disallow: ${p}`), p);
+  for (const p of ['/bidpilot/', '/dashboard', '/tenders/', '/company-profile', '/onboarding/']) assert.ok(robots.includes(`Disallow: ${p}`), p);
   assert.ok(robots.includes('Sitemap: https://tendertez.in/sitemap.xml'));
 });
 
