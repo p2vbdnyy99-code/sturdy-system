@@ -1,0 +1,2905 @@
+# BidPilot — Database Foundation (Milestone 1)
+
+BidPilot is a new product (AI tender intelligence for contractors) built on
+top of the same engine as Papyr, the WhatsApp document assistant. This
+document covers **Milestone 1 only**: the persistence and tenant/auth
+foundation. No tender processing, AI extraction, eligibility engine, web
+frontend, Telegram, or billing exists yet — those are later milestones.
+
+Papyr's WhatsApp path is **completely unaffected** by any of this. It has no
+database today and still has none after this milestone; nothing in
+`router.js`, `whatsapp.js`, or the extraction engine imports anything under
+`src/db/` or `src/bidpilot/`.
+
+## ORM decision: Drizzle (not Prisma)
+
+Both were evaluated against this specific repository, not in the abstract.
+
+| | Drizzle (chosen) | Prisma |
+|---|---|---|
+| Fit with a plain-JS (no TypeScript) codebase | Its main advantage (compile-time type inference) is muted here, same as Prisma's — a wash | Same |
+| Render deploy | Pure npm packages (`drizzle-orm`, `pg`) — no separate binary, no `generate` step that fetches a platform-specific engine at build time | Ships a native query-engine binary; needs `prisma generate` + correct `binaryTargets` for Render's build image, or deploys can fail with "engine not found for this platform" |
+| Consistency with this repo's existing choices | This project already deliberately avoids native/system-binary dependencies on Render (`@napi-rs/canvas` was picked specifically as a pure-npm rasterizer to avoid a poppler system binary — see brand/BRAND.md history). Drizzle continues that precedent | Would introduce exactly the class of platform-binary risk this repo has previously chosen to avoid |
+| Migrations | `drizzle-kit generate` emits plain, readable `.sql` files in `drizzle/` — reviewable in a PR diff before they ever touch a database | Prisma Migrate's migration files are also SQL, but generated via a more opaque engine-driven diff process |
+| Query style | SQL-like query builder, close to what you'd write by hand | Its own DSL query API, one layer further from SQL |
+
+**Decision: Drizzle + `pg` (node-postgres) + `drizzle-kit`.** The deciding
+factors were Render deploy simplicity (no native binary to fetch/match) and
+migration reviewability (plain SQL you can read before applying), both of
+which matter more here than Drizzle's type-safety edge, which is largely
+neutralized by this being a plain-JS project.
+
+### Connection pooling
+Render runs this service as one long-lived Node process (not serverless), so a
+small fixed `pg.Pool` (default max 10, `DATABASE_POOL_MAX`) is sufficient — no
+external pooler (pgBouncer, Prisma Accelerate, etc.) is needed at this scale.
+If BidPilot later runs multiple instances or background workers, the **sum**
+of every instance's pool must stay under Postgres's `max_connections` — a
+concern for a later milestone, not this one.
+
+### Coexistence with Papyr
+Same backend package (`whatsapp-doc-assistant/backend/`), same `package.json`,
+same test runner, same Render service — but a completely separate module tree
+(`src/db/`, `src/bidpilot/`) that Papyr's code never imports. This was a
+deliberate choice for Milestone 1: introducing a second deployable
+service/repo now would be new infrastructure before there's BidPilot business
+logic to justify it. Revisit if/when BidPilot grows enough to warrant its own
+deploy lifecycle.
+
+## Schema overview
+
+18 tables, all in `src/db/schema/*.js` (single import surface:
+`src/db/schema/index.js`):
+
+**Identity & tenancy** — `users`, `companies`, `company_members` (join table,
+one addition beyond the requested list — see below), `company_profiles`.
+
+**Tender core** — `tenders`, `tender_pages`, `tender_documents`.
+
+**Requirements & evidence** — `tender_requirements`,
+`tender_requirement_evidence`, `tender_boq_items`, `compliance_items`.
+
+**Activity** — `tender_questions`, `tender_events`.
+
+**Billing/usage (schema only, no logic yet)** — `subscriptions`,
+`usage_records`.
+
+**Integration & platform** — `telegram_users`, `notifications`, `audit_logs`.
+
+### One addition beyond the requested table list: `company_members`
+The instructions listed a fixed set of tables but not this join table. Added
+because "Team accounts" is an explicitly planned feature (product spec item
+19), and a `users.company_id` single-FK design would need a hard migration
+later to support one user belonging to multiple companies. `company_members`
+(user_id, company_id, role, unique on the pair) gets this right from the
+start — exactly the kind of decision the audit flagged as expensive to fix
+eight milestones from now.
+
+### Key design decisions
+
+- **Business status vs. processing status are separate columns** on `tenders`
+  (`status`: NEW…CLOSED lifecycle; `processingStatus`: UPLOADED…FAILED
+  pipeline state). A SUBMITTED tender whose re-uploaded addendum is still
+  EXTRACTING must not have either status lie about the other.
+- **Evidence-first is enforced in code, not just documented.** There is no
+  exported function to create a bare `tender_requirements` row.
+  `src/bidpilot/repo/requirements.js`'s `createRequirementWithEvidence()` is
+  the only path, requires a non-empty evidence array, and writes the
+  requirement + evidence in one transaction. See
+  `test/db/requirements-evidence.test.js`.
+- **Eligibility/compliance status is a 3-value enum** (`MEETS` / `UNKNOWN` /
+  `DOES_NOT_APPEAR_TO_MEET`) — deliberately never a numeric score or
+  "probability of winning." This mirrors the product spec's explicit
+  prohibition on that (PHASE 9).
+- **List-shaped company-profile facts are `jsonb`, not normalized tables**
+  (certifications, licenses, equipment, OEM relationships, past project
+  experience). None of these are independently queried today (the eligibility
+  engine reads the whole profile per tender); promoting one to its own table
+  later is a small, isolated migration if that ever changes.
+- **`tenders.companyId` uses `ON DELETE RESTRICT`**, not cascade — deleting a
+  company that has tenders is blocked at the database level, preventing silent
+  bulk data loss. Most tender-child tables (`tender_pages`,
+  `tender_requirements`, etc.) cascade from `tenders`, since they have no
+  independent existence once their tender is gone.
+- **`audit_logs.entityId` is a plain uuid, not a foreign key** — an audit row
+  must survive the entity it describes being deleted later; that's the point
+  of an audit trail.
+- **`users.email` uniqueness is case-insensitive**, via a unique index on
+  `lower(email)` (a plain `UNIQUE` constraint can't express that in Postgres).
+
+## Tenant isolation
+
+Enforced at the repository layer, not left to callers to remember, via
+`src/bidpilot/repo/tenants.js`:
+
+```js
+const scope = await requireCompanyAccess(db, { userId, companyId });
+const tender = await scope.getOwned(tenders, tenders.id, tenders.companyId, tenderId);
+```
+
+- `requireCompanyAccess()` checks `company_members` and throws
+  `TenantAccessError` if the user isn't a member — there is no way to obtain a
+  `CompanyScope` without passing this check.
+- Every `CompanyScope` method (`getOwned`, `listOwned`, `insertOwned`,
+  `updateOwned`) bakes the `company_id` predicate into the query itself — a
+  caller cannot express "give me this row regardless of owner."
+- A cross-tenant lookup returns `undefined`, identical to "not found" — never
+  a distinguishable 403, which would leak that the id is valid.
+- Resources that don't carry their own `company_id` (requirements, evidence,
+  documents, pages — all children of `tenders`) are protected by first
+  confirming the parent tender is owned by the caller's scope, then trusting
+  its id. `createRequirementWithEvidence()` is the reference implementation of
+  this pattern.
+
+**Proven in `test/db/tenant-isolation.test.js`** against a real Postgres, all
+five scenarios the milestone specified: Company A cannot read, list, or modify
+Company B's tenders; cannot access Company B's documents; cannot access
+Company B's requirements or compliance data — including an explicit "guessed
+id" attack attempt.
+
+## Migration commands
+
+```bash
+# Generate SQL from schema changes (review the output before committing!)
+npm run db:generate
+
+# Apply pending migrations to whatever DATABASE_URL points at
+npm run db:migrate
+
+# Browse the database visually (dev only)
+npm run db:studio
+```
+
+Generated migrations land in `drizzle/*.sql` — plain, readable SQL, committed
+to the repo. **Read every generated migration before applying it.** (This
+milestone's own first draft had a real bug caught this way — a case-insensitive
+email uniqueness constraint that drizzle-kit generated as `UNIQUE("")` because
+of an incorrect builder choice. Fixed before ever touching a database — see
+git history for `src/db/schema/identity.js`.)
+
+## Local development setup
+
+Needs a local/dev Postgres — **never point local development at the
+production database.**
+
+```bash
+# One-time: create a dev database (adjust for your own Postgres setup)
+createdb bidpilot_dev
+psql -d bidpilot_dev -c 'CREATE EXTENSION IF NOT EXISTS pgcrypto;'
+
+# In .env:
+DATABASE_URL=postgres://<user>:<password>@localhost:5432/bidpilot_dev
+
+npm run db:migrate
+npm test    # runs Papyr's suite + BidPilot's DB suite (test/db/*.test.js)
+```
+
+If `DATABASE_URL` is unset, every `test/db/*.test.js` file skips cleanly with
+a clear message — the rest of the suite (Papyr) is entirely unaffected either
+way.
+
+## Render production setup
+
+1. Render dashboard → **New → PostgreSQL** (a separate managed instance, not
+   bundled into the web service).
+2. Copy its **Internal Database URL**.
+3. Web service → **Environment** → set `DATABASE_URL` to that value directly
+   in the Render dashboard. **Never** commit a real connection string —
+   `.env.example` documents variable names only.
+4. Run `npm run db:migrate` **once**, from a shell with that `DATABASE_URL`
+   (Render's dashboard Shell tab, or a local machine pointed at the prod URL
+   deliberately, as a one-off, reviewed action — not part of the normal
+   deploy). Automating this into the deploy pipeline is worth doing once
+   BidPilot has a stable migration cadence; for Milestone 1, applying it by
+   hand keeps a human in the loop for the very first production migration.
+5. No Docker, no separate worker dyno — this milestone needs neither.
+
+## Security considerations
+
+- **No secrets committed.** `.env.example` lists `DATABASE_URL` as a name
+  only, with a `localhost` placeholder.
+- **Tenant isolation is enforced in code** (`CompanyScope`), not left to
+  frontend filtering or convention — see above.
+- **`audit_logs` cannot silently contain a secret.** `recordAuditLog()`
+  (`src/bidpilot/repo/audit.js`) rejects `metadata` containing `password`,
+  `token`, `apiKey`, `secret`, `authorization` (case-insensitive) — proven in
+  `test/db/audit.test.js`.
+- **Telegram identity cannot spoof company access.** `telegram_users` has no
+  `companyId` column at all; company access is only ever derived through a
+  verified `userId` → `company_members` link, never accepted from anything
+  Telegram supplies directly (see `src/db/schema/telegram.js`'s docblock —
+  relevant once Telegram linking is actually built, later).
+- **No auth (login/session/JWT) is implemented in this milestone.** `users`
+  has a `passwordHash` column so a later milestone doesn't need another
+  migration to add it, but there is no signup/login endpoint yet — building
+  one was out of scope for "database foundation" and is a clear next step.
+
+## Existing in-memory mechanisms — left untouched
+
+Per the milestone instructions, none of these were removed or migrated:
+
+| Mechanism | File | Future path |
+|---|---|---|
+| WhatsApp sessions | `src/sessions.js` | Would move to a `whatsapp_sessions`-style table (or Redis) once Papyr itself needs multi-instance/restart-durable state — no evidence it does yet |
+| Webhook dedup | `src/dedupe.js` | Redis (as its own comment already says) if Papyr ever runs >1 instance |
+| Rate limiting | `src/ratelimit.js` | Same — in-memory is fine for one instance |
+| AI spend budget | `src/budget.js` | BidPilot's equivalent (multi-tenant, persistent) would live in `usage_records` — Papyr's stays in-memory; they are unrelated systems |
+
+None of this migration is needed for Milestone 1 and doing it now would be
+unrequested scope expansion on a system (Papyr) that already works.
+
+## Known vulnerabilities (dependency audit)
+
+`npm audit` reports 4 moderate-severity findings, all in `drizzle-kit`'s
+dev-time `esbuild`/`@esbuild-kit` toolchain — a CLI used only to generate
+migrations, never imported by the running server. Not forced-fixed this
+milestone since the available fix is a breaking `drizzle-kit` downgrade with
+no production exposure to justify it; worth revisiting on `drizzle-kit`'s next
+stable release.
+
+## Unresolved decisions (deliberately left for later milestones)
+
+- **Auth implementation** (password hashing algorithm, session vs. JWT,
+  signup/login endpoints) — schema is ready (`passwordHash` column), nothing
+  else built.
+- **Whether BidPilot ever becomes a separate deployable service** — currently
+  shares Papyr's backend package; revisit once there's enough BidPilot logic
+  to justify the split.
+- **Automating `db:migrate` into the deploy pipeline** — currently a manual,
+  reviewed step; worth revisiting once the migration cadence stabilizes.
+- **Data retention / deletion policies** (product spec PHASE 23) — schema
+  allows hard deletes via cascade where appropriate, but no retention job or
+  soft-delete convention exists yet.
+
+## Tests
+
+`test/db/*.test.js` (33 tests, run against a real Postgres):
+
+- `connection.test.js` — migration applied, all 18 tables exist,
+  `gen_random_uuid()` works.
+- `tenant-isolation.test.js` — the five named scenarios (read/list/modify a
+  foreign tender, foreign documents, foreign requirements/compliance) plus a
+  guessed-id attack attempt and the base membership check.
+- `requirements-evidence.test.js` — the evidence-first invariant.
+- `constraints.test.js` — case-insensitive email uniqueness, one profile per
+  company (upsert), unique page numbers per tender, unique Telegram id,
+  status/processingStatus defaults and independence, `RESTRICT` on company
+  deletion.
+- `audit.test.js` — the metadata redaction denylist, and that audit rows
+  outlive the entities they describe.
+
+Plus Papyr's full existing suite (131 tests) run unmodified — **all still
+green**, both with and without `DATABASE_URL` set.
+
+## Suggested next milestone
+
+**Milestone 3 (Tender Ingestion)** over Milestone 2 as literally numbered —
+the company-profile *shape* already exists from this milestone
+(`company_profiles`), so the highest-value next step is proving the schema
+against a real upload: `POST /tenders/upload` → validate → store → page-aware
+extraction (reusing `pdf.js`/OCR as-is) → populate `tender_pages` →
+async processing states. That exercises the schema under real data before any
+more tables get added on top of it, and is where the "don't blindly process a
+300-page PDF in one request" architecture (already built for Papyr's OCR/
+extraction isolation) gets reused for BidPilot, not rebuilt.
+
+---
+
+# Milestone 2 — Tender Ingestion (vertical slice)
+
+Proves: **PDF upload → secure validation → durable Tender record → page-aware
+extraction/OCR → TenderPage records → durable processing status →
+completion/failure.** Nothing beyond this — no structured AI extraction,
+eligibility, compliance, BOQ intelligence, RAG, web UI, Telegram, or billing.
+Papyr's WhatsApp path remains completely untouched.
+
+## Storage decision
+
+**The database stores metadata and a reference key, never the PDF bytes.**
+Tender documents are commercially sensitive, so all access goes through a
+short-lived signed URL — never a public path or a raw filesystem read.
+
+A small interface (`putObject`, `getSignedDownloadUrl`, `deleteObject`,
+`newKey`) with two backends:
+
+| | `LocalDiskStorage` | `S3Storage` |
+|---|---|---|
+| Use | Dev/testing only | **Production** |
+| Dependencies | None (real local disk) | Any S3-compatible provider — AWS S3, Cloudflare R2, Backblaze B2, Supabase Storage |
+| "Signed URL" | HMAC-signed, time-limited token verified by our own `routes/download.js` — same *shape* of guarantee (expires, unforgeable, unguessable) as a real presigned URL, with zero external service | A real S3 presigned URL — goes straight to the storage provider, never touches this app |
+| **Viable on Render?** | **No.** Render's standard web service disk is ephemeral and is wiped on every redeploy. A tender uploaded today must still be retrievable next month; local disk cannot promise that. | **Yes — this is the only viable production answer**, not a "nice to have later." |
+
+This is a firmer conclusion than "avoid local filesystem dependence" as a
+preference — it's a hard constraint of Render's hosting model. Any real
+BidPilot deployment needs `BIDPILOT_STORAGE_DRIVER=s3` from day one.
+
+**Recommended default provider: Cloudflare R2** — S3-compatible (same code
+path), zero egress fees (relevant for a bootstrapped beta where documents get
+downloaded repeatedly), simple setup. Not hardcoded: `BIDPILOT_S3_ENDPOINT`
+makes any S3-compatible provider a config change, not a code change.
+
+**Testing honesty:** this sandbox has no real cloud credentials.
+`LocalDiskStorage` is tested fully, for real (`test/bidpilot/storage-local.test.js`,
+7 tests against real local disk + real HMAC verification, plus the full
+upload/download round-trip in `upload.test.js`). `S3Storage`
+(`test/bidpilot/storage-s3.test.js`) is tested against a **mocked** `S3Client` —
+it verifies the exact commands and parameters sent (`PutObjectCommand`,
+`DeleteObjectCommand`, key construction, `forcePathStyle` logic), not live
+wire behavior against a real bucket. **Smoke-test `S3Storage` against a real
+bucket before the first production upload** — see "unresolved decisions."
+
+Storage keys are **always server-generated** (`crypto.randomUUID()`), never
+derived from the uploaded filename — this eliminates path traversal by
+construction, not validation. Proven in `upload.test.js` ("a path-traversal
+filename never affects the storage key or leaves the storage dir") and
+directly in `validate.test.js`'s `sanitizeFilename` tests (bypassing any HTTP
+client's own filename normalization, which made an earlier manual check of
+this inconclusive).
+
+## API endpoints
+
+Mounted at `/bidpilot` in `server.js`, entirely separate from Papyr's
+`/webhook` — no shared routes, middleware, or state. If `DATABASE_URL` isn't
+configured, `/bidpilot/*` returns `503` cleanly rather than the server failing
+to boot; a Papyr-only deployment is unaffected either way.
+
+- `POST /bidpilot/tenders/upload` — multipart (`companyId` field + `file`).
+  Returns `{ tenderId, status, processingStatus, duplicate }` immediately;
+  extraction runs after the response is sent.
+- `GET /bidpilot/tenders/:id?companyId=` — status + page count.
+- `GET /bidpilot/tenders/:id/document-url?companyId=` — a signed download URL
+  for the original PDF (5 min expiry).
+- `GET /bidpilot/files/:key` — serves `LocalDiskStorage`-backed downloads;
+  meaningless (never reached) under the `s3` driver, since S3 presigned URLs
+  point directly at the provider.
+
+## ⚠️ Placeholder identity — explicitly not authentication
+
+Every `/tenders/*` route requires an `x-bidpilot-user-id` header naming a real
+`users.id`. **This is not authentication** — no password, no signature, no
+session, no expiry. It exists only so this milestone's tenant-scope
+enforcement (`CompanyScope`) has a real identity to test against, without
+pretending a login system exists. See `src/bidpilot/routes/auth.js`'s
+docblock. **Do not expose these routes to real traffic** until a real auth
+milestone (password/session/JWT — `users.passwordHash` is already there for
+this) replaces it.
+
+The download route (`/bidpilot/files/:key`) deliberately requires **no**
+identity header at all — a signed URL is meant to be self-authorizing. Getting
+this right required a real fix: an earlier draft mounted the identity
+middleware unscoped (`router.use(requireIdentity())`), which — because both
+routers share the `/bidpilot` prefix — silently intercepted download requests
+too. Fixed by scoping it explicitly (`router.use('/tenders', requireIdentity())`);
+caught via a manual end-to-end smoke test before it reached the automated
+suite.
+
+## Processing state machine
+
+`tenders.status` (business lifecycle) and `tenders.processingStatus`
+(pipeline state) stay independent, per Milestone 1's design. This milestone
+drives `processingStatus` through:
+
+```
+UPLOADED → PROCESSING → EXTRACTING → COMPLETED
+                                   ↘ FAILED (processingError set, capped at 500 chars)
+```
+
+`ANALYZING` is defined in the schema (Milestone 1) but unused until the
+structured-AI milestone.
+
+## Extraction flow (100% reused, nothing rewritten)
+
+`src/bidpilot/ingestion/pipeline.js` calls `extractStructured()` from
+`src/pdf.js` completely unmodified — the same isolated, heap-capped,
+page-aware, per-page-OCR-fallback engine Papyr already uses. This file's only
+job is mapping that output onto `tender_pages` rows (`pageNumber`, `rawText`
+via `spansToText()`, `ocrUsed`). No new extraction code was written.
+
+The buffer is validated and stored once at upload time; the async extraction
+step reuses that SAME in-memory buffer (passed directly into the
+`setImmediate` closure) rather than reading it back from storage — this keeps
+the storage interface small (no generic "read bytes" method that `S3Storage`
+would otherwise need to expose for no other reason).
+
+## Security controls
+
+- **Untrusted input, checked at multiple layers**: magic-byte check
+  (`%PDF-` header, not just the declared MIME type — a renamed non-PDF is
+  caught), size cap (`BIDPILOT_MAX_UPLOAD_MB`, both multer's own limit and an
+  independent check in `validateUpload`), filename sanitization for display
+  only (storage keys are never derived from it).
+- **No path traversal possible by construction** — storage keys are always
+  `crypto.randomUUID()`-generated; `LocalDiskStorage._resolve()` additionally
+  verifies the resolved path stays inside the storage directory as defense in
+  depth, even though the key is never attacker-controlled.
+- **Tenant isolation** reuses Milestone 1's `CompanyScope` unmodified — every
+  route calls `requireCompanyAccess()` before touching a resource. A user
+  naming a `companyId` they don't belong to gets `403`; a user who legitimately
+  belongs to company A but names a tender that belongs to company B gets
+  `404` — deliberately indistinguishable from "doesn't exist," never a
+  distinguishable 403 that would leak the id's validity. (An early draft of
+  this milestone's own test suite asserted the wrong status here — 403 instead
+  of 404 — which is itself evidence the design is intentional and specific,
+  not accidental.)
+- **No internals leaked in responses** — every route funnels errors through
+  a single `handleError()` that returns a generic message; `ValidationError`
+  gets its own safe message, everything else is `500` with no stack trace,
+  path, or credential ever serialized to the client. Proven in
+  `upload.test.js`'s malformed-file test, which asserts the response body
+  contains no `node_modules`/stack-frame patterns.
+- **Extraction failures never leak document content** — `processingError` is
+  the caught error's `message` only, capped at 500 characters, matching the
+  existing "safe generic message" discipline `pdf.js` already uses elsewhere.
+
+## Duplicate strategy
+
+Keyed on **sha256 content hash**, scoped **per company** (the same file
+uploaded by two different companies is two separate tenders — see the schema
+doc's dedupe note). Rule: if the company already has a document with this
+hash attached to a tender that is **not** `FAILED`, the upload is treated as
+that same tender (`200`, `duplicate: true`, nothing new written, no
+reprocessing). If the only match is on a `FAILED` tender, a fresh attempt is
+allowed — retrying after a failure is exactly what should happen.
+
+**Concurrency**: a naive "check for a duplicate, then insert" has a real
+TOCTOU race under truly simultaneous uploads (two requests can both miss each
+other's not-yet-committed rows). Closed with a small in-process lock
+(`src/bidpilot/ingestion/uploadLock.js`) serializing ingestion per
+`(companyId, contentHash)` — a **new**, narrowly-scoped implementation, not a
+reuse of `src/dedupe.js` (that module drops old WhatsApp message ids on a
+TTL; this needs two concurrent callers to resolve to the *same* outcome,
+a different shape of problem). Proven with a genuine `Promise.all()` of three
+simultaneous identical uploads in `upload.test.js` — exactly one creates the
+tender, the other two see it as a duplicate.
+
+Tender + TenderDocument creation is wrapped in a single DB transaction — if
+the document insert failed after the tender committed, the tender would be an
+orphan stuck at `UPLOADED` forever (nothing would ever trigger its
+processing). A transaction failing instead leaves an orphaned blob in storage,
+the better failure mode: invisible to users, cheap to garbage-collect later,
+versus a phantom business record.
+
+## Large-document test results
+
+A synthetic 40-page PDF (`upload.test.js`, "large-document handling") ran the
+full pipeline end-to-end in well under a second in this sandbox: uploaded,
+extracted via the existing isolated child-process pipeline, all 40 pages
+persisted with correct sequential page numbers. Confirms the page-aware,
+process-isolated architecture (already proven for Papyr) carries over to
+BidPilot's ingestion without modification — no whole-document AI prompt, no
+uncontrolled single memory operation.
+
+## Papyr regression results
+
+Full existing suite (131 tests) plus Milestone 1's 33 DB tests: **unmodified,
+all still passing**, both with and without `DATABASE_URL` set.
+
+## Queue/scaling decision — and exactly when it stops being enough
+
+**Not introduced this milestone**, per instruction. Extraction runs
+**in-process**, fire-and-forget via `setImmediate` — the identical idiom
+`server.js` already uses for the WhatsApp webhook ("acknowledge immediately,
+do the real work off the request path"). This is honestly **not a durable
+queue**: if the process restarts mid-extraction (a Render redeploy, a crash),
+that tender is stuck in `PROCESSING`/`EXTRACTING` forever, with nothing to
+detect or retry it. For a single Render instance at this milestone's traffic
+level, that's an acceptable, explicit gap — not a silent one.
+
+**Introduce a durable job queue (BullMQ + Redis, or a DB-polled job table) at
+the point where any of these becomes true:**
+1. **Horizontal scaling** — more than one server instance, requiring
+   cross-instance job coordination (in-process `setImmediate` has no
+   visibility across processes).
+2. **Processing time regularly approaches a redeploy's likelihood** — long
+   enough that a mid-flight crash/restart losing a job becomes a real user
+   complaint, not a theoretical one.
+3. **Stuck-job detection becomes a product requirement** — "why has my
+   180-page tender been 'processing' for an hour" needs an answer, which
+   requires a job system with visibility and retry, not silent in-process
+   fire-and-forget.
+
+None of these are true yet. Building BullMQ/Redis now would be exactly the
+premature infrastructure this milestone was scoped to avoid.
+
+## Unresolved decisions (deliberately left for later milestones)
+
+- **`S3Storage` needs a live smoke test against a real bucket** before first
+  production use — this sandbox has no cloud credentials, so its wire-level
+  correctness is verified against a mocked client, not proven end-to-end.
+- **Real authentication** — the placeholder identity header must be replaced
+  before any public exposure (see above).
+- **Stuck-job detection / retry** — no watchdog for a tender stuck in
+  `PROCESSING`/`EXTRACTING` after a crash; see "queue/scaling decision."
+- **Switching `BIDPILOT_STORAGE_DRIVER` after documents already exist under
+  the old driver** requires a manual migration/backfill of existing rows'
+  files — not automated.
+- **Data retention / deletion** (product spec PHASE 23) — `deleteObject()`
+  exists on the storage interface, but no retention job or "delete this
+  tender's file" trigger is wired up yet.
+
+## Tests
+
+`test/bidpilot/*.test.js` (48 tests):
+- `storage-local.test.js` (7) — real local disk: round-trip, signed-URL
+  verify/tamper/expiry/wrong-key, delete, constructor validation.
+- `storage-s3.test.js` (5) — mocked `S3Client`: correct commands/params,
+  key format, `forcePathStyle` logic, constructor validation.
+- `validate.test.js` (~19) — magic-byte/size/MIME checks, and `sanitizeFilename`
+  tested directly against raw path-traversal strings (not filtered through an
+  HTTP client's own filename handling).
+- `upload.test.js` (17) — the full vertical slice over real HTTP (ephemeral
+  port), real Postgres, real `LocalDiskStorage`, real extraction: the golden
+  path, OCR fallback (genuinely scanned fixture), malformed/oversized
+  rejection, tenant isolation (including a 404-vs-403 distinction proven
+  deliberate), sequential AND concurrent duplicate handling, path-traversal
+  filename safety, the full signed-URL round-trip (byte-exact, tamper
+  rejected), and the 40-page large-document case.
+
+Running the DB-backed suites (Milestone 1 + Milestone 2) together surfaced a
+real test-infrastructure gap: Node's test runner parallelizes across files by
+default, and every DB test file shares one physical dev database with no
+isolation — one file's `truncateAll()` could wipe rows another file's test was
+using mid-flight. Fixed with `--test-concurrency=1` in `npm test`; documented
+here rather than left as a mysterious intermittent failure for later.
+
+## Suggested next milestone
+
+**Structured AI extraction** (the product spec's Milestone 4) — now that
+`tender_pages` reliably holds real, page-numbered text for any uploaded
+tender, the next value step is running it through a schema-validated
+extraction pipeline (requirements, dates, EMD, eligibility criteria) using
+the existing `ai/provider.js` transport, writing into
+`tender_requirements` + `tender_requirement_evidence` via the
+evidence-first `createRequirementWithEvidence()` already built in
+Milestone 1. `ANALYZING` (defined, unused until now) becomes real.
+
+---
+
+# Milestone 3 — Authentication & Company Membership Authorization
+
+Replaces Milestone 2's placeholder identity header **entirely** with real
+authentication: registration, email/password login, server-side PostgreSQL
+sessions, logout, email verification state, CSRF protection, and brute-force
+rate limiting. Every BidPilot tender route is now gated by a real session,
+not a header anyone could set. Papyr's WhatsApp path is untouched.
+
+## Auth mechanism comparison — recap
+
+Full comparison (email/password+session vs. magic link vs. JWT, evaluated
+against this repo's actual architecture) was done and approved before any
+code was written — see the conversation record. Chosen: **email/password +
+server-side session via a secure HttpOnly cookie**, DB-backed in the same
+Postgres already central to this design. Rejected JWT (real revocation needs
+a server-side refresh-token table anyway, eroding its main advantage; wider
+historical footgun surface) and magic-link-as-the-only-method (adds a
+transactional-email dependency this product has never had, for a login
+question — Axis A — that's orthogonal to the session-representation question
+— Axis B — this milestone actually needed to answer).
+
+## Repo-specific verification before implementing
+
+- **`argon2` (node-argon2)** — installed and tested in this sandbox before
+  committing to it: ships prebuilt native binaries for linux-x64/arm64 under
+  **both glibc and musl** (covers Debian/Ubuntu- and Alpine-based Render
+  images), installed in ~2 seconds with no compiler invoked, and verified
+  functionally (hash/verify round-trip, wrong password correctly rejected).
+  Same bar Drizzle was held to over Prisma in Milestone 1 — no native-binary
+  build risk on Render.
+- **`cookie`** — already present as Express's own internal dependency (used
+  for `res.cookie()`); added as an explicit direct dependency for stability
+  rather than pulling in the separate `cookie-parser` middleware package for
+  what `cookie.parse()` already does in one line.
+- **Express 5.2.1 confirmed**, and `server.js` did not set `trust proxy` —
+  fixed (`app.set('trust proxy', 1)`), required for `Secure` cookies to
+  behave correctly behind Render's TLS-terminating proxy.
+
+## Schema additions
+
+One migration, additive only:
+
+- **`users`**: `status` enum (`PENDING_VERIFICATION` / `ACTIVE` /
+  `SUSPENDED`, default `PENDING_VERIFICATION`), `emailVerifiedAt`,
+  `verificationTokenHash`, `verificationTokenExpiresAt`. The verification
+  token lives directly on `users` (not a separate table) — a user only ever
+  has one live verification attempt at a time; a new request overwrites it.
+- **`sessions`** (new table): `id`, `userId` (FK, cascade), `tokenHash`
+  (unique), `createdAt`, `expiresAt` (absolute cap), `lastSeenAt` (throttled
+  sliding idle indicator), `userAgent`. **No `companyId` column** — a session
+  identifies a user, never a company (see "auth ≠ authorization" below). No
+  IP address stored, to limit this table's PII footprint.
+
+## Sessions hashed at rest
+
+The raw session token **never touches the database**. `auth/tokens.js`
+generates 256 bits of randomness (`crypto.randomBytes(32)`); only its
+SHA-256 hash is stored (`sessions.tokenHash`). Verified directly against the
+running database during manual testing: the raw cookie value does not appear
+anywhere in the stored row. If the database were ever compromised, the
+attacker gets unusable hashes, not replayable session credentials. (Plain
+SHA-256, not HMAC — the input is already a uniformly random 256-bit CSPRNG
+value, so a precompute/rainbow-table attack is infeasible regardless; the
+entropy lives in the token, not a server secret. Contrast with password
+hashing, where the input space is small/guessable and a slow salted KDF is
+required instead.)
+
+## Cookie configuration
+
+`HttpOnly: true`, `SameSite: Lax`, `Path: /`, and `Secure` **auto-detected**
+(true on Render / `NODE_ENV=production`, false otherwise — via the same
+`RENDER_EXTERNAL_URL`-detection precedent `server.js` already used for its
+keep-alive ping) so local HTTP development isn't silently broken by a Secure
+cookie the browser would refuse to send back. `BIDPILOT_COOKIE_SECURE` is an
+explicit override for an unusual deployment shape.
+
+## Password hashing
+
+Argon2id, library defaults (time cost 3, memory 64MB, parallelism 4) —
+current OWASP guidance, used as-is rather than hand-tuned. Minimum 8
+characters (NIST 800-63B: prioritize length over forced complexity rules; no
+mandated uppercase/digit/symbol, no forced rotation), rejected if identical to
+the email. Never plaintext, reversible encryption, bare SHA-256, or a custom
+scheme.
+
+## Authentication ≠ authorization — the actual chain
+
+```
+Browser --(HttpOnly session cookie)--> Session --> User
+                                                     │
+                                    resolved FRESH, every request
+                                                     ▼
+                                          company_members --> CompanyScope
+                                                     │
+                                                     ▼
+                                       Tender / Documents / Requirements
+```
+
+`requireSession()` (`routes/auth.js`) answers ONLY "who is this" and sets
+`req.bidpilotUserId` — it never resolves or caches a `companyId`. Every
+tender route still calls `requireCompanyAccess()` (Milestone 1, unmodified)
+against whatever `companyId` the request names. A session is never scoped to
+a single company, so a user belonging to more than one company (the
+explicit reason `company_members` was built as a join table in Milestone 1)
+never needs to re-login to act on a different one. Milestone 2's
+`CompanyScope`/tenant-isolation code required **zero changes** — it already
+took a `userId` + `companyId` pair, never trusted an identity object to carry
+authorization.
+
+## CSRF protection
+
+Signed double-submit cookie, **no server-side storage**: `csrfTokenFor(sessionTokenHash) = HMAC-SHA256(BIDPILOT_CSRF_SECRET, sessionTokenHash)`,
+set in a cookie the frontend can read (the one cookie in the app that is
+deliberately **not** HttpOnly) and echoed back as an `x-csrf-token` header on
+state-changing requests. `requireCsrf()` is self-exempting for
+GET/HEAD/OPTIONS, so it's mounted across the whole `/tenders` subtree rather
+than per-route — only the upload endpoint is actually gated. `SameSite=Lax`
+already blocks most cross-site vectors for this same-origin app; this is the
+OWASP-recommended belt-and-suspenders layer on top. `csrfTokenFor()` throws
+loudly if `BIDPILOT_CSRF_SECRET` is unset, rather than silently HMAC-ing with
+an empty key.
+
+## Brute-force protection
+
+A **new**, narrowly-scoped limiter (`auth/loginRateLimit.js`) — not a reuse
+of `src/ratelimit.js`, whose window is a hardcoded 60s constant tuned for
+WhatsApp message throughput. Brute-force protection needs a longer,
+configurable window (10 attempts / 15 minutes here), so reusing it directly
+would mean either changing Papyr-shared code or silently getting the wrong
+window. Same reasoning as `uploadLock.js` in Milestone 2: reuse the concept
+(fixed-window in-memory counter), write a new implementation sized for the
+actual problem. In-memory, single-instance — same scaling caveat as every
+other in-memory mechanism in this codebase at this stage. Cleared on a
+successful login so a user who mistyped their password a few times isn't
+punished after getting it right.
+
+## Email verification — deliberately no email provider
+
+Registration generates a token; in dev/non-production the verification link
+is **logged and returned directly in the API response**
+(`devVerificationUrl`) rather than emailed — no transactional email provider
+(Resend/Postmark/SES/etc.) was wired in, per instruction. `PENDING_VERIFICATION`
+does **not** block login — an unverified user can use the product immediately;
+`emailVerifiedAt`/`status` are the explicit state a later feature (or a
+stricter gate) can act on. `SUSPENDED` **does** block login, and is checked on
+**every** authenticated request via `requireSession()`, not only at login
+time — proven directly: a test suspends a user mid-session (after their
+cookie was already issued) and confirms their very next request is rejected.
+No suspension *mechanism* exists yet (no admin endpoint) — only the state a
+later one can transition into, matching the same "give the schema room to
+grow" pattern used throughout this schema.
+
+## Manual smoke test — clean on the first pass
+
+Unlike Milestones 1 and 2 (which each surfaced a real bug during manual
+testing), this milestone's end-to-end smoke test — register → verify → login
+→ inspect Set-Cookie headers → `/me` → CSRF-protected upload (rejected
+without the header, accepted with it) → tender status through the new real
+session (Milestone 2's pipeline, completely unmodified) → logout → confirm
+the old cookie is rejected → 11 rapid login attempts (10 allowed, 11th
+`429`) → direct database inspection confirming the stored password hash is
+real Argon2id and the stored session value is a hash, never the raw
+cookie — passed cleanly on the first run. The extra repo-specific
+verification done *before* writing code (argon2's binary distribution, the
+`trust proxy` requirement, the auth‑vs‑authorization chain) is the most
+likely reason; recorded here as the comparison point for future milestones,
+not a guarantee it repeats.
+
+## A real gap this milestone's own test suite required fixing
+
+Updating `test/bidpilot/upload.test.js` (Milestone 2's suite) to use real
+sessions instead of the removed placeholder header surfaced that its skip
+condition only checked `DATABASE_URL`, not the newly-required
+`BIDPILOT_CSRF_SECRET` — a `DATABASE_URL`-only environment (a realistic
+misconfiguration: BidPilot's database is set up but the CSRF secret is
+forgotten) caused 18 test failures, not clean skips. Fixed by extending both
+`upload.test.js`'s and `auth.test.js`'s skip conditions to check for the CSRF
+secret independently of database availability. All three realistic
+configuration states — neither configured, DB only, both configured — are
+now verified to produce zero failures (graceful skips or full runs, never a
+crash).
+
+## Tests
+
+`test/bidpilot/auth.test.js` (40 tests): password hashing, token generation,
+CSRF token derivation/tamper/cross-session rejection, brute-force limiting,
+and — DB-backed — registration (weak password, duplicate email, hashing),
+email verification (success, reuse-after-verify, wrong token, expired
+token), session creation/lookup/expiry/destruction (with direct proof the
+raw token is never stored), and a full HTTP integration pass: register →
+verify → login → `/me`, case-insensitive email login, generic-error login
+failures (wrong password and nonexistent user return byte-identical error
+text), unverified-user-can-login, suspended-user-cannot (both at login and
+mid-session), brute-force lockout, CSRF-gated logout, session destruction
+actually taking effect, and forged/missing cookies rejected without a 500.
+
+`test/bidpilot/upload.test.js` (Milestone 2's 17 tests, updated): now
+authenticates via real minted sessions (`createSession()` directly, not the
+HTTP `/login` endpoint — this file tests tender ingestion, not login) plus
+real CSRF tokens on the upload route. All prior tenant-isolation, dedupe,
+OCR, and large-document coverage is unchanged and still passing through the
+new auth layer.
+
+**251 pass, 0 fail** with both `DATABASE_URL` and `BIDPILOT_CSRF_SECRET`
+configured (1 unrelated pre-existing skip). Verified clean (0 failures) in
+all three realistic configuration states — see above.
+
+## Environment variables added
+
+`BIDPILOT_CSRF_SECRET` (required once BidPilot is used — a real random
+secret, e.g. `openssl rand -hex 32`), `BIDPILOT_SESSION_TTL_DAYS` (default
+30), `BIDPILOT_SESSION_TOUCH_MINUTES` (default 10), `BIDPILOT_VERIFICATION_TOKEN_TTL_HOURS`
+(default 24), `BIDPILOT_COOKIE_SECURE` (optional override). `warnOnMissingConfig`
+now warns loudly if `DATABASE_URL` is set but `BIDPILOT_CSRF_SECRET` isn't.
+
+## Unresolved decisions (deliberately left for later milestones)
+
+- **Production transactional email** — a deliberate, later decision (Resend/
+  Postmark/SES/etc.), not quietly wired in now.
+- **No "resend verification email" endpoint** — a small, natural follow-up if
+  needed; skipped for narrowness this milestone.
+- **No admin/suspension endpoint** — the `SUSPENDED` state and its enforcement
+  exist; nothing can set it yet except a direct database write.
+- **No "view/revoke my other active sessions" UI** — `sessions.userAgent` is
+  stored specifically to make that easy to add later without another schema
+  change; not built this milestone.
+- **API/programmatic authentication** (for a future non-browser client) is
+  still open — cookies don't travel well outside a browser context; likely a
+  separate personal-access-token mechanism layered on later, not a reason to
+  revisit the session choice made here.
+
+## Suggested next milestone
+
+Per the approved sequencing: **Structured Tender Intelligence** (product
+spec Milestone 4) — now that both the ingestion pipeline (Milestone 2) and a
+real, tested authorization boundary (this milestone) exist, the
+evidence-first `createRequirementWithEvidence()` built in Milestone 1 can
+finally be exercised by real extracted content instead of test fixtures.
+
+---
+
+# Milestone 4 — Structured Tender Intelligence
+
+Builds the AI analysis layer on top of Milestone 2's extraction (unmodified)
+and Milestone 3's real auth (unmodified): `POST /tenders/:id/analyze` reads
+a tender's `tender_pages`, chunks them by character budget, runs each chunk
+through structured AI extraction, validates the output against a strict
+domain schema, and persists requirements, BOQ, dates, and red flags —
+replacing any previous analysis wholesale. **No eligibility verdict, no
+frontend, no RAG.** Papyr's WhatsApp path is untouched; the deterministic
+PDF/OCR extraction engine was not modified at all.
+
+## What the audit found already existed
+
+Checked the real M1–M3 schema before proposing anything: most of the
+"destination" schema for this milestone was already built in Milestone 1,
+deliberately. `requirementCategory`'s enum already covered 10 of 12 needed
+categories; `tender_requirement_evidence` already had `sourcePage`,
+`evidenceText`, `extractedValue`, `confidence`; `tender_boq_items` existed
+unused since M1; `tenders`' overview columns (`organization`, `tenderNumber`,
+...) existed but were never populated (M2 only ever set `title` to the
+filename). This milestone mostly *populates* existing structure rather than
+inventing new destinations for data.
+
+## Schema additions (two migrations, both additive)
+
+- `SPECIAL_CONDITION` added to `requirementCategory` (a clause worth
+  flagging, distinct from a bid-eligibility gate — not folded into `OTHER`).
+- `tenderAnalysisStatus` enum (`NOT_STARTED → ANALYZING → COMPLETED/FAILED`)
+  and three new `tenders` columns: `analysisStatus`, `analysisError`,
+  `analyzedAt`. Deliberately **separate** from `processingStatus` (whose own
+  `ANALYZING` value, defined in Milestone 1 anticipating this, is now
+  explicitly superseded and must never be set again — left in the enum
+  rather than removed, since Postgres enum values aren't cheaply
+  droppable, but documented as dead). Same "business vs. processing status"
+  separation principle Milestone 1 established for `tenders.status` vs.
+  `tenders.processingStatus`, applied one level further.
+- `tenders.overviewEvidence` (jsonb) — per-field source-page evidence for
+  the scalar overview columns (`organization`, `location`, ...), since a
+  plain scalar column has no natural evidence relationship the way a
+  requirement does. A map, not 9 new `sourcePage`/`evidenceText` column
+  pairs — same reasoning as `company_profiles`' jsonb fields (read as a
+  whole, never independently queried).
+- `tender_requirements.title` — a short label, distinct from `description`
+  (fuller structured restatement) and `evidence.evidenceText` (verbatim
+  quote). Three-way distinction, not redundant fields.
+- Two new tables: **`tender_dates`** (`label`, `parsedDate` nullable,
+  `rawText`, `sourcePage`, `evidenceText`) and **`tender_red_flags`**
+  (`description`, `sourcePage`, `evidenceText`, deliberately no severity
+  field for v1). Kept structurally separate from `tender_events` per the
+  approved distinction: `tender_dates` is *document* data ("pre-bid
+  meeting — 12 Oct 2026 — page 14"); `tender_events` is *application
+  activity* ("tender re-analyzed") — this milestone writes to both, for
+  different reasons.
+
+## Pipeline architecture
+
+```
+tender_pages (Milestone 2, unmodified)
+     │
+     ▼
+chunkPages() — character-budget grouping of CONSECUTIVE pages (not a fixed
+page count — a dense clause page and a mostly-blank cover page are wildly
+different workloads). Page identity is embedded IN the text via explicit
+[PAGE N] markers, not just carried as a chunk-level range — so a fact from
+the middle of a 5-page chunk still cites its real, exact page.
+     │
+     ▼
+extractChunk() — one AI call per chunk via ai/index.js's EXISTING provider
+transport (getProvider().complete()) — no new transport, new prompts only.
+Reuses the same untrusted-content framing ai/index.js already uses for
+Papyr's document operations (tender text is exactly as untrusted as a
+WhatsApp-uploaded PDF).
+     │
+     ▼
+validateChunkResult() — hand-rolled validator (no JSON-schema library — the
+shape doesn't warrant the dependency), NOT "is this valid JSON" but "does
+every fact carry REAL evidence". A requirement/date/BOQ-item/red-flag
+missing a page citation, or citing a page not actually in this chunk (a
+hallucinated citation), is DROPPED — never persisted with a blank or
+invented source. This is the code-level enforcement of "if evidence cannot
+be located, do not manufacture it," not just a prompt instruction.
+     │
+     ▼
+aggregateResults() — deterministic merge, no extra AI call. Overview fields:
+earliest chunk (= earliest pages, since chunks are in page order) to
+provide a field wins. Requirements/BOQ/dates/red-flags: concatenated.
+Chunks don't overlap, so cross-chunk duplicate extraction of the same fact
+is expected to be rare — accepted as a known v1 limitation, not engineered
+around with fuzzy matching.
+     │
+     ▼
+replaceAnalysis() — one transaction: delete all prior AI-derived rows for
+this tender, insert the new set, update tenders' overview columns +
+overviewEvidence + analysisStatus, write one tender_events row. Either the
+whole replacement lands or none of it does.
+```
+
+## Trigger: explicit, not automatic
+
+`POST /tenders/:id/analyze` — analysis never runs automatically after
+upload/extraction. A tender must reach `processingStatus: COMPLETED` first
+(`409` otherwise). This keeps AI spend opt-in per action and gives a clean
+future billing boundary, per the approved design.
+
+**Idempotent start, race-safe**: `startAnalysis()` is a single atomic
+`UPDATE ... WHERE analysis_status != 'ANALYZING' RETURNING *` — the row
+itself is the compare-and-set. A second concurrent request simply gets zero
+rows back and returns `409`, with no separate lock module needed. Proven
+with a genuine `Promise.all()` of two concurrent analyze requests in the
+test suite: exactly one gets `202`, the other `409`.
+
+## Re-analysis: replace, not merge — and failure never destroys success
+
+Approved design: re-running analysis **replaces** the tender's AI-derived
+intelligence wholesale, never tries to reconcile old vs. new extraction.
+`replaceAnalysis()`'s delete-then-insert only runs inside its own
+transaction, invoked **only on a successful analysis run**. A **failed**
+analysis (`markAnalysisFailed()`) touches nothing but `analysisStatus`/
+`analysisError` — a re-analysis attempt that fails halfway leaves the
+**previous successful analysis completely intact**. Proven directly: a test
+runs a successful analysis, then a second run whose provider throws, then
+asserts the original requirements are still all present.
+
+No `analysisRun` history table — the approved "simple current-state model
+plus `tender_events`" — what happened IS recorded (`analysis_completed` vs.
+`analysis_replaced` event types), just not as a queryable history of past
+extracted-data snapshots. Revisit if the UI demonstrates a need for one.
+
+## Partial-success policy
+
+One chunk failing to parse does not sink a whole analysis — a 150-page
+tender shouldn't lose everything because one chunk's JSON was malformed.
+Chunk failures are caught individually and logged; if **at least one**
+chunk produced usable results, the analysis completes with whatever was
+successfully extracted. Only if **every** chunk failed (or a page-listing
+error prevented any chunk from running at all) is the whole analysis marked
+`FAILED` — and even then, per above, any prior successful analysis is left
+untouched.
+
+## AI spend control — deliberately DB-backed, not in-memory
+
+Two configurable caps (`config.bidpilot.analysis`, all env-driven, no
+hardcoded numbers):
+
+- **Per-tender chunk ceiling** (`BIDPILOT_ANALYSIS_MAX_CHUNKS_PER_TENDER`,
+  default 60) — a tender that would need more AI calls than this is
+  refused outright (`413`) before spending anything, rather than silently
+  truncated.
+- **Per-company rolling-window ceiling**
+  (`BIDPILOT_ANALYSIS_MAX_CALLS_PER_COMPANY_PER_DAY`, default 200) —
+  queried from `usage_records` (already scaffolded, unused, in Milestone 1)
+  over the trailing 24h, not an in-memory counter.
+
+This is the one deliberate departure from the in-memory-limiter pattern used
+everywhere else in this codebase so far (`loginRateLimit.js`,
+`uploadLock.js`): those protect against *abuse*, where a best-effort,
+single-instance-only guard is an acceptable tradeoff. This protects **real
+money** — it must stay accurate across a restart and, later, across
+multiple instances, so it reads its own prior spend back from Postgres
+before allowing more, rather than trusting an in-memory counter that resets
+on every deploy.
+
+Usage is recorded (`recordChunkUsage`) **after** each chunk call actually
+succeeds, not upfront — a failed/skipped chunk never counts against the
+company's budget.
+
+## Security / prompt injection
+
+Tender content is exactly as untrusted as a WhatsApp-uploaded document —
+`extract.js`'s system prompt reuses `ai/index.js`'s existing injection-guard
+wording verbatim (not a rewrite), and the untrusted text is wrapped in
+explicit delimiters, mirroring the same pattern `test/security-prompts.test.js`
+already proves for Papyr. A new test file
+(`test/bidpilot/analysis-security.test.js`) proves the same properties for
+the analysis prompt specifically, including that an embedded "ignore all
+previous instructions" payload is passed through as **data** inside the
+delimiters (never stripped — stripping would be its own kind of silent data
+loss) while the system prompt's guard is what does the actual defensive
+work.
+
+## Tests
+
+96 new tests across 7 files:
+- `chunker.test.js` (9) — budget-based grouping, page-identity-in-text,
+  an oversized single page never dropped, ordering, empty/null input.
+- `analysis-schema.test.js` (23) — the evidence-first drop rule for every
+  fact type (requirements, BOQ, dates, red flags, overview), hallucinated
+  page-citation rejection, malformed input never throws.
+- `aggregate.test.js` (6) — earliest-chunk-wins overview merge,
+  concatenation, dropped-count summing.
+- `analysis-budget.test.js` (7, DB-backed) — both caps, the exact boundary
+  (at-the-cap allowed, one-over refused), per-company isolation, the 24h
+  rolling window actually rolling.
+- `analysis-security.test.js` (8) — prompt-injection framing, category
+  whitelist, fabrication-forbidden instruction, tolerant JSON parsing.
+- `analysis.test.js` (17, DB-backed + full HTTP) — persistence (replace not
+  duplicate, failure preserves success, `tender_events` wording, an
+  all-dropped chunk still completes cleanly), and the full route: golden
+  path, `409` on incomplete extraction, concurrent-request race safety,
+  re-analysis via HTTP, `413` on an oversized tender, tenant isolation,
+  CSRF, session requirement.
+
+No test ever calls a real OpenAI/Anthropic API — every test uses
+`setProvider()` (the same existing test seam `ai/index.js` already
+provides) to inject a mock, consistent with `test/security-prompts.test.js`'s
+established pattern.
+
+One real bug this milestone's own smoke test caught before automated tests
+were even written: verifying nested-transaction support (`createRequirementWithEvidence()`'s
+own internal transaction, called from inside `replaceAnalysis()`'s
+transaction) — confirmed empirically to work correctly via drizzle-orm's pg
+driver (savepoints) before relying on it, rather than assumed. One bug in
+the test suite itself (not the implementation): the repo-level persistence
+tests initially forgot to call `insertPages()`, so every analysis in that
+block failed fast with "no pages to analyze" — caught immediately by the
+first run, since a real fix (inserting pages) was needed before any
+assertion could pass, not a change to loosen the assertion.
+
+**All tests pass** across all three realistic configuration states (neither
+configured, `DATABASE_URL` only, both configured) — Papyr's own suite is
+unaffected throughout, matching every prior milestone.
+
+## Environment variables added
+
+`BIDPILOT_ANALYSIS_CHUNK_CHARS` (default 40000), `BIDPILOT_ANALYSIS_MAX_CHUNKS_PER_TENDER`
+(default 60), `BIDPILOT_ANALYSIS_MAX_CALLS_PER_COMPANY_PER_DAY` (default 200)
+— all configurable, none hardcoded, per instruction.
+
+## Explicitly not built (per the approved boundary)
+
+Eligibility matching against a company profile, "winning probability," a
+frontend intelligence dashboard, Ask Tender/RAG, automatic tender
+discovery, Telegram, billing UI, OAuth/MFA/SSO, automatic BOQ pricing, and
+— structurally enforced, not just a policy — no code path can produce an
+AI-invented fact without a real, in-chunk page citation.
+
+## Unresolved decisions / deliberate v1 limitations
+
+- **No cross-chunk fuzzy deduplication** — a fact extracted near a chunk
+  boundary could in principle appear twice if it genuinely straddles two
+  chunks' page ranges. Accepted for v1 since chunks don't overlap; revisit
+  if it proves common with real tenders.
+- **No `analysisRun` history table** — current-state model only, per the
+  approved design; `tender_events` carries the activity trail, not a
+  queryable snapshot history.
+- **No partial-chunk-count truncation** — an over-budget tender is refused
+  outright rather than analyzed partially up to the cap. Simpler and safer
+  for v1; could be revisited if refusing a large legitimate tender proves
+  too blunt in practice.
+- ~~`overviewEvidence`'s per-field evidence is best-effort~~ — **resolved
+  before commit**: tightened so every populated overview field requires the
+  same real in-chunk page citation + evidence text as a requirement, no
+  exceptions. These are commercially load-bearing fields (tender value,
+  EMD, deadlines); a wrong number is worse than a missing one. See
+  `schema.js`'s validator — this paragraph is left here, struck through,
+  because it was the actual open question raised for review, and the
+  answer changed the shipped behavior.
+
+## Suggested next milestone
+
+Per the original product roadmap and this milestone's own explicit
+boundary: **eligibility matching against the company profile** — now that
+tenders reliably carry validated, evidence-backed requirements, the next
+value step is comparing them against `company_profiles` (Milestone 1,
+unused since) to populate `tender_requirements.companyStatus` (`MEETS` /
+`UNKNOWN` / `DOES_NOT_APPEAR_TO_MEET` — never a numeric score, per the
+schema's own standing prohibition). A frontend to actually see any of this
+remains a separate, later milestone either way.
+
+# Milestone 5a — API/Read Layer (product renamed to Tenderlytic)
+
+Product identity changed from **BidPilot** to **Tenderlytic** at the
+product/UI layer starting this milestone (working name **BidPilot** used
+throughout M1–M4). Per explicit instruction, this is a naming change only —
+no database tables, internal module names, routes, or the `bidpilot`
+code namespace were renamed, to avoid migration/churn risk for no
+functional benefit. The `/bidpilot` route prefix, `bidpilot_session`/
+`bidpilot_csrf` cookie names, `src/bidpilot/` directory, and every schema
+identifier are all deliberately untouched. A deliberate product-code
+rename is a separate, later decision. M5a itself is a pure backend
+API/read layer — no user-facing branding surface exists yet to apply the
+new name to.
+
+**Product identity (Tenderlytic):**
+- Positioning: AI-powered tender intelligence and bid-preparation platform
+  for contractors and businesses.
+- Core promise: upload a tender; understand its requirements, deadlines,
+  documents, BOQ, and risks — with every extracted fact tied back to its
+  source page.
+- Brand direction: professional B2B SaaS, evidence-first, analytical,
+  trustworthy, minimal/utilitarian, built for contractors and SMEs, no
+  "guaranteed wins" positioning.
+- Primary tagline: "AI-powered tender intelligence."
+- Logo: a custom Tenderlytic wordmark + analytical tender/document symbol
+  (T + document + signal mark) — not built yet; no reuse of Papyr's brand
+  assets (`whatsapp-doc-assistant/brand/`), which remain Papyr-only.
+
+## What this milestone closes
+
+The M5 architecture audit found several real product gaps: `listTenders()`
+existed but had no route (no way to see "all your tenders"), `GET
+/tenders/:id` returned only status fields (none of the M4 intelligence —
+overview, requirements, BOQ, dates, red flags — was ever exposed over
+HTTP), there was no BOQ read function at all, and there was no way for an
+authenticated user to create a company (onboarding was structurally
+impossible — `createCompanyWithOwner()` creates a new user, the wrong
+shape for someone already logged in). None of this — the M5a scope as
+originally approved — needed a schema change; it needed routes and a
+handful of small repo functions reading data that already existed. A
+schema change did end up happening in this milestone, but for a different
+reason: see "A real bug found and fixed along the way" below.
+**M5a introduced one corrective migration (`0005_hot_devos.sql`) to
+resolve a pre-existing Milestone 4 type mismatch discovered during
+integration testing — not a schema change for M5a's own feature scope.
+No new tables or columns were introduced; the migration only changes the
+type of three existing columns.**
+
+## New endpoints
+
+- **`GET /tenders`** — paginated (`page`/`limit`, capped at 100),
+  filterable (`status`, `analysisStatus`, validated against the real enum
+  values so a bad filter is a 400, never a raw Postgres error), searchable
+  (`search`, ILIKE across title/organization/tenderNumber), sortable
+  (`sortBy`: `deadline`|`createdAt`, `sortOrder`: `asc`|`desc`). Backed by
+  `listTendersPaginated()` — a new repo function alongside the existing
+  unbounded `listTenders()`, not a replacement for it.
+- **`GET /dashboard/summary`** — the "what needs attention" aggregate:
+  total/processing/awaitingAnalysis/analysed counts, upcoming-deadline
+  count (configurable window, default 14 days), and the 5 most recent
+  tenders. Computed as one SQL aggregate (`getDashboardSummary()`, using
+  `count(*) filter (where ...)`) rather than derived client-side from a
+  page of the tender list, which — once paginated — can never hold a
+  correct total.
+- **`GET /tenders/:id`** — rewritten from a summary-only response into the
+  unified tender-intelligence read the M5 audit's "product-level
+  representation, not database-shaped endpoints" decision asked for: one
+  response carrying metadata, processing/analysis status, overview (merged
+  with its per-field evidence), requirements+evidence, BOQ, dates, red
+  flags, document metadata (not the signed URL itself — that stays a
+  separate, short-lived call to the existing `/document-url` route), and
+  the last 20 activity events. Every previously-existing field is still
+  present at the same key — purely additive, so nothing that already read
+  this endpoint (the `/analyze` polling loop in M4's own tests) needed to
+  change.
+- **`POST /companies`** — onboarding: an authenticated user creates a
+  company and becomes its `owner` in one transaction
+  (`createCompanyForUser()`, new — distinct from `createCompanyWithOwner()`
+  which creates the user too). Deliberately not gated on email
+  verification, consistent with M3's standing decision that
+  `PENDING_VERIFICATION` users can use the product. Takes `name` (required)
+  and optional `industry`/`businessType`, which land on the lazily-created
+  `company_profiles` row.
+- **`GET`/`PATCH /companies/:id/profile`** — thin wrappers over M1's
+  existing `getCompanyProfile`/`upsertCompanyProfile`, unused until now.
+  `PATCH` accepts a partial body whitelisted against the real
+  `company_profiles` columns (an unknown field is silently dropped, never
+  written) and merges rather than overwrites, so onboarding can ask for
+  almost nothing and the rest gets filled in progressively later, per the
+  approved design.
+
+Also added: `listBoq()` (the missing read path for `tender_boq_items`) and
+`listEvents()` (newest-first, bounded to 20 — an activity feed, not a full
+audit export; `audit_logs` remains that).
+
+## Onboarding contact information — dropped, not deferred silently
+
+The approved onboarding form asked for company name plus "optional basic
+contact information." `companies` has only `id`/`name`/timestamps, and
+`company_profiles` has no generic contact fields either — every field
+there is a business/eligibility fact (GSTIN, turnover, certifications,
+...), not a phone/contact-email. Adding one would have been a schema
+change, which was set as a hard boundary for this milestone. Resolved by
+dropping contact information from the onboarding form entirely (asking
+only name + optional industry/businessType, both of which map to real
+columns) — surfaced to the user as an explicit decision before
+implementation, not decided unilaterally.
+
+## A real bug found and fixed along the way
+
+Building the unified tender-detail response surfaced a pre-existing defect
+in Milestone 4's `replaceAnalysis()`: it wrote every AI-extracted overview
+value directly into its `tenders` column with no type handling. Of the 9
+overview fields, only 4 were `text`; `estimatedValue`, `emd`, and
+`tenderFee` were `numeric`, and `submissionDeadline`/`openingDate` were
+`timestamp`. The AI extraction prompt asks for all 9 uniformly as free
+text (e.g. `"₹5 crore"` — the same reasoning `contractDuration` already
+used for staying text). The moment the AI returned a non-empty value for
+any of the 5 typed fields, the `UPDATE` threw a raw Postgres type error and
+the *entire* analysis run was marked `FAILED` — despite extraction,
+validation, and every other field having succeeded. M4's own tests never
+caught this because their mocked AI responses only ever populated
+`organization`, a text field.
+
+Not patched inline — this touches already-committed, already-approved M4
+design, so it was raised for a decision before continuing. Fixed as:
+- **`estimatedValue`/`emd`/`tenderFee`**: columns changed from `numeric` to
+  `text` (migration `0005_hot_devos.sql`, a single-statement `ALTER COLUMN
+  ... SET DATA TYPE text` per column — reviewed before applying, same
+  discipline as every prior migration). Matches `contractDuration`'s
+  existing precedent exactly; nothing else in the codebase depended on
+  these being numeric.
+- **`submissionDeadline`/`openingDate`**: no column-type change (both are
+  still used for sorting/filtering/the dashboard's upcoming-deadline
+  aggregate, so they stay real `timestamp` columns) — instead,
+  `replaceAnalysis()` now mirrors `tender_dates.parsedDate`'s own
+  established pattern: the AI's value is written to the typed column only
+  when it calendar-parses (`Date.parse`), and left `null` otherwise —
+  never a fabricated date. The raw text is preserved either way, in
+  `overviewEvidence[field].rawValue`, so an honest non-calendar answer
+  (`"within 30 days of tender opening"`) is never silently dropped just
+  because it doesn't fit a `timestamp` column. `GET /tenders/:id` prefers
+  the typed value and falls back to `rawValue` only when the typed column
+  is null, so the frontend gets a real `Date` whenever one exists and the
+  honest source text otherwise.
+
+## Tests
+
+47 new tests across 4 files (`tenders-list`, `dashboard-summary`,
+`companies`, `tender-detail`), covering: pagination boundaries (including
+the 100-item cap), every filter/sort/search path, tenant isolation on
+every new route (list/summary/detail all confirmed to return 403 or 404 —
+never leak another company's data by naming its id), the onboarding
+company-creation path including the PENDING_VERIFICATION case, profile
+whitelist enforcement, and — specifically for the bug above — a
+calendar-parseable-deadline case and a deliberately non-parseable one,
+both asserting the analysis still completes and the right value survives
+to the response. Full suite validated clean across all three deployment
+configurations (both BidPilot env vars set / `DATABASE_URL` only / neither
+— pure Papyr): 369/369, 258/258, 218/218, zero failures. No test calls a
+real AI API.
+
+## Explicitly not built (per the approved M5 scope)
+
+Frontend (M5b onward), eligibility matching, tender discovery/scraping,
+Ask Tender/RAG, Telegram, billing/subscriptions, OAuth/MFA/SSO, AI chat,
+automatic BOQ pricing, a PDF page viewer, analytics.
+
+## Next
+
+M5b (frontend foundation) is unscoped for implementation until this
+report is reviewed and approved — same "implement → test → report/diff →
+approval → commit" discipline as every prior milestone.
+
+# Milestone 5b — Frontend Foundation
+
+React + Vite + TypeScript, at `whatsapp-doc-assistant/frontend/` — a
+sibling of `backend/`, not nested inside it. This was verified against
+the actual filesystem before writing any code (the M5b audit had
+originally assumed this layout; a review comment questioned it, assuming
+`server.js` lived at the repo root — checking found the original layout
+was in fact correct, and `path.join(__dirname, '../frontend/dist')` from
+`backend/server.js` resolves correctly). No `frontend/` directory existed
+before this milestone.
+
+## What M5b delivers
+
+An end-to-end, working browser app over the real Milestone 5a API — no
+mocked data, no stubbed endpoints:
+
+```
+Register -> Verify email -> Login -> GET /me
+  -> 0 companies  -> Create Company -> Dashboard (placeholder)
+  -> 1 company    -> Dashboard (placeholder), auto-selected
+  -> >1 companies -> company selector -> Dashboard (placeholder)
+Logout
+Visiting /dashboard while logged out -> /login?next=/dashboard -> back to
+  /dashboard after a successful login
+```
+
+No tender list, no tender-detail intelligence UI, no company-profile UI —
+those are M5c/M5d/M5e, per the approved boundary. The Dashboard page is a
+genuine placeholder (confirms which company is selected, nothing else).
+
+## Directory layout
+
+```
+frontend/
+  src/
+    api/           client.ts (CSRF + JSON + 401 handling), auth.ts,
+                   companies.ts, tenders.ts, dashboard.ts
+    auth/          SessionProvider, RequireSession, RedirectIfAuthenticated,
+                   CompanyGate
+    components/    AppHeader
+    config/        product.ts (PRODUCT_NAME/PRODUCT_TAGLINE — the one
+                   place "Tenderlytic" is defined; every page imports it
+                   rather than hardcoding the string)
+    pages/         auth/{Login,Register,VerifyEmail}, onboarding/CreateCompany,
+                   Dashboard
+    routes.tsx, App.tsx, main.tsx, index.css
+  package.json, package-lock.json   (own dependency tree — not a workspace)
+  vite.config.ts, tsconfig*.json, index.html
+```
+
+`tenders.ts` and `dashboard.ts` are built and fully typed against the real
+M5a response shapes even though no M5b page calls them yet — approved as
+infrastructure M5c/M5d build directly on top of, rather than adding a
+fourth API-client file mid-milestone later.
+
+A separate `frontend/package.json`/`package-lock.json` (not npm/pnpm
+workspaces) — one backend app plus one frontend app doesn't need monorepo
+tooling. `frontend/package-lock.json` is committed so `npm ci` is
+reproducible.
+
+## Session flow and company resolution
+
+`GET /me` runs once on mount; `SessionProvider` exposes a `status` of
+`loading` / `unauthenticated` / `authenticated` — `loading` renders a
+neutral state, never a login-page flicker, so a slow `/me` response can't
+be mistaken for "not logged in." A 401 from *any* API call (not just
+`/me`) dispatches a `tenderlytic:session-expired` window event that
+`SessionProvider` listens for, so an expired session reflects immediately
+across the app.
+
+Company selection is exactly the approved M5 contract — no new backend
+concept:
+
+```
+session -> user -> companyId supplied by the frontend on each request
+  -> requireCompanyAccess(user, companyId) -> CompanyScope -> query
+```
+
+0 companies -> redirect to onboarding; 1 -> auto-selected; >1 -> a plain
+selector, held in React state only (no localStorage, no "active company"
+server-side). The selected `companyId` is never treated as authorization
+by the backend — every M5a route independently re-verifies membership via
+`requireCompanyAccess` regardless of what the client sent; this was
+already true of M5a and nothing in M5b changes it.
+
+## CSRF
+
+No new backend mechanism — `api/client.ts`'s `request()` reads the
+`bidpilot_csrf` cookie and attaches it as `x-csrf-token` only on
+`POST`/`PUT`/`PATCH`/`DELETE`, matching `csrf.js`'s own safe-method list
+exactly (not "every non-GET request").
+
+## Same-origin serving and the Express 5 SPA fallback
+
+`server.js` now: serves `frontend/dist/` via `express.static()`, then a
+SPA-fallback middleware, then the existing JSON 404 — in that order, and
+only after every existing route (webhook, health, privacy, `/bidpilot/*`).
+Two things worth recording precisely because they were nearly gotten
+wrong:
+
+- **`app.get('*', ...)` throws** under the actually-installed Express
+  5.2.1 / path-to-regexp 8.4.2 (`Missing parameter name at index 1: *`) —
+  confirmed empirically before writing the fallback, not assumed from
+  Express 4 habits. The fallback instead uses a path-less `app.use(...)`
+  (the same idiom this file's own pre-existing 404 handler already uses),
+  which sidesteps path-to-regexp entirely.
+- The fallback explicitly excludes `/bidpilot/*` (so a mistyped API path
+  falls through to a real 404/503, never silently returns HTML) and any
+  path with a file extension that `express.static` didn't already serve
+  (so a stale/missing hashed asset 404s honestly instead of masking a real
+  deploy problem as the SPA shell).
+
+`server.js` now exports `app` (auto-start is guarded behind an
+`import.meta.url === entrypoint` check) specifically so
+`test/spa-fallback.test.js` can exercise the real, fully-wired app rather
+than a reconstructed copy that could drift from production behavior. That
+test proves: frontend routes serve the SPA, `/bidpilot/*` misses don't,
+`/health`/`/privacy` are unaffected, a missing asset 404s, a real built
+asset serves with the right content type, and the CSP header is present
+with no `unsafe-inline`.
+
+If `frontend/dist/` doesn't exist (a checkout that hasn't run `npm run
+build`, or a pre-Milestone-5b checkout), `server.js` skips mounting the
+static/fallback routes entirely rather than crashing — a Papyr-only
+deployment is unaffected either way.
+
+## Content-Security-Policy
+
+Applied globally (harmless on Papyr's JSON responses): `default-src
+'self'; script-src 'self'; style-src 'self'; img-src 'self' data:;
+font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self';
+frame-ancestors 'none'`. No third-party script/style/font/analytics
+origins — deliberate, given this product handles commercially sensitive
+tender documents.
+
+Getting a strict `style-src` (no `unsafe-inline`) to actually work
+required a real implementation decision: every component was written
+using plain CSS classes (`src/index.css`) rather than React's `style={{}}`
+prop. A `style={{}}` prop compiles to the HTML `style` attribute, which a
+strict CSP blocks via `style-src`/`style-src-attr` exactly like an inline
+`<style>` tag — this was caught and fixed *before* the browser smoke test
+below, not discovered by it.
+
+**Verified with a real browser** (Playwright/Chromium against the actual
+built bundle, not just curl): the production JS and CSS load, React
+renders the login page, computed styles match the stylesheet
+(`body`'s background-color and `.page`'s max-width both matched exactly),
+an API call to `/bidpilot/me` completes (401, as expected when logged
+out — not blocked by CSP), and zero CSP-violation console messages were
+observed.
+
+## Render deployment
+
+Root Directory stays `backend/` (unchanged). Render's dashboard **Build
+Command** needs to change to `npm install && npm run build` (previously
+just the zero-config default, effectively `npm install`); **Start Command
+stays `npm start`, unchanged**. `backend/package.json`'s new `build`
+script (`npm --prefix ../frontend ci && npm --prefix ../frontend run
+build`) installs and builds the frontend using its own committed lockfile.
+This ordering — backend deps installed, frontend deps installed +
+built, server started, in that order — was verified locally (`npm run
+build` from `backend/` produces `frontend/dist/` correctly) but **the
+actual Render dashboard setting has not been changed or verified from
+this environment** — no `render.yaml` exists and this environment has no
+Render API access. Documented as a required manual step in
+`OPERATIONS.md`, with the exact string to set.
+
+## What was deliberately not done
+
+No logo or brand image assets (only `PRODUCT_NAME`/`PRODUCT_TAGLINE` text
+constants). No UI component library, no Tailwind, no CSS-in-JS, no
+Storybook, no design-token system — plain CSS classes only. No state
+management library (Redux/Zustand/React Query) — a thin `fetch` client
+plus React context is enough for what M5b actually needs. No dashboard
+data, no tender list/detail UI, no company-profile UI.
+
+## Tests
+
+9 new backend tests (`test/spa-fallback.test.js`) covering the static/SPA-
+fallback/CSP behavior described above, against the real `server.js` app.
+Full suite validated clean across all three deployment configurations.
+No frontend unit/component test framework was introduced this milestone —
+validation was the real TypeScript build (`tsc -b`), the real production
+`vite build`, and the real-browser smoke test described above, which
+together cover what mattered most for a foundation milestone: does the
+actual bundle work, not whether an isolated component renders correctly
+in a mocked test harness.
+
+## Next
+
+M5c (Dashboard + tender list) is unscoped for implementation until this
+report is reviewed and approved.
+
+# Milestone 5c — Onboarding + Dashboard
+
+Frontend-only milestone, exactly as scoped: **zero backend files changed.**
+Every action (list/filter/sort/search, upload, analyze, poll) goes through
+M5a's already-committed, already-tested API — `api/tenders.ts` and
+`api/dashboard.ts`, built in M5b but unused until now, are the only API
+surface this milestone consumes (plus one small addition, `uploadTender()`,
+to `api/tenders.ts` — see below).
+
+## What was verified before writing code
+
+Per explicit instruction, the upload route's response contract was
+verified against the actual committed `routes/tenders.js` (not assumed
+from the M5c audit's shorthand). The real contract is `201/200 {tenderId,
+status, processingStatus, duplicate}` — carrying the business `status` and
+a `duplicate` flag the audit's wording had omitted — and `companyId` is a
+multipart **form field**, not a query/JSON parameter. `api/tenders.ts`'s
+new `uploadTender()` matches this exactly.
+
+## New files
+
+```
+frontend/src/dashboard/
+  attentionState.ts        — pure derivation function, zero React/DOM deps
+  attentionState.test.ts   — 15 unit tests, runs via `node --test` directly
+                              (Node 22's native TS type-stripping — no
+                              frontend test framework added)
+  useTenderPolling.ts       — bounded polling hook (2s interval, 120s cap
+                              per phase, timeout is never treated as FAILED
+                              and never auto-retries)
+  TenderRow.tsx             — per-row rendering + polling wiring + Analyze
+                              action (kept as its own file — genuinely
+                              non-trivial hook wiring, not architectural
+                              appearance)
+frontend/src/components/
+  EmptyState.tsx            — deliberately generic (title/message/action
+                              props only, zero tender-specific logic — the
+                              caller decides copy)
+  AttentionBadge.tsx        — tiny, reusable (M5d will want it too)
+frontend/src/pages/Dashboard.tsx  — REPLACED (was M5b's placeholder):
+                              summary tiles, recent-tenders list, filter
+                              bar, paginated table, upload action — kept as
+                              one file rather than splitting into
+                              SummaryTiles/TenderTable/UploadButton per the
+                              explicit instruction not to fragment for its
+                              own sake
+```
+
+`frontend/tsconfig.test.json` (new) — an isolated tsconfig for `*.test.ts`
+files (Node types, kept out of the browser app's `tsconfig.app.json`
+entirely) — needed once a real dependency-free unit test file existed;
+`tsc -b`'s project-reference build no longer drags Node-only globals into
+the app bundle's type-check, or vice versa.
+
+## Attention states — implemented exactly as specified
+
+`deriveAttentionState()` is the priority-ordered table from the M5
+product review, unchanged: PROCESSING > PROCESSING_FAILED >
+ANALYSIS_REQUIRED > ANALYSIS_IN_PROGRESS > ANALYSIS_FAILED >
+DEADLINE_APPROACHING > READY. The deadline window is exactly `now <=
+deadline <= now + 7 days`, inclusive both ends; a past deadline is not a
+separate "overdue" state (falls through to READY, as instructed); no
+deadline means no warning. A non-calendar-parseable deadline string
+(the rare case from M5a's `submissionDeadline` fallback) safely falls
+through to READY rather than throwing — `Invalid Date` comparisons are
+always `false` in JS, never a crash. 15 unit tests cover every branch and
+both window boundaries exactly at the edge (inclusive).
+
+This module interprets only status enums and a timestamp the backend
+already computed — it never infers or re-derives a tender fact, preserving
+the M4/M5a evidence-first boundary exactly as instructed.
+
+## Default sort — deadline ascending, matching the backend
+
+Per the explicit correction: the table's default sort is the backend's own
+`sortBy=deadline&sortOrder=asc` — attention state is informational only,
+never the sort key. Sorting/pagination stay server-authoritative; nothing
+client-side reorders a page after the server returns it.
+
+## Polling — bounded per phase, timeout is not failure
+
+Each row polls independently (its own `useTenderPolling` instance,
+2s interval, 120s cap) so multiple simultaneous uploads/analyses each get
+their own budget from their own trigger moment. On timeout: polling stops,
+the row shows "Still processing/analyzing — refresh or try again later."
+with a "Check again" button that restarts the 120s budget — it never
+auto-retries and never marks the row FAILED. Verified with a real ~120s
+wall-clock wait in the browser verification pass below, not simulated.
+
+## Upload -> processing -> analysis flow
+
+`+ Upload Tender` -> native file picker (PDF only, matching the backend's
+own validation) -> `uploadTender()` -> row appears immediately (a full
+list+summary refetch after upload, not a hand-constructed optimistic row)
+-> per-row polling picks up `processingStatus` until it settles ->
+`[Analyze]` appears once `Analysis required` -> `analyzeTender()` -> polling
+switches to `analysisStatus` until it settles. No AI analysis auto-triggers
+on upload — the explicit click remains the only trigger, unchanged from
+M4's standing decision. A settled poll result also refreshes the summary
+tiles (a completed tender changes `awaitingAnalysis`/`analysed` counts,
+which would otherwise go stale).
+
+## Empty/loading/error states
+
+Three genuinely distinct dashboard states, not one generic "empty" message:
+`total === 0` with no active filter/search -> "No tenders yet. Upload your
+first tender to get started." (with the upload action attached);
+`total === 0` with an active filter/search -> "No tenders match your
+filters." (with a "Clear filters" action) — never conflated, verified in
+the browser pass by triggering both and confirming the correct one renders
+each time. List/summary fetch failures get a retry-capable error state via
+the same generic `EmptyState` component. 401 mid-session is already
+handled globally by M5b's `SESSION_EXPIRED_EVENT` — no new logic needed;
+confirmed still correct in the browser pass (clearing the session cookie
+and reloading redirects to `/login`).
+
+## Known pre-existing issue (introduced in Milestone 3, not M5c) — surfaced by, but not caused by, this milestone
+
+Development-mode verification email/link targets the backend verification
+endpoint rather than the frontend `/verify-email` page. Verification
+itself functions correctly. No M5c backend change was made. Future polish
+item.
+
+Detail: the real end-to-end browser verification below surfaced that the
+dev-mode email-verification link — `routes/auth.js`'s
+`devDeliverVerificationLink()`, written in Milestone 3, before any
+frontend existed to link to — emits a URL pointing at the raw backend API
+endpoint (`/bidpilot/verify-email?token=...`), not the frontend's
+`/verify-email` page built in this milestone. Clicking it shows a JSON
+response instead of the styled confirmation page. The verification itself
+still succeeds (the API call works); only the dev-convenience link's
+*target* is wrong, and `devVerificationUrl` never appears in a production
+response at all (see `routes/auth.js`'s own guard). This predates M5c
+entirely — M5c did not introduce it, could not have caused it (zero
+backend files changed this milestone, verified above), and per M5c's
+explicit "no backend changes" boundary it was **not fixed** here. Flagged
+for a future tiny polish (pointing the dev link at the frontend route
+instead) rather than touched now, and recorded here specifically so a
+later milestone audit doesn't mistake it for an M5c-introduced defect.
+
+## Tests / acceptance
+
+- 15 unit tests (`attentionState.test.ts`) — pure logic, every branch and
+  boundary, `node --test`, zero dependencies.
+- `tsc -b` and production `vite build` — clean.
+- `oxlint` — clean (only pre-existing warning classes already present
+  before this milestone, e.g. the same `set-state-in-effect` pattern
+  `SessionProvider.tsx` already used in M5b).
+- **Real-browser verification pass** (Playwright/Chromium against the
+  actual built bundle and a real Postgres, AI provider mocked via the
+  existing `setProvider()` seam — never a live API call; not committed as
+  a project test file, same as M5b's CSP pass): **18/18 checks passed**,
+  covering the complete approved acceptance list — register -> dev-verify
+  -> login -> onboarding (0 companies) -> company creation -> dashboard
+  first-time-empty state -> real PDF upload -> real extraction to
+  `Analysis required` -> mocked-AI analyze -> `Ready` -> summary tiles
+  reflecting the change -> filtered-empty vs first-empty distinction ->
+  seeded `PROCESSING_FAILED` and `ANALYSIS_FAILED` rendering (with a Retry
+  action) -> a genuine ~120-second poll-timeout wait, confirmed non-failure
+  -> session-cookie-cleared reload correctly redirecting to `/login`.
+- Full backend 3x-configuration regression re-run despite zero backend
+  changes, per standing discipline.
+
+## Explicitly not built (per the approved M5c boundary)
+
+The `/tenders/:id` route (M5d), company-profile UI (M5e), any Render
+Build Command changes beyond what M5b already documented (M5f), any tender
+fact interpretation beyond consuming backend-supplied status/summary
+fields.
+
+## Next
+
+M5d (tender intelligence UI) is unscoped for implementation until this
+report is reviewed and approved.
+
+# Milestone 5d — Tender Intelligence UI
+
+Frontend-only milestone, exactly as scoped: **zero backend files changed.**
+The entire tab UI consumes M5a's already-committed `GET /tenders/:id`
+(returns the full `TenderDetail` shape) and `GET
+/tenders/:id/document-url` — both built in M5a, neither previously
+consumed by any frontend page until now.
+
+## What was verified before writing code
+
+The `document-url` endpoint's exact response contract was re-verified
+directly against the committed `routes/tenders.js` before adding a client
+function for it: `{url, expiresInSeconds}`, `companyId` via query string.
+`api/tenders.ts`'s new `getDocumentUrl()` matches this exactly.
+
+## New files
+
+```
+frontend/src/components/
+  EvidenceTooltip.tsx       — the product differentiator made visible: a
+                              value with source-page + quote evidence gets
+                              a small "p.N" chip that click-toggles (not
+                              hover-only — works on touch) an evidence
+                              popover. A value with neither sourcePage nor
+                              evidenceText renders as plain text (overview
+                              fields can legitimately have no evidence;
+                              requirements/dates/red flags always do, per
+                              M4's evidence-first enforcement, but the
+                              component doesn't assume that).
+frontend/src/pages/TenderDetail.tsx  — page shell: fetch-on-mount,
+                              loading/404/error states, the attention
+                              badge (reusing M5c's deriveAttentionState
+                              with the identical raw-deadline parse guard
+                              TenderRow.tsx already uses), an
+                              "Analysis not yet complete" notice for any
+                              tender whose analysisStatus isn't COMPLETED,
+                              and a local-state tab bar.
+frontend/src/tenderDetail/
+  OverviewTab.tsx            — the 9 overview fields, each through
+                              EvidenceTooltip; "Not extracted" for a null
+                              field rather than blank space
+  RequirementsTab.tsx        — grouped by category, each requirement card
+                              shows its primary evidence via
+                              EvidenceTooltip plus any additional evidence
+                              entries below (a requirement can have more
+                              than one evidence row; EvidenceTooltip only
+                              carries one source/quote pair)
+  BoqTab.tsx                 — BOQ line items as a table, description
+                              carries the evidence chip (BOQ evidence is
+                              sourcePage-only, no separate quote field)
+  DatesTab.tsx                — key dates as a table, parsedDate formatted
+                              when present else the raw extracted text
+  RedFlagsTab.tsx             — red flag cards, each through EvidenceTooltip
+  DocumentTab.tsx             — document metadata + a Download button that
+                              fetches a fresh signed URL on every click
+                              (never cached/persisted client-side, matching
+                              the backend's own short-lived-URL design
+                              intent) and opens it in a new tab; "No
+                              document" empty state when the tender has
+                              none
+```
+
+`frontend/src/api/tenders.ts` — one addition, `getDocumentUrl()`.
+`frontend/src/dashboard/TenderRow.tsx` — the title cell is now a real
+`<Link to="/tenders/:id">` (M5c had deliberately left it inert, explicitly
+deferring this to M5d). `frontend/src/routes.tsx` — `/tenders/:id`
+registered inside the existing `RequireSession` + `CompanyGate` guard,
+alongside `/dashboard`. `frontend/src/index.css` — tab bar, evidence
+chip/popover, overview list, and requirement-card classes added; no inline
+`style={{}}` anywhere, same CSP constraint as every prior milestone.
+
+## The one scoped product decision — in-progress tenders show partial state, never block
+
+Per the M5d audit's flagged decision (approved by proceeding): a tender
+whose `analysisStatus` isn't `COMPLETED` is still fully navigable to its
+detail page. The tabs render whatever has actually been extracted so far
+(which may be nothing) rather than blocking navigation until analysis
+finishes, and a banner above the tabs makes the incomplete state explicit
+("the tabs below only show what has actually been extracted so far, not
+the absence of a finding") so an empty tab is never misread as "nothing
+was found" when analysis simply hasn't run yet.
+
+## Evidence-first UI, verified end-to-end
+
+Every requirement, BOQ item, date, and red flag persisted via M4's
+`createRequirementWithEvidence()`-style evidence-first write paths carries
+its evidence through to the UI without exception — verified in the
+real-browser pass below by expanding evidence chips across every tab and
+confirming the page number and quote shown match what was seeded/extracted
+for that row. Overview fields (the one place a value can legitimately lack
+evidence, per M4/M5a) render "Not extracted" for a null field and a plain
+value with no chip when a field has a value but no evidence — never a chip
+pointing at nothing.
+
+## Bug found and fixed during real-browser verification
+
+The Overview tab initially rendered `submissionDeadline` and `openingDate`
+as raw ISO timestamp strings (e.g. `2026-09-25T15:09:13.877Z`) instead of
+a formatted date. Every other overview field is free text extracted
+verbatim, so `OverviewTab.tsx`'s first draft rendered `field.value`
+unformatted for all nine fields — missing that these two specific fields
+are the only ones backed by a typed timestamp column (see
+`db/schema/tenders.js`) and need the same display formatting
+`DatesTab.tsx`/`TenderRow.tsx` already apply. Fixed by formatting only
+those two field keys (parse-and-format when the value calendar-parses,
+else fall back to the raw string — same non-throwing guard pattern used
+throughout M5c/M5d for dates). Caught by the real-browser screenshot pass,
+not by `tsc`/`oxlint`/unit tests, none of which would have caught a
+display-formatting choice.
+
+## Tests / acceptance
+
+- `tsc -b` and production `vite build` — clean.
+- `oxlint` — clean (only pre-existing warning classes already present
+  before this milestone, e.g. the same `set-state-in-effect` pattern
+  `Dashboard.tsx`/`SessionProvider.tsx` already used, now also present in
+  `TenderDetail.tsx`'s identical fetch-on-mount pattern).
+- `attentionState.test.ts` (M5c's 15 unit tests) — still green, unaffected.
+- **Real-browser verification pass** (Playwright/Chromium against the
+  actual built bundle and a real, isolated Postgres database created
+  solely for this pass — never touching the regression suite's database —
+  a real demo user registered/verified/logged in through the live API, a
+  real PDF uploaded and extracted through the live API, with
+  requirements/BOQ/dates/red-flags/overview-evidence hand-seeded directly
+  in that isolated database in place of a live AI call, since no AI
+  provider key is configured in this environment; not committed as a
+  project test file, same precedent as every prior milestone's browser
+  pass): dashboard row navigates to `/tenders/:id` -> all 6 tabs render
+  correct data -> evidence chips expand and show the correct page/quote on
+  every tab -> Document tab's Download button fetches a real signed URL
+  from the live endpoint -> the "Analysis not yet complete" banner logic
+  verified by code review against `tender.analysisStatus` (the seeded
+  demo tender was COMPLETED, so the banner's absence was the expected,
+  verified state for that case). Screenshots captured and reviewed frame
+  by frame, which is how the ISO-timestamp bug above was caught.
+- Full backend 3x-configuration regression suite re-run despite zero
+  backend changes, per standing discipline — **zero drift, exact match to
+  the M5b/M5c baseline**:
+  - `DATABASE_URL` + `BIDPILOT_CSRF_SECRET` set: 378 pass / 0 fail / 1 skip
+  - `DATABASE_URL` only: 267 pass / 0 fail / 14 skip
+  - neither set (pure Papyr): 227 pass / 0 fail / 20 skip
+- Secret-leak scan of the full diff — no matches.
+- No lingering server/test/browser processes; the isolated verification
+  database was dropped after use; Postgres confirmed stable throughout.
+
+## Explicitly not built (per the approved M5d boundary)
+
+Company-profile UI (M5e), eligibility-engine UI (M6), tender
+discovery/scraping (M7), bid drafting (M8), any backend route/schema
+change, any change to the AI analysis pipeline itself.
+
+## Next
+
+The resequenced roadmap proposed alongside this milestone's audit (M5d ->
+M5f production-integration polish moved up -> M6 eligibility -> M7
+discovery -> M5e profile deferred -> M8 bid drafting) has not yet been
+explicitly re-confirmed with the user beyond the "Both" that approved
+producing this audit — that sequencing decision should be revisited before
+assuming what's unscoped next.
+
+# Visual design pass (post-M5d)
+
+Requested directly by the user ("smooth, sophisticated, easy to eye UI"),
+scoped to visual polish only — no new pages, no new API calls, no backend
+changes, no new component library. Touches every page indirectly by
+rewriting `index.css`'s design tokens and base element styles; every
+existing class name is preserved so no component needed restructuring.
+
+## What changed
+
+`frontend/src/index.css` — full rewrite, still plain CSS (no Tailwind, no
+CSS-in-JS, matching the standing constraint): a token system on `:root`
+(neutral gray scale, one indigo accent color used consistently for every
+interactive/primary element, status colors, spacing/radius/shadow
+constants); styled base `button`/`input`/`select`/`a` elements so even
+unclassed elements (the dashboard's pagination/sort/clear-filters buttons,
+which never had a class) pick up a consistent look; soft card shadows and
+rounded corners on tiles, tables, badges, requirement cards, and the
+evidence popover; hover/focus/active transitions throughout; a visible
+focus ring (`box-shadow`, not `outline: none` with nothing replacing it)
+for keyboard accessibility. No external fonts — the CSP's `font-src
+'self'` was not touched, so the system font stack (`-apple-system, Segoe
+UI, system-ui, Roboto`) is used deliberately, not as a placeholder for a
+future webfont.
+
+`frontend/src/pages/Dashboard.tsx` and
+`frontend/src/dashboard/TenderRow.tsx` — one `className="btn-primary"`
+addition each, on the "+ Upload Tender" and "Analyze"/"Retry analysis"
+buttons respectively, the two primary calls-to-action that previously had
+no class and rendered identically to every secondary button (pagination,
+clear filters, log out). No behavior change.
+
+## Verification
+
+- `tsc -b` + `vite build` — clean.
+- `oxlint` — clean, same pre-existing warning classes as M5c/M5d, no new
+  ones.
+- Real-browser screenshot pass across every page (login, dashboard, all
+  six tender-detail tabs including the evidence popover) using the same
+  isolated-database + real-API-registration approach as M5d's verification
+  — reviewed frame by frame before considering this done.
+- Full backend 3x-configuration regression suite re-run despite this being
+  a frontend-only, CSS-only change, per standing discipline.
+- Secret-leak scan of the diff — no matches.
+
+# Milestone 6 — Eligibility Engine + External API Auth (corrected design)
+
+**This supersedes an earlier M6 implementation that was reviewed and
+rejected before being committed.** The rejected draft (i) returned the
+existing 30-day HttpOnly session token directly in a JSON response body,
+so a cross-origin caller's JavaScript could read a credential the cookie
+mechanism was specifically designed to keep out of JS reach, and (ii) let
+the AI supply both a company-profile field NAME and its claimed VALUE for
+an eligibility verdict, with the server only checking the field existed —
+never verifying the AI's claimed value against the real profile. Neither
+implementation detail was ever committed; both are corrected below. See
+the review transcript for the full original findings; this section
+describes only the corrected, approved design.
+
+## Authentication: two credentials, not one shared two ways
+
+```
+Browser (existing frontend)          External frontend (e.g. Lovable)
+        │                                      │
+   POST /login                            POST /login {issueApiToken: true}
+        │                                      │
+   30-day session (sessions table)        30-day session (sessions table, same as always)
+        │                                      │      +
+   HttpOnly cookie ONLY                   NEW: api_access_tokens row (20 min)
+   (never in JSON, unchanged from M3)     JSON body: { apiToken, apiTokenExpiresAt }
+```
+
+**The 30-day session token is never returned in a JSON response body, for
+any caller, under any condition** — the actual fix. It only ever leaves the
+server as the `bidpilot_session` HttpOnly cookie, exactly as before this
+milestone. A cross-origin caller instead gets a *separate*, short-lived
+(`BIDPILOT_API_TOKEN_TTL_MINUTES`, default 20) credential from its own
+table (`api_access_tokens`, new — `unique` constraint on `token_hash`, same
+hash-only-storage discipline as `sessions`), minted only on an explicit
+opt-in flag on the *same* password-verified login call — not a second
+login system. `requireSession()` checks `Authorization: Bearer` against
+`api_access_tokens` and the cookie against `sessions`; the two never
+cross-validate (tested explicitly both directions). `req.bidpilotAuthMethod`
+(`'cookie' | 'apiToken'`) records which one authenticated a request.
+
+`CompanyScope`/`requireCompanyAccess` are completely unaffected — both
+credentials resolve to the same `req.bidpilotUserId`, and tenant membership
+is re-verified fresh on every request regardless of transport (tested for
+both). CSRF is skipped only for `authMethod === 'apiToken'` (no ambient
+cookie attachment for a cross-site attacker to ride on) and remains fully
+enforced for `authMethod === 'cookie'`, unchanged. `POST /logout` revokes
+whichever credential actually authenticated it — verified to leave the
+*other* credential (from the same login call) still valid, proving the two
+are independently revocable, not two names for one row.
+
+CORS (`auth/cors.js`) is unchanged in design from the earlier review: an
+explicit `BIDPILOT_CORS_ORIGINS` allowlist (empty/unset by default — fully
+closed, not wildcard), never `Access-Control-Allow-Credentials`.
+
+## Eligibility evidence: the AI names a fact, the server supplies it
+
+`POST /tenders/:id/eligibility` (unchanged endpoint shape) now requires a
+`MEETS`/`DOES_NOT_APPEAR_TO_MEET` verdict to survive server-side
+verification against the real `company_profiles` row before being
+persisted, not just the AI's say-so:
+
+```
+AI: {"status": "MEETS", "companyEvidence": [{"field": "annualTurnover", "reason": "covers the ₹5cr minimum"}]}
+                    ↓
+Server: is "annualTurnover" a real, whitelisted profile field?
+        does it have a real, non-empty value in THIS company's actual profile?
+        did the AI give a non-empty reason connecting it to this requirement?
+                    ↓
+   ALL YES → persisted as {field, value: <SERVER-READ value>, label, reason: <AI's reason>}
+   ANY NO  → verdict forcibly downgraded to UNKNOWN, no evidence persisted
+```
+
+The AI is never asked for and never supplies the field's *value* — the
+prompt explicitly tells it any value it writes will be ignored, and the
+server reads the real value fresh from the profile it already has in hand
+(tested: a mock AI response with a deliberately fabricated value is
+confirmed never to reach the database). This closes the actual gap the
+review identified — the server no longer trusts "the field exists" as
+sufficient; it separately verifies the field is non-empty and that a
+reason was given, and substitutes its own value unconditionally.
+
+**Deliberate scope limit, stated plainly**: the server verifies a cited
+field is real, non-empty, and paired with a non-blank reason — it does
+NOT independently judge whether that reason is *topically relevant* to
+the specific requirement (an AI could, in principle, cite a real,
+non-empty, plausible-sounding-reason field that doesn't actually address
+the requirement — e.g. citing turnover for a certification requirement).
+Judging that semantic connection is the AI's job, made *auditable* (the
+`reason` text is persisted and visible), not independently re-verified by
+a second AI call — building that would be a materially larger, separate
+feature, not something this milestone's approved scope calls for.
+
+**New column**: `tender_requirements.company_evidence` (jsonb, nullable) —
+array of `{field, value, label, reason}`. Not a new child table: this is a
+small, always-replaced-wholesale-per-run evidence MAP, the same shape of
+thing `tenders.overview_evidence` already is, not a durable, independently
+extracted FACT like `tender_requirement_evidence` (which this milestone
+never touches — tender-side evidence needed no schema change at all,
+`GET /tenders/:id`'s existing `requirements[].evidence` already serves it).
+Migration `0006_opposite_scrambler.sql` (generated via `drizzle-kit
+generate`, reviewed before applying) — purely additive (one new table, one
+nullable column), no data migration, no risk to any existing row.
+
+`applyEligibilityResults()` touches only `companyStatus`/`actionRequired`/
+`companyEvidence` — verified by a test asserting `category`/`title`/
+`description`/`mandatory`/the requirement's own `tender_requirement_evidence`
+rows are byte-identical before and after a run. A **failed** run (unparseable
+AI output) leaves a **previous successful** result completely untouched
+(tested explicitly: run once successfully, then force a failure, confirm
+the prior verdict and evidence survive unchanged). A **successful** re-run
+fully **replaces** the previous evidence, never appends or retains stale
+entries (tested: change the profile, re-run, confirm the new evidence
+reflects the new profile state and the old evidence is gone, not merged).
+
+**Fixed a related gap found during design review**: `GET /tenders/:id`
+previously never included `companyStatus`/`actionRequired` at all (a
+pre-existing omission, present since M1/M4, just never consequential until
+this milestone actually populated those columns) — an eligibility result
+would have been invisible outside the one-shot `POST .../eligibility`
+response. Now included in every `requirements[]` entry alongside the
+existing `evidence` array, verified by a dedicated test.
+
+## Tests
+
+40 new tests across the three files below (all passing — matches the
+regression suite's exact pass-count delta, 418 vs. the 378 baseline),
+covering
+exactly the matrix the review required plus the additional re-run-
+replacement case:
+
+- `test/bidpilot/auth.test.js` (+15 new subtests on the existing HTTP
+  integration suite): pre-M6 login body shape unchanged
+  when `issueApiToken` is absent; `apiToken`/`apiTokenExpiresAt` returned
+  correctly when requested, alongside the unconditional session cookie;
+  the two credentials are never equal; **wrong credential namespace**
+  rejected both directions (session token as bearer → 401; apiToken as
+  cookie → 401); a valid apiToken works with zero cookies; a garbage
+  apiToken → 401; **malformed Authorization headers** (`Bearer` alone,
+  `Bearer ` with trailing space, `NotBearer xyz`, `Basic ...`, empty) all
+  → 401, not a crash; an **expired** apiToken → 401; CSRF skipped for
+  apiToken auth / still enforced for cookie auth (both directions); an
+  apiToken-authenticated logout revokes only that token, leaving the
+  cookie session from the same login still valid; CORS allowlist/
+  non-allowlist/preflight behavior.
+- `test/bidpilot/eligibility.test.js` (new file, +25 test-runner-counted
+  entries — 1 unit test, 14 pipeline-level cases under one parent, 8 HTTP
+  integration cases under another): shape validation; no-requirements
+  and no-profile short-circuits (zero AI spend); a verified MEETS with
+  real evidence; **the AI's fabricated value is proven never used** (a
+  mock response includes a deliberately wrong "value" field the pipeline
+  must ignore); a verdict with no evidence, a non-whitelisted field, an
+  empty-but-real field, and a missing reason are each independently
+  proven to downgrade to UNKNOWN; an omitted requirement stays UNKNOWN;
+  **original requirement fields provably unchanged** after a run; a
+  malformed AI reply throws and writes nothing; **a failed run preserves
+  the previous successful result**; **a re-run replaces (not appends)**
+  evidence after a profile change; budget cap enforcement; the full HTTP
+  route including **apiToken-based tenant isolation** (User A's apiToken
+  cannot reach Company B's tender) and the `GET /tenders/:id` evidence-
+  surfacing fix.
+- `test/db/connection.test.js` — updated the hardcoded "21 tables" count
+  to 22 (the new `api_access_tokens` table); this is the one pre-existing
+  test that legitimately needed updating, not a regression.
+
+Full backend 3x-configuration regression suite, run against the corrected
+implementation after reverting the rejected draft back to the clean M5d +
+design-pass baseline first (per the review's explicit procedural
+instruction) — zero unexpected drift, every delta explained:
+- `DATABASE_URL` + `BIDPILOT_CSRF_SECRET` set: 418 pass / 0 fail / 1 skip
+  (378 baseline + 40 new tests)
+- `DATABASE_URL` only: 268 pass / 0 fail / 16 skip (267 baseline + 1 new
+  unconditional unit test; all CSRF-gated new tests correctly skip)
+- neither set (pure Papyr): 228 pass / 0 fail / 22 skip (same +1 pattern)
+
+Frontend `tsc -b` + `vite build` re-verified clean (untouched this
+milestone). Secret-leak scan of the diff — no matches (the one regex hit
+was the `rawToken` variable declaration in `apiTokenService.js`, not a
+literal secret value).
+
+## Explicitly not built (per this milestone's approved scope)
+
+Frontend UI for any of this (Lovable's job). A "list/revoke my active API
+tokens" endpoint — the 20-minute natural expiry was judged sufficient for
+this milestone; flagged as a deliberate omission, not an oversight, if a
+future milestone wants it. Refresh-token rotation — explicitly deferred by
+the review ("no refresh token yet"); a Lovable session re-authenticates
+every ~20 minutes for now. Semantic re-verification of the AI's cited
+`reason` text (see the "deliberate scope limit" note above). Production
+deployment, Supabase migration, transactional email, S3/R2 storage — all
+still open from the M5f audit, untouched by this milestone.
+
+## Next
+
+Committed as `625f40b` after explicit approval. Deployed to production on
+Fly.io shortly after (app `tenderlytic-api`, Postgres `tenderlytic-db`,
+region `sin`) — see `OPERATIONS.md`'s "Tenderlytic backend deploy (Fly.io)"
+section for the Docker/`flyctl` setup (`0924675`, `280fd0b` fixed two real
+build issues found via actual deploy attempts: an oversized build context
+and a missing Python/C++ toolchain `argon2` needs to compile from source).
+Live at `https://tenderlytic-api.fly.dev/`, serving both the API and the
+built frontend from the same origin.
+
+# Milestone "Beta Readiness" — Performance + Premium UI + Core Product Polish
+
+**Scope, verbatim from the approval:** an 8-phase milestone — production
+performance audit against real tender PDFs, optimize the measured
+bottleneck, a premium CSS-only UI/UX pass, product polish, wiring up any
+beta-ready core feature the backend already supports but the frontend
+never exposed, full regression, production verification, and one
+consolidated report. Explicitly out of scope: any new backend architecture,
+any of M7-M19's roadmap features (tender discovery, GeM scraping, bid
+drafting, billing, OAuth/MFA/SSO, etc.), fake progress indicators, and any
+weakening of the security/isolation/CSP model M1-M6 established.
+
+## Phase 1 — Performance audit (real tender PDFs, real AI provider)
+
+Two real public government tender PDFs, not synthetic fixtures: a 23-page
+Dept. of Atomic Energy NIT (727KB) and a 154-page Ministry of External
+Affairs / RITES consultant tender for ICP Bhairahawa construction (10.1MB,
+OCR-triggered). Both run through the real `AI_PROVIDER=openai` pipeline
+(real `OPENAI_API_KEY`, no mock) against a local Postgres, with new
+purely-observational `log.info('metric ...')` lines added to
+`ai/openai.js` (`complete()` — real token usage from the API response
+itself, not an estimate) and `analysis/pipeline.js` (per-chunk timing
+array, `chunksMs`/`avgChunkMs`/`maxChunkMs`/`aggregateMs`/`dbWriteMs`) —
+neither changes any function's return shape or control flow.
+
+**Measured (before any Phase 2 change):**
+
+| | Small (23pp, 2 chunks) | Large (154pp, 9 chunks) |
+|---|---|---|
+| Upload | 18ms | 45ms |
+| Extraction | 1,211ms | 12,366ms (OCR) |
+| AI chunk calls (sequential) | 52,445ms | 302,643ms |
+| — of which failed (truncated) | 0 | **3 of 9** |
+| Aggregation | 0ms | 0ms |
+| DB write | 63ms | 182ms |
+| **Total** | **52,510ms** | **302,827ms** |
+
+AI calls are ~99.9% of total wall-clock time in both cases — extraction,
+aggregation, and DB write are all negligible by comparison, confirming the
+milestone's own stated "preferred optimization order" item #1 (bounded
+concurrency for chunk AI calls) as the correct primary and essentially
+only-necessary lever; items #2-6 (dedup, chunk reduction, prompt
+efficiency, aggregation/DB optimization) would yield negligible additional
+benefit given how small their current footprint already is.
+
+**A second, more serious finding surfaced by the same real run:** 3 of the
+large tender's 9 chunks came back with `output_tokens` exactly at
+`extract.js`'s hardcoded `maxTokens: 4000` cap and unparseable (truncated
+mid-JSON) output — silently counted as failures and dropped, per the
+pipeline's existing partial-success policy. This is real data loss on
+dense, requirement/BOQ-heavy chunks, not a performance issue — classified
+and fixed in Phase 2.
+
+## Phase 2 — Bounded concurrency + the truncation fix
+
+- **`analysis/pipeline.js`**: the sequential `for...of` chunk loop replaced
+  with a bounded worker pool — `Math.min(config.bidpilot.analysis.concurrency,
+  chunks.length)` workers, each claiming the next chunk via a single
+  synchronous `nextIndex++` (no `await` between read and increment, so two
+  workers can never claim the same chunk). Never an unbounded
+  `Promise.all(chunks.map(...))`. Results are written into a pre-sized
+  `outcomes` array **by original chunk index**, not push()'d in completion
+  order — `aggregateResults()`'s "first chunk wins" document-order
+  dependency for overview fields is preserved regardless of which chunk's
+  AI call actually finishes first. All existing per-chunk behavior
+  (`recordChunkUsage`, failure counting, per-chunk timing) is unchanged in
+  substance, just now potentially concurrent.
+- **`config.js`**: new `BIDPILOT_ANALYSIS_CONCURRENCY` env var (default 4),
+  `config.bidpilot.analysis.concurrency`. Budget checks
+  (`assertAnalysisBudget` in `routes/tenders.js`) are unchanged — still a
+  single pre-flight check before any chunk starts, still authoritative.
+- **`analysis/extract.js`**: `maxTokens` raised from the hardcoded 4000 to
+  8000 — the Phase 1 finding's fix. Dense chunks now have enough headroom
+  to finish their JSON instead of being truncated and dropped.
+
+**Re-measured, same two real PDFs, same real AI provider:**
+
+| | Small (2 chunks) | Large (9 chunks) |
+|---|---|---|
+| AI chunk calls (concurrency=4) | 35,359ms (**-32.6%**) | 82,504ms (**-72.7%**, 3.67x) |
+| Failures | 0 | **0** (was 3) |
+| Requirements found | 29 (was 25) | **143** (was 88, **+63%**) |
+| BOQ / dates / red flags | 0/4/12 | 58/32/37 (was 50/21/24) |
+
+The large tender's requirement count jump (88 → 143) is the truncation fix
+recovering real data that was previously silently lost, not a behavior
+change in what counts as a requirement. Chunk timing reduction matches the
+theoretical expectation for concurrency=4 over 9 chunks (~3 sequential
+waves instead of 9).
+
+**New tests** (`test/bidpilot/analysis.test.js`, repo-level, +2): "aggregation
+follows CHUNK order, not AI-call completion order, under concurrency" — three
+forced-into-their-own-chunk pages whose AI calls resolve in the REVERSE of
+document order (chunk 1 slowest, chunk 3 fastest); asserts the persisted
+`overview.organization` reflects chunk 1 (document order), not chunk 3
+(completion order), and that all three chunks' requirements survive. "one
+chunk failing among several concurrent chunks does not affect the others" —
+chunk 2 throws, chunks 1 and 3 still complete and persist, analysis still
+reaches COMPLETED (partial-success policy holds under concurrency too).
+
+## Phase 3 — Premium UI/UX + a real Phase-5 gap found along the way
+
+CSS-only, no new libraries, no external fonts/CDNs (CSP unchanged: `style-src
+'self'`, no `unsafe-inline`):
+
+- **Responsive pass** (previously zero `@media` queries in `index.css`):
+  header wraps and truncates a long email instead of overflowing off-
+  screen at narrow widths; the tender table gets a `.table-scroll` wrapper
+  (horizontal scroll contained to the table, not the page); the tab bar
+  scrolls horizontally instead of wrapping awkwardly; `overview-row`,
+  `profile-grid`, and `experience-row` stack to one column under 640px.
+  Found and fixed via an actual `getBoundingClientRect()` sweep in a real
+  headless-Chromium page at 375px width, not a guess — the real bug was
+  the header's `justify-content: space-between` with no wrap/truncation,
+  which pushed content off-screen on every page since `AppHeader` is
+  shared.
+- **Honest staged processing UX** (`TenderDetail.tsx`): the tender detail
+  page previously had NO live polling at all — only the dashboard row
+  polled — so linking straight to `/tenders/:id` while a tender was still
+  processing/analyzing showed a stale state until a manual reload. Now
+  polls via the same bounded `useTenderPolling` hook (2s/120s, unchanged)
+  and shows the REAL `processingStatus`/`analysisStatus` enum value as
+  text (`"Extracting pages from the document…"`, `"Analyzing the document
+  against your requirements checklist…"`) — never a fabricated percentage
+  or step count, per the milestone's explicit "no fake progress" rule.
+- **Eligibility engine wired to the UI for the first time.** M6 (`625f40b`)
+  built the entire eligibility backend — `POST /tenders/:id/eligibility`,
+  `companyStatus`/`actionRequired`/`companyEvidence` on
+  `GET /tenders/:id` — but zero frontend code ever called it. Fixed:
+  `api/tenders.ts` gained `EligibilityStatus`, `CompanyEvidenceEntry`, and
+  `checkEligibility()`; `RequirementsTab.tsx` renders a status badge per
+  requirement (MEETS/DOES_NOT_APPEAR_TO_MEET/UNKNOWN) plus the server-
+  verified `{label, value, reason}` evidence when a check has run;
+  `TenderDetail.tsx` adds a "Check eligibility against your profile"
+  button on the Requirements tab.
+- **A second, larger Phase-5 gap found while testing the first one:**
+  eligibility checking a real tender through the new button returned
+  UNKNOWN for everything, with `actionRequired: "Complete your company
+  profile..."` — because **there was no way to fill in a company profile
+  at all.** `api/companies.ts` already had a complete, typed
+  `getCompanyProfile()`/`updateCompanyProfile()` client (built in earlier
+  M5-era work) with zero `.tsx` consumers, and the backend's
+  `GET`/`PATCH /companies/:id/profile` routes (whitelisted against the
+  real `company_profiles` columns) were fully built and tested but never
+  reachable from any page — `CreateCompanyPage`'s own comment said "You
+  can fill in the rest of your company profile later," and later never
+  came. New `pages/settings/CompanyProfile.tsx` + `/company-profile`
+  route + a header nav link: scalar fields as plain inputs, list-shaped
+  fields (certifications, licenses, equipment, geography, OEM
+  relationships) as comma-separated inputs, past-project `experience` as
+  repeatable description/value/year/client rows. No new backend
+  capability — 100% existing, already-tested routes, exactly the same
+  category of fix as the eligibility wiring above.
+
+**Real-browser verification** (Playwright/Chromium, real Postgres, real AI
+provider — not mocked, since the point was proving the end-to-end
+eligibility flow against a real profile and a real tender): 16/16 checks —
+login, company-profile save-and-persist-after-reload, eligibility badges
+correctly UNKNOWN before a check and MEETS/DOES_NOT_APPEAR_TO_MEET with
+real server-verified evidence after one (a test certification list
+correctly evaluated as NOT satisfying a Pollution Control Board
+certificate requirement, with the AI's reason correctly explaining why),
+zero horizontal overflow at 375px on dashboard/tender-detail/company-
+profile, zero CSP violations, zero console errors. `tsc -b` + `vite build`
++ `oxlint` clean (only the same pre-existing `set-state-in-effect`/
+`exhaustive-deps` warning classes already present before this milestone).
+
+## Phase 4 — Product polish
+
+Folded into Phase 3's work rather than a separate pass: honest staged-
+status wording (above), the eligibility action bar's explanatory hint
+("never a value the AI made up"), consistent `EmptyState`/error-banner
+patterns reused as-is for the new company-profile page rather than
+inventing new ones, `aria-label` on the experience-row "Remove" button.
+No accessibility or wording regressions found in the existing surface —
+the M5c-era `:focus-visible` treatment, tab semantics, and error-message
+patterns were already solid and are unchanged.
+
+## Phase 5 — Beta-ready core features (existing backend/architecture only)
+
+Audited every route in `src/bidpilot/routes/*.js` against every `.tsx`
+page for an orphaned backend capability. Two found and fixed (eligibility
+UI, company-profile UI — both Phase 3, above). Nothing else: every other
+route (`register`/`verify-email`/`login`/`logout`/`me`, company creation,
+dashboard summary, tender upload/list/detail/analyze/document-url, file
+download) already has a frontend consumer. None of the explicitly-
+forbidden roadmap items (tender discovery, GeM scraping, bid drafting,
+compliance automation, Ask Tender, BOQ pricing, billing, OAuth/MFA/SSO,
+mobile app) were touched.
+
+## Phase 6 — Full regression
+
+Backend 3x-configuration suite, zero drift from the M6 baseline plus the
+two new Phase 2 concurrency tests:
+- `DATABASE_URL` + `BIDPILOT_CSRF_SECRET` set: 420 pass / 0 fail / 1 skip
+  (418 baseline + 2 new)
+- `DATABASE_URL` only: 268 pass / 0 fail / 16 skip (unchanged — the new
+  tests are repo-level and sit under this file's existing CSRF-gated skip,
+  same as every other test in it)
+- neither set (pure Papyr): 228 pass / 0 fail / 22 skip (unchanged)
+
+Frontend: `tsc -b` + `vite build` clean, `oxlint` clean (pre-existing
+warning classes only), `node --test src/dashboard/attentionState.test.ts`
+15/15 (untouched this milestone, re-verified). Of the milestone's 15
+required regression categories: concurrent analysis, duplicate analysis
+requests, cross-company access, evidence preservation, and budget
+enforcement were already covered by existing tests (re-run clean, zero
+drift); "eligibility reruns" and "GET /tenders/:id surfaces
+companyStatus/actionRequired/companyEvidence" were already covered by
+`eligibility.test.js` (M6); concurrent-chunk-processing order-preservation
+and partial-chunk-failure isolation are the two new Phase 2 tests above;
+mobile layout and loading/error states were covered by the Phase 3
+real-browser pass (16/16). Secret-leak scan of the full diff — no matches.
+
+## Phase 7 — Production verification
+
+Deployed via `flyctl deploy --depot=false -a tenderlytic-api` (user
+provided a fresh Personal Access Token after this session's own had
+expired — see the Phase 7 note below on why that blocked the first pass).
+Build succeeded, rolling update to the single `sin`-region machine
+succeeded, health check green post-deploy.
+
+**A real, previously-undiscovered production bug found during this
+verification, not guessed:** `BIDPILOT_PUBLIC_BASE_URL` was never set as a
+Fly secret, so `config.js` fell back to its dev default
+(`http://localhost:${PORT}`) in production — which both the dev-only
+email-verification-link logger (harmless, gated out of the API response in
+production, see `routes/auth.js`) AND, more seriously,
+`storage/localDisk.js`'s signed document-download URL generator read from.
+**The tender-detail Document tab's download link was broken in production**
+(pointing at `localhost:8788`, unreachable from a real browser) since the
+very first deploy. Config-only fix — `flyctl secrets set
+BIDPILOT_PUBLIC_BASE_URL=https://tenderlytic-api.fly.dev` — no code change,
+redeployed, re-verified.
+
+**Auth**: register → real production log line confirms the dev-verification-
+link path (`[DEV] Email verification link for ...`) still correctly never
+appears in the API response body itself (`NODE_ENV=production` gate
+verified working as designed) → verify-email → login, all green.
+**CORS**: a disallowed `Origin` on a preflight gets zero
+`Access-Control-*` response headers (no reflection) — the security-
+relevant property re-verified.
+
+**One real tender, real AI provider, end-to-end in production** — same
+23-page small tender PDF as the Phase 1 baseline, fresh company created
+for this verification: upload `ms=23`, analysis `chunks=2 failures=0
+chunksMs=27,616 ms=27,963` (server-side `metric bidpilot_analysis` log
+line, not a client-side estimate). Compared to the Phase 1 baseline
+(`ms=52,510`, before Phase 2's concurrency fix) — **46.7% faster in
+production**, and faster than this same tender's local Phase 2 benchmark
+(`ms=35,437`) too, consistent with production's real network path to
+OpenAI outperforming this session's sandboxed dev environment. Confirms
+the Phase 2 optimization is genuinely live and working, not just locally
+measured.
+
+## Phase 8 — Report, approval, commit
+
+Per the milestone's explicit instruction: `git diff --stat`/`git status`
+shown, this file updated, then held for explicit commit approval before
+anything was committed or pushed — approval given, committed as `3fdf547`
+and pushed. Phase 7's production deploy followed, using a fresh Fly.io
+token the user provided after this session's own had expired (see
+"Errors and fixes"-style note: `flyctl auth whoami` failed at the start of
+Phase 7 with no stored token — this session's container is fresh per
+session, tokens from an earlier session don't carry over — resolved by
+asking the user for a new one rather than guessing or skipping
+verification).
+
+# Milestone "Production QA fixes" (Oct 2026)
+
+**Trigger:** internal QA on 1 Oct ran five real public tenders through
+production. Three of the four that finished were accurate on the facts that
+matter (EMD, deadlines, eligibility), but the run exposed defects that a beta
+user's first large tender would hit. Scope approved as "narrow fixes for the
+blockers"; nothing else changed.
+
+## What QA found (verified, not guessed)
+
+1. **Tenders stuck forever after a restart.** Production restarted
+   mid-analysis; both affected tenders stayed `ANALYZING`, `POST /analyze`
+   answered 409 "already in progress", and the UI only offers Retry for
+   FAILED. Nothing reset in-flight state at boot.
+2. **The server crashed mid-analysis.** First suspected to be memory (512 MB,
+   two analyses at once). With a new Fly token the logs showed otherwise:
+   `oom_killed=false`, and Node exited with code 1 on an unhandled `'error'`
+   event from an idle Postgres client. `getDb()`'s pool had no `'error'`
+   listener, so a connection dropped by the database killed the process.
+   Reproduced locally with `pg_terminate_backend` on a pooled connection
+   (same crash, exit 1).
+3. **Silent partial analyses.** On a 131-page Gujarat Informatics tender the
+   pages 1–23 chunk returned malformed JSON. Overview values come from the
+   earliest chunk that has them, so every overview field (deadline, EMD,
+   organization) was blank, while the tender still showed "Ready".
+4. **60s AI timeout vs 8000-token outputs.** Beta Readiness raised
+   `maxTokens` to 8000, but the OpenAI client kept its 60s timeout; one chunk
+   took 91s and another timed out. A regression from that milestone.
+5. **Node 20 in production.** pdfjs-dist 6 calls
+   `ArrayBuffer.prototype.transferToFixedLength` (Node 21+). Measured locally
+   with both runtimes on the same PDFs: IIT Kanpur (70 pages) extracts in
+   7.0s on Node 22 vs 181.7s on Node 20; Gujarat (131 pages) 7.3s vs 183.4s.
+   On Node 20 the OCR worker hangs until `OCR_TIMEOUT_MS` (180s) kills it, so
+   OCR never runs. Production logged 188s for both. Local dev runs Node 22,
+   which is why earlier OCR benchmarks looked fine.
+
+Correction to the 1 Oct QA report: the 154-page MEA tender is not a scanned
+document (1 page needs OCR). The real OCR cases were IIT Kanpur and Gujarat.
+
+## Fixes
+
+- `src/bidpilot/recovery.js` + `server.js`: before listening, tenders left
+  in `ANALYZING` become FAILED ("interrupted by a server restart"), and those
+  left in UPLOADED/PROCESSING/EXTRACTING become processing-FAILED (re-upload
+  works because duplicate detection ignores FAILED tenders). Previous
+  analysis data is untouched; one `*_interrupted` event per tender.
+  Single-process assumption documented in the file.
+- `analysis/pipeline.js`: an unparseable chunk is retried once; a
+  process-wide limiter (`BIDPILOT_ANALYSIS_GLOBAL_CONCURRENCY`, default 4)
+  caps AI calls in flight across all runs (slot hand-off on release, so it
+  can't overshoot); chunk/failed counts are passed to `replaceAnalysis`.
+- `repo/analysis.js` stores `chunkCount`/`failedChunkCount` in the existing
+  analysis event's metadata (jsonb). No schema change, so no manual
+  production migration. `GET /tenders/:id` returns
+  `analysisCoverage: {sections, failedSections} | null` from the latest
+  successful analysis event (`repo/events.js` `getLatestAnalysisEvent`).
+- `ai/openai.js`, `ai/anthropic.js`: `complete()` accepts per-call
+  `timeoutMs`/`maxRetries`, forwarded as SDK request options; absent unless
+  asked, so Papyr's calls are unchanged. `analysis/extract.js` uses 180s
+  (`BIDPILOT_ANALYSIS_AI_TIMEOUT_MS`) and one SDK retry.
+- Tender page (`TenderDetail.tsx`): a red notice with "Re-run analysis" when
+  sections failed; failed analysis shows its error with "Retry analysis";
+  failed processing shows its error and re-upload guidance; not-yet-analyzed
+  tenders get an "Analyze" button.
+- `db/client.js`: the pool gets an `'error'` listener that logs and lets pg
+  discard the dead client; the next query reconnects.
+- `Dockerfile` → `node:22-slim`; `engines` → `>=22`; `fly.toml` → 1 GB
+  (headroom for OCR + concurrent analyses, not the crash cause).
+
+## Verification
+
+- Backend 3x suite: **443/0/1, 286/0/16, 239/0/24** (from 427/275/235; +16
+  new tests: recovery 6, analysis 4, tender detail 1, providers 4, pool 1). The new
+  analysis tests were run against the previous pipeline and fail there.
+- Frontend: `tsc -b` + `vite build` clean, oxlint 10 warnings / 0 errors
+  (unchanged), `attentionState` 15/15.
+- **Crash reproduced locally:** analysis started on a harness whose AI never
+  answers, process SIGKILLed (tender left `ANALYZING`), real `server.js`
+  restarted → tender FAILED with the interrupted message, event written,
+  `POST /analyze` → 202 (production answered 409).
+- **Browser (Playwright, real pipeline, stand-in AI):** 13/13 — partial
+  warning with real counts, Re-run → Analyzing → live refresh, failed
+  analysis/processing notices, Analyze button, no overflow at 375px, no CSP
+  violations, no console errors.
+
+## Deployed (2 Oct 2026)
+
+Deployed from the working tree with `fly deploy --depot=false`, before this
+milestone was committed. Verified on production:
+
+- Machine: 1024 MB, Node v22.23.3 (`node:22-slim` built cleanly), `/` and
+  `/health` 200.
+- Boot recovery ran: "marked 2 interrupted analysis run(s) and 0
+  interrupted extraction(s) as FAILED" — the two tenders stuck since 1 Oct
+  can be retried.
+- Extraction run inside the production container on the stored QA PDFs:
+  Gujarat (131 pages) **11.0s** (was ~188s), IIT Kanpur (70 pages) **9.7s**.
+  OCR completes on every image page. Page count, OCR pages and OCR text match
+  local Node 22 byte-for-byte; those pages simply contain little text.
+- Pool-error fix: reproduced locally (`pg_terminate_backend` on a pooled
+  connection → exit 1 before, survives and reconnects after); covered by
+  `test/db/pool-errors.test.js`, which fails without the fix.
+
+## Still blocked
+
+- **OpenAI credit exhausted**: a 16-token request from the production
+  container still returns 429 `credit_balance_exhausted` (2 Oct, after the
+  deploy). Every real analysis fails until it is topped up; then re-run the
+  Gujarat tender to confirm the overview comes back.
+- The deploy token is scoped to the app; database-machine events weren't
+  visible, so why Postgres dropped the connection on 1 Oct is unknown. The
+  server now survives it either way.
+
+## Known follow-ups (not in scope)
+
+- Dashboard and header badge still say "Ready" for a partial analysis.
+- Eligibility check caps output at 2000 tokens; a 167-requirement tender
+  very likely truncates. Untested (no credit).
+- Out-of-credit errors are reported as "rate limit exceeded".
+- Every requirement comes back "Mandatory"; heavy over-extraction (167
+  requirements for a ₹9-lakh job). Better tuned against beta feedback.
+- Migrations aren't run on deploy (see OPERATIONS.md).
+
+# Milestone "Visual refresh" (Oct 2026)
+
+Requested after the QA fixes: "improve my website look". Approved scope: login
+and register, app header, dashboard, tender page, plus a public homepage, in
+navy + saffron. Frontend only; no API, schema or backend change. Same rules as
+before: plain CSS classes (no inline styles, strict CSP unchanged), no UI
+framework, system fonts (font-src 'self').
+
+## What changed
+
+- **Brand:** `index.css` tokens moved from indigo to navy (primary, every
+  interactive element) with saffron as the accent. New `components/Logo.tsx`
+  (saffron tile, document, navy check) and matching `public/favicon.svg`
+  (was Vite's default logo). `components/Icon.tsx`: small inline-SVG stroke
+  icon set (presentation attributes only, so CSP-safe).
+- **Homepage (`pages/Home.tsx`, route `/`):** previously `/` redirected to
+  `/dashboard`, so a shared link landed on a bare login form. Signed-out
+  visitors now get a homepage (hero, features, how it works, "AI that shows
+  its work", call to action). Signed-in users are still sent straight to
+  `/dashboard`. Copy describes only current behaviour: no testimonials,
+  customer logos or usage numbers; the hero illustration is HTML/CSS and is
+  labelled "Example".
+- **Auth/first-run (`components/AuthLayout.tsx`):** login, register (+ the
+  "check your email" state), verify email, create company and the company
+  chooser share a navy brand panel + form card; on phones the panel becomes
+  a compact banner. Register shows the real password rule (8+ characters,
+  `minLength` matches `MIN_PASSWORD_LENGTH`).
+- **Header:** navy bar with logo, Dashboard / Company profile (`NavLink`
+  active state), company name + email, log out. Phones show the mark, links
+  and a log-out icon.
+- **Dashboard:** icon tiles; the deadlines tile turns saffron when it is
+  non-zero. The unlabelled filename list (which showed "—" for every missing
+  deadline and looked broken) is now "Recently uploaded" with links, due date
+  or "No deadline found yet", and status badges. Table: tender name with the
+  organisation underneath, deadline with "in N days", empty "Action" header
+  replaced by a screen-reader-only label, whole row clickable (title stays a
+  real link; clicks on the row's own buttons/links pass through). Filter
+  options read "Preparing bid" instead of `PREPARING_BID`. On phones each
+  row becomes a card instead of a sideways-scrolling table.
+- **Tender page:** title (without ".pdf") with the status badge beside it
+  and a details line (organisation, pages, uploaded, analysed). New
+  `tenderDetail/KeyFacts.tsx` strip: deadline (saffron, "Closes in N days"
+  within 7 days), EMD, estimated value, tender fee, with the same evidence
+  chips; a missing value says "Not found in document". Notices are flex rows
+  with an icon and the action button on the right. Tabs show item counts.
+  Overview lists found fields and names the missing ones in one line instead
+  of a column of "Not extracted". Red flags: count line + red-edged cards.
+- **Dates everywhere:** `format.ts` `formatDate()` renders "9 Oct 2026".
+  `toLocaleDateString()` gave 10/9/2026 (US) or 9/10/2026 depending on the
+  browser, ambiguous for a deadline. Also `displayTitle()`, `relativeDays()`,
+  `humanizeEnum()`; 6 unit tests in `format.test.ts` (`node --test`, like
+  `attentionState.test.ts`).
+- **Existing bugs fixed on the way:** the BOQ and Dates tables overflowed
+  the page on phones (now inside `.table-scroll`); `.table-scroll` gets
+  `position: relative` because the absolutely positioned visually-hidden
+  "Actions" header otherwise widened the page to 541px at a 375px viewport.
+
+## Verification
+
+- Before/after screenshots of 10 screens at 1280px and 375px, against a
+  local harness (real app + pipeline, stand-in AI returning realistic data,
+  since the OpenAI account has no credit). After: no horizontal overflow, no
+  CSP violations, no console errors on any screen (before: BOQ overflowed on
+  phones).
+- Playwright, through the real UI: 24/24 — homepage for signed-out visitors,
+  new favicon, Start free → register → check email → verify page → login →
+  company setup → empty dashboard; company name in header; `/` still sends
+  signed-in users to the dashboard; log out; date format and relative days;
+  ".pdf" dropped; deadline tile highlight; row click opens the tender; row
+  Analyze button still works and the run completes; key facts present; tab
+  counts equal the API's array lengths; overview found/missing split; key
+  fact evidence chip opens; red-flag count and cards; document tab; 404 link.
+  Plus 5/5 on notices (partial "1 of 3 sections" + Re-run, failed analysis +
+  Retry, failed processing + re-upload guidance, footnote hidden when
+  partial, no CSP violations).
+- Frontend: `tsc -b` + `vite build` clean; oxlint 10 warnings / 0 errors
+  (the same 10 as before); unit tests 21/21 (15 + 6 new).
+- Backend 3x suite unchanged: 443/0/1, 286/0/16, 239/0/24.
+
+## Found, not fixed (outside this milestone)
+
+- A non-numeric BOQ quantity failed the whole analysis: fixed in the next
+  milestone below.
+- Dev-mode `devVerificationUrl` points at the backend JSON endpoint
+  (`/bidpilot/verify-email`), not the frontend `/verify-email` page.
+  Dev-only; unchanged.
+
+# Fix: BOQ quantities that aren't plain numbers (Oct 2026)
+
+Found while building the visual-refresh demo data; fixed on request.
+
+## The bug
+
+`tender_boq_items.quantity` is `numeric`, and `validateChunkResult` passed
+the AI's quantity string straight through. BOQs routinely write `2,150`,
+`1,27,300.50`, `1 No.`, `LS` or `As required`; any of them made the insert in
+`replaceAnalysis` throw, the transaction rolled back, and the tender showed
+"Analysis failed" even though every section had been read. Reproduced
+through the real pipeline (mock AI returning `"2,150"` → FAILED).
+
+A second problem in the same path: the stored `analysisError` was drizzle's
+own message, i.e. `Failed query: insert into "tender_boq_items" ... params:
+...` — raw SQL plus tender text, shown on the tender page after "Analysis
+failed:".
+
+## Fix
+
+- `analysis/schema.js` `normalizeBoqQuantity(raw, givenUnit)`. Never guesses:
+  - plain numbers pass; commas are removed only in a real grouping (Indian
+    `1,27,300`, Western `127,300`); `1,5`, `10,20`, `12 345` are not read as
+    numbers;
+  - a number followed by a unit (`1 No.`, `2,150 sqm`) is split when no unit
+    was given separately or it is the same unit; a multiplier (`1.5 lakh`) or
+    a different unit (`10 sqm` with unit `cum`) is not;
+  - otherwise quantity is null and the original text is kept in remarks
+    ("Quantity as written: LS", appended to any existing remarks);
+  - blank and dashes mean no quantity.
+- `analysis/pipeline.js`: a database error is stored as "The analysis
+  finished but its results could not be saved. Please run it again." and
+  logged server-side with the underlying Postgres message only (no SQL, no
+  parameters). Other errors are unchanged.
+- Frontend BOQ tab shows quantities with Indian digit grouping
+  (`formatQuantity`: 127300.50 → 1,27,300.5).
+
+## Verification
+
+- New tests: `normalizeBoqQuantity` (5 groups) and remarks handling in
+  `analysis-schema.test.js`; a pipeline test over real Postgres with five
+  real-world quantities (`analysis.test.js`), which ended FAILED before the
+  fix and COMPLETED after; `safeErrorMessage` hides a drizzle-style error.
+  All fail against the previous code. `formatQuantity` unit test.
+- End to end on the local harness: the stand-in AI returning `2,150` and
+  `LS` (the exact input that failed the demo) → analysis COMPLETED, 2150
+  stored as a number, `LS` kept in remarks, BOQ tab shows "2,150".
+- Backend 3x: **451/0/1, 293/0/16, 246/0/24** (from 443/286/239).
+  Frontend: `tsc -b` + build clean, oxlint 10 warnings / 0 errors, unit
+  tests 22/22.
+
+# Cost: analysis on OpenAI's Flex tier (Oct 2026)
+
+Asked for: remove the AI cost entirely with the same quality and speed. Not
+achievable; options were researched (Oct 2026) and presented:
+
+- Groq free tier: 6,000 tokens/minute; one analysis section is ~14,000
+  tokens, so not even one section fits.
+- OpenRouter free models: ~50 requests/day for the whole app.
+- Gemini free tier: workable limits, but Google may use free-tier inputs to
+  improve its products, which contradicts the homepage's privacy promise;
+  quality untested.
+- Self-hosting: a GPU server costs more than the expected beta AI bill.
+- Rules only: free, but requirements/red flags quality collapses.
+
+Chosen: OpenAI Flex for analysis. Same model (gpt-5.6-terra), so the same
+results, at $1/$6 per million input/output tokens instead of $2/$12 (OpenAI
+pricing page, checked 5 Oct 2026). Measured typical tender ~₹45–60 →
+~₹23–30.
+
+## Implementation
+
+- `ai/openai.js` `complete({ ..., flex: { timeoutMs } })`: sends
+  `service_tier: "flex"` with its own timeout and no SDK retries. If the Flex
+  attempt fails for any reason except exhausted credit (`insufficient_quota`)
+  or bad credentials (401/403), the call is repeated once on standard with the
+  caller's timeout/retries. OpenAI returns `429 Resource Unavailable` when
+  Flex has no capacity and does not bill it. Broad on purpose: a model that
+  refused `service_tier=flex` (400) still completes, so enabling Flex can't
+  fail an analysis standard would have finished. Logged: `metric
+  ai_flex_fallback`, and `tier=` on every `metric ai_call`.
+- `analysis/extract.js` passes `flex` when `config.bidpilot.analysis.flex`
+  (`BIDPILOT_ANALYSIS_FLEX`, default true; `BIDPILOT_ANALYSIS_FLEX_TIMEOUT_MS`,
+  default 120000). Eligibility checks and Papyr stay on standard (interactive;
+  eligibility is ~1/40th of an analysis). Anthropic ignores `flex`.
+
+## Speed — honest expectation
+
+Flex is documented as slower. Standard sections measured 20–50s. Worst case
+per section is the Flex timeout (2 min) plus a standard run; sections still
+run 4 at a time. Not measured on real traffic: the OpenAI account has no
+credit. After the top-up, compare `ms=` on `metric ai_call tier=flex` lines
+with earlier standard runs, and count `ai_flex_fallback`; if Flex is much
+slower or often unavailable, set `BIDPILOT_ANALYSIS_FLEX=false` (no deploy
+needed beyond the secret).
+
+## Verification
+
+- Provider tests (stubbed SDK, no network): flex request shape (tier,
+  120s timeout, no SDK retries); fallback to standard with the caller's
+  options on 429 no-capacity, timeout, 5xx and a 400 refusing flex; no retry
+  on `insufficient_quota` or 401; no `service_tier` without flex.
+- Pipeline test: extraction asks for flex by default and not when switched
+  off. Config test: defaults and overrides. The new tests fail without the
+  change.
+- Backend 3x: **460/0/1, 301/0/16, 254/0/24** (from 451/293/246).
+
+# Rename: Tenderlytic → Tenderpe (Oct 2026)
+
+User-visible name only. `PRODUCT_NAME` (`frontend/src/config/product.ts`) is
+now "Tenderpe"; the few hardcoded mentions (homepage copy, login footer,
+logo aria-labels, footer) now read `PRODUCT_NAME`, so a future rename is one
+line plus `index.html`'s `<title>`. The logo wordmark accents whatever
+follows "Tender" ("pe" in saffron). Unchanged on purpose: the internal
+`bidpilot` namespace, the Fly app/hostname (`tenderlytic-api.fly.dev`;
+renaming means a new app and moving the volume, so a custom domain is the
+route instead), the DB, and the `tenderlytic:session-expired` event name.
+
+Name checks (web search, 5 Oct 2026): TenderSaathi, BidSaathi, BidMitra (a
+Pune AI tender-evaluation company, close competitor), TenderLens, Nivida and
+BidKaro are taken; no tender product found as Tenderpe. Not a trademark
+search — check ipindia.gov.in before investing in the name.
+
+Verified: frontend build clean, 0 lint errors, unit 22/22; local screenshots
+at 1280/375 with no overflow, CSP violations or console errors; backend 3x
+460/301/254 with 0 failures. Deployed: live `/` and `/login` titled
+"Tenderpe", logo "Tenderpe", old name absent; live check 11/11.
+
+# Rename: Tenderpe → TenderTez, and public site pages (Oct 2026)
+
+## Why Tenderpe was dropped
+
+A domain check after the Tenderpe rename found tenderpe.com (registered
+2022), tenderpe.in and tenderpe.co.in all owned, by TenderPe B2B Web & App
+LLP: an existing Indian B2B marketing app with Android/iOS apps. The earlier
+name search only looked for tender products and missed it. Candidates were
+re-checked by authoritative RDAP status (404 = unregistered) plus a business
+search: TenderJhat, BidJhat and TenderTez had no business found and both .in
+and .com free (5 Oct 2026). The user chose TenderTez (note: "Tez" was Google
+Pay's earlier name in India). tenderlytic.in/.com turned out to be taken too.
+Not a trademark search; check ipindia.gov.in.
+
+## Public pages
+
+- `components/PublicLayout.tsx`: shared header (Pricing, FAQ, About, Log in,
+  Start free; "Open dashboard" when signed in) and footer (product, company,
+  account links; contact email only when set). The phone menu is a
+  `<details>` element: no script, CSP-safe, keyboard-accessible.
+- `/pricing` (`pages/Pricing.tsx`): free beta now; planned plans after the
+  beta from `config/site.ts` `PLANNED_PLANS` — Starter ₹499/5 tenders,
+  Growth ₹999/15, Pro ₹1,999/40 a month. Quotas sized against the measured
+  Flex cost (~₹23–30 per tender) so each plan keeps a margin at full use.
+  Marked "prices may change, GST may apply". No billing code exists.
+- `/faq` (`pages/Faq.tsx`): every answer checked against the product or a
+  source — 50 MB upload (`BIDPILOT_MAX_UPLOAD_MB` default), first 300 pages
+  (`MAX_PDF_PAGES`), OCR English only (`createWorker('eng')`) and up to 15
+  scanned pages (`MAX_OCR_PAGES`), company isolation, OpenAI API data not used
+  for training and kept up to 30 days (OpenAI "your data" docs, linked). The
+  delete-my-data answer only appears once a contact email is set.
+- `/about` (`pages/About.tsx`): company voice; the founder's note and the
+  contact email come from `config/site.ts` (`FOUNDER`, `CONTACT_EMAIL`) and
+  are left out while empty — nothing invented, no placeholders.
+- Homepage moved onto the shared layout; "Scanned pages are read too" now
+  says typed PDFs work best; pricing and FAQ teasers; `/#how-it-works` from
+  other pages scrolls to the section.
+
+## Verification
+
+- Playwright, desktop and 375px: `/`, `/pricing`, `/faq`, `/about` render
+  with the TenderTez brand, no overflow, FAQ answers open, phone menu opens
+  and navigates, footer "How it works" lands on the section, no CSP
+  violations or console errors (15/15). Signed-in app pages unchanged
+  (screens clean; functional checks 24/24).
+- Frontend build clean, 0 lint errors, unit 22/22; backend 3x 460/301/254.
+
+## Copy change: "beta" → "early access" with a free trial
+
+Requested by the user. Every public "beta" wording now says early access, and
+the offer is a free trial of the first `FREE_TRIAL_TENDERS` (5) tenders,
+user's choice over a 14-day trial or "free for all of early access". Shown on
+the homepage, register page, auth panel, pricing ("Start with 5 tenders
+free"; plans are "after your free trial"), FAQ ("Is there a free trial?") and
+About. Not enforced in code: there is no paid plan to move to yet, so the
+pages promise "your first 5 tenders free" and that nothing is charged without
+notice, both true today. A browser scan of /, /pricing, /faq (all answers
+open), /about, /register and /login finds no "beta". Checks: public pages
+15/15, app flows 24/24, backend 3x unchanged.
+
+## Founder note and contact email
+
+`config/site.ts`: `CONTACT_EMAIL` = the founder's address (shown in the
+About call to action, footer, and the FAQ "Can I delete my data?" answer,
+which only appears once an address is set); `FOUNDER` = Sayali Londhe,
+Mumbai, with a two-paragraph note written only from what the founder
+provided (no invented background), for the founder to edit. Checked: public
+pages 15/15, founder note + footer email + delete-data FAQ present, no
+overflow at 375px.
+
+# Fix: key facts dropped on every live analysis; deadlines read month-first (Oct 2026)
+
+Found by the first end-to-end run on production with OpenAI credit (5 Oct
+2026, IIT Hyderabad tender, 40 pages): the analysis completed (2 sections,
+both on the Flex tier, 20s and 25s; 44 requirements, 7 dates, 9 red flags)
+but the overview, and so the key-facts strip, was empty.
+
+## Causes (verified, not guessed)
+
+1. A diagnostic call from the production container on the same section
+   showed the model returning all nine overview fields correctly (EMD
+   Rs. 1,27,300/-, estimated cost Rs. 63,63,686/-, deadline
+   "02/05/2026 @1500hrs", all on page 2) but with `"sourcePage": "2"` as a
+   string. `validateChunkResult` requires an integer, so every field was
+   dropped (`dropped=10` in the run's metric). The prompt's own overview
+   example said `sourcePage: 'number'` (a string), unlike every other example.
+2. Overview dates went through `Date.parse`, which reads "02/05/2026" as
+   5 February. This run escaped only because "@1500hrs" made the string
+   unparseable (stored as text). The dates array was correct because the
+   model also returns an ISO `parsedDate` there.
+
+## Fix
+
+- `analysis/dates.js` `parseTenderDate()`: strict reading of dates as Indian
+  tenders write them — ISO; day/month/year with / - or . (never month-first);
+  month names; times like "@1500hrs", "15:00", "3:00 PM" in IST. A date with
+  no time is midnight UTC (the existing convention). Impossible dates and
+  phrases ("within 7 days of award") return null. 6 tests.
+- `analysis/schema.js`: numeric-string page numbers ("2") are accepted on
+  every item; "p.2" still is not. Overview deadline/opening date get
+  `parsedDate` from the model's ISO date, else the value as written, via
+  `parseTenderDate`; the dates array uses it instead of `Date.parse` too.
+- `repo/analysis.js`: stores that `parsedDate`; `Date.parse` removed.
+- `analysis/extract.js` prompt: page numbers are plain numbers; Indian dates
+  are day/month/year; give `parsedDate` (ISO, IST) for deadline/opening date
+  and dates; the overview example now shows real numbers and the date shape.
+
+## Verification
+
+- Regression tests from the live failure (schema: string pages, "p.2"
+  rejected, ISO preferred, never US order; pipeline over Postgres: string
+  pages + "02/05/2026 @1500hrs" → organization, EMD and a deadline of
+  2026-05-02 15:00 IST saved) fail on the previous code and pass now.
+- Backend 3x: **469/0/1, 309/0/16, 262/0/24**.
+- After deploy: re-run the live tender and confirm the key facts appear.
+
+## Also found, not fixed here
+
+- Sign-up says "We've sent a verification link to your email", but no email
+  provider is connected, so nothing arrives. Login does not require
+  verification, so users can still get in, but the message misleads.
+- The dev-mode verification link (with its token) is written to the
+  production log on every sign-up.
+
+# Fix: sign-up promised an email that never came; token in production log (Oct 2026)
+
+No email provider is connected, so the "Check your email — we've sent a
+verification link" screen after sign-up was false, and every sign-up wrote
+the verification link, token included, to the production log.
+
+- `pages/auth/Register.tsx`: after a successful sign-up the user is signed in
+  automatically (login doesn't require a verified address) and sent to
+  `/dashboard`, which CompanyGate forwards to company setup. If that sign-in
+  fails, the page says "Your account is ready" with a Log in button. No
+  email is promised.
+- `routes/auth.js`: the dev verification link is now only built, logged and
+  returned outside production (it used to be logged always and returned
+  only outside production). Verification tokens are still created, ready
+  for when an email provider is connected; `/verify-email` is unchanged.
+- Test: in production mode, registration returns no link, logs no
+  `verify-email?token=`, and the new user can log in at once (fails on the
+  previous code). Flow check: sign-up lands on company setup.
+
+# Free trial: first 5 tenders per company (Oct 2026)
+
+The site promised "your first 5 tenders are free", but nothing counted them:
+a trial company could analyse any number of tenders, limited only by the
+daily call cap. There is still no payment code; this enforces the trial.
+
+- **What counts.** One different tender analysed. Re-running a tender that
+  already counts is free, so a failed analysis can be retried. Eligibility
+  checks are included (they only work on analysed tenders anyway).
+- **How it is stored.** `analysis/budget.js` `claimTrialTender()` writes one
+  `usage_records` row (`kind = 'trial_tender'`) when a tender's first
+  analysis starts. The trial counts these rows, not tenders: deleting an
+  analysed tender sets the row's `tender_id` to null but keeps the row, so it
+  doesn't hand the slot back. No migration; the table already existed.
+- **Races.** The claim runs in a transaction holding `select … for update` on
+  the company row, so two Analyze clicks on different tenders at 4/5 can't
+  both take the last slot.
+- **Order in `POST /tenders/:id/analyze`.** Size cap → daily cap → trial
+  claim → start. A tender refused by an earlier check never uses a slot. A
+  6th tender gets **402** `{ error, code: 'trial_exhausted' }` and stays
+  NOT_STARTED. The 413/429 responses now also carry `code`.
+- **Paid companies.** A company whose latest `subscriptions` row is ACTIVE has
+  no trial limit. Until payments exist, that row is inserted by hand
+  (OPERATIONS.md). A newer CANCELED row puts the limit back.
+- **Config.** `BIDPILOT_TRIAL_TENDERS` (default 5; `0` switches it off).
+- **UI.** `GET /dashboard/summary` returns `trial: { limit, used, remaining }`,
+  or null when there is no limit. The dashboard shows "Free trial: 3 of 5
+  tenders left to analyse", and when none are left, "You've used all 5…" with
+  the contact email. The Analyze button shows the server's message. The
+  Pricing page now says re-runs are included and what happens after the
+  trial.
+
+## Verification
+
+- New tests: 5 tenders allowed and the 6th refused, with re-runs free; a
+  deleted tender keeps its slot; two tenders racing for the last slot (exactly
+  one wins); per company; ACTIVE subscription means no limit, and a later
+  CANCELED row brings it back; HTTP 402 with `code`, the refused tender left
+  NOT_STARTED, and a counted tender re-run with 202; a 413-refused tender uses
+  no slot; the dashboard summary includes `trial`.
+- Backend 3x: **480/0/1, 317/0/16, 262/0/25**. Frontend build, lint (no new
+  warnings) and unit tests 22/22.
+- Browser on the local harness: "3 of 5 left" after 2 analyses (desktop and
+  phone, no sideways scroll); "used all 5" with the email link; Analyze on a
+  6th tender shows the trial message; re-run returns 202; no CSP violations
+  or console errors. The earlier 23-check UI run still passes.
+
+## Existing data
+
+Tenders analysed before this change have no `trial_tender` row, so they
+don't count. Production has one real company (2 analysed tenders). A one-off
+backfill (one row per tender that already has analysis usage) makes them
+count; it is run separately, not on deploy.
+
+# Search and link previews (Oct 2026)
+
+Every URL served the same `index.html` with only `<title>TenderTez</title>`:
+no description, no preview image, no robots.txt or sitemap, and the site
+answered on four hostnames. Links shared on WhatsApp or LinkedIn showed
+nothing useful, and search engines had nothing to go on.
+
+- `backend/src/seo.js` (new):
+  - `PUBLIC_PAGES` holds the title and description for `/`, `/pricing`,
+    `/faq`, `/about` and `/register`. Descriptions only repeat what those
+    pages already say.
+  - `renderIndexHtml()` replaces the plain title on those pages with title,
+    description, canonical URL, Open Graph and Twitter-card tags. Every other
+    path (app pages, login, 404) gets `noindex`.
+  - `robotsTxt()` blocks `/bidpilot/` and the app pages and points to the
+    sitemap. `sitemapXml()` lists the public pages.
+  - `canonicalHostRedirect()` 301-redirects page loads on the hosts in
+    `BIDPILOT_REDIRECT_HOSTS` (set on Fly to www.tendertez.in, tendertez.com
+    and www.tendertez.com) to `BIDPILOT_PUBLIC_BASE_URL`. Only GET/HEAD
+    requests are redirected; unlisted hosts, including fly.dev, are untouched.
+- `server.js`: `express.static(..., { index: false })` so `/` also reaches
+  the fallback; `/robots.txt` and `/sitemap.xml` are served from the
+  main base URL; the SPA fallback sends the rendered `index.html`, read once
+  at startup. The base URL is the existing `BIDPILOT_PUBLIC_BASE_URL`.
+- `frontend/public/og-image.png`: a 1200×630 preview card in the site's navy
+  and saffron. It contains only text the site already shows.
+- Client-side navigation keeps whatever title the first page load had;
+  every public URL loaded directly (as search engines and link previews do)
+  gets its own tags.
+
+## Verification
+
+- New `test/seo.test.js`: tags on public pages, a bare-domain canonical
+  for `/`, the same tags for a trailing slash, noindex elsewhere, sensible
+  description lengths, robots and sitemap contents, the redirect (path and
+  query kept, case-insensitive host, main host and fly.dev untouched, POST
+  not redirected), and the config parsing. `spa-fallback.test.js` now checks
+  the served HTML per page, plus robots.txt, the sitemap and the image.
+- Backend 3x: **490/0/1, 327/0/16, 272/0/25**. Frontend build, lint and unit
+  tests 22/22. The 23-check UI run passes on the harness (homepage at `/`,
+  no CSP violations or console errors).
+
+# Privacy policy page (Oct 2026)
+
+TenderTez had no privacy policy. `/privacy` served the WhatsApp assistant's
+old page, which describes a different product. A policy is also expected
+before running ads that lead to a sign-up form.
+
+- `frontend/src/pages/Privacy.tsx` at `/privacy-policy`, linked from the
+  public footer. Twelve short sections. Every statement was checked against
+  the code and hosting before writing:
+  - Passwords are argon2id hashes (`auth/passwordHash.js`).
+  - Sessions store the browser's user agent and no IP address
+    (`schema/sessions.js`).
+  - The company-profile fields listed are those in
+    `schema/company_profiles`.
+  - Analysis sends the document text to OpenAI; an eligibility check sends
+    the requirements plus the company profile (`eligibilityPipeline.js`).
+  - The OpenAI retention wording matches the FAQ's, with the same link.
+  - The only cookies are the session and CSRF cookies; the session lasts
+    30 days and is httpOnly.
+  - There are no analytics or third-party scripts (the CSP allows none).
+  - The app server and uploads volume are on Fly.io in Singapore. The
+    database's region could not be confirmed with the app-scoped token, so
+    the page names no country for it.
+  - Deletion is by email; there is no in-app delete.
+  - Nothing is claimed about legal compliance, backups or reply times.
+- Change the page whenever any of those facts change (new providers,
+  analytics, payments, email sending). `LAST_UPDATED` is at the top of the
+  file.
+- `seo.js`: `/privacy-policy` added to the public pages and sitemap. The
+  robots.txt entry `/settings` (no such route) became `/company-profile`.
+- `server.js`: on the site's own host (`BIDPILOT_PUBLIC_BASE_URL`), `/privacy`
+  now 301-redirects to `/privacy-policy`. Other hosts still get the WhatsApp
+  assistant's page, so another deployment's Meta app keeps its policy URL.
+
+## Verification
+
+- Tests: the redirect on the site host; the policy page's own title; the
+  updated robots and noindex lists. Backend 3x: **491/0/1, 328/0/16,
+  273/0/25**. Frontend build, lint (no warnings in new files) and unit tests
+  22/22.
+- Browser, harness (16 checks): the footer link opens the page; all 12
+  sections and the key facts are shown; the mail links work; no sideways
+  scroll on a phone; title and description in the served HTML; listed in the
+  sitemap; `/privacy` redirects; no CSP violations or console errors.

@@ -1,0 +1,313 @@
+import { useCallback, useEffect, useState } from 'react';
+import { Link, useParams } from 'react-router-dom';
+import { AppHeader } from '../components/AppHeader';
+import { EmptyState } from '../components/EmptyState';
+import { AttentionBadge } from '../components/AttentionBadge';
+import { useSession } from '../auth/SessionProvider';
+import { ApiError } from '../api/client';
+import { analyzeTender, checkEligibility, getTender, type TenderDetail as TenderDetailType } from '../api/tenders';
+import { deriveAttentionState } from '../dashboard/attentionState';
+import { useTenderPolling, type PollTarget } from '../dashboard/useTenderPolling';
+import { OverviewTab } from '../tenderDetail/OverviewTab';
+import { RequirementsTab } from '../tenderDetail/RequirementsTab';
+import { BoqTab } from '../tenderDetail/BoqTab';
+import { DatesTab } from '../tenderDetail/DatesTab';
+import { RedFlagsTab } from '../tenderDetail/RedFlagsTab';
+import { DocumentTab } from '../tenderDetail/DocumentTab';
+import { KeyFacts } from '../tenderDetail/KeyFacts';
+import { Icon } from '../components/Icon';
+import { displayTitle, formatDate } from '../format';
+
+type TabKey = 'overview' | 'requirements' | 'boq' | 'dates' | 'redFlags' | 'document';
+
+const TABS: Array<{ key: TabKey; label: string }> = [
+  { key: 'overview', label: 'Overview' },
+  { key: 'requirements', label: 'Requirements' },
+  { key: 'boq', label: 'BOQ' },
+  { key: 'dates', label: 'Dates' },
+  { key: 'redFlags', label: 'Red flags' },
+  { key: 'document', label: 'Document' },
+];
+
+export function TenderDetailPage() {
+  const { id } = useParams<{ id: string }>();
+  const { selectedCompanyId } = useSession();
+  const companyId = selectedCompanyId as string; // CompanyGate guarantees this
+
+  const [tender, setTender] = useState<TenderDetailType | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [tab, setTab] = useState<TabKey>('overview');
+
+  const fetchTender = useCallback(async () => {
+    if (!id) return;
+    setLoading(true);
+    setError(null);
+    try {
+      setTender(await getTender(id, companyId));
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 404) {
+        setError('Tender not found.');
+      } else {
+        setError(err instanceof ApiError ? err.message : 'Could not load this tender.');
+      }
+    } finally {
+      setLoading(false);
+    }
+  }, [id, companyId]);
+
+  useEffect(() => { fetchTender(); }, [fetchTender]);
+
+  // Live-refresh while this tender is still processing/analyzing — without
+  // this, someone linking straight to /tenders/:id (not via the dashboard
+  // row, which already polls) would see a stale in-progress state until
+  // they manually reloaded. Same bounded 2s/120s polling as TenderRow.tsx,
+  // no new mechanism.
+  const isProcessing = !!tender
+    && (tender.processingStatus === 'UPLOADED' || tender.processingStatus === 'PROCESSING' || tender.processingStatus === 'EXTRACTING');
+  const isAnalyzing = !!tender && tender.processingStatus === 'COMPLETED' && tender.analysisStatus === 'ANALYZING';
+  const pollTarget: PollTarget = isProcessing ? 'processing' : 'analysis';
+  const [pollRetryKey, setPollRetryKey] = useState(0);
+  const pollState = useTenderPolling((isProcessing || isAnalyzing) ? (id ?? null) : null, companyId, pollTarget, pollRetryKey);
+
+  useEffect(() => {
+    if (pollState?.status === 'settled') setTender(pollState.tender);
+  }, [pollState]);
+
+  return (
+    <div>
+      <AppHeader />
+      <div className="page-body">
+        <Link to="/dashboard" className="back-link"><Icon name="arrowLeft" />Back to dashboard</Link>
+
+        {loading && <p className="muted">Loading tender…</p>}
+
+        {!loading && error && (
+          <EmptyState title={error} action={{ label: 'Retry', onClick: fetchTender }} />
+        )}
+
+        {!loading && !error && tender && (
+          <TenderDetailBody
+            tender={tender}
+            tab={tab}
+            onTabChange={setTab}
+            companyId={companyId}
+            onRefetch={fetchTender}
+            pollTimedOut={pollState?.status === 'timeout'}
+            onPollRetry={() => setPollRetryKey((k) => k + 1)}
+          />
+        )}
+      </div>
+    </div>
+  );
+}
+
+// Real backend enum values only — never a fabricated percentage or step
+// count (see the Beta Readiness milestone's "no fake progress" rule). Each
+// label states exactly what processingStatus/analysisStatus already is.
+const PROCESSING_STAGE_LABELS: Record<TenderDetailType['processingStatus'], string> = {
+  UPLOADED: 'Upload received, queued for processing.',
+  PROCESSING: 'Extracting pages from the document…',
+  EXTRACTING: 'Extracting pages from the document…',
+  // ANALYZING is a deprecated processingStatus value the backend never
+  // actually sets (see dashboard/attentionState.ts) — covered only so this
+  // Record's type checks against the full enum.
+  ANALYZING: 'Extracting pages from the document…',
+  COMPLETED: 'Document processed.',
+  FAILED: 'Document processing failed.',
+};
+
+function TenderDetailBody({
+  tender, tab, onTabChange, companyId, onRefetch, pollTimedOut, onPollRetry,
+}: {
+  tender: TenderDetailType;
+  tab: TabKey;
+  onTabChange: (tab: TabKey) => void;
+  companyId: string;
+  onRefetch: () => void;
+  pollTimedOut: boolean;
+  onPollRetry: () => void;
+}) {
+  const [checkingEligibility, setCheckingEligibility] = useState(false);
+  const [eligibilityError, setEligibilityError] = useState<string | null>(null);
+  const [startingAnalysis, setStartingAnalysis] = useState(false);
+  const [analysisStartError, setAnalysisStartError] = useState<string | null>(null);
+
+  async function onRunAnalysis() {
+    setAnalysisStartError(null);
+    setStartingAnalysis(true);
+    try {
+      await analyzeTender(tender.id, companyId);
+      onRefetch(); // reloads as ANALYZING, which starts the page's polling
+    } catch (err) {
+      setAnalysisStartError(err instanceof ApiError ? err.message : 'Could not start analysis.');
+    } finally {
+      setStartingAnalysis(false);
+    }
+  }
+
+  const counts: Partial<Record<TabKey, number>> = tender.analysisStatus === 'COMPLETED'
+    ? { requirements: tender.requirements.length, boq: tender.boq.length, dates: tender.dates.length, redFlags: tender.redFlags.length }
+    : {};
+  const organization = tender.overview.organization?.value;
+  const uploaded = formatDate(tender.createdAt);
+  const analysed = formatDate(tender.analyzedAt);
+
+  const runAnalysisButton = (label: string) => (
+    <button type="button" className="btn-primary notice-action" onClick={onRunAnalysis} disabled={startingAnalysis}>
+      {startingAnalysis ? 'Starting…' : label}
+    </button>
+  );
+
+  const coverage = tender.analysisCoverage;
+  const partial = tender.analysisStatus === 'COMPLETED' && coverage !== null && coverage.failedSections > 0;
+
+  async function onCheckEligibility() {
+    setEligibilityError(null);
+    setCheckingEligibility(true);
+    try {
+      await checkEligibility(tender.id, companyId);
+      onRefetch();
+    } catch (err) {
+      setEligibilityError(err instanceof ApiError ? err.message : 'Could not check eligibility.');
+    } finally {
+      setCheckingEligibility(false);
+    }
+  }
+
+  const attention = deriveAttentionState({
+    processingStatus: tender.processingStatus,
+    analysisStatus: tender.analysisStatus,
+    // The list endpoint's submissionDeadline column isn't part of this
+    // response shape — overview.submissionDeadline carries the same typed
+    // value when it parsed (see TenderRow.tsx for the identical guard).
+    submissionDeadline:
+      tender.overview.submissionDeadline?.value
+      && !Number.isNaN(Date.parse(tender.overview.submissionDeadline.value))
+        ? tender.overview.submissionDeadline.value
+        : null,
+  });
+
+  return (
+    <div>
+      <div className="tender-head">
+        <div className="tender-head-title">
+          <h1>{displayTitle(tender.title)}</h1>
+          <AttentionBadge state={attention} />
+        </div>
+        <p className="tender-head-meta">
+          {organization && <span>{organization}</span>}
+          {tender.pageCount > 0 && <span>{tender.pageCount} pages</span>}
+          {uploaded && <span>Uploaded {uploaded}</span>}
+          {analysed && tender.analysisStatus === 'COMPLETED' && <span>Analysed {analysed}</span>}
+        </p>
+      </div>
+
+      {tender.processingStatus !== 'COMPLETED' && tender.processingStatus !== 'FAILED' && (
+        <div className="notice notice-info notice-progress">
+          <span className="notice-spinner" aria-hidden="true" />
+          <span className="notice-text">{PROCESSING_STAGE_LABELS[tender.processingStatus]}</span>
+        </div>
+      )}
+      {tender.processingStatus === 'FAILED' && (
+        <div className="notice notice-danger">
+          <Icon name="alert" />
+          <span className="notice-text">
+            {tender.processingError || PROCESSING_STAGE_LABELS.FAILED} To try again, upload the PDF again
+            from the dashboard.
+          </span>
+        </div>
+      )}
+      {tender.processingStatus === 'COMPLETED' && tender.analysisStatus === 'ANALYZING' && (
+        <div className="notice notice-info notice-progress">
+          <span className="notice-spinner" aria-hidden="true" />
+          <span className="notice-text">Analyzing the document against your requirements checklist…</span>
+        </div>
+      )}
+      {tender.processingStatus === 'COMPLETED' && tender.analysisStatus === 'NOT_STARTED' && (
+        <div className="notice notice-info">
+          <Icon name="info" />
+          <span className="notice-text">
+            Extraction is done, but analysis hasn't been run yet — the tabs below have nothing to show
+            until it is.
+          </span>
+          {runAnalysisButton('Analyze')}
+        </div>
+      )}
+      {tender.processingStatus === 'COMPLETED' && tender.analysisStatus === 'FAILED' && (
+        <div className="notice notice-danger">
+          <Icon name="alert" />
+          <span className="notice-text">Analysis failed{tender.analysisError ? `: ${tender.analysisError}` : '.'}</span>
+          {runAnalysisButton('Retry analysis')}
+        </div>
+      )}
+      {partial && coverage && (
+        <div className="notice notice-danger">
+          <Icon name="alert" />
+          <span className="notice-text">
+            {coverage.failedSections} of {coverage.sections} sections of this document couldn&rsquo;t be
+            read, so some details (possibly the deadline or EMD) may be missing below.
+          </span>
+          {runAnalysisButton('Re-run analysis')}
+        </div>
+      )}
+      {analysisStartError && <p role="alert" className="error-text">{analysisStartError}</p>}
+      {pollTimedOut && (
+        <p className="muted">
+          Still working — refresh or{' '}
+          <button type="button" onClick={onPollRetry}>check again</button>.
+        </p>
+      )}
+
+      {tender.analysisStatus === 'COMPLETED' && <KeyFacts overview={tender.overview} />}
+      {tender.analysisStatus === 'COMPLETED' && !partial && (
+        <p className="analysis-footnote">
+          <Icon name="info" />
+          The tabs below show only what was actually extracted — not the absence of a finding.
+        </p>
+      )}
+
+      <div className="tab-bar" role="tablist">
+        {TABS.map((t) => (
+          <button
+            key={t.key}
+            type="button"
+            role="tab"
+            aria-selected={t.key === tab}
+            className={t.key === tab ? 'tab-active' : ''}
+            onClick={() => onTabChange(t.key)}
+          >
+            {t.label}
+            {counts[t.key] !== undefined && <span className="tab-count">{counts[t.key]}</span>}
+          </button>
+        ))}
+      </div>
+
+      <div className="tab-panel">
+        {tab === 'overview' && <OverviewTab tender={tender} />}
+        {tab === 'requirements' && (
+          <div>
+            {tender.analysisStatus === 'COMPLETED' && tender.requirements.length > 0 && (
+              <div className="eligibility-action-bar">
+                <button type="button" className="btn-primary" onClick={onCheckEligibility} disabled={checkingEligibility}>
+                  {checkingEligibility ? 'Checking against your profile…' : 'Check eligibility against your profile'}
+                </button>
+                <span className="muted eligibility-action-hint">
+                  Cross-checks each requirement against your company profile — never a value the AI made up.
+                </span>
+              </div>
+            )}
+            {eligibilityError && <p role="alert" className="error-text">{eligibilityError}</p>}
+            <RequirementsTab requirements={tender.requirements} />
+          </div>
+        )}
+        {tab === 'boq' && <BoqTab items={tender.boq} />}
+        {tab === 'dates' && <DatesTab dates={tender.dates} />}
+        {tab === 'redFlags' && <RedFlagsTab redFlags={tender.redFlags} />}
+        {tab === 'document' && (
+          <DocumentTab tenderId={tender.id} companyId={companyId} document={tender.document} />
+        )}
+      </div>
+    </div>
+  );
+}
