@@ -93,6 +93,18 @@ sibling of `backend/`/`frontend/`, since the Docker build needs both).
 - **Search and link previews.** Each public page's title and description
   live in `backend/src/seo.js`. `BIDPILOT_REDIRECT_HOSTS` (comma-separated)
   sends www and .com page loads to `BIDPILOT_PUBLIC_BASE_URL`.
+- **Visits and sign-ups report:** `fly ssh console --app tenderlytic-api -C
+  "sh -c 'cd /app/backend && node scripts/visits-report.mjs 7'"` (any number
+  of days). The site counts visits itself; see BIDPILOT_ARCHITECTURE.md,
+  "Visit counting". Tag links you share with `?utm_source=<name>` (e.g.
+  `https://tendertez.in/?utm_source=linkedin`) to see which ones bring
+  visitors.
+- **Applying a migration from inside the app server** (works with the app's
+  own deploy token): after deploying the code that contains it, run in
+  `fly ssh console`, from `/app/backend`, drizzle-orm's migrator
+  (`migrate(drizzle(pool), { migrationsFolder: './drizzle' })`) with the
+  server's own `DATABASE_URL`. First check that
+  `drizzle.__drizzle_migrations` already lists every earlier migration.
 - **Giving a paying company unlimited tenders** (until payments are built):
   insert a subscription row, e.g. in `fly ssh console`:
   `insert into subscriptions (company_id, plan, status) values ('<company id>', 'GROWTH', 'ACTIVE');`

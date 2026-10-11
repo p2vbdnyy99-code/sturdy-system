@@ -2903,3 +2903,70 @@ before running ads that lead to a sign-up form.
   sections and the key facts are shown; the mail links work; no sideways
   scroll on a phone; title and description in the served HTML; listed in the
   sitemap; `/privacy` redirects; no CSP violations or console errors.
+
+# Visit counting (Oct 2026)
+
+The site had no way to tell how many people visited or where they came from.
+Rather than add an outside analytics script (which the strict CSP rules out,
+and which would track visitors across sites), the site counts visits itself.
+
+- **Table `page_views`** (migration `0007`): day (India date), path, source,
+  campaign, device, visitor_id, created_at. No IP address, no user id, no
+  cookie. `test/db/connection.test.js` now expects 23 tables.
+- **`src/bidpilot/visits.js`**, `POST /bidpilot/visit`, mounted with the other
+  BidPilot routes:
+  - The path is stored as a known route (`/tenders/:id`), never with ids or
+    query strings; anything unknown becomes `(other)`.
+  - The source is the referrer's hostname without `www.`, or `direct` for
+    none, invalid, or our own hosts (the main host plus
+    `BIDPILOT_REDIRECT_HOSTS`).
+  - The campaign is `utm_source`, lowercased, limited to `[a-z0-9._-]` and 40
+    characters.
+  - The device is `mobile` or `desktop`, from the user agent.
+  - `visitor_id` is the first 16 hex characters of
+    sha256(daily salt | IP | user agent). The salt is random, held only in
+    memory, and replaced when the India date changes, so the id counts unique
+    visitors within a day and can't be linked back to an IP. A restart
+    mid-day picks a new salt, so a returning visitor may count twice that day.
+  - Bots, crawlers, link-preview fetchers and headless browsers are not
+    counted. At most 60 counted visits per IP per minute.
+  - The endpoint always answers 204 and logs failures as a warning, so
+    counting can never break a page.
+  - Rows older than 395 days (about 13 months) are deleted each time a new
+    day starts.
+- **Frontend:** `components/VisitTracker.tsx` (inside the router) calls
+  `api/visits.ts` on every path change. That's a same-origin `fetch` with
+  `keepalive`, no credentials, and the landing referrer and `utm_source`
+  captured once. It deliberately doesn't use `request()`: no CSRF, and a
+  failure must never look like a session expiry.
+- **Report:** `node scripts/visits-report.mjs [days]` (read-only) prints the
+  funnel (visitors → saw sign-up → signed up → uploaded → analysed), visitors
+  per day, pages, sources, campaigns and devices.
+- **Privacy policy:**
+  - New "Visit counts" item under what we collect, and a new use under how
+    we use it.
+  - "What we don't do" now says we count visits ourselves without cookies.
+  - The 13-month deletion is stated.
+  - "Nothing on the site tracks you" became "we count visits without cookies
+    or tracking tools", here and in the page's search description.
+  - Last updated 11 October 2026.
+
+## Verification
+
+- `test/bidpilot/visits.test.js`:
+  - Units: path normalising, sources, campaign cleaning, device and bot
+    detection, India dates, the daily salt and visitor id, the rate limit and
+    the retention cutoff.
+  - HTTP + database: a visit is stored with exactly the expected columns and
+    no IP; the same browser on the same day gets one visitor id; own-site
+    referrers count as direct; bots and junk are answered 204 and not stored;
+    rows older than 13 months are deleted on a new day.
+- Backend 3x: **503/0/1, 340/0/16, 280/0/26**. Frontend build, lint and unit
+  tests 22/22.
+- Browser on the harness, phone user agent:
+  - A landing from LinkedIn with `?utm_source=linkedin` is recorded as
+    linkedin.com, campaign linkedin, mobile.
+  - Moving inside the app to `/register` is counted, all as one visitor.
+  - No cookies are set; a headless browser isn't counted.
+  - No CSP violations or console errors.
+  - The 23-check UI run still passes, and the report prints correctly.

@@ -11,13 +11,13 @@ test('DB foundation: connection + schema', { skip: !dbAvailable() && 'DATABASE_U
   t.after(closeTestDb);
   await truncateAll();
 
-  await t.test('the migration created all 22 BidPilot tables', async () => {
+  await t.test('the migration created all 23 BidPilot tables', async () => {
     const rows = await db.execute(`
       select table_name from information_schema.tables
       where table_schema = 'public' order by table_name
     `);
     const names = rows.rows.map((r) => r.table_name).sort();
-    assert.equal(names.length, 22, `expected 22 tables, found: ${names.join(', ')}`);
+    assert.equal(names.length, 23, `expected 23 tables, found: ${names.join(', ')}`);
     for (const expected of [
       'users', 'companies', 'company_members', 'company_profiles',
       'tenders', 'tender_pages', 'tender_documents', 'tender_requirements',
@@ -27,6 +27,7 @@ test('DB foundation: connection + schema', { skip: !dbAvailable() && 'DATABASE_U
       'sessions', // Milestone 3
       'tender_dates', 'tender_red_flags', // Milestone 4
       'api_access_tokens', // Milestone 6
+      'page_views', // visit counting
     ]) {
       assert.ok(names.includes(expected), `missing table: ${expected}`);
     }

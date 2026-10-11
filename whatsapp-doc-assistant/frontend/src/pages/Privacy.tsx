@@ -8,7 +8,7 @@ import { CONTACT_EMAIL, FOUNDER } from '../config/site';
 // (see BIDPILOT_ARCHITECTURE.md, "Privacy policy page"). Change this page
 // whenever that changes: a new service provider, analytics, payments, or
 // email sending.
-const LAST_UPDATED = '8 October 2026';
+const LAST_UPDATED = '11 October 2026';
 
 const OPENAI_DATA_POLICY = 'https://developers.openai.com/api/docs/guides/your-data';
 
@@ -42,6 +42,12 @@ const SECTIONS: Array<{ title: string; body: ReactNode }> = [
           your browser. We don&rsquo;t store your IP address in our database.</li>
         <li><strong>Usage counts:</strong> how many tenders and analyses each company has used, for the free
           trial and fair-use limits.</li>
+        <li><strong>Visit counts:</strong> for each page shown on the website, we record the page, the date,
+          the website you came from (for example google.com), the campaign name in the link if there is one,
+          and whether you&rsquo;re on a phone or a computer. To count unique visitors without cookies, we also
+          store a short code made from your connection and browser that changes every day and can&rsquo;t be
+          traced back to you. Your IP address is not stored, and visit counts aren&rsquo;t linked to your
+          account.</li>
         <li><strong>Emails you send us.</strong></li>
       </ul>
     ),
@@ -51,8 +57,8 @@ const SECTIONS: Array<{ title: string; body: ReactNode }> = [
     body: (
       <ul>
         <li>We don&rsquo;t sell or rent your data, and we don&rsquo;t show advertising.</li>
-        <li>The website has no analytics, advertising or tracking tools, and loads no scripts from other
-          companies.</li>
+        <li>The website has no advertising or tracking tools and loads no scripts from other companies. We count
+          visits ourselves, as described above, without cookies.</li>
         <li>We don&rsquo;t use your tenders or company details to market to anyone else.</li>
       </ul>
     ),
@@ -67,6 +73,7 @@ const SECTIONS: Array<{ title: string; body: ReactNode }> = [
         <li>To reply when you write to us, and to tell you about important changes to the service or this
           policy.</li>
         <li>To keep the service secure and to find and fix problems.</li>
+        <li>To see how many people visit the website and where they come from, using the visit counts.</li>
       </ul>
     ),
   },
@@ -119,7 +126,8 @@ const SECTIONS: Array<{ title: string; body: ReactNode }> = [
       <p>
         We keep your account, company details and tenders for as long as your account exists. To have them
         deleted, email <Mail /> from the address you registered with, and we will delete your account, your
-        company&rsquo;s data and your tenders, and confirm by email.
+        company&rsquo;s data and your tenders, and confirm by email. Visit counts are deleted automatically
+        after about 13 months.
       </p>
     ),
   },
@@ -164,7 +172,7 @@ export function PrivacyPage() {
       <PageIntro kicker="Privacy" title="Privacy policy">
         <p>
           What {PRODUCT_NAME} collects, why, who it&rsquo;s shared with, and how to have it deleted. In short:
-          we use your tenders only to analyse them for you, and nothing on the site tracks you.
+          we use your tenders only to analyse them for you, and we count visits without cookies or tracking tools.
         </p>
       </PageIntro>
       <section className="home-section legal-section">

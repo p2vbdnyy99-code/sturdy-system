@@ -34,7 +34,7 @@ export const PUBLIC_PAGES = {
   '/privacy-policy': {
     title: 'Privacy policy | TenderTez',
     description: 'What TenderTez collects, why, who it is shared with, and how to have it deleted. Your tenders '
-      + 'are used only to analyse them for you, and nothing on the site tracks you.',
+      + 'are used only to analyse them for you, and visits are counted without cookies or tracking tools.',
   },
   '/register': {
     title: 'Start your free trial | TenderTez',

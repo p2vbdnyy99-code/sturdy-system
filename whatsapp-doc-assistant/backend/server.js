@@ -29,6 +29,7 @@ import { bidpilotCors } from './src/bidpilot/auth/cors.js';
 import { recoverInterruptedWork } from './src/bidpilot/recovery.js';
 import { getDb } from './src/db/client.js';
 import { canonicalHostRedirect, renderIndexHtml, robotsTxt, sitemapXml } from './src/seo.js';
+import { createVisitsRouter } from './src/bidpilot/visits.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 // Sibling of backend/, not inside it — verified against the actual
@@ -221,6 +222,7 @@ if (config.db.url) {
   app.use('/bidpilot', createDashboardRouter());
   app.use('/bidpilot', createTendersRouter());
   app.use('/bidpilot', createDownloadRouter());
+  app.use('/bidpilot', createVisitsRouter({ ownHosts: [SITE_HOSTNAME, ...config.bidpilot.redirectHosts] }));
 } else {
   app.use('/bidpilot', (_req, res) => {
     res.status(503).json({ error: 'BidPilot is not configured on this deployment.' });
