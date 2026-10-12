@@ -18,3 +18,6 @@
 | 5 frontend | browser: pricing, FAQ, dashboard states, phone width, CSP | pass | harness, 15/15 (after fixing two artefacts in my own test script: text spacing, and an impossible subscription history I had inserted) |
 | 6 search + privacy | pricing description has the new prices; the policy states plan data | pass | served `/pricing` head contains "₹3,999 for 10 tenders"; Privacy "Your plan and usage" item; LAST_UPDATED 12 Oct 2026 |
 | 7 docs | architecture, operations, CLAUDE.md updated, with no unintended deletions | pass | `git diff OPERATIONS.md` = only the old 4-line note replaced (a first attempt deleted far more; restored and recorded as lesson 14) |
+| 8 live | the deploy is healthy and nothing was mid-analysis | pass | `analyzing_now=0` before the deploy; `flyctl deploy` succeeded (commit 9e71c41) |
+| 8 live | real companies keep their trial | pass | `subscription.mjs status` on the server: Skylark free trial 0/5, gem tender free trial 1/5 |
+| 8 live | the site shows the new plans; no old prices or GST | pass | tendertez.in/pricing at phone width: Starter ₹3,999/10, Growth ₹5,999/15, Pro ₹8,999/30; no "₹499", "₹1,999" or "GST"; no sideways scroll; FAQ updated; search description updated; privacy "Last updated: 12 October 2026"; no console or CSP errors; analyze without login → 401 |

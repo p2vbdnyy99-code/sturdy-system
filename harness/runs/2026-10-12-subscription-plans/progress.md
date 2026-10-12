@@ -40,5 +40,6 @@ Steps 1–8 done. Nothing running or blocked.
   happens later, change it to the deploy date.
 
 ## Next action
-The user approved "commit and deploy" on 2026-10-12. After the deploy, check
-the live Pricing page and the subscription status on the server.
+None. Deployed and checked live on 2026-10-12 (commit 9e71c41). When a firm
+pays, run `subscription.mjs activate`. The founder's account needs UNLIMITED
+once they sign up.
