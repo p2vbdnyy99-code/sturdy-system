@@ -1,15 +1,15 @@
 import { useCallback, useEffect, useRef, useState, type ChangeEvent } from 'react';
-import { AppHeader } from '../components/AppHeader';
 import { Link } from 'react-router-dom';
+import { Breadcrumb, Panel } from '../components/AppShell';
+import { useShellData } from '../shell/ShellData';
 import { EmptyState } from '../components/EmptyState';
 import { AttentionBadge } from '../components/AttentionBadge';
 import { Icon, type IconName } from '../components/Icon';
 import { deriveAttentionState } from '../dashboard/attentionState';
-import { displayTitle, formatDate, humanizeEnum } from '../format';
+import { daysUntil, displayTitle, formatDate, humanizeEnum } from '../format';
 import { TenderRow } from '../dashboard/TenderRow';
 import { useSession } from '../auth/SessionProvider';
 import { ApiError } from '../api/client';
-import { getDashboardSummary, type DashboardSummary } from '../api/dashboard';
 import { CONTACT_EMAIL } from '../config/site';
 import { allowanceNotice, type Allowance } from '../allowance';
 import {
@@ -24,10 +24,13 @@ export function DashboardPage() {
   const companyId = selectedCompanyId as string; // CompanyGate guarantees this
   const companyName = me?.companies.find((c) => c.companyId === companyId)?.name;
 
-  // Summary tiles — independent fetch from the tender list below.
-  const [summary, setSummary] = useState<DashboardSummary | null>(null);
-  const [summaryLoading, setSummaryLoading] = useState(true);
-  const [summaryError, setSummaryError] = useState<string | null>(null);
+  // Counts, the plan allowance and the deadline-ordered list come from the
+  // shell (shared with the queue panel); the table below has its own,
+  // filtered and paginated, fetch.
+  const shell = useShellData();
+  const summary = shell.summary;
+  const summaryLoading = shell.loading;
+  const summaryError = shell.error;
 
   // Filters — changing any of these resets to page 1.
   const [status, setStatus] = useState<TenderStatus | ''>('');
@@ -56,17 +59,7 @@ export function DashboardPage() {
   const [uploadError, setUploadError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const fetchSummary = useCallback(async () => {
-    setSummaryLoading(true);
-    setSummaryError(null);
-    try {
-      setSummary(await getDashboardSummary(companyId));
-    } catch (err) {
-      setSummaryError(err instanceof ApiError ? err.message : 'Could not load the dashboard summary.');
-    } finally {
-      setSummaryLoading(false);
-    }
-  }, [companyId]);
+  const fetchSummary = shell.reload;
 
   const fetchList = useCallback(async () => {
     setListLoading(true);
@@ -88,7 +81,6 @@ export function DashboardPage() {
     }
   }, [companyId, page, status, analysisStatus, search, sortBy, sortOrder]);
 
-  useEffect(() => { fetchSummary(); }, [fetchSummary]);
   useEffect(() => { fetchList(); }, [fetchList]);
 
   function handleRowUpdate(tenderId: string, patch: Partial<TenderListItem>) {
@@ -139,74 +131,100 @@ export function DashboardPage() {
   const hasActiveFilters = Boolean(status || analysisStatus || search);
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
+  const counts = summary
+    ? { total: summary.totalTenders, processing: summary.processing, awaiting: summary.awaitingAnalysis, analysed: summary.analysed }
+    : null;
+  const upcoming = summary?.upcomingDeadlines;
+  const next = shell.tenders.find((t) => { const d = daysUntil(t.submissionDeadline); return d !== null && d >= 0; }) ?? null;
+
   return (
     <div>
-      <AppHeader />
-      <div className="page-body">
-        <div className="dashboard-header-row">
-          <div>
-            <h1>Dashboard</h1>
-            {companyName && <p className="page-subtitle">{companyName}</p>}
-          </div>
-          <div>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="application/pdf"
-              onChange={onFileSelected}
-              className="visually-hidden"
-            />
-            <button type="button" className="btn-primary" onClick={onUploadClick} disabled={uploading}>
-              <Icon name="upload" />
-              {uploading ? 'Uploading…' : 'Upload tender'}
-            </button>
-          </div>
+      <header className="page-head">
+        <div className="page-head-text">
+          <Breadcrumb items={[{ label: 'Dashboard' }]} />
+          <h1 className="page-title">{companyName ?? 'Dashboard'}</h1>
+          <p className="page-meta">
+            {counts ? (
+              <>
+                <span>{counts.total} {counts.total === 1 ? 'tender' : 'tenders'}</span>
+                <span>{counts.analysed} analysed</span>
+                <span>{counts.awaiting} awaiting analysis</span>
+              </>
+            ) : <span>Your tenders</span>}
+          </p>
+          {upcoming && (
+            <ul className="chips" aria-label="At a glance">
+              {upcoming.count > 0 && (
+                <li><span className="chip chip-danger"><Icon name="calendar" />{upcoming.count} {upcoming.count === 1 ? 'deadline' : 'deadlines'} in the next {upcoming.withinDays} days</span></li>
+              )}
+              {(counts?.processing ?? 0) > 0 && <li><span className="chip"><Icon name="clock" />{counts?.processing} processing</span></li>}
+              {(counts?.awaiting ?? 0) > 0 && <li><span className="chip">{counts?.awaiting} to analyse</span></li>}
+            </ul>
+          )}
         </div>
-        {uploadError && <p role="alert" className="error-text">{uploadError}</p>}
+        <div className="page-head-action">
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="application/pdf"
+            onChange={onFileSelected}
+            className="visually-hidden"
+          />
+          <button type="button" className="btn-primary btn-large" onClick={onUploadClick} disabled={uploading}>
+            <Icon name="upload" />
+            {uploading ? 'Uploading…' : 'Upload tender'}
+          </button>
+        </div>
+      </header>
+      {uploadError && <p role="alert" className="error-text">{uploadError}</p>}
 
-        {summaryError && <p role="alert" className="error-text">{summaryError}</p>}
-        {!summaryError && (
-          <>
-            {summary?.allowance && <AllowanceBanner allowance={summary.allowance} />}
-            <div className="dashboard-tiles">
-              <SummaryTile icon="layers" label="Total tenders" value={summary?.totalTenders} loading={summaryLoading} />
-              <SummaryTile icon="clock" label="Processing" value={summary?.processing} loading={summaryLoading} />
-              <SummaryTile icon="search" label="Awaiting analysis" value={summary?.awaitingAnalysis} loading={summaryLoading} />
-              <SummaryTile icon="check" label="Analysed" value={summary?.analysed} loading={summaryLoading} />
-              <SummaryTile
+      {summaryError && <p role="alert" className="error-text">{summaryError}</p>}
+      {summary?.allowance && allowanceNotice(summary.allowance).tone === 'warning' && <AllowanceBanner allowance={summary.allowance} />}
+
+      <div className="grid-main-side">
+        <Panel id="glance" title="Your tenders at a glance" aside={<span className="muted">{summaryLoading ? 'Loading…' : 'Live from your account'}</span>}>
+          <div className="card">
+            <dl className="fact-rows">
+              <GlanceRow icon="layers" label="Total tenders" value={counts?.total} />
+              <GlanceRow icon="clock" label="Processing" value={counts?.processing} total={counts?.total} />
+              <GlanceRow icon="search" label="Awaiting analysis" value={counts?.awaiting} total={counts?.total} />
+              <GlanceRow icon="check" label="Analysed" value={counts?.analysed} total={counts?.total} />
+              <GlanceRow
                 icon="calendar"
-                label={`Deadlines in the next ${summary?.upcomingDeadlines.withinDays ?? 14} days`}
-                value={summary?.upcomingDeadlines.count}
-                loading={summaryLoading}
-                highlight={(summary?.upcomingDeadlines.count ?? 0) > 0}
+                label={`Deadlines in the next ${upcoming?.withinDays ?? 14} days`}
+                value={upcoming?.count}
+                total={counts?.total}
+                alert={(upcoming?.count ?? 0) > 0}
               />
-            </div>
-            {summary && summary.recentTenders.length > 0 && (
-              <section className="dashboard-recent-panel" aria-labelledby="recent-heading">
-                <h2 id="recent-heading" className="section-heading">Recently uploaded</h2>
-                <ul className="dashboard-recent">
-                  {summary.recentTenders.map((t) => {
-                    const due = formatDate(t.submissionDeadline);
-                    return (
-                      <li key={t.id}>
-                        <Link to={`/tenders/${t.id}`} className="dashboard-recent-title">
-                          <Icon name="file" />
-                          <span>{displayTitle(t.title)}</span>
-                        </Link>
-                        <span className="dashboard-recent-meta">
-                          <span className="muted">{due ? `Due ${due}` : 'No deadline found yet'}</span>
-                          <AttentionBadge state={deriveAttentionState(t)} />
-                        </span>
-                      </li>
-                    );
-                  })}
-                </ul>
-              </section>
-            )}
-          </>
-        )}
+            </dl>
+          </div>
+        </Panel>
+        <NextDeadlineCard tender={next} loading={shell.loading} onUpload={onUploadClick} />
+      </div>
 
-        <h2 className="section-heading">All tenders</h2>
+      {summary && summary.recentTenders.length > 0 && (
+        <Panel id="recent" icon="history" title="Recently uploaded" aside={<span className="panel-count">{summary.recentTenders.length}</span>}>
+          <ul className="recent-cards">
+            {summary.recentTenders.map((t) => {
+              const due = formatDate(t.submissionDeadline);
+              return (
+                <li key={t.id}>
+                  <Link to={`/tenders/${t.id}`} className="recent-card">
+                    <span className="recent-card-top">
+                      <span className="recent-card-title">{displayTitle(t.title)}</span>
+                      <AttentionBadge state={deriveAttentionState(t)} />
+                    </span>
+                    <span className="recent-card-text">{due ? `Due ${due}` : 'No deadline found yet'}</span>
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </Panel>
+      )}
+
+      <Panel id="all-tenders" title="All tenders" aside={<span className="panel-count">{total}</span>}>
+        <div className="card">
         <div className="filters-bar">
           <input
             type="search"
@@ -281,7 +299,8 @@ export function DashboardPage() {
             </div>
           </>
         )}
-      </div>
+        </div>
+      </Panel>
     </div>
   );
 }
@@ -303,14 +322,59 @@ function AllowanceBanner({ allowance }: { allowance: Allowance }) {
   );
 }
 
-function SummaryTile({ icon, label, value, loading, highlight = false }: {
-  icon: IconName; label: string; value: number | undefined; loading: boolean; highlight?: boolean;
+/** A count with a ten-step bar showing its share of all tenders; the exact
+ *  number is always printed beside it. */
+function GlanceRow({ icon, label, value, total, alert = false }: {
+  icon: IconName; label: string; value: number | undefined; total?: number; alert?: boolean;
 }) {
+  const filled = value !== undefined && total ? Math.round((value / total) * 10) : 0;
   return (
-    <div className={`dashboard-tile${highlight ? ' dashboard-tile-highlight' : ''}`}>
-      <span className="dashboard-tile-icon"><Icon name={icon} /></span>
-      <div className="dashboard-tile-value">{loading ? '…' : (value ?? 0)}</div>
-      <div className="dashboard-tile-label">{label}</div>
+    <div className={`fact-row${alert ? ' fact-row-alert' : ''}`}>
+      <dt className="fact-label"><Icon name={icon} />{label}</dt>
+      <dd className="fact-value fact-value-bar">
+        {total !== undefined && (
+          <span className="mini-bar" aria-hidden="true">
+            {Array.from({ length: 10 }, (_, i) => <span key={i} className={i < filled ? 'mini-bar-on' : ''} />)}
+          </span>
+        )}
+        <span className="fact-number">{value ?? '…'}</span>
+      </dd>
     </div>
+  );
+}
+
+/** The dark card: the nearest deadline among this company's tenders. */
+function NextDeadlineCard({ tender, loading, onUpload }: {
+  tender: { id: string; title: string | null; organization: string | null; submissionDeadline: string | null } | null;
+  loading: boolean;
+  onUpload: () => void;
+}) {
+  const days = tender ? daysUntil(tender.submissionDeadline) : null;
+  return (
+    <section className="feature-card" aria-labelledby="next-deadline-heading">
+      <p className="feature-pill"><Icon name="calendar" />Next deadline</p>
+      <h2 id="next-deadline-heading" className="visually-hidden">Next deadline</h2>
+      {tender && days !== null ? (
+        <>
+          <p className="feature-figure">
+            <span className="feature-figure-value">{days === 0 ? 'Today' : days}</span>
+            {days > 0 && <span className="feature-figure-unit">{days === 1 ? 'day left' : 'days left'}</span>}
+          </p>
+          <p className="feature-headline">{displayTitle(tender.title)}</p>
+          <p className="feature-byline">
+            {tender.organization ? `${tender.organization}. ` : ''}Submit by {formatDate(tender.submissionDeadline)}.
+          </p>
+          <Link to={`/tenders/${tender.id}`} className="btn-pill"><Icon name="arrowRight" />Open the tender</Link>
+        </>
+      ) : (
+        <>
+          <p className="feature-figure"><span className="feature-figure-value">—</span></p>
+          <p className="feature-headline">{loading ? 'Loading…' : 'No upcoming deadlines'}</p>
+          <p className="feature-byline">Deadlines appear here once a tender has been analysed.</p>
+          <button type="button" className="btn-pill" onClick={onUpload}><Icon name="upload" />Upload a tender</button>
+        </>
+      )}
+      <p className="feature-foot">Dates are read from each tender document.</p>
+    </section>
   );
 }

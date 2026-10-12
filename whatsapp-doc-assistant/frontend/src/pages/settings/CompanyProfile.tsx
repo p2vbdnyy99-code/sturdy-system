@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { AppHeader } from '../../components/AppHeader';
+import { Breadcrumb, Panel } from '../../components/AppShell';
 import { useSession } from '../../auth/SessionProvider';
 import { ApiError } from '../../api/client';
 import {
@@ -225,11 +225,16 @@ export function CompanyProfilePage() {
     );
   }
 
+  const company = me?.companies.find((c) => c.companyId === companyId);
   return (
-    <div>
-      <AppHeader />
-      <div className="page-body">
-        <h1>Company profile</h1>
+    <>
+      <header className="page-head">
+        <div className="page-head-text">
+          <Breadcrumb items={setup ? [{ label: 'Set up' }, { label: 'Company profile' }] : [{ label: 'Dashboard', to: '/dashboard' }, { label: 'Company profile' }]} />
+          <h1 className="page-title">Company profile</h1>
+          {company && <p className="page-meta"><span>{company.name}</span><span>{PROFILE_FIELDS.length} fields, all required</span></p>}
+        </div>
+      </header>
         {setup ? (
           <div className="notice notice-info profile-setup-notice">
             <span className="notice-text">
@@ -251,7 +256,8 @@ export function CompanyProfilePage() {
         )}
 
         {!loading && !loadError && (
-          <form onSubmit={onSubmit} className="profile-form" noValidate>
+          <Panel id="profile-form" title="Your company" aside={<span className="muted">Tick &ldquo;None&rdquo; where a field doesn&rsquo;t apply</span>}>
+          <form onSubmit={onSubmit} className="card profile-form" noValidate>
             <div className="profile-grid">
               {PROFILE_FIELDS.filter((f) => f.kind !== 'list' && f.kind !== 'experience' && f.key !== 'otherQualifications').map(renderField)}
             </div>
@@ -268,8 +274,8 @@ export function CompanyProfilePage() {
               {saving ? 'Saving…' : setup ? 'Save and continue' : 'Save company profile'}
             </button>
           </form>
+          </Panel>
         )}
-      </div>
-    </div>
+    </>
   );
 }

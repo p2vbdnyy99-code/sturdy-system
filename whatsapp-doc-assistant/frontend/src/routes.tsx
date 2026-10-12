@@ -2,6 +2,7 @@ import { Link, Route, Routes } from 'react-router-dom';
 import { RequireSession } from './auth/RequireSession';
 import { RedirectIfAuthenticated } from './auth/RedirectIfAuthenticated';
 import { CompanyGate } from './auth/CompanyGate';
+import { AppShell } from './components/AppShell';
 import { LoginPage } from './pages/auth/Login';
 import { RegisterPage } from './pages/auth/Register';
 import { VerifyEmailPage } from './pages/auth/VerifyEmail';
@@ -31,30 +32,13 @@ export function AppRoutes() {
 
       <Route element={<RequireSession />}>
         <Route path="/onboarding/create-company" element={<CreateCompanyPage />} />
-        <Route
-          path="/dashboard"
-          element={
-            <CompanyGate>
-              <DashboardPage />
-            </CompanyGate>
-          }
-        />
-        <Route
-          path="/tenders/:id"
-          element={
-            <CompanyGate>
-              <TenderDetailPage />
-            </CompanyGate>
-          }
-        />
-        <Route
-          path="/company-profile"
-          element={
-            <CompanyGate>
-              <CompanyProfilePage />
-            </CompanyGate>
-          }
-        />
+        {/* One shared frame (rail + tender queue) for every page that needs
+            a company; see components/AppShell.tsx. */}
+        <Route element={<CompanyGate><AppShell /></CompanyGate>}>
+          <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/tenders/:id" element={<TenderDetailPage />} />
+          <Route path="/company-profile" element={<CompanyProfilePage />} />
+        </Route>
       </Route>
 
       {/* Public homepage; it sends signed-in users on to /dashboard itself. */}

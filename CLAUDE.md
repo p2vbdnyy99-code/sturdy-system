@@ -57,6 +57,10 @@ Follow `harness/README.md`. In short:
 - Company isolation is mandatory: every tender query is scoped to its company.
 - Strict CSP: no inline styles, no third-party scripts, styles or fonts. Use
   plain CSS classes in `frontend/src/index.css` and no new UI frameworks.
+- Signed-in pages render inside the `AppShell` layout route (rail, tender
+  queue, page). Build new sections from `Panel` + `.card`, and read shared
+  tenders and counts with `useShellData()`; call `reload()` after anything
+  that changes them.
 - AI concurrency stays bounded (per-run pool plus the global slot limiter).
 - No fake progress or evidence. Don't invent facts, testimonials, customers or
   founder background. Don't promise a feature the product lacks; for example,
@@ -152,6 +156,8 @@ was blocked and why.
     `completeProfile(companyId)` (`test/db/helpers.js`); otherwise the
     profile gate answers 409. A browser check that can't fail (for example,
     one that only notes a redirect) is not evidence; don't count it.
+17. Check keyboard focus by its outline, not "any box-shadow": the current
+    rail icon's own shadow once passed a focus check while hiding the ring.
 
 ## Parallel work
 

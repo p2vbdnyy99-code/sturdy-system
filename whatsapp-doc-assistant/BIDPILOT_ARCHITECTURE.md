@@ -3201,3 +3201,84 @@ mandatory company profile. Their decisions:
   - Login explains a failed Google sign-in.
   - No sideways scroll, no CSP or console errors.
 - `scripts/verify.sh` results are in the run's checks.md.
+
+# App restyle after a clinic-OPD reference (Oct 2026)
+
+The founder shared a screenshot of a clinic outpatient screen (a doctor's
+patient queue, a large patient name with chips, soft grey panels holding
+white cards, one dark green "suggestion" card) and asked for the signed-in
+app to look like it. The TenderTez navy and saffron stay; the dark card is
+navy. Public pages, sign-in and company setup are unchanged.
+
+## Frame (`components/AppShell.tsx`)
+
+- **A layout route** in `routes.tsx` wraps `/dashboard`, `/tenders/:id` and
+  `/company-profile` (inside `CompanyGate`). It stays mounted between pages,
+  so the queue keeps its tab and search, and data isn't refetched per page.
+- **Icon rail:** logo, Dashboard, Company profile, then Log out and the
+  user's initial. `NavLink` marks the current page (`aria-current`).
+- **Tender queue (`components/TenderQueue.tsx`):**
+  - the company and its plan; "Due soon N / All N"; "Find a tender";
+  - the tenders in deadline order, each with a days-left chip;
+  - the open tender is highlighted, and the default tab switches to "All"
+    when the open tender isn't due soon, so it is always listed;
+  - "N of M tenders used", one segment per tender, from the plan allowance.
+  - Hidden while the profile is still being set up.
+- **Shared data (`shell/ShellData.tsx`):** one fetch of the deadline-ordered
+  list (the API's cap of 100) and the dashboard summary, used by the queue
+  and the dashboard. Pages call `reload()` after an upload or analysis.
+- **Phones (≤900px):** the rail becomes a top bar with a "Tenders" button
+  that opens the queue as a drawer; choosing a tender closes it.
+- `Breadcrumb` and `Panel` (grey panel with a header holding a white
+  `.card`) live in the same file. The old `AppHeader` and its CSS are gone.
+
+## Pages
+
+- **Dashboard:**
+  - breadcrumb, the company name as the title, counts, and chips;
+  - "Upload tender" at the top right;
+  - "Your tenders at a glance": each count with a ten-step bar of its share
+    (the number is always printed; bars hidden on phones);
+  - the dark "Next deadline" card: the nearest open deadline from the list;
+  - "Recently uploaded" as cards, then "All tenders" (filters, table,
+    pagination unchanged) in a card.
+  - The allowance notice now shows only when it is a warning (used up or
+    ended); the queue card shows the rest.
+- **Tender page:**
+  - title, organisation, pages, upload date; chips for red flags (opens
+    the tab), status, tender number, location and duration;
+  - "Check eligibility" moved from the Requirements tab to the top right;
+  - "Key facts" as rows (six facts, page sources kept);
+  - the dark card (`tenderDetail/DeadlineCard.tsx`): days left and the
+    eligibility counts. It never gives a verdict or advice.
+  - "Details": the same six tabs as a segmented control;
+  - "Key dates" (`tenderDetail/DatesTimeline.tsx`): the dates in order
+    with a Today marker; undated ones listed as written.
+- **Company profile:** in the frame, the form in a panel.
+
+## Logic, with unit tests
+
+- `shell/queue.ts`: due-soon (0–14 days), chip labels, filtering.
+- `tenderDetail/timeline.ts`: ordering and the Today marker.
+- `tenderDetail/deadlineSummary.ts`: the dark card's wording.
+  `eligibilityWasChecked()` uses the `eligibility_checked` event (newer than
+  the last analysis), because a check can leave every requirement unclear,
+  and the statuses alone would then read as "not checked".
+
+## Verification
+
+- `scripts/verify.sh`: all green; frontend unit tests 41 (12 new); lint 11
+  warnings, 0 errors (the new data provider has the same two warnings as
+  `SessionProvider`).
+- Screenshots before and after at 1680, 1280 and 375 px: no sideways
+  scroll, no CSP or console errors.
+- Browser checks on the harness (35/35): counts, allowance, queue tabs,
+  search and highlight; table filter, sort and upload; tender chips, tabs,
+  key facts, key dates, eligibility counts, no verdict wording; Analyze
+  updates the allowance; visible keyboard focus; profile and log out from
+  the rail; the phone drawer; setup mode without the queue.
+- Found and fixed during the checks:
+  - panels had no `id`, so "See the requirements" had nowhere to scroll;
+  - the queue lost the open tender when it wasn't due soon;
+  - "not checked yet" after a check that left everything unclear;
+  - the current rail icon's shadow hid the focus ring (now an outline).

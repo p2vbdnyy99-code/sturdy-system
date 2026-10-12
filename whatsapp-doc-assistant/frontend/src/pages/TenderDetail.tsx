@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
-import { AppHeader } from '../components/AppHeader';
+import { useParams } from 'react-router-dom';
+import { Breadcrumb, Panel } from '../components/AppShell';
 import { EmptyState } from '../components/EmptyState';
 import { AttentionBadge } from '../components/AttentionBadge';
 import { useSession } from '../auth/SessionProvider';
@@ -15,7 +15,11 @@ import { DatesTab } from '../tenderDetail/DatesTab';
 import { RedFlagsTab } from '../tenderDetail/RedFlagsTab';
 import { DocumentTab } from '../tenderDetail/DocumentTab';
 import { KeyFacts } from '../tenderDetail/KeyFacts';
+import { DatesTimeline } from '../tenderDetail/DatesTimeline';
+import { DeadlineCard } from '../tenderDetail/DeadlineCard';
+import { eligibilityWasChecked } from '../tenderDetail/deadlineSummary';
 import { Icon } from '../components/Icon';
+import { useShellData } from '../shell/ShellData';
 import { displayTitle, formatDate } from '../format';
 
 type TabKey = 'overview' | 'requirements' | 'boq' | 'dates' | 'redFlags' | 'document';
@@ -70,35 +74,41 @@ export function TenderDetailPage() {
   const [pollRetryKey, setPollRetryKey] = useState(0);
   const pollState = useTenderPolling((isProcessing || isAnalyzing) ? (id ?? null) : null, companyId, pollTarget, pollRetryKey);
 
+  const { reload: reloadShell } = useShellData();
   useEffect(() => {
-    if (pollState?.status === 'settled') setTender(pollState.tender);
-  }, [pollState]);
+    if (pollState?.status !== 'settled') return;
+    setTender(pollState.tender);
+    reloadShell(); // the queue's deadline and the plan allowance may have changed
+  }, [pollState, reloadShell]);
 
   return (
-    <div>
-      <AppHeader />
-      <div className="page-body">
-        <Link to="/dashboard" className="back-link"><Icon name="arrowLeft" />Back to dashboard</Link>
+    <>
+      {loading && (
+        <>
+          <Breadcrumb items={[{ label: 'Dashboard', to: '/dashboard' }, { label: 'Tender' }]} />
+          <p className="muted">Loading tender…</p>
+        </>
+      )}
 
-        {loading && <p className="muted">Loading tender…</p>}
-
-        {!loading && error && (
+      {!loading && error && (
+        <>
+          <Breadcrumb items={[{ label: 'Dashboard', to: '/dashboard' }, { label: 'Tender' }]} />
           <EmptyState title={error} action={{ label: 'Retry', onClick: fetchTender }} />
-        )}
+        </>
+      )}
 
-        {!loading && !error && tender && (
-          <TenderDetailBody
-            tender={tender}
-            tab={tab}
-            onTabChange={setTab}
-            companyId={companyId}
-            onRefetch={fetchTender}
-            pollTimedOut={pollState?.status === 'timeout'}
-            onPollRetry={() => setPollRetryKey((k) => k + 1)}
-          />
-        )}
-      </div>
-    </div>
+      {!loading && !error && tender && (
+        <TenderDetailBody
+          tender={tender}
+          tab={tab}
+          onTabChange={setTab}
+          companyId={companyId}
+          onRefetch={fetchTender}
+          pollTimedOut={pollState?.status === 'timeout'}
+          onPollRetry={() => setPollRetryKey((k) => k + 1)}
+        />
+      )}
+    </>
   );
 }
 
@@ -132,6 +142,7 @@ function TenderDetailBody({
   const [eligibilityError, setEligibilityError] = useState<string | null>(null);
   const [startingAnalysis, setStartingAnalysis] = useState(false);
   const [analysisStartError, setAnalysisStartError] = useState<string | null>(null);
+  const shell = useShellData();
 
   async function onRunAnalysis() {
     setAnalysisStartError(null);
@@ -139,6 +150,7 @@ function TenderDetailBody({
     try {
       await analyzeTender(tender.id, companyId);
       onRefetch(); // reloads as ANALYZING, which starts the page's polling
+      shell.reload(); // the queue and the plan allowance change too
     } catch (err) {
       setAnalysisStartError(err instanceof ApiError ? err.message : 'Could not start analysis.');
     } finally {
@@ -150,6 +162,16 @@ function TenderDetailBody({
     ? { requirements: tender.requirements.length, boq: tender.boq.length, dates: tender.dates.length, redFlags: tender.redFlags.length }
     : {};
   const organization = tender.overview.organization?.value;
+  const tenderNumber = tender.overview.tenderNumber?.value;
+  const location = tender.overview.location?.value;
+  const duration = tender.overview.contractDuration?.value;
+  const completed = tender.analysisStatus === 'COMPLETED';
+  const deadline = tender.overview.submissionDeadline?.value ?? null;
+
+  function openTab(key: TabKey) {
+    onTabChange(key);
+    document.getElementById('tender-details')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
   const uploaded = formatDate(tender.createdAt);
   const analysed = formatDate(tender.analyzedAt);
 
@@ -190,18 +212,39 @@ function TenderDetailBody({
 
   return (
     <div>
-      <div className="tender-head">
-        <div className="tender-head-title">
-          <h1>{displayTitle(tender.title)}</h1>
-          <AttentionBadge state={attention} />
+      <header className="page-head">
+        <div className="page-head-text">
+          <Breadcrumb items={[{ label: 'Dashboard', to: '/dashboard' }, { label: displayTitle(tender.title) }]} />
+          <h1 className="page-title">{displayTitle(tender.title)}</h1>
+          <p className="page-meta">
+            {organization && <span>{organization}</span>}
+            {tender.pageCount > 0 && <span>{tender.pageCount} pages</span>}
+            {uploaded && <span>Uploaded {uploaded}</span>}
+          </p>
+          <ul className="chips" aria-label="At a glance">
+            {completed && tender.redFlags.length > 0 && (
+              <li>
+                <button type="button" className="chip chip-danger" onClick={() => openTab('redFlags')}>
+                  <Icon name="alert" />{tender.redFlags.length} {tender.redFlags.length === 1 ? 'red flag' : 'red flags'}
+                </button>
+              </li>
+            )}
+            <li><AttentionBadge state={attention} /></li>
+            {tenderNumber && <li><span className="chip"><Icon name="file" />{tenderNumber}</span></li>}
+            {location && <li><span className="chip">{location}</span></li>}
+            {duration && <li><span className="chip">{duration}</span></li>}
+          </ul>
         </div>
-        <p className="tender-head-meta">
-          {organization && <span>{organization}</span>}
-          {tender.pageCount > 0 && <span>{tender.pageCount} pages</span>}
-          {uploaded && <span>Uploaded {uploaded}</span>}
-          {analysed && tender.analysisStatus === 'COMPLETED' && <span>Analysed {analysed}</span>}
-        </p>
-      </div>
+        {completed && tender.requirements.length > 0 && (
+          <div className="page-head-action">
+            <button type="button" className="btn-primary btn-large" onClick={onCheckEligibility} disabled={checkingEligibility}>
+              <Icon name="check" />
+              {checkingEligibility ? 'Checking against your profile…' : 'Check eligibility'}
+            </button>
+          </div>
+        )}
+      </header>
+      {eligibilityError && <p role="alert" className="error-text">{eligibilityError}</p>}
 
       {tender.processingStatus !== 'COMPLETED' && tender.processingStatus !== 'FAILED' && (
         <div className="notice notice-info notice-progress">
@@ -259,53 +302,69 @@ function TenderDetailBody({
         </p>
       )}
 
-      {tender.analysisStatus === 'COMPLETED' && <KeyFacts overview={tender.overview} />}
-      {tender.analysisStatus === 'COMPLETED' && !partial && (
-        <p className="analysis-footnote">
-          <Icon name="info" />
-          The tabs below show only what was actually extracted — not the absence of a finding.
-        </p>
+      {completed && (
+        <div className="grid-main-side">
+          <Panel id="key-facts" title="Key facts" aside={analysed ? <span className="muted">Analysed {analysed}</span> : undefined}>
+            <div className="card"><KeyFacts overview={tender.overview} /></div>
+          </Panel>
+          <DeadlineCard
+            deadline={deadline}
+            requirements={tender.requirements}
+            eligibilityChecked={eligibilityWasChecked(tender.activity)}
+            onOpenRequirements={() => openTab('requirements')}
+          />
+        </div>
       )}
 
-      <div className="tab-bar" role="tablist">
-        {TABS.map((t) => (
-          <button
-            key={t.key}
-            type="button"
-            role="tab"
-            aria-selected={t.key === tab}
-            className={t.key === tab ? 'tab-active' : ''}
-            onClick={() => onTabChange(t.key)}
-          >
-            {t.label}
-            {counts[t.key] !== undefined && <span className="tab-count">{counts[t.key]}</span>}
-          </button>
-        ))}
-      </div>
-
-      <div className="tab-panel">
-        {tab === 'overview' && <OverviewTab tender={tender} />}
-        {tab === 'requirements' && (
-          <div>
-            {tender.analysisStatus === 'COMPLETED' && tender.requirements.length > 0 && (
-              <div className="eligibility-action-bar">
-                <button type="button" className="btn-primary" onClick={onCheckEligibility} disabled={checkingEligibility}>
-                  {checkingEligibility ? 'Checking against your profile…' : 'Check eligibility against your profile'}
+      <div className={completed ? 'grid-main-side' : ''}>
+        <Panel
+          id="tender-details"
+          title="Details"
+          aside={completed && !partial ? <span className="muted">Only what was found in the document</span> : undefined}
+        >
+          <div className="card">
+            <div className="tab-bar" role="tablist">
+              {TABS.map((t) => (
+                <button
+                  key={t.key}
+                  type="button"
+                  role="tab"
+                  aria-selected={t.key === tab}
+                  className={t.key === tab ? 'tab-active' : ''}
+                  onClick={() => onTabChange(t.key)}
+                >
+                  {t.label}
+                  {counts[t.key] !== undefined && <span className="tab-count">{counts[t.key]}</span>}
                 </button>
-                <span className="muted eligibility-action-hint">
-                  Cross-checks each requirement against your company profile — never a value the AI made up.
-                </span>
-              </div>
-            )}
-            {eligibilityError && <p role="alert" className="error-text">{eligibilityError}</p>}
-            <RequirementsTab requirements={tender.requirements} />
+              ))}
+            </div>
+
+            <div className="tab-panel">
+              {tab === 'overview' && <OverviewTab tender={tender} />}
+              {tab === 'requirements' && (
+                <div>
+                  {completed && tender.requirements.length > 0 && (
+                    <p className="muted eligibility-action-hint">
+                      &ldquo;Check eligibility&rdquo; at the top compares each requirement with your company
+                      profile, never with a value the AI made up.
+                    </p>
+                  )}
+                  <RequirementsTab requirements={tender.requirements} />
+                </div>
+              )}
+              {tab === 'boq' && <BoqTab items={tender.boq} />}
+              {tab === 'dates' && <DatesTab dates={tender.dates} />}
+              {tab === 'redFlags' && <RedFlagsTab redFlags={tender.redFlags} />}
+              {tab === 'document' && (
+                <DocumentTab tenderId={tender.id} companyId={companyId} document={tender.document} />
+              )}
+            </div>
           </div>
-        )}
-        {tab === 'boq' && <BoqTab items={tender.boq} />}
-        {tab === 'dates' && <DatesTab dates={tender.dates} />}
-        {tab === 'redFlags' && <RedFlagsTab redFlags={tender.redFlags} />}
-        {tab === 'document' && (
-          <DocumentTab tenderId={tender.id} companyId={companyId} document={tender.document} />
+        </Panel>
+        {completed && (
+          <Panel id="key-dates" title="Key dates" aside={<span className="panel-count">{tender.dates.length}</span>}>
+            <div className="card"><DatesTimeline dates={tender.dates} /></div>
+          </Panel>
         )}
       </div>
     </div>
