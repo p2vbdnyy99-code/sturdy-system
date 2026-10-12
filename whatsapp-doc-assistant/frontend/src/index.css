@@ -2784,10 +2784,6 @@ a:hover {
   background: var(--color-surface);
 }
 
-.shell-no-queue {
-  grid-template-columns: 88px minmax(0, 1fr);
-}
-
 /* Rail */
 .shell-rail {
   position: sticky;
@@ -3750,18 +3746,13 @@ button.chip-danger:hover:not(:disabled) {
     grid-template-columns: 80px 290px minmax(0, 1fr);
   }
 
-  .shell-no-queue {
-    grid-template-columns: 80px minmax(0, 1fr);
-  }
-
   .shell-main {
     padding: 1.75rem 1.5rem 3rem 1.25rem;
   }
 }
 
 @media (max-width: 900px) {
-  .shell,
-  .shell-no-queue {
+  .shell {
     display: block;
   }
 
@@ -3888,4 +3879,82 @@ button.chip-danger:hover:not(:disabled) {
   .fact-value-bar {
     width: auto;
   }
+}
+
+/* ─── "Complete your company profile" dialog ───────────────────────────────
+   A native <dialog> opened with showModal(), so it traps focus and closes on
+   Escape; the backdrop is the browser's ::backdrop. */
+.modal {
+  width: min(480px, calc(100vw - 32px));
+  padding: 1.75rem 1.75rem 1.5rem;
+  border: none;
+  border-radius: var(--radius-panel);
+  background: var(--color-surface);
+  color: var(--color-text);
+  box-shadow: var(--shadow-lg);
+}
+
+.modal::backdrop {
+  background: rgba(6, 22, 48, 0.55);
+}
+
+.modal-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  margin-bottom: 1rem;
+  border-radius: 50%;
+  background: var(--saffron-100);
+  color: var(--saffron-700);
+}
+
+.modal-icon .icon {
+  width: 24px;
+  height: 24px;
+}
+
+.modal-title {
+  margin: 0 0 0.6rem;
+  font-size: 1.4rem;
+  letter-spacing: -0.02em;
+}
+
+.modal p {
+  color: var(--color-text-muted);
+}
+
+.modal-note {
+  padding: 0.7rem 0.9rem;
+  border-radius: var(--radius-md);
+  background: var(--surface-soft);
+  font-size: 0.92rem;
+}
+
+.modal-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+}
+
+.modal-secondary {
+  border: none;
+  background: none;
+  color: var(--color-text-muted);
+  font-weight: 600;
+  box-shadow: none;
+}
+
+.modal a:focus-visible,
+.modal button:focus-visible {
+  outline: 3px solid var(--saffron-500);
+  outline-offset: 2px;
+}
+
+/* The dashboard's reminder about the optional profile. */
+.profile-reminder .notice-text {
+  flex: 1 1 18rem;
 }

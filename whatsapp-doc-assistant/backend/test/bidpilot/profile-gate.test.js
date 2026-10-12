@@ -31,7 +31,7 @@ const SKIP_REASON = !dbAvailable()
     ? 'BIDPILOT_CSRF_SECRET not set — required for HTTP tests'
     : false;
 
-test('mandatory company profile (HTTP)', { skip: SKIP_REASON }, async (t) => {
+test('company profile: optional for the first 2 tenders, then required (HTTP)', { skip: SKIP_REASON }, async (t) => {
   const db = testDb();
   let server; let baseUrl; let company; let auth;
 
@@ -83,34 +83,63 @@ test('mandatory company profile (HTTP)', { skip: SKIP_REASON }, async (t) => {
     });
   }
 
-  function upload() {
+  function uploadFile(name, body) {
     const boundary = '----gate' + Math.random().toString(16).slice(2);
     const raw = Buffer.concat([
       Buffer.from(`--${boundary}\r\nContent-Disposition: form-data; name="companyId"\r\n\r\n${company.id}\r\n`),
-      Buffer.from(`--${boundary}\r\nContent-Disposition: form-data; name="file"; filename="t.pdf"\r\nContent-Type: application/pdf\r\n\r\n`),
-      Buffer.from('%PDF-1.4\n%%EOF\n'),
+      Buffer.from(`--${boundary}\r\nContent-Disposition: form-data; name="file"; filename="${name}"\r\nContent-Type: application/pdf\r\n\r\n`),
+      Buffer.from(body),
       Buffer.from(`\r\n--${boundary}--\r\n`),
     ]);
     return req('POST', '/bidpilot/tenders/upload', { raw, contentType: `multipart/form-data; boundary=${boundary}` });
   }
 
-  await t.test('upload is refused with 409 profile_incomplete and the missing fields', async () => {
-    const res = await upload();
-    assert.equal(res.status, 409);
-    assert.equal(res.json.code, 'profile_incomplete');
-    assert.ok(res.json.missing.includes('annualTurnover'));
-  });
+  function upload(name = 't.pdf', body = '%PDF-1.4\n%%EOF\n') {
+    return uploadFile(name, body);
+  }
 
-  await t.test('analyse is refused too, and nothing starts', async () => {
+  async function processedTender(title) {
     const scope = await requireCompanyAccess(db, { userId: (await db.execute('select id from users limit 1')).rows[0].id, companyId: company.id });
-    const tender = await createTender(scope, { title: 'x.pdf' });
+    const tender = await createTender(scope, { title });
     await insertPages(scope, tender.id, [{ pageNumber: 1, rawText: 'text', ocrUsed: false }]);
     await updateProcessingStatus(scope, tender.id, 'COMPLETED');
-    const res = await req('POST', `/bidpilot/tenders/${tender.id}/analyze`, { body: { companyId: company.id } });
-    assert.equal(res.status, 409);
-    assert.equal(res.json.code, 'profile_incomplete');
-    const status = (await db.execute(`select analysis_status from tenders where id = '${tender.id}'`)).rows[0].analysis_status;
-    assert.equal(status, 'NOT_STARTED');
+    return tender;
+  }
+
+  const analyse = (id) => req('POST', `/bidpilot/tenders/${id}/analyze`, { body: { companyId: company.id } });
+  const analysisStatus = async (id) => (await db.execute(`select analysis_status from tenders where id = '${id}'`)).rows[0].analysis_status;
+
+  await t.test('the first 2 uploads need no profile; the 3rd is refused with 409 and the missing fields', async () => {
+    assert.equal((await upload('a.pdf', '%PDF-1.4\n% a\n%%EOF\n')).status, 201);
+    assert.equal((await upload('b.pdf', '%PDF-1.4\n% b\n%%EOF\n')).status, 201);
+    const third = await upload('c.pdf', '%PDF-1.4\n% c\n%%EOF\n');
+    assert.equal(third.status, 409);
+    assert.equal(third.json.code, 'profile_incomplete');
+    assert.equal(third.json.freeTenders, 2);
+    assert.ok(third.json.missing.includes('annualTurnover'));
+    assert.match(third.json.error, /added 2 tenders without a company profile/);
+    const count = (await db.execute(`select count(*)::int n from tenders where company_id = '${company.id}'`)).rows[0].n;
+    assert.equal(count, 2, 'the refused upload stored nothing');
+  });
+
+  await t.test('analysing one of the first 2 tenders needs no profile; a 3rd tender is refused and nothing starts', async () => {
+    const first = await processedTender('one.pdf');
+    await processedTender('two.pdf');
+    const third = await processedTender('three.pdf');
+    const ok = await analyse(first.id);
+    assert.notEqual(ok.status, 409, 'not refused by the profile gate');
+    const refused = await analyse(third.id);
+    assert.equal(refused.status, 409);
+    assert.equal(refused.json.code, 'profile_incomplete');
+    assert.equal(await analysisStatus(third.id), 'NOT_STARTED');
+  });
+
+  await t.test("another company's tenders don't use up this company's free tenders", async () => {
+    const other = await createCompanyWithOwner(db, { companyName: 'Other Co', userEmail: 'other@example.com', userName: 'O' });
+    const otherScope = await requireCompanyAccess(db, { userId: other.user.id, companyId: other.company.id });
+    await createTender(otherScope, { title: 'x.pdf' });
+    await createTender(otherScope, { title: 'y.pdf' });
+    assert.equal((await upload('mine.pdf')).status, 201);
   });
 
   await t.test('/me says the profile is incomplete, then complete', async () => {
@@ -138,9 +167,13 @@ test('mandatory company profile (HTTP)', { skip: SKIP_REASON }, async (t) => {
     assert.ok(!res.json.noneFields.includes('industry') && !res.json.noneFields.includes('bogus'), 'only allowed keys are stored');
   });
 
-  await t.test('once complete, upload is accepted', async () => {
+  await t.test('once the profile is complete, a 3rd upload and a 3rd analysis are accepted', async () => {
+    await processedTender('one.pdf');
+    await processedTender('two.pdf');
+    const third = await processedTender('three.pdf');
+    assert.equal((await upload('c.pdf')).status, 409);
     await completeProfile(company.id);
-    const res = await upload();
-    assert.equal(res.status, 201);
+    assert.equal((await upload('c.pdf')).status, 201);
+    assert.notEqual((await analyse(third.id)).status, 409);
   });
 });

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Breadcrumb, Panel } from '../../components/AppShell';
 import { useSession } from '../../auth/SessionProvider';
 import { ApiError } from '../../api/client';
@@ -8,12 +8,16 @@ import {
   type CompanyProfile, type CompanyProfilePatch,
 } from '../../api/companies';
 import { PROFILE_FIELDS, describeMissing, type ProfileField, type ProfileFieldKey } from '../../profileFields';
+import { useShellData } from '../../shell/ShellData';
+import { FREE_TENDERS_WITHOUT_PROFILE } from '../../shell/profileGate';
 
 // The eligibility check's other input (see eligibilityPipeline.js): every
 // field here is something the AI can cite as a reason against a tender
-// requirement. Every field is mandatory; until all are answered the app
-// opens on this page (CompanyGate) and the server refuses uploads and
-// analysis. List-type fields can be answered "None" rather than invented.
+// requirement. A profile counts as complete when every field is answered.
+// It is optional for the company's first two tenders; after that the server
+// refuses uploads and analysis and the app asks for it in a dialog
+// (shell/profileGate.ts). List-type fields can be answered "None" rather
+// than invented.
 
 type ExperienceRow = { description: string; value: string; year: string; client: string };
 type FormState = Record<Exclude<ProfileFieldKey, 'experience'>, string> & { experience: ExperienceRow[] };
@@ -84,7 +88,12 @@ export function CompanyProfilePage() {
   const { me, selectedCompanyId, refresh } = useSession();
   const companyId = selectedCompanyId as string; // CompanyGate guarantees this
   const navigate = useNavigate();
-  const setup = !me?.companies.find((c) => c.companyId === companyId)?.profileComplete;
+  const location = useLocation();
+  const { profile: gate } = useShellData();
+  const incomplete = !me?.companies.find((c) => c.companyId === companyId)?.profileComplete;
+  // Where to go back to once the profile is complete (the dialog and the
+  // dashboard reminder pass it).
+  const from = (location.state as { from?: string } | null)?.from;
 
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
   const [none, setNone] = useState<Set<string>>(new Set());
@@ -146,7 +155,7 @@ export function CompanyProfilePage() {
       setSaved(true);
       if (updated.missing.length === 0) {
         await refresh(); // the company is now marked complete, so CompanyGate lets the app open
-        if (setup) navigate('/dashboard', { replace: true });
+        if (incomplete && from && from !== '/company-profile') navigate(from, { replace: true });
       }
     } catch (err) {
       setSaveError(err instanceof ApiError ? err.message : 'Could not save your company profile.');
@@ -230,23 +239,25 @@ export function CompanyProfilePage() {
     <>
       <header className="page-head">
         <div className="page-head-text">
-          <Breadcrumb items={setup ? [{ label: 'Set up' }, { label: 'Company profile' }] : [{ label: 'Dashboard', to: '/dashboard' }, { label: 'Company profile' }]} />
+          <Breadcrumb items={[{ label: 'Dashboard', to: '/dashboard' }, { label: 'Company profile' }]} />
           <h1 className="page-title">Company profile</h1>
-          {company && <p className="page-meta"><span>{company.name}</span><span>{PROFILE_FIELDS.length} fields, all required</span></p>}
+          {company && <p className="page-meta"><span>{company.name}</span><span>{PROFILE_FIELDS.length} fields</span></p>}
         </div>
       </header>
-        {setup ? (
+        {incomplete ? (
           <div className="notice notice-info profile-setup-notice">
             <span className="notice-text">
-              <strong>One step before your first tender.</strong> Fill in every field below. The eligibility check
-              compares each tender&rsquo;s conditions with these details, so complete answers give clearer results.
-              If something doesn&rsquo;t apply to you, tick &ldquo;None&rdquo;.
+              <strong>Fill this in for clearer eligibility results.</strong> The eligibility check compares each
+              tender&rsquo;s conditions with these details. It&rsquo;s optional for your first{' '}
+              {FREE_TENDERS_WITHOUT_PROFILE} tenders
+              {gate.freeLeft !== null && gate.freeLeft > 0 ? ` (${gate.freeLeft} left)` : ''}, then needed.
+              You can save as you go; tick &ldquo;None&rdquo; for anything that doesn&rsquo;t apply.
             </span>
           </div>
         ) : (
           <p className="muted">
-            This is what the eligibility check compares against your tenders&rsquo; requirements. Every field is
-            required; keep it up to date for the most accurate results.
+            This is what the eligibility check compares against your tenders&rsquo; requirements. Keep it up to date
+            for the most accurate results.
           </p>
         )}
 
@@ -271,7 +282,7 @@ export function CompanyProfilePage() {
             )}
             {saved && !saving && missing.length === 0 && <p className="save-confirmation">Saved. Your profile is complete.</p>}
             <button type="submit" className="submit-button" disabled={saving}>
-              {saving ? 'Saving…' : setup ? 'Save and continue' : 'Save company profile'}
+              {saving ? 'Saving…' : incomplete && from ? 'Save and continue' : 'Save company profile'}
             </button>
           </form>
           </Panel>

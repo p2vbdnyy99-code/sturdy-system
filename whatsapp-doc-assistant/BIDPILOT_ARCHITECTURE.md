@@ -3282,3 +3282,56 @@ navy. Public pages, sign-in and company setup are unchanged.
   - the queue lost the open tender when it wasn't due soon;
   - "not checked yet" after a check that left everything unclear;
   - the current rail icon's shadow hid the focus ring (now an outline).
+
+# Company profile optional for the first 2 tenders, then a dialog (Oct 2026)
+
+The founder found the mandatory profile up front annoying and asked for it
+to be optional for "2 tries", then mandatory with a dialog. A try is a
+tender (the founder's choice).
+
+## Rule (`bidpilot/profileGate.js`)
+
+- `FREE_TENDERS_WITHOUT_PROFILE = 2`. A profile is complete when every field
+  is answered (unchanged, `profileCompleteness.js`; "None" still allowed).
+- **Upload:** allowed while the company has fewer than 2 tenders, or once
+  the profile is complete.
+- **Analyse / re-run:** allowed for the company's first 2 tenders (by upload
+  time), or once the profile is complete.
+- Otherwise 409 `{ code: 'profile_incomplete', missing, freeTenders }`, with
+  "You've added 2 tenders without a company profile…". Counted per company.
+- The eligibility check is unchanged: without a profile it already marks
+  every requirement "Complete your company profile to check eligibility".
+
+## App
+
+- `CompanyGate` no longer redirects to the profile; the frame always shows
+  the tender list.
+- `shell/profileGate.ts` mirrors the number (`profile-fields-sync.test.js`
+  checks they are equal), works out the tenders left from the shell's total,
+  and words the dashboard reminder: "You can add N more tenders without it",
+  then a warning once none are left.
+- **Dialog (`components/ProfileRequiredDialog.tsx`):** a native `<dialog>`
+  opened with `showModal()` (focus moves in, Escape closes, page behind is
+  inert). It opens when Upload is pressed with no free tenders left (before
+  the file picker), or when an upload or Analyze gets the 409. It says how
+  many fields are left; "Fill in the profile" goes to the profile page, and a
+  complete save returns to where the user was; "Not now" closes it.
+- `ApiError` now carries the server's `code`.
+- Profile page: "optional for your first 2 tenders (N left), then needed".
+- FAQ, privacy policy, `OPERATIONS.md` and `CLAUDE.md` say the same.
+
+## Verification
+
+- HTTP tests (`profile-gate.test.js`): 1st and 2nd upload 201, 3rd 409 with
+  the missing fields and nothing stored; analysing one of the first 2 allowed,
+  a 3rd tender refused and left NOT_STARTED; another company's tenders don't
+  count; after completing, the 3rd upload and analysis are accepted.
+- Sync test for the number; unit tests for the tenders-left and wording.
+- Browser on the harness (20 checks), as a new company: lands on the
+  dashboard; reminder counts down; two uploads work; the 3rd opens the
+  dialog and not the file picker; field count; focus; Escape and "Not now";
+  a direct 3rd API upload gets 409; a free tender analyses; "Fill in the
+  profile" → complete → back to the dashboard, reminder gone, upload works;
+  phone width; no CSP or console errors.
+- The restyle's 35 browser checks rerun, with the two setup checks changed
+  to the new behaviour.

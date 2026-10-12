@@ -130,10 +130,13 @@ sibling of `backend/`/`frontend/`, since the Docker build needs both).
        (and `BIDPILOT_WHATSAPP_OTP_TEMPLATE` if the template has another
        name). A failed send is logged as `whatsapp otp: send to … failed`
        with Meta's reason.
-- **Company profile is mandatory:** uploads and analyses are refused (409
+- **Company profile, optional for the first 2 tenders:** a company can
+  upload and analyse its first 2 tenders (by upload time) without a profile.
+  After that, uploads and analyses of later tenders are refused (409
   `profile_incomplete`) until every profile field is answered, and the app
-  opens on the profile page. Existing companies are redirected there on
-  their next visit.
+  shows a "Complete your company profile" dialog. The number is
+  `FREE_TENDERS_WITHOUT_PROFILE` in `backend/src/bidpilot/profileGate.js`
+  and `frontend/src/shell/profileGate.ts` (a test keeps them equal).
 - **Subscriptions (monthly plans, until online payment exists):** when a
   firm has paid, run on the server, from `/app/backend`:
   `node scripts/subscription.mjs status` to find the company id, then

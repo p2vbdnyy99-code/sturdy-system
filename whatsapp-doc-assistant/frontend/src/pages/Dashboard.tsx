@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState, type ChangeEvent } from 'reac
 import { Link } from 'react-router-dom';
 import { Breadcrumb, Panel } from '../components/AppShell';
 import { useShellData } from '../shell/ShellData';
+import { profileReminder } from '../shell/profileGate';
 import { EmptyState } from '../components/EmptyState';
 import { AttentionBadge } from '../components/AttentionBadge';
 import { Icon, type IconName } from '../components/Icon';
@@ -91,6 +92,8 @@ export function DashboardPage() {
   }
 
   function onUploadClick() {
+    // Past the free tenders without a profile, ask for it before the picker.
+    if (shell.profile.requireProfile()) return;
     fileInputRef.current?.click();
   }
 
@@ -104,6 +107,10 @@ export function DashboardPage() {
       await uploadTender(file, companyId);
       await Promise.all([fetchList(), fetchSummary()]);
     } catch (err) {
+      if (err instanceof ApiError && err.code === 'profile_incomplete') {
+        shell.profile.openDialog();
+        return;
+      }
       setUploadError(err instanceof ApiError ? err.message : 'Upload failed. Please try again.');
     } finally {
       setUploading(false);
@@ -179,6 +186,7 @@ export function DashboardPage() {
       {uploadError && <p role="alert" className="error-text">{uploadError}</p>}
 
       {summaryError && <p role="alert" className="error-text">{summaryError}</p>}
+      <ProfileReminder left={shell.profile.freeLeft} />
       {summary?.allowance && allowanceNotice(summary.allowance).tone === 'warning' && <AllowanceBanner allowance={summary.allowance} />}
 
       <div className="grid-main-side">
@@ -318,6 +326,20 @@ function AllowanceBanner({ allowance }: { allowance: Allowance }) {
           <> Email <a href={`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(subject)}`}>{CONTACT_EMAIL}</a>.</>
         )}
       </span>
+    </div>
+  );
+}
+
+/** The optional profile: how many tenders are left without it, then a
+ *  warning once they are used (shell/profileGate.ts has the wording). */
+function ProfileReminder({ left }: { left: number | null }) {
+  const r = profileReminder(left);
+  if (!r) return null;
+  return (
+    <div className={`notice profile-reminder${r.tone === 'info' ? ' notice-info' : ''}`}>
+      <Icon name={r.tone === 'info' ? 'info' : 'alert'} />
+      <span className="notice-text">{r.text}</span>
+      <Link to="/company-profile" state={{ from: '/dashboard' }} className="btn-pill notice-action">{r.action}</Link>
     </div>
   );
 }

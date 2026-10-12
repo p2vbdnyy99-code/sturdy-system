@@ -14,10 +14,14 @@ const CSRF_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
 
 export class ApiError extends Error {
   status: number;
-  constructor(status: number, message: string) {
+  /** The server's machine-readable reason, when it sends one
+   *  (e.g. 'profile_incomplete'). */
+  code: string | null;
+  constructor(status: number, message: string, code: string | null = null) {
     super(message);
     this.name = 'ApiError';
     this.status = status;
+    this.code = code;
   }
 }
 
@@ -88,7 +92,8 @@ export async function request<T>(path: string, options: RequestOptions = {}): Pr
     const message = (data && typeof data === 'object' && 'error' in data && typeof data.error === 'string')
       ? data.error
       : `Request failed with status ${res.status}`;
-    throw new ApiError(res.status, message);
+    const code = (data && typeof data === 'object' && 'code' in data && typeof data.code === 'string') ? data.code : null;
+    throw new ApiError(res.status, message, code);
   }
 
   return data as T;

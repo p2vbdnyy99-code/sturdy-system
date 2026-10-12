@@ -6,6 +6,8 @@ import { createContext, useCallback, useContext, useEffect, useState, type React
 import { ApiError } from '../api/client';
 import { getDashboardSummary, type DashboardSummary } from '../api/dashboard';
 import { listTenders, type TenderListItem } from '../api/tenders';
+import { useSession } from '../auth/SessionProvider';
+import { freeTendersLeft } from './profileGate';
 
 /** The API's page-size cap (repo/tenders.js). */
 export const QUEUE_LIMIT = 100;
@@ -17,6 +19,17 @@ export type ShellData = {
   loading: boolean;
   error: string | null;
   reload: () => Promise<void>;
+  /** The company profile: optional for the first tenders, then required
+   *  (shell/profileGate.ts). `requireProfile()` returns true, and opens the
+   *  "complete your profile" dialog, when an upload must wait for it. */
+  profile: {
+    complete: boolean;
+    freeLeft: number | null;
+    dialogOpen: boolean;
+    openDialog: () => void;
+    closeDialog: () => void;
+    requireProfile: () => boolean;
+  };
 };
 
 const ShellDataContext = createContext<ShellData | null>(null);
@@ -27,6 +40,10 @@ export function ShellDataProvider({ companyId, children }: { companyId: string; 
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const { me } = useSession();
+  const complete = Boolean(me?.companies.find((c) => c.companyId === companyId)?.profileComplete);
+  const freeLeft = freeTendersLeft(complete, total);
 
   const reload = useCallback(async () => {
     setError(null);
@@ -48,7 +65,21 @@ export function ShellDataProvider({ companyId, children }: { companyId: string; 
   useEffect(() => { reload(); }, [reload]);
 
   return (
-    <ShellDataContext.Provider value={{ tenders, total, summary, loading, error, reload }}>
+    <ShellDataContext.Provider value={{
+      tenders, total, summary, loading, error, reload,
+      profile: {
+        complete,
+        freeLeft,
+        dialogOpen,
+        openDialog: () => setDialogOpen(true),
+        closeDialog: () => setDialogOpen(false),
+        requireProfile: () => {
+          if (freeLeft !== 0 || loading) return false;
+          setDialogOpen(true);
+          return true;
+        },
+      },
+    }}>
       {children}
     </ShellDataContext.Provider>
   );

@@ -152,7 +152,8 @@ function TenderDetailBody({
       onRefetch(); // reloads as ANALYZING, which starts the page's polling
       shell.reload(); // the queue and the plan allowance change too
     } catch (err) {
-      setAnalysisStartError(err instanceof ApiError ? err.message : 'Could not start analysis.');
+      if (err instanceof ApiError && err.code === 'profile_incomplete') shell.profile.openDialog();
+      else setAnalysisStartError(err instanceof ApiError ? err.message : 'Could not start analysis.');
     } finally {
       setStartingAnalysis(false);
     }

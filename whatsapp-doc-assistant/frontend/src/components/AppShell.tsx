@@ -7,18 +7,18 @@ import { PRODUCT_NAME } from '../config/product';
 import { LogoMark } from './Logo';
 import { Icon } from './Icon';
 import { TenderQueue } from './TenderQueue';
+import { ProfileRequiredDialog } from './ProfileRequiredDialog';
 
 // The signed-in app's frame (a layout route, see routes.tsx): an icon rail,
 // the tender queue panel and the page. It stays mounted while the user moves
 // between pages, so the queue keeps its tab and search. On phones the rail
-// becomes a top bar and the queue opens as a drawer. The queue is hidden
-// while the company profile is still being set up (nothing can be opened yet).
+// becomes a top bar and the queue opens as a drawer. It also holds the
+// "complete your company profile" dialog, which any page can open.
 export function AppShell() {
   const { me, selectedCompanyId, clear } = useSession();
   const navigate = useNavigate();
   const [queueOpen, setQueueOpen] = useState(false);
   const activeTenderId = useMatch('/tenders/:id')?.params.id;
-  const queue = Boolean(me?.companies.find((c) => c.companyId === selectedCompanyId)?.profileComplete);
 
   async function onLogout() {
     try {
@@ -35,7 +35,7 @@ export function AppShell() {
   const initial = ((me?.name || me?.email || me?.phone || '?').replace(/^\+/, '')[0] ?? '?').toUpperCase();
 
   const body = (
-    <div className={`shell${queue ? '' : ' shell-no-queue'}${queueOpen ? ' shell-queue-open' : ''}`}>
+    <div className={`shell${queueOpen ? ' shell-queue-open' : ''}`}>
       <nav className="shell-rail" aria-label="Main">
         <Link to="/dashboard" className="shell-rail-logo" aria-label={`${PRODUCT_NAME} dashboard`}>
           <LogoMark size={40} />
@@ -47,18 +47,16 @@ export function AppShell() {
           <NavLink to="/company-profile" className="shell-rail-link" aria-label="Company profile" title="Company profile">
             <Icon name="briefcase" />
           </NavLink>
-          {queue && (
-            <button
-              type="button"
-              className="shell-rail-link shell-queue-toggle"
-              aria-expanded={queueOpen}
-              aria-controls="shell-queue"
-              onClick={() => setQueueOpen((o) => !o)}
-            >
-              <Icon name={queueOpen ? 'close' : 'inbox'} />
-              <span className="shell-queue-toggle-label">Tenders</span>
-            </button>
-          )}
+          <button
+            type="button"
+            className="shell-rail-link shell-queue-toggle"
+            aria-expanded={queueOpen}
+            aria-controls="shell-queue"
+            onClick={() => setQueueOpen((o) => !o)}
+          >
+            <Icon name={queueOpen ? 'close' : 'inbox'} />
+            <span className="shell-queue-toggle-label">Tenders</span>
+          </button>
         </div>
         <div className="shell-rail-bottom">
           <button type="button" className="shell-rail-link" onClick={onLogout} aria-label="Log out" title="Log out">
@@ -68,13 +66,12 @@ export function AppShell() {
         </div>
       </nav>
 
-      {queue && (
-        <aside id="shell-queue" className="shell-queue" aria-label="Your tenders">
-          <TenderQueue activeTenderId={activeTenderId} onNavigate={() => setQueueOpen(false)} />
-        </aside>
-      )}
+      <aside id="shell-queue" className="shell-queue" aria-label="Your tenders">
+        <TenderQueue activeTenderId={activeTenderId} onNavigate={() => setQueueOpen(false)} />
+      </aside>
 
       <main className="shell-main"><Outlet /></main>
+      {selectedCompanyId && <ProfileRequiredDialog />}
     </div>
   );
 

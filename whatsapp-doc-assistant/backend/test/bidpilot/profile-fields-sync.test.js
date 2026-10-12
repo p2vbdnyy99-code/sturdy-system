@@ -17,3 +17,11 @@ test('the profile page asks for every required field, and only those', () => {
 test('"None" is offered exactly where the server accepts it', () => {
   assert.deepEqual(entries.filter((e) => e.none).map((e) => e.key).sort(), [...NONE_ALLOWED].sort());
 });
+
+test('the app and the server agree on how many tenders need no profile', async () => {
+  const { FREE_TENDERS_WITHOUT_PROFILE } = await import('../../src/bidpilot/profileGate.js');
+  const gate = fs.readFileSync(new URL('../../../frontend/src/shell/profileGate.ts', import.meta.url), 'utf8');
+  const m = gate.match(/export const FREE_TENDERS_WITHOUT_PROFILE = (\d+);/);
+  assert.ok(m, 'frontend constant found');
+  assert.equal(Number(m[1]), FREE_TENDERS_WITHOUT_PROFILE);
+});

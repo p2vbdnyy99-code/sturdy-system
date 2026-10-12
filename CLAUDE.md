@@ -72,13 +72,17 @@ Follow `harness/README.md`. In short:
 - The privacy policy (`frontend/src/pages/Privacy.tsx`) must match the code.
   Update it, and its `LAST_UPDATED` date, whenever data collected, service
   providers, cookies or retention change. The date is the day it goes live.
-- Every company-profile field is mandatory. The fields are listed in
+- The company profile is optional for a company's first 2 tenders, then
+  required (the founder found it annoying up front). A profile is complete
+  when every field is answered; the fields are listed in
   `backend/src/bidpilot/profileCompleteness.js` and
-  `frontend/src/profileFields.ts`; change both, because
-  `profile-fields-sync.test.js` fails if they differ. List fields, GSTIN and
-  other qualifications can be answered "None" (`none_fields`); never force
-  invented entries. Uploads and analysis answer 409 `profile_incomplete`
-  until the profile is complete.
+  `frontend/src/profileFields.ts`, and the free number in
+  `backend/src/bidpilot/profileGate.js` and `frontend/src/shell/profileGate.ts`.
+  Change both sides; `profile-fields-sync.test.js` fails if they differ. List
+  fields, GSTIN and other qualifications can be answered "None"
+  (`none_fields`); never force invented entries. Past the free tenders,
+  uploads and analysis answer 409 `profile_incomplete` and the app opens its
+  "complete your profile" dialog. No forced redirect to the profile.
 - Sign-in with Google and with a WhatsApp code each stay hidden until their
   Fly secrets are set (`BIDPILOT_GOOGLE_*`, `BIDPILOT_WHATSAPP_*`; see
   `OPERATIONS.md`). Never log an OTP code in production. A user may have no

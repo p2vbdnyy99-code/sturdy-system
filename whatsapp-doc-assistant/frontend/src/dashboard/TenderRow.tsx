@@ -5,6 +5,7 @@ import { ApiError } from '../api/client';
 import { deriveAttentionState } from './attentionState';
 import { useTenderPolling, type PollTarget } from './useTenderPolling';
 import { AttentionBadge } from '../components/AttentionBadge';
+import { useShellData } from '../shell/ShellData';
 import { daysUntil, displayTitle, formatDate, relativeDays } from '../format';
 
 type TenderRowProps = {
@@ -30,6 +31,7 @@ export function TenderRow({ tender, companyId, onUpdate }: TenderRowProps) {
   const [analyzing, setAnalyzing] = useState(false);
   const [analyzeError, setAnalyzeError] = useState<string | null>(null);
   const [retryKey, setRetryKey] = useState(0);
+  const { profile } = useShellData();
 
   const pollTarget: PollTarget = attention === 'ANALYSIS_IN_PROGRESS' ? 'analysis' : 'processing';
   const shouldPoll = attention === 'PROCESSING' || attention === 'ANALYSIS_IN_PROGRESS';
@@ -60,7 +62,8 @@ export function TenderRow({ tender, companyId, onUpdate }: TenderRowProps) {
       await analyzeTender(tender.id, companyId);
       onUpdate(tender.id, { analysisStatus: 'ANALYZING' });
     } catch (err) {
-      setAnalyzeError(err instanceof ApiError ? err.message : 'Could not start analysis.');
+      if (err instanceof ApiError && err.code === 'profile_incomplete') profile.openDialog();
+      else setAnalyzeError(err instanceof ApiError ? err.message : 'Could not start analysis.');
     } finally {
       setAnalyzing(false);
     }

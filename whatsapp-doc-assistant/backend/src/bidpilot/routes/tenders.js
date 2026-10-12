@@ -27,8 +27,7 @@ import { runEligibility, EligibilityError } from '../analysis/eligibilityPipelin
 import { config } from '../../config.js';
 import { tenderStatus, tenderAnalysisStatus } from '../../db/schema/enums.js';
 import { OVERVIEW_FIELDS } from '../analysis/schema.js';
-import { getCompanyProfile } from '../repo/companies.js';
-import { missingProfileFields } from '../profileCompleteness.js';
+import { profileNeededFor, PROFILE_REQUIRED_MESSAGE, FREE_TENDERS_WITHOUT_PROFILE } from '../profileGate.js';
 
 // multer buffers the upload in memory (never touches disk itself) — fine at
 // this size ceiling (BIDPILOT_MAX_UPLOAD_MB, default 50MB); a much larger
@@ -217,7 +216,7 @@ export function createTendersRouter() {
       });
       const tender = await getTender(scope, req.params.id);
       if (!tender) return res.status(404).json({ error: 'Not found.' });
-      if (await refuseIfProfileIncomplete(db, scope.companyId, res)) return;
+      if (await refuseIfProfileNeeded(db, scope.companyId, res, tender.id)) return;
 
       // Analysis needs completed extraction text to work from — cannot run
       // on a tender that's still UPLOADED/PROCESSING/EXTRACTING, or that
@@ -316,16 +315,18 @@ export function createTendersRouter() {
   return router;
 }
 
-/** Every profile field is mandatory before uploading or analysing (see
- *  profileCompleteness.js). Sends 409 profile_incomplete and returns true
- *  when the company's profile is not finished. */
-async function refuseIfProfileIncomplete(db, companyId, res) {
-  const missing = missingProfileFields(await getCompanyProfile(db, companyId));
-  if (missing.length === 0) return false;
+/** The company profile is optional for the first FREE_TENDERS_WITHOUT_PROFILE
+ *  tenders and required after that (see profileGate.js). Sends 409
+ *  profile_incomplete, which the app answers with its "complete your profile"
+ *  dialog, and returns true when the action must wait. */
+async function refuseIfProfileNeeded(db, companyId, res, tenderId = null) {
+  const missing = await profileNeededFor(db, companyId, tenderId);
+  if (!missing) return false;
   res.status(409).json({
-    error: 'Please complete your company profile first. It is used to check each tender\'s eligibility conditions.',
+    error: PROFILE_REQUIRED_MESSAGE,
     code: 'profile_incomplete',
     missing,
+    freeTenders: FREE_TENDERS_WITHOUT_PROFILE,
   });
   return true;
 }
@@ -346,7 +347,7 @@ async function handleUpload(req, res) {
   // allow a user to specify another company ID and thereby upload into
   // another tenant").
   const scope = await requireCompanyAccess(db, { userId: req.bidpilotUserId, companyId });
-  if (await refuseIfProfileIncomplete(db, companyId, res)) return;
+  if (await refuseIfProfileNeeded(db, companyId, res)) return;
 
   const uploadStart = Date.now();
   const { tender, duplicate } = await ingestUpload(scope, {
