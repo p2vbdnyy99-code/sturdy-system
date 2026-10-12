@@ -1,7 +1,7 @@
 # Progress: company profile optional for the first 2 tenders (2026-10-12)
 
 ## Plan
-Steps 1–6 done locally. Deploy waits for approval.
+All steps done. Deployed 12 Oct 2026 (commit dfe854d).
 
 ## Outputs
 - Backend: `src/bidpilot/profileGate.js` (new), `routes/tenders.js`;
@@ -24,4 +24,4 @@ Steps 1–6 done locally. Deploy waits for approval.
 - Skylark already has 2 tenders, so its next upload will show the dialog.
 
 ## Next action
-Wait for "commit and deploy".
+None. The dialog hasn't been seen on the live site with a signed-in account.

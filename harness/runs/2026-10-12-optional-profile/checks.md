@@ -14,4 +14,6 @@
 | 5 text | FAQ, privacy, OPERATIONS, CLAUDE.md, architecture | pass | FAQ "Do I have to fill in the company profile?"; privacy "optional for your first 2 tenders, then required" (date 12 Oct 2026 = today); no page says it is required before the first tender |
 | 6 regression | the restyle's browser checks | pass | `restyle-verify.mjs` 35/35 (the two setup checks changed to the new behaviour) |
 | 7 real accounts | effect of the rule | pass | read-only production query: Skylark has 2 tenders, gem tender 1, neither has a profile. After the deploy Skylark can still analyse its 2 tenders but gets the dialog on a 3rd upload; gem tender can add 1 more |
-| 8 live | deploy and live check | unresolved | waiting for "commit and deploy" |
+| 8 live | nothing mid-analysis; deploy healthy | pass | `analyzing_now=0`; `flyctl deploy` exit 0 (commit dfe854d); `/health` 200; no migration |
+| 8 live | text and code served | pass | FAQ "Do I have to fill in the company profile?" ("Not for your first 2 tenders"), old question gone; privacy "optional for your first 2 tenders, then required", dated 12 October 2026; the live bundle contains the dialog; `/dashboard` signed out → /login; upload signed out 401; phone width, no sideways scroll; no console or CSP errors |
+| 8 live | the dialog with a signed-in account | unresolved | not exercised live (needs an account; a test account would write to the live database). Covered by the 20 harness checks on the same build |
