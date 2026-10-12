@@ -1,7 +1,7 @@
 # Progress: app restyle after the clinic-OPD reference (2026-10-12)
 
 ## Plan
-Steps 1–8 done locally. Step 9 (deploy) waits for approval.
+Steps 1–9 done. Deployed 12 Oct 2026 (commit 723a35e).
 
 ## Outputs
 - New:
@@ -27,7 +27,6 @@ Steps 1–8 done locally. Step 9 (deploy) waits for approval.
   two patterns.
 
 ## Next action
-Wait for "commit and deploy". Then commit, push, check nothing is
-ANALYZING, deploy, and check the live app at desktop and phone width with a
-signed-in account (needs the founder's go-ahead to create a test account,
-or the founder checks it themselves).
+The signed-in screens haven't been looked at on the live site: the founder
+can sign in and look, or allow a test account in production for a scripted
+check.
