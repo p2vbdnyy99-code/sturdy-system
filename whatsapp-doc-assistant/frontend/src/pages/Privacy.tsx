@@ -31,15 +31,21 @@ const SECTIONS: Array<{ title: string; body: ReactNode }> = [
     title: 'What we collect',
     body: (
       <ul>
-        <li><strong>Your account:</strong> your email address, your name if you give it, and your password. The
-          password is stored only in scrambled (hashed) form, so nobody, including us, can read it.</li>
-        <li><strong>Your company:</strong> the company name, and any company-profile details you choose to fill
-          in, such as GSTIN, turnover, net worth, years in business, certifications, licences, equipment and past
-          experience.</li>
+        <li><strong>Your account:</strong> how you sign in, and your name if you give it. With email, that is
+          your email address and password; the password is stored only in scrambled (hashed) form, so nobody,
+          including us, can read it. With Google, it is your Google account&rsquo;s email, name and account ID (we
+          never see your Google password). With your mobile number, it is that number.</li>
+        <li><strong>Your company:</strong> the company name and its company profile, which is required before
+          you analyse tenders: industry, business type, GSTIN, registration details, years in business, turnover,
+          net worth, number of employees, the states you work in, certifications, licences, equipment,
+          manufacturer tie-ups, past projects and other qualifications. Where something doesn&rsquo;t apply, you
+          answer &ldquo;None&rdquo; and we store that answer.</li>
         <li><strong>Your tenders:</strong> the PDFs you upload, the text read from them, and the results of each
           analysis and eligibility check.</li>
         <li><strong>Signing in:</strong> a record of each signed-in session, including the name and version of
-          your browser. We don&rsquo;t store your IP address in our database.</li>
+          your browser. We don&rsquo;t store your IP address with your account. When a sign-in code is requested
+          for a mobile number, we keep the code (scrambled), the number and the IP address that asked for it for
+          up to a day, to stop misuse, and then delete them.</li>
         <li><strong>Your plan and usage:</strong> your company&rsquo;s plan (free trial or a monthly plan) with its
           start and end dates, and how many tenders and analyses the company has used, for the plan and fair-use
           limits.</li>
@@ -92,6 +98,11 @@ const SECTIONS: Array<{ title: string; body: ReactNode }> = [
           <li><strong>Fly.io</strong> hosts our servers, database and file storage. Our main server, where
             uploaded files are kept, is in Singapore.</li>
           <li><strong>Google (Gmail)</strong> holds the emails you send us and our replies.</li>
+          <li><strong>Google sign-in:</strong> if you choose &ldquo;Continue with Google&rdquo;, Google confirms who
+            you are and shares your name, email address and Google account ID with us.</li>
+          <li><strong>Meta (WhatsApp)</strong> delivers sign-in codes: if you sign in with your mobile number, we
+            send the code to that number through Meta&rsquo;s WhatsApp Business service, so Meta receives the number
+            and the message.</li>
         </ul>
         <p>
           We will also share information if the law requires it. Inside {PRODUCT_NAME}, your tenders and
@@ -106,7 +117,8 @@ const SECTIONS: Array<{ title: string; body: ReactNode }> = [
     body: (
       <p>
         Our servers are run by Fly.io, with the main server in Singapore, and OpenAI processes text on its own
-        servers, which are also outside India. By using {PRODUCT_NAME} you agree to your data being stored and
+        servers, which are also outside India. Google and Meta, when you use their sign-in or WhatsApp codes, may
+        also process your details outside India. By using {PRODUCT_NAME} you agree to your data being stored and
         processed there.
       </p>
     ),
@@ -117,7 +129,8 @@ const SECTIONS: Array<{ title: string; body: ReactNode }> = [
       <p>
         We use two cookies, and both are needed to sign in: one keeps you logged in (for up to 30 days, and page
         scripts can&rsquo;t read it), and one protects your account against forged requests from other websites.
-        We use no other cookies.
+        While you sign in with Google, a third cookie lasting at most 10 minutes protects that sign-in from being
+        hijacked. We use no other cookies.
       </p>
     ),
   },

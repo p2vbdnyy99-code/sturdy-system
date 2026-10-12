@@ -16,7 +16,7 @@ import pg from 'pg';
 import {
   formattingPdf, ruledTablePdf, toScannedPdf, buildPdf,
 } from '../fixtures.mjs';
-import { dbAvailable, DB_URL, testDb, closeTestDb, truncateAll } from '../db/helpers.js';
+import { dbAvailable, DB_URL, testDb, closeTestDb, truncateAll, completeProfile } from '../db/helpers.js';
 import { createCompanyWithOwner } from '../../src/bidpilot/repo/companies.js';
 import { setDb, closeDb } from '../../src/db/client.js';
 import { setStorage } from '../../src/bidpilot/storage/index.js';
@@ -118,6 +118,8 @@ test('BidPilot tender ingestion (full vertical slice)', {
     });
     userA = a.user; companyA = a.company;
     userB = b.user; companyB = b.company;
+    await completeProfile(companyA.id);
+    await completeProfile(companyB.id);
     authA = await mintAuth(userA.id);
     authB = await mintAuth(userB.id);
   });

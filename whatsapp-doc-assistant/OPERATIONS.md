@@ -105,6 +105,35 @@ sibling of `backend/`/`frontend/`, since the Docker build needs both).
   (`migrate(drizzle(pool), { migrationsFolder: './drizzle' })`) with the
   server's own `DATABASE_URL`. First check that
   `drizzle.__drizzle_migrations` already lists every earlier migration.
+- **Sign-in with Google and with a WhatsApp code** are each off until
+  configured (the buttons stay hidden). Set the values as Fly secrets in the
+  Fly dashboard (app `tenderlytic-api` → Secrets), so no secret passes
+  through chat:
+  - **Google:**
+    1. In Google Cloud Console create a project, set up the OAuth consent
+       screen (External; app name TenderTez; authorised domain
+       `tendertez.in`; privacy policy `https://tendertez.in/privacy-policy`;
+       scopes openid, email and profile) and publish it.
+    2. Create an OAuth client ID of type "Web application" with the
+       redirect URI `https://tendertez.in/bidpilot/auth/google/callback`.
+    3. Set `BIDPILOT_GOOGLE_CLIENT_ID` and `BIDPILOT_GOOGLE_CLIENT_SECRET`.
+  - **WhatsApp (Meta Cloud API):**
+    1. Create a Meta Business account and an app with the WhatsApp product,
+       and add and verify a business phone number.
+    2. Create an approved message template in category **Authentication**,
+       named `tendertez_login_code`, language English, with a copy-code
+       button.
+    3. Create a permanent system-user token with
+       `whatsapp_business_messaging`, and add a payment method (each code
+       message is charged by Meta).
+    4. Set `BIDPILOT_WHATSAPP_TOKEN` and `BIDPILOT_WHATSAPP_PHONE_NUMBER_ID`
+       (and `BIDPILOT_WHATSAPP_OTP_TEMPLATE` if the template has another
+       name). A failed send is logged as `whatsapp otp: send to … failed`
+       with Meta's reason.
+- **Company profile is mandatory:** uploads and analyses are refused (409
+  `profile_incomplete`) until every profile field is answered, and the app
+  opens on the profile page. Existing companies are redirected there on
+  their next visit.
 - **Subscriptions (monthly plans, until online payment exists):** when a
   firm has paid, run on the server, from `/app/backend`:
   `node scripts/subscription.mjs status` to find the company id, then

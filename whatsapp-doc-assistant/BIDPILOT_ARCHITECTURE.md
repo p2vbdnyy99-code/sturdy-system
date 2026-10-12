@@ -3061,3 +3061,143 @@ hand with a script.
     email link and the Analyze message), and an ended plan.
   - No CSP violations or console errors.
 - `scripts/verify.sh` results are in the run's checks.md.
+
+# Sign in with Google or a WhatsApp code; mandatory company profile (Oct 2026)
+
+The founder asked for Google, Apple and mobile-number (OTP) sign-in, and a
+mandatory company profile. Their decisions:
+- codes go by WhatsApp;
+- Apple waits (it needs a paid Apple Developer membership);
+- every profile field is required;
+- the profile comes before anything else, for existing users too.
+
+## Mandatory company profile
+
+- **`bidpilot/profileCompleteness.js`:**
+  - `REQUIRED_FIELDS` lists all 15 profile fields; `missingProfileFields()`
+    returns those not yet answered.
+  - Text fields must be non-blank; number fields need a number of 0 or more.
+  - The six list fields, GSTIN and other qualifications can instead be
+    answered "None", stored in the new `company_profiles.none_fields`.
+    Forcing an entry where nothing applies (no OEM tie-ups, say) would feed
+    made-up data to the eligibility check.
+- **Server enforcement:**
+  - Upload and analyze answer 409 `{ code: 'profile_incomplete', missing }`
+    until the profile is complete (`routes/tenders.js`).
+  - The profile GET and PATCH return `missing`, and PATCH accepts
+    `noneFields` (cleaned to the allowed keys).
+  - `/me` gives `profileComplete` for each company.
+- **App:**
+  - `CompanyGate` sends any page to `/company-profile` while the selected
+    company's profile is incomplete.
+  - The rebuilt profile page:
+    - renders the fields from `profileFields.ts`, each marked required;
+    - offers "None" checkboxes (a ticked field is sent empty);
+    - shows a first-time setup notice;
+    - after a partial save, names what is still needed and highlights it;
+    - on completion, refreshes the session and opens the dashboard.
+  - A backend test checks that `profileFields.ts` lists exactly the server's
+    fields and "None" options.
+- **Not changed:** the eligibility engine doesn't yet read `none_fields`. A
+  "None" answer reaches it as an empty list, as before.
+
+## Google sign-in (`auth/google.js`)
+
+- **Flow:** OAuth 2.0 authorization code with PKCE, run on the server, so no
+  Google script runs in the page and the strict CSP is untouched.
+  - `GET /bidpilot/auth/google/start` sets an httpOnly 10-minute
+    `bidpilot_oauth` cookie (state + verifier, path-scoped) and redirects to
+    Google.
+  - `/callback` checks the state in constant time, exchanges the code, and
+    checks the ID token's issuer, audience, expiry, email_verified, sub and
+    email. The signature isn't checked, because the token comes straight
+    from Google's token endpoint over TLS.
+  - Success → session cookies → `/dashboard`; failure →
+    `/login?signin=google_failed`.
+- **Accounts** (`auth/externalSignIn.js`, new table `auth_identities`):
+  - A returning user is found by Google's `sub`.
+  - The first sign-in links to an existing account with the same email, or
+    creates a verified ACTIVE user.
+  - **Pre-account-hijacking defence:** linking to an account whose email was
+    never verified (every password account, since no email is sent) removes
+    its password and deletes its other sessions and API tokens.
+- **Config:** on only with `BIDPILOT_GOOGLE_CLIENT_ID` and `_SECRET`.
+
+## Phone sign-in with a WhatsApp code (`auth/phoneOtp.js`)
+
+- **Endpoints:** `POST /bidpilot/auth/phone/start` and `/verify`.
+- **Numbers:** written the Indian way, they are normalised to E.164 (+91);
+  other countries need a leading +.
+- **Codes:**
+  - 6 digits from `crypto.randomInt`, stored as an HMAC (keyed with the CSRF
+    secret) in the new `phone_otps` table;
+  - valid 10 minutes, single use (an atomic consume), 5 wrong tries then
+    locked.
+- **Sending limits:** 3 per number per 15 minutes, 10 per number per day,
+  20 per IP per hour. Rows are deleted after a day.
+- **Delivery:** the WhatsApp Cloud API with an approved authentication
+  template (code in the body and in the copy-code button).
+  - Failures are logged with a masked number and Meta's reason, never the
+    code, and the row is removed.
+  - Outside production with no WhatsApp set up, the code is logged for
+    testing.
+  - In production without WhatsApp, phone sign-in is off.
+- **Accounts:** a verified number finds or creates the user (`users.phone`
+  is unique; `users.email` is now nullable). A phone user has no email or
+  password.
+- **Config:** `BIDPILOT_WHATSAPP_TOKEN`, `_PHONE_NUMBER_ID`,
+  `_OTP_TEMPLATE` (default `tendertez_login_code`), `_OTP_LANGUAGE`,
+  `_API_VERSION`.
+
+## Shared
+
+- **Routes:** `routes/auth.js` gains `startBrowserSession()`, used by
+  password, Google and phone sign-in. `GET /bidpilot/auth/providers` tells
+  the pages what to show. `/me` adds `phone`, `name` and, per company,
+  `profileComplete`.
+- **UI:** `components/OtherSignIn.tsx` on the login and sign-up pages shows
+  "Continue/Sign up with Google" (a plain link to the start route, with
+  Google's logo as inline SVG) and "with mobile number" (number → code),
+  each only when enabled. Login explains `?signin=google_failed` or
+  `google_cancelled`. The header shows the email, phone or name.
+- **Migration `0008`** (additive only): the two new tables,
+  `users.phone` + `phone_verified_at` + unique index, `users.email` DROP NOT
+  NULL, and `company_profiles.none_fields`. The table-count test now expects
+  25 tables.
+- **Privacy policy:**
+  - Google sign-in data, the phone number, Meta/WhatsApp as a provider, and
+    the 10-minute OAuth cookie.
+  - The OTP rows keep the requesting IP for up to a day. "We don't store
+    your IP address" became "with your account".
+  - The profile is described as required, with "None" answers.
+
+## Verification
+
+- **New tests:**
+  - `profile-completeness` (units);
+  - `profile-gate` (HTTP: upload and analyze 409, `/me` flag, `missing`,
+    "None" cleaning, upload accepted once complete);
+  - `profile-fields-sync`;
+  - `external-signin` with 23 checks:
+    - phone normalising and the Meta request shape;
+    - state check; providers on and off;
+    - Google start (state, PKCE, cookie), new user, returning user, and the
+      link that removes the password and sessions;
+    - Google refusals: tampered state, unverified email, wrong audience,
+      expired token, wrong issuer, cancel;
+    - phone sign-up, single use, lockout, expiry, send limit, invalid number;
+    - a WhatsApp failure logs no code or full number and leaves no row;
+    - phone sign-in off in production without WhatsApp.
+  - Existing upload, analysis and detail tests now give their companies
+    complete profiles.
+- **Browser on the harness (22 checks, phone width):**
+  - Sign-up shows both options.
+  - Phone sign-up with the code from the dev log, and a wrong code refused.
+  - Company setup, then forced to the profile; the dashboard blocked.
+  - 15 required markers and 8 "None" options.
+  - A partial save names the 14 missing fields and highlights them.
+  - Completing with "None" answers opens the dashboard.
+  - An email sign-up also lands on the profile.
+  - Login explains a failed Google sign-in.
+  - No sideways scroll, no CSP or console errors.
+- `scripts/verify.sh` results are in the run's checks.md.

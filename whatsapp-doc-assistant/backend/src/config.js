@@ -220,6 +220,14 @@ export function buildDbConfig(env = {}) {
  *                                 the 's3' driver (S3 URLs are absolute).
  *                                 Also the website's main address in search
  *                                 results, link previews and the sitemap.
+ *   BIDPILOT_GOOGLE_CLIENT_ID / _SECRET  Google OAuth web client for "Continue
+ *                                 with Google". Both unset = the button is
+ *                                 hidden and the routes answer 404.
+ *   BIDPILOT_WHATSAPP_TOKEN / _PHONE_NUMBER_ID / _OTP_TEMPLATE / _OTP_LANGUAGE /
+ *   _API_VERSION                 WhatsApp Cloud API for phone sign-in codes.
+ *                                 Token or phone number id unset = phone
+ *                                 sign-in is off in production (outside
+ *                                 production the code is logged instead).
  *   BIDPILOT_REDIRECT_HOSTS      Comma-separated other hostnames for the same
  *                                 site (e.g. www.tendertez.in,tendertez.com),
  *                                 permanently redirected to
@@ -361,6 +369,22 @@ export function buildBidpilotConfig(env = {}) {
     },
     eligibility: {
       maxCallsPerCompanyPerDay: Math.max(1, Number(env.BIDPILOT_ELIGIBILITY_MAX_CALLS_PER_COMPANY_PER_DAY) || 100),
+    },
+    // Sign in with Google: on only when both are set. The redirect URI to
+    // register with Google is <BIDPILOT_PUBLIC_BASE_URL>/bidpilot/auth/google/callback.
+    google: {
+      clientId: String(env.BIDPILOT_GOOGLE_CLIENT_ID || ''),
+      clientSecret: String(env.BIDPILOT_GOOGLE_CLIENT_SECRET || ''),
+    },
+    // Phone sign-in codes sent by WhatsApp (Meta Cloud API): on when the
+    // token and phone number id are set. The template must be an approved
+    // "authentication" template with a copy-code button.
+    whatsappOtp: {
+      token: String(env.BIDPILOT_WHATSAPP_TOKEN || ''),
+      phoneNumberId: String(env.BIDPILOT_WHATSAPP_PHONE_NUMBER_ID || ''),
+      template: String(env.BIDPILOT_WHATSAPP_OTP_TEMPLATE || 'tendertez_login_code'),
+      language: String(env.BIDPILOT_WHATSAPP_OTP_LANGUAGE || 'en'),
+      apiVersion: String(env.BIDPILOT_WHATSAPP_API_VERSION || 'v21.0'),
     },
     redirectHosts: String(env.BIDPILOT_REDIRECT_HOSTS || '')
       .split(',')

@@ -31,13 +31,17 @@ export type CompanyProfile = {
   oemRelationships: string[];
   experience: Array<{ description?: string; value?: string; year?: string; client?: string }>;
   otherQualifications: string | null;
+  /** Fields answered "None" (see profileFields.ts). */
+  noneFields: string[];
+  /** Mandatory fields still unanswered; empty when the profile is complete. */
+  missing: string[];
   createdAt: string;
   updatedAt: string;
 };
 
 /** Only the fields a PATCH may set — a subset of CompanyProfile, whitelisted
  *  the same way the backend whitelists them (routes/companies.js). */
-export type CompanyProfilePatch = Partial<Omit<CompanyProfile, 'id' | 'companyId' | 'createdAt' | 'updatedAt'>>;
+export type CompanyProfilePatch = Partial<Omit<CompanyProfile, 'id' | 'companyId' | 'createdAt' | 'updatedAt' | 'missing'>>;
 
 export function getCompanyProfile(companyId: string) {
   return request<CompanyProfile | null>(`/bidpilot/companies/${companyId}/profile`);

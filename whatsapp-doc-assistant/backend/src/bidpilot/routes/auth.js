@@ -19,7 +19,8 @@ import { eq } from 'drizzle-orm';
 import { getDb } from '../../db/client.js';
 import { log } from '../../logger.js';
 import { config } from '../../config.js';
-import { companyMembers, companies } from '../../db/schema/index.js';
+import { companyMembers, companies, companyProfiles } from '../../db/schema/index.js';
+import { missingProfileFields } from '../profileCompleteness.js';
 import { registerUser, verifyEmail, findUserByEmail, findUserById, RegistrationError } from '../repo/users.js';
 import { verifyPassword } from '../auth/passwordHash.js';
 import { createSession, getSessionByToken, destroySessionByToken } from '../auth/sessionService.js';
@@ -28,8 +29,14 @@ import { allowLoginAttempt, clearLoginAttempts } from '../auth/loginRateLimit.js
 import { csrfTokenFor, requireCsrf } from '../auth/csrf.js';
 import {
   SESSION_COOKIE_NAME, CSRF_COOKIE_NAME,
-  sessionCookieOptions, csrfCookieOptions,
+  sessionCookieOptions, csrfCookieOptions, cookiesShouldBeSecure,
 } from '../auth/cookies.js';
+import {
+  googleEnabled, startGoogleSignIn, checkState, finishGoogleSignIn,
+  OAUTH_COOKIE_NAME, OAUTH_COOKIE_PATH,
+} from '../auth/google.js';
+import { phoneSignInEnabled, startPhoneSignIn, verifyPhoneCode, PhoneOtpError, maskPhone } from '../auth/phoneOtp.js';
+import { signInWithGoogleProfile, signInWithPhone, SignInError } from '../auth/externalSignIn.js';
 
 // ─── The real session-verifying middleware ──────────────────────────────────
 
@@ -112,6 +119,17 @@ function devDeliverVerificationLink(email, rawToken) {
   return url;
 }
 
+/** The browser session every sign-in method ends with: the HttpOnly session
+ *  cookie plus the readable CSRF cookie. The raw session token is never put in
+ *  a response body. */
+async function startBrowserSession(db, req, res, userId) {
+  const { rawToken, session } = await createSession(db, userId, { userAgent: req.get('user-agent') });
+  res.cookie(SESSION_COOKIE_NAME, rawToken, sessionCookieOptions(config.bidpilot.sessionTtlMs));
+  res.cookie(CSRF_COOKIE_NAME, csrfTokenFor(session.tokenHash), csrfCookieOptions(config.bidpilot.sessionTtlMs));
+}
+
+const OTP_STATUS = { invalid_phone: 400, rate_limited: 429, send_failed: 503, invalid_code: 401, locked: 429 };
+
 // ─── Router ──────────────────────────────────────────────────────────────────
 
 export function createAuthRouter() {
@@ -187,10 +205,7 @@ export function createAuthRouter() {
       // this is the existing M3 browser-session flow, byte-identical to
       // before Milestone 6. Its raw token is NEVER put in the response body,
       // only ever the HttpOnly cookie below.
-      const { rawToken, session } = await createSession(db, user.id, { userAgent: req.get('user-agent') });
-
-      res.cookie(SESSION_COOKIE_NAME, rawToken, sessionCookieOptions(config.bidpilot.sessionTtlMs));
-      res.cookie(CSRF_COOKIE_NAME, csrfTokenFor(session.tokenHash), csrfCookieOptions(config.bidpilot.sessionTtlMs));
+      await startBrowserSession(db, req, res, user.id);
 
       const body = {
         userId: user.id,
@@ -214,6 +229,74 @@ export function createAuthRouter() {
       return res.json(body);
     } catch (err) {
       log.error('bidpilot login error:', err);
+      return res.status(500).json({ error: 'Internal server error.' });
+    }
+  });
+
+  // Which sign-in methods the login and sign-up pages should offer.
+  router.get('/auth/providers', (_req, res) => {
+    res.json({ google: googleEnabled(), phone: phoneSignInEnabled() });
+  });
+
+  // ── Continue with Google (see auth/google.js) ──
+  router.get('/auth/google/start', (_req, res) => {
+    if (!googleEnabled()) return res.status(404).json({ error: 'Google sign-in is not available.' });
+    const { url, cookieValue } = startGoogleSignIn();
+    res.cookie(OAUTH_COOKIE_NAME, cookieValue, {
+      httpOnly: true, secure: cookiesShouldBeSecure(), sameSite: 'lax', path: OAUTH_COOKIE_PATH, maxAge: 10 * 60 * 1000,
+    });
+    return res.redirect(302, url);
+  });
+
+  router.get('/auth/google/callback', async (req, res) => {
+    const fail = (reason) => {
+      log.warn(`bidpilot google sign-in refused: ${reason}`);
+      return res.redirect(302, '/login?signin=google_failed');
+    };
+    if (!googleEnabled()) return res.status(404).json({ error: 'Google sign-in is not available.' });
+    const cookieValue = req.cookies?.[OAUTH_COOKIE_NAME];
+    res.clearCookie(OAUTH_COOKIE_NAME, { path: OAUTH_COOKIE_PATH });
+    if (req.query.error) return res.redirect(302, '/login?signin=google_cancelled');
+    const verifier = checkState(cookieValue, req.query.state);
+    if (!verifier || typeof req.query.code !== 'string') return fail('state mismatch or missing code');
+    try {
+      const db = getDb();
+      const profile = await finishGoogleSignIn(req.query.code, verifier);
+      const { user, created, linked } = await signInWithGoogleProfile(db, profile);
+      await startBrowserSession(db, req, res, user.id);
+      log.info(`metric bidpilot_signin method=google created=${created} linked=${linked}`);
+      return res.redirect(302, '/dashboard');
+    } catch (err) {
+      return fail(err instanceof SignInError ? err.code : err.message);
+    }
+  });
+
+  // ── Phone sign-in with a WhatsApp code (see auth/phoneOtp.js) ──
+  router.post('/auth/phone/start', async (req, res) => {
+    if (!phoneSignInEnabled()) return res.status(404).json({ error: 'Phone sign-in is not available.' });
+    try {
+      const result = await startPhoneSignIn(getDb(), req.body?.phone, req.ip);
+      return res.json({ sent: true, phone: result.phone, expiresInSeconds: result.expiresInSeconds });
+    } catch (err) {
+      if (err instanceof PhoneOtpError) return res.status(OTP_STATUS[err.code] ?? 400).json({ error: err.message, code: err.code });
+      log.error('bidpilot phone start error:', err);
+      return res.status(500).json({ error: 'Internal server error.' });
+    }
+  });
+
+  router.post('/auth/phone/verify', async (req, res) => {
+    if (!phoneSignInEnabled()) return res.status(404).json({ error: 'Phone sign-in is not available.' });
+    try {
+      const db = getDb();
+      const phone = await verifyPhoneCode(db, req.body?.phone, req.body?.code);
+      const { user, created } = await signInWithPhone(db, { phone, name: req.body?.name });
+      await startBrowserSession(db, req, res, user.id);
+      log.info(`metric bidpilot_signin method=phone created=${created} phone=${maskPhone(phone)}`);
+      return res.json({ userId: user.id, phone, created });
+    } catch (err) {
+      if (err instanceof PhoneOtpError) return res.status(OTP_STATUS[err.code] ?? 400).json({ error: err.message, code: err.code });
+      if (err instanceof SignInError) return res.status(403).json({ error: err.message });
+      log.error('bidpilot phone verify error:', err);
       return res.status(500).json({ error: 'Internal server error.' });
     }
   });
@@ -247,13 +330,21 @@ export function createAuthRouter() {
         .from(companyMembers)
         .innerJoin(companies, eq(companies.id, companyMembers.companyId))
         .where(eq(companyMembers.userId, req.bidpilotUserId));
+      // Whether each company has finished its mandatory profile, so the app
+      // can send the user there first (frontend CompanyGate).
+      const withProfile = await Promise.all(memberships.map(async (m) => {
+        const [profile] = await db.select().from(companyProfiles).where(eq(companyProfiles.companyId, m.companyId)).limit(1);
+        return { ...m, profileComplete: missingProfileFields(profile).length === 0 };
+      }));
 
       return res.json({
         userId: req.bidpilotUser.id,
         email: req.bidpilotUser.email,
+        phone: req.bidpilotUser.phone ?? null,
+        name: req.bidpilotUser.name ?? null,
         status: req.bidpilotUser.status,
         emailVerified: Boolean(req.bidpilotUser.emailVerifiedAt),
-        companies: memberships,
+        companies: withProfile,
       });
     } catch (err) {
       log.error('bidpilot /me error:', err);

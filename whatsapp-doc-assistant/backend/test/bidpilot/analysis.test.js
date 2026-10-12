@@ -7,7 +7,7 @@ import assert from 'node:assert/strict';
 import http from 'node:http';
 import express from 'express';
 import pg from 'pg';
-import { dbAvailable, DB_URL, testDb, closeTestDb, truncateAll } from '../db/helpers.js';
+import { dbAvailable, DB_URL, testDb, closeTestDb, truncateAll, completeProfile } from '../db/helpers.js';
 import { createCompanyWithOwner } from '../../src/bidpilot/repo/companies.js';
 import { requireCompanyAccess } from '../../src/bidpilot/repo/tenants.js';
 import { createTender, getTender, updateProcessingStatus } from '../../src/bidpilot/repo/tenders.js';
@@ -466,6 +466,8 @@ test('POST /tenders/:id/analyze (HTTP integration)', { skip: SKIP_REASON, timeou
     const b = await createCompanyWithOwner(db, { companyName: 'Analysis Co B', userEmail: 'b@analyze.example', userName: 'B' });
     userA = a.user; companyA = a.company;
     userB = b.user; companyB = b.company;
+    await completeProfile(companyA.id);
+    await completeProfile(companyB.id);
     authA = await mintAuth(userA.id);
     authB = await mintAuth(userB.id);
   });

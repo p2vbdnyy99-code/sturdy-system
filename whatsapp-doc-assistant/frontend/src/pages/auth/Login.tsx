@@ -5,6 +5,12 @@ import { ApiError } from '../../api/client';
 import { useSession } from '../../auth/SessionProvider';
 import { AuthLayout } from '../../components/AuthLayout';
 import { PRODUCT_NAME } from '../../config/product';
+import { OtherSignIn } from '../../components/OtherSignIn';
+
+const SIGNIN_MESSAGES: Record<string, string> = {
+  google_failed: 'Google sign-in didn’t work. Please try again, or use another way to log in.',
+  google_cancelled: 'Google sign-in was cancelled.',
+};
 
 export function LoginPage() {
   const [email, setEmail] = useState('');
@@ -43,6 +49,10 @@ export function LoginPage() {
       subtitle="Log in to see your tenders."
       footer={<>New to {PRODUCT_NAME}? <Link to="/register">Start your free trial</Link></>}
     >
+      {params.get('signin') && SIGNIN_MESSAGES[params.get('signin') as string] && (
+        <p role="alert" className="error-text">{SIGNIN_MESSAGES[params.get('signin') as string]}</p>
+      )}
+      <OtherSignIn mode="login" />
       <form onSubmit={onSubmit}>
         <label className="field">
           Email

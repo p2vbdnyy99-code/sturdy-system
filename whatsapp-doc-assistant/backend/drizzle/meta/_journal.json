@@ -57,6 +57,13 @@
       "when": 1791741207539,
       "tag": "0007_wonderful_tyrannus",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1791790517095,
+      "tag": "0008_high_morgan_stark",
+      "breakpoints": true
     }
   ]
 }

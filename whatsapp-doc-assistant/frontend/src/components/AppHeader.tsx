@@ -38,11 +38,11 @@ export function AppHeader() {
         {me && (
           <div className="app-header-user">
             <span className="app-header-avatar" aria-hidden="true">
-              {(me.email[0] ?? '?').toUpperCase()}
+              {((me.name || me.email || '?')[0] ?? '?').toUpperCase()}
             </span>
             <span className="app-header-identity">
               {company && <span className="app-header-company">{company.name}</span>}
-              <span className="app-header-email">{me.email}</span>
+              <span className="app-header-email">{me.email ?? me.phone ?? me.name}</span>
             </span>
             <button type="button" className="app-header-logout" onClick={onLogout}>
               <Icon name="logout" />

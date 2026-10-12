@@ -106,6 +106,13 @@ const GROUPS: Array<{ title: string; items: Array<{ q: string; a: ReactNode }> }
           Nothing is charged automatically.</>,
       },
       {
+        q: 'Why do I have to fill in the company profile first?',
+        a: <>The eligibility check compares each tender&rsquo;s conditions, such as turnover, experience and
+          certificates, with your company profile. With every field filled in, it can say clearly which conditions
+          you meet. Where something doesn&rsquo;t apply, such as manufacturer tie-ups, you simply tick
+          &ldquo;None&rdquo;. It takes a few minutes, once.</>,
+      },
+      {
         q: 'Can I use it on my phone?',
         a: <>Yes. It works in your phone&rsquo;s browser, so there&rsquo;s no app to install.</>,
       },

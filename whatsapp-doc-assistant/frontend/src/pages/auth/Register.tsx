@@ -5,6 +5,7 @@ import { ApiError } from '../../api/client';
 import { AuthLayout } from '../../components/AuthLayout';
 import { FREE_TRIAL_TENDERS } from '../../config/site';
 import { useSession } from '../../auth/SessionProvider';
+import { OtherSignIn } from '../../components/OtherSignIn';
 
 export function RegisterPage() {
   const [email, setEmail] = useState('');
@@ -59,6 +60,7 @@ export function RegisterPage() {
       subtitle={`Your first ${FREE_TRIAL_TENDERS} tenders are free. No card needed.`}
       footer={<>Already have an account? <Link to="/login">Log in</Link></>}
     >
+      <OtherSignIn mode="register" />
       <form onSubmit={onSubmit}>
         <label className="field">
           Your name <span className="field-hint">(optional)</span>

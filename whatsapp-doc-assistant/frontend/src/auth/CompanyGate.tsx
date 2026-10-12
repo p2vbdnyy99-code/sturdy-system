@@ -3,13 +3,14 @@
 // selector (no persistence, no "active company" server concept — see
 // SessionProvider.tsx). Wraps any route that needs a selected company.
 import { type ReactNode } from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import { useSession } from './SessionProvider';
 import { PRODUCT_NAME } from '../config/product';
 import { AuthLayout } from '../components/AuthLayout';
 
 export function CompanyGate({ children }: { children: ReactNode }) {
   const { me, selectedCompanyId, selectCompany } = useSession();
+  const { pathname } = useLocation();
 
   if (!me) return null; // CompanyGate is always used inside RequireSession
 
@@ -34,6 +35,14 @@ export function CompanyGate({ children }: { children: ReactNode }) {
         </ul>
       </AuthLayout>
     );
+  }
+
+  // Every company-profile field is mandatory (the eligibility check depends
+  // on it), so an unfinished profile comes first. The server refuses uploads
+  // and analysis too (routes/tenders.js), this just gets the user there.
+  const company = me.companies.find((c) => c.companyId === selectedCompanyId);
+  if (company && !company.profileComplete && pathname !== '/company-profile') {
+    return <Navigate to="/company-profile" replace />;
   }
 
   return <>{children}</>;

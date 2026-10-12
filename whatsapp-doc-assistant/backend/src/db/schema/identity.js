@@ -18,13 +18,18 @@ import { companyMemberRole, userStatus } from './enums.js';
 
 export const users = pgTable('users', {
   id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
-  email: text('email').notNull(),
+  // Null only for an account created by phone (WhatsApp OTP) sign-in, which
+  // has no email. Every email/password and Google account has one.
+  email: text('email'),
   // Set by registration (Milestone 3) — Argon2id, see
   // src/bidpilot/auth/passwordHash.js. Nullable because Milestone 1 users
   // (test fixtures, pre-auth rows) never had one; never nullable for a row
   // created through the real registration path.
   passwordHash: text('password_hash'),
   name: text('name'),
+  // E.164 (+919876543210), set by phone (WhatsApp OTP) sign-in.
+  phone: text('phone'),
+  phoneVerifiedAt: timestamp('phone_verified_at', { withTimezone: true }),
   status: userStatus('status').notNull().default('PENDING_VERIFICATION'),
   emailVerifiedAt: timestamp('email_verified_at', { withTimezone: true }),
   // A single pending verification token at a time — requesting a new one
@@ -40,6 +45,7 @@ export const users = pgTable('users', {
   // needs a unique INDEX on an expression — a plain UNIQUE constraint can't
   // reference lower(email) in Postgres.
   uniqueIndex('users_email_lower_idx').on(sql`lower(${t.email})`),
+  uniqueIndex('users_phone_idx').on(t.phone),
 ]);
 
 export const companies = pgTable('companies', {

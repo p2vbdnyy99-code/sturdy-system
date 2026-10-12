@@ -27,6 +27,8 @@ import { runEligibility, EligibilityError } from '../analysis/eligibilityPipelin
 import { config } from '../../config.js';
 import { tenderStatus, tenderAnalysisStatus } from '../../db/schema/enums.js';
 import { OVERVIEW_FIELDS } from '../analysis/schema.js';
+import { getCompanyProfile } from '../repo/companies.js';
+import { missingProfileFields } from '../profileCompleteness.js';
 
 // multer buffers the upload in memory (never touches disk itself) — fine at
 // this size ceiling (BIDPILOT_MAX_UPLOAD_MB, default 50MB); a much larger
@@ -215,6 +217,7 @@ export function createTendersRouter() {
       });
       const tender = await getTender(scope, req.params.id);
       if (!tender) return res.status(404).json({ error: 'Not found.' });
+      if (await refuseIfProfileIncomplete(db, scope.companyId, res)) return;
 
       // Analysis needs completed extraction text to work from — cannot run
       // on a tender that's still UPLOADED/PROCESSING/EXTRACTING, or that
@@ -313,6 +316,20 @@ export function createTendersRouter() {
   return router;
 }
 
+/** Every profile field is mandatory before uploading or analysing (see
+ *  profileCompleteness.js). Sends 409 profile_incomplete and returns true
+ *  when the company's profile is not finished. */
+async function refuseIfProfileIncomplete(db, companyId, res) {
+  const missing = missingProfileFields(await getCompanyProfile(db, companyId));
+  if (missing.length === 0) return false;
+  res.status(409).json({
+    error: 'Please complete your company profile first. It is used to check each tender\'s eligibility conditions.',
+    code: 'profile_incomplete',
+    missing,
+  });
+  return true;
+}
+
 async function handleUpload(req, res) {
   const companyId = req.body?.companyId;
   if (!companyId) {
@@ -329,6 +346,7 @@ async function handleUpload(req, res) {
   // allow a user to specify another company ID and thereby upload into
   // another tenant").
   const scope = await requireCompanyAccess(db, { userId: req.bidpilotUserId, companyId });
+  if (await refuseIfProfileIncomplete(db, companyId, res)) return;
 
   const uploadStart = Date.now();
   const { tender, duplicate } = await ingestUpload(scope, {

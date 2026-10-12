@@ -68,6 +68,17 @@ Follow `harness/README.md`. In short:
 - The privacy policy (`frontend/src/pages/Privacy.tsx`) must match the code.
   Update it, and its `LAST_UPDATED` date, whenever data collected, service
   providers, cookies or retention change. The date is the day it goes live.
+- Every company-profile field is mandatory. The fields are listed in
+  `backend/src/bidpilot/profileCompleteness.js` and
+  `frontend/src/profileFields.ts`; change both, because
+  `profile-fields-sync.test.js` fails if they differ. List fields, GSTIN and
+  other qualifications can be answered "None" (`none_fields`); never force
+  invented entries. Uploads and analysis answer 409 `profile_incomplete`
+  until the profile is complete.
+- Sign-in with Google and with a WhatsApp code each stay hidden until their
+  Fly secrets are set (`BIDPILOT_GOOGLE_*`, `BIDPILOT_WHATSAPP_*`; see
+  `OPERATIONS.md`). Never log an OTP code in production. A user may have no
+  email (phone sign-in), so code must not assume `users.email` is set.
 
 ## Hooks and scripts
 
@@ -137,6 +148,10 @@ was blocked and why.
     `OPERATIONS.md`; it was caught by reading the diff.
 15. `psql -At` with `RETURNING` also prints `INSERT 0 1`. Use `-qAt` when
     capturing an id.
+16. Test fixtures that need a company to upload or analyse must call
+    `completeProfile(companyId)` (`test/db/helpers.js`); otherwise the
+    profile gate answers 409. A browser check that can't fail (for example,
+    one that only notes a redirect) is not evidence; don't count it.
 
 ## Parallel work
 

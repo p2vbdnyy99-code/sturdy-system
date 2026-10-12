@@ -12,6 +12,7 @@ import { requireSession } from './auth.js';
 import { requireCsrf } from '../auth/csrf.js';
 import { requireCompanyAccess, TenantAccessError } from '../repo/tenants.js';
 import { createCompanyForUser, getCompanyProfile, upsertCompanyProfile } from '../repo/companies.js';
+import { cleanNoneFields, missingProfileFields } from '../profileCompleteness.js';
 
 // Whitelisted against company_profiles' actual columns (src/db/schema/companyProfile.js)
 // so a PATCH body can never write an arbitrary/unknown field through to the DB.
@@ -19,7 +20,7 @@ const PROFILE_FIELDS = [
   'industry', 'businessType', 'gstin', 'registrationDetails',
   'yearsInBusiness', 'annualTurnover', 'netWorth', 'employeeCount',
   'geography', 'certifications', 'licenses', 'equipment',
-  'oemRelationships', 'experience', 'otherQualifications',
+  'oemRelationships', 'experience', 'otherQualifications', 'noneFields',
 ];
 
 function pickProfileFields(body) {
@@ -29,6 +30,7 @@ function pickProfileFields(body) {
       fields[key] = body[key];
     }
   }
+  if ('noneFields' in fields) fields.noneFields = cleanNoneFields(fields.noneFields);
   return fields;
 }
 
@@ -62,7 +64,9 @@ export function createCompaniesRouter() {
       const db = getDb();
       await requireCompanyAccess(db, { userId: req.bidpilotUserId, companyId: req.params.id });
       const profile = await getCompanyProfile(db, req.params.id);
-      return res.json(profile || null);
+      // `missing` lists the required fields still unanswered (all of them
+      // when there is no profile row yet).
+      return res.json(profile ? { ...profile, missing: missingProfileFields(profile) } : null);
     } catch (err) {
       handleError(res, err);
     }
@@ -74,7 +78,7 @@ export function createCompaniesRouter() {
       await requireCompanyAccess(db, { userId: req.bidpilotUserId, companyId: req.params.id });
       const fields = pickProfileFields(req.body);
       const profile = await upsertCompanyProfile(db, req.params.id, fields);
-      return res.json(profile);
+      return res.json({ ...profile, missing: missingProfileFields(profile) });
     } catch (err) {
       handleError(res, err);
     }

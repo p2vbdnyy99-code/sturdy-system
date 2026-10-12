@@ -8,11 +8,16 @@ export type CompanyMembership = {
   companyId: string;
   role: 'owner' | 'admin' | 'member';
   name: string;
+  /** False until every mandatory company-profile field is answered. */
+  profileComplete: boolean;
 };
 
 export type Me = {
   userId: string;
-  email: string;
+  /** Null for an account created with a phone number. */
+  email: string | null;
+  phone: string | null;
+  name: string | null;
   status: UserStatus;
   emailVerified: boolean;
   companies: CompanyMembership[];
@@ -40,6 +45,28 @@ export function login(input: { email: string; password: string }) {
     '/bidpilot/login',
     { method: 'POST', body: input },
   );
+}
+
+export type SignInProviders = { google: boolean; phone: boolean };
+
+/** Which sign-in methods to offer; each is on only once it is configured. */
+export function getSignInProviders() {
+  return request<SignInProviders>('/bidpilot/auth/providers');
+}
+
+/** The browser goes here (a full page load, not fetch) to start Google sign-in. */
+export const GOOGLE_SIGN_IN_URL = '/bidpilot/auth/google/start';
+
+export function startPhoneSignIn(phone: string) {
+  return request<{ sent: true; phone: string; expiresInSeconds: number }>('/bidpilot/auth/phone/start', {
+    method: 'POST', body: { phone },
+  });
+}
+
+export function verifyPhoneSignIn(input: { phone: string; code: string; name?: string }) {
+  return request<{ userId: string; phone: string; created: boolean }>('/bidpilot/auth/phone/verify', {
+    method: 'POST', body: input,
+  });
 }
 
 export function logout() {

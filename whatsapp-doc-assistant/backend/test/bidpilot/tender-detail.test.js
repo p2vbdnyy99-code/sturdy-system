@@ -9,7 +9,7 @@ import assert from 'node:assert/strict';
 import http from 'node:http';
 import express from 'express';
 import pg from 'pg';
-import { dbAvailable, DB_URL, testDb, closeTestDb, truncateAll } from '../db/helpers.js';
+import { dbAvailable, DB_URL, testDb, closeTestDb, truncateAll, completeProfile } from '../db/helpers.js';
 import { createCompanyWithOwner } from '../../src/bidpilot/repo/companies.js';
 import { requireCompanyAccess } from '../../src/bidpilot/repo/tenants.js';
 import { createTender, updateProcessingStatus } from '../../src/bidpilot/repo/tenders.js';
@@ -88,6 +88,7 @@ test('GET /tenders/:id (HTTP integration)', { skip: SKIP_REASON, timeout: 30_000
     await truncateAll();
     const a = await createCompanyWithOwner(db, { companyName: 'Detail Co A', userEmail: 'a@detail.example', userName: 'A' });
     userA = a.user; companyA = a.company;
+    await completeProfile(companyA.id);
     authA = await mintAuth(userA.id);
   });
 

@@ -40,6 +40,10 @@ export const companyProfiles = pgTable('company_profiles', {
   // "experience" requirement.
   experience: jsonb('experience').$type().default(sql`'[]'::jsonb`),
   otherQualifications: text('other_qualifications'),
+  // Fields the company has answered "None" for (e.g. no OEM tie-ups), so a
+  // required list can be complete without inventing an entry. See
+  // bidpilot/profileCompleteness.js.
+  noneFields: jsonb('none_fields').$type().default(sql`'[]'::jsonb`),
 
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
