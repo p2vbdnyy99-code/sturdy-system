@@ -1,7 +1,7 @@
 # Progress: Google and WhatsApp-code sign-in; mandatory company profile (2026-10-12)
 
 ## Plan
-Steps 1–8 are done locally. The live deploy waits for approval. Apple
+Steps 1–8 are done and deployed (commit 223bd95, 12 Oct 2026). Apple
 sign-in is deferred (the founder's choice).
 
 ## Outputs
@@ -56,11 +56,7 @@ sign-in is deferred (the founder's choice).
 - Privacy `LAST_UPDATED` must be the deploy day.
 
 ## Next action
-Wait for "commit and deploy". Then:
-1. Commit and push.
-2. Check that nothing is ANALYZING.
-3. Deploy.
-4. Check that `__drizzle_migrations` has 8 rows, then apply 0008 in the
-   machine.
-5. Check live: providers hidden, the profile gate works, the privacy date
-   is right.
+None for this change. When the founder has the Google client and the Meta
+WhatsApp setup, set the Fly secrets (see `OPERATIONS.md`) and check the
+buttons appear and work live. Skylark and gem tender have no profile yet and
+will be asked to fill it in at their next sign-in.
