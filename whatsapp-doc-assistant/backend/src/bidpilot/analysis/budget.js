@@ -8,9 +8,10 @@
 // before allowing more. Both limits are configurable (config.bidpilot.analysis),
 // never hardcoded.
 
-import { and, desc, eq, gte, sql } from 'drizzle-orm';
+import { and, desc, eq, gte, inArray, lt, sql } from 'drizzle-orm';
 import { config } from '../../config.js';
 import { subscriptions, usageRecords } from '../../db/schema/index.js';
+import { planFor, UNLIMITED_PLAN } from '../plans.js';
 
 export const USAGE_KIND = 'tender_analysis_chunk';
 
@@ -18,7 +19,7 @@ export class AnalysisBudgetError extends Error {
   constructor(message, reason) {
     super(message);
     this.name = 'AnalysisBudgetError';
-    this.reason = reason; // 'tender_too_large' | 'company_daily_cap' | 'trial_exhausted'
+    this.reason = reason; // 'tender_too_large' | 'company_daily_cap' | 'trial_exhausted' | 'plan_exhausted' | 'plan_expired'
   }
 }
 
@@ -72,73 +73,132 @@ export async function recordChunkUsage(db, { companyId, tenderId, metadata }) {
   });
 }
 
-// ─── Free trial: the first N different tenders per company ─────────────────
+// ─── Tender allowance: free trial or monthly plan ──────────────────────────
 // One usage row per tender, written when that tender's first analysis
-// starts. Counting these rows (not tenders) means deleting an analysed
-// tender doesn't hand the slot back: the row survives with tender_id set to
-// null. Re-running a tender that already has a row is free, so a failed
-// analysis can be retried without using another slot. A company whose
-// latest subscription is ACTIVE (a paid plan) has no trial limit.
+// starts: 'trial_tender' on the free trial, 'plan_tender' on a monthly plan.
+// Counting rows (not tenders) means deleting an analysed tender doesn't hand
+// its slot back: the row survives with tender_id set to null. Re-running a
+// tender that already has a row of either kind is free, so a failed analysis
+// can be retried without using another slot.
+//
+// What a company gets comes from its subscriptions (latest row wins):
+//   - latest row ACTIVE with plan UNLIMITED: no limit (internal use only);
+//   - an ACTIVE row for a sold plan (plans.js) whose period includes now, and
+//     no CANCELED/other row after it: that plan's tenders in that period;
+//   - latest row ACTIVE for a sold plan whose period has ended: 'plan_expired'
+//     (new tenders refused until renewed);
+//   - anything else: the free trial (BIDPILOT_TRIAL_TENDERS, all time).
 
 export const TRIAL_USAGE_KIND = 'trial_tender';
+export const PLAN_USAGE_KIND = 'plan_tender';
 
-async function hasActivePlan(db, companyId) {
-  const [latest] = await db
-    .select({ status: subscriptions.status })
+const formatDay = (d) => new Date(d).toLocaleDateString('en-IN', {
+  day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Asia/Kolkata',
+});
+
+/** The company's entitlement right now. */
+export async function getEntitlement(db, companyId, now = new Date()) {
+  const rows = await db
+    .select()
     .from(subscriptions)
     .where(eq(subscriptions.companyId, companyId))
-    .orderBy(desc(subscriptions.createdAt))
-    .limit(1);
-  return latest?.status === 'ACTIVE';
+    .orderBy(desc(subscriptions.createdAt));
+  const [latest] = rows;
+  if (latest?.status === 'ACTIVE') {
+    if (latest.plan === UNLIMITED_PLAN) return { kind: 'unlimited' };
+    // Newest first, stopping at the first row that isn't ACTIVE: a
+    // cancellation ends everything before it.
+    for (const row of rows) {
+      if (row.status !== 'ACTIVE') break;
+      const plan = planFor(row.plan);
+      if (plan && row.periodStart && row.periodEnd && row.periodStart <= now && now < row.periodEnd) {
+        return { kind: 'plan', planName: plan.name, limit: plan.tendersPerMonth, periodStart: row.periodStart, periodEnd: row.periodEnd };
+      }
+    }
+    const plan = planFor(latest.plan);
+    if (plan && latest.periodEnd && latest.periodEnd <= now) {
+      return { kind: 'plan_expired', planName: plan.name, periodEnd: latest.periodEnd };
+    }
+  }
+  const limit = config.bidpilot.analysis.trialTenders;
+  return limit ? { kind: 'trial', limit } : { kind: 'unlimited' };
 }
 
-async function countTrialTenders(db, companyId) {
-  const [row] = await db
-    .select({ used: sql`count(*)::int` })
-    .from(usageRecords)
-    .where(and(eq(usageRecords.companyId, companyId), eq(usageRecords.kind, TRIAL_USAGE_KIND)));
+async function countUsed(db, companyId, entitlement) {
+  const where = entitlement.kind === 'plan'
+    ? and(
+      eq(usageRecords.companyId, companyId),
+      eq(usageRecords.kind, PLAN_USAGE_KIND),
+      gte(usageRecords.createdAt, entitlement.periodStart),
+      lt(usageRecords.createdAt, entitlement.periodEnd),
+    )
+    : and(eq(usageRecords.companyId, companyId), eq(usageRecords.kind, TRIAL_USAGE_KIND));
+  const [row] = await db.select({ used: sql`count(*)::int` }).from(usageRecords).where(where);
   return Number(row?.used || 0);
 }
 
-/** For the dashboard. null when the company has no trial limit (paid plan,
- *  or the limit is switched off). */
-export async function getTrialStatus(db, companyId) {
-  const limit = config.bidpilot.analysis.trialTenders;
-  if (!limit || await hasActivePlan(db, companyId)) return null;
-  const used = Math.min(limit, await countTrialTenders(db, companyId));
-  return { limit, used, remaining: limit - used };
+/** For the dashboard. null when the company has no limit. */
+export async function getAllowance(db, companyId) {
+  const ent = await getEntitlement(db, companyId);
+  if (ent.kind === 'unlimited') return null;
+  if (ent.kind === 'plan_expired') {
+    return { kind: 'plan_expired', planName: ent.planName, limit: 0, used: 0, remaining: 0, periodEnd: ent.periodEnd };
+  }
+  const used = Math.min(ent.limit, await countUsed(db, companyId, ent));
+  return {
+    kind: ent.kind,
+    ...(ent.kind === 'plan' ? { planName: ent.planName, periodEnd: ent.periodEnd } : {}),
+    limit: ent.limit,
+    used,
+    remaining: ent.limit - used,
+  };
 }
 
 /**
- * Takes a trial slot for this tender, or confirms it already has one.
- * Throws AnalysisBudgetError('trial_exhausted') when every slot is used.
- * Runs under a row lock on the company, so two Analyze clicks on different
- * tenders at 4/5 can't both get the last slot.
+ * Takes a slot (trial or this month's plan) for this tender, or confirms it
+ * already has one. Throws AnalysisBudgetError with reason 'trial_exhausted',
+ * 'plan_exhausted' or 'plan_expired'. Runs under a row lock on the company,
+ * so two Analyze clicks on different tenders can't both take the last slot.
  */
-export async function claimTrialTender(db, companyId, tenderId) {
-  const limit = config.bidpilot.analysis.trialTenders;
-  if (!limit) return;
+export async function claimTenderSlot(db, companyId, tenderId) {
   await db.transaction(async (tx) => {
     await tx.execute(sql`select id from companies where id = ${companyId} for update`);
-    if (await hasActivePlan(tx, companyId)) return;
+    const ent = await getEntitlement(tx, companyId);
+    if (ent.kind === 'unlimited') return;
     const [already] = await tx
       .select({ id: usageRecords.id })
       .from(usageRecords)
       .where(and(
         eq(usageRecords.companyId, companyId),
-        eq(usageRecords.kind, TRIAL_USAGE_KIND),
+        inArray(usageRecords.kind, [TRIAL_USAGE_KIND, PLAN_USAGE_KIND]),
         eq(usageRecords.tenderId, tenderId),
       ))
       .limit(1);
     if (already) return;
-    if (await countTrialTenders(tx, companyId) >= limit) {
+    const rerun = 'Tenders you have already analysed can still be re-run.';
+    if (ent.kind === 'plan_expired') {
       throw new AnalysisBudgetError(
-        `Your free trial covers ${limit} tenders, and all ${limit} have been used. ` +
-          'Tenders you have already analysed can still be re-run. To analyse new tenders, please contact us about a paid plan.',
+        `Your ${ent.planName} plan ended on ${formatDay(ent.periodEnd)}. ${rerun} To analyse new tenders, please contact us to renew.`,
+        'plan_expired',
+      );
+    }
+    if (await countUsed(tx, companyId, ent) >= ent.limit) {
+      if (ent.kind === 'plan') {
+        throw new AnalysisBudgetError(
+          `Your ${ent.planName} plan includes ${ent.limit} tenders a month, and all ${ent.limit} have been used in the period `
+            + `ending ${formatDay(ent.periodEnd)}. ${rerun} For more tenders this month, please contact us about a bigger plan.`,
+          'plan_exhausted',
+        );
+      }
+      throw new AnalysisBudgetError(
+        `Your free trial covers ${ent.limit} tenders, and all ${ent.limit} have been used. `
+          + `${rerun} To analyse new tenders, please contact us about a paid plan.`,
         'trial_exhausted',
       );
     }
-    await tx.insert(usageRecords).values({ companyId, tenderId, kind: TRIAL_USAGE_KIND, quantity: 1 });
+    await tx.insert(usageRecords).values({
+      companyId, tenderId, kind: ent.kind === 'plan' ? PLAN_USAGE_KIND : TRIAL_USAGE_KIND, quantity: 1,
+    });
   });
 }
 

@@ -8,7 +8,7 @@ import { CONTACT_EMAIL, FOUNDER } from '../config/site';
 // (see BIDPILOT_ARCHITECTURE.md, "Privacy policy page"). Change this page
 // whenever that changes: a new service provider, analytics, payments, or
 // email sending.
-const LAST_UPDATED = '11 October 2026';
+const LAST_UPDATED = '12 October 2026';
 
 const OPENAI_DATA_POLICY = 'https://developers.openai.com/api/docs/guides/your-data';
 
@@ -40,8 +40,9 @@ const SECTIONS: Array<{ title: string; body: ReactNode }> = [
           analysis and eligibility check.</li>
         <li><strong>Signing in:</strong> a record of each signed-in session, including the name and version of
           your browser. We don&rsquo;t store your IP address in our database.</li>
-        <li><strong>Usage counts:</strong> how many tenders and analyses each company has used, for the free
-          trial and fair-use limits.</li>
+        <li><strong>Your plan and usage:</strong> your company&rsquo;s plan (free trial or a monthly plan) with its
+          start and end dates, and how many tenders and analyses the company has used, for the plan and fair-use
+          limits.</li>
         <li><strong>Visit counts:</strong> for each page shown on the website, we record the page, the date,
           the website you came from (for example google.com), the campaign name in the link if there is one,
           and whether you&rsquo;re on a phone or a computer. To count unique visitors without cookies, we also
@@ -69,7 +70,7 @@ const SECTIONS: Array<{ title: string; body: ReactNode }> = [
       <ul>
         <li>To run the service: signing you in, storing your tenders, analysing them and showing the
           results.</li>
-        <li>To apply the free-trial and daily usage limits.</li>
+        <li>To apply your plan&rsquo;s tender limit and the daily usage limits.</li>
         <li>To reply when you write to us, and to tell you about important changes to the service or this
           policy.</li>
         <li>To keep the service secure and to find and fix problems.</li>

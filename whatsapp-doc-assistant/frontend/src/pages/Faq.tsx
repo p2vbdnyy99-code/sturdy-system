@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { PublicLayout, PageIntro } from '../components/PublicLayout';
 import { PRODUCT_NAME } from '../config/product';
-import { CONTACT_EMAIL, FREE_TRIAL_TENDERS } from '../config/site';
+import { CONTACT_EMAIL, FREE_TRIAL_TENDERS, PLANS } from '../config/site';
 
 // Every answer here is checked against the running product or a cited
 // source (BIDPILOT_ARCHITECTURE.md, "Public site pages"): limits come from
@@ -100,9 +100,10 @@ const GROUPS: Array<{ title: string; items: Array<{ q: string; a: ReactNode }> }
     items: [
       {
         q: 'Is there a free trial?',
-        a: <>Yes. {PRODUCT_NAME} is in early access, and your first {FREE_TRIAL_TENDERS} tenders are free with every
-          feature included. No card is needed. See the <Link to="/pricing">plans for after the trial</Link>;
-          paid plans aren&rsquo;t switched on yet and we&rsquo;ll tell you before anything is charged.</>,
+        a: <>Yes. Your first {FREE_TRIAL_TENDERS} tenders are free with every feature included, and no card is
+          needed. After that, <Link to="/pricing">monthly plans</Link> start at
+          {' '}₹{PLANS[0].pricePerMonth.toLocaleString('en-IN')} for {PLANS[0].tendersPerMonth} tenders a month.
+          Nothing is charged automatically.</>,
       },
       {
         q: 'Can I use it on my phone?',

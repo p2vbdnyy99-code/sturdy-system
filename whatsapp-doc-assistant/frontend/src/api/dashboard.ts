@@ -3,6 +3,7 @@
 // BIDPILOT_ARCHITECTURE.md's M5b boundary). M5c wires this up.
 import { request } from './client';
 import type { ProcessingStatus, AnalysisStatus } from './tenders';
+import type { Allowance } from '../allowance';
 
 export type DashboardSummary = {
   totalTenders: number;
@@ -17,8 +18,8 @@ export type DashboardSummary = {
     processingStatus: ProcessingStatus;
     analysisStatus: AnalysisStatus;
   }>;
-  /** Free-trial tenders; null when the company has no trial limit (paid plan). */
-  trial: { limit: number; used: number; remaining: number } | null;
+  /** Free trial or monthly plan; null when the company has no limit. */
+  allowance: Allowance | null;
 };
 
 export function getDashboardSummary(companyId: string) {

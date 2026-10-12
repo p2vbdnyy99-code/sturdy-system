@@ -18,6 +18,7 @@ import { csrfTokenFor } from '../../src/bidpilot/auth/csrf.js';
 import { cookieParserMiddleware, SESSION_COOKIE_NAME } from '../../src/bidpilot/auth/cookies.js';
 import { createAuthRouter } from '../../src/bidpilot/routes/auth.js';
 import { createDashboardRouter } from '../../src/bidpilot/routes/dashboard.js';
+import { subscriptions } from '../../src/db/schema/index.js';
 
 const SKIP_REASON = !dbAvailable()
   ? 'DATABASE_URL not set — see test/db/helpers.js'
@@ -165,7 +166,15 @@ test('GET /dashboard/summary (HTTP integration)', { skip: SKIP_REASON }, async (
     assert.equal(res.json.totalTenders, 0);
     assert.ok('upcomingDeadlines' in res.json);
     assert.ok(Array.isArray(res.json.recentTenders));
-    assert.deepEqual(res.json.trial, { limit: 5, used: 0, remaining: 5 }, 'a new company starts with the full free trial');
+    assert.deepEqual(res.json.allowance, { kind: 'trial', limit: 5, used: 0, remaining: 5 }, 'a new company starts with the full free trial');
+  });
+
+  await t.test('a company on a monthly plan sees the plan, its tenders and when the period ends', async () => {
+    const periodStart = new Date(Date.now() - 86_400_000);
+    const periodEnd = new Date(Date.now() + 29 * 86_400_000);
+    await db.insert(subscriptions).values({ companyId: companyA.id, plan: 'GROWTH', status: 'ACTIVE', periodStart, periodEnd });
+    const res = await req('GET', `/bidpilot/dashboard/summary?companyId=${companyA.id}`, { auth: authA });
+    assert.deepEqual(res.json.allowance, { kind: 'plan', planName: 'Growth', periodEnd: periodEnd.toISOString(), limit: 15, used: 0, remaining: 15 });
   });
 
   await t.test('a caller cannot read another company\'s summary by naming its id (403)', async () => {

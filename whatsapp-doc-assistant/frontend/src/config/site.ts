@@ -20,10 +20,11 @@ export const FOUNDER: { name: string; city: string; story: string[] } | null = {
  *  (BIDPILOT_TRIAL_TENDERS, default 5); keep the two the same. */
 export const FREE_TRIAL_TENDERS = 5;
 
-/** Planned paid plans, shown on /pricing as "after your free trial". Nothing
- *  is billed today; change these freely before launch. */
-export const PLANNED_PLANS: Array<{ name: string; pricePerMonth: number; tendersPerMonth: number; forWho: string }> = [
-  { name: 'Starter', pricePerMonth: 499, tendersPerMonth: 5, forWho: 'Firms that bid now and then' },
-  { name: 'Growth', pricePerMonth: 999, tendersPerMonth: 15, forWho: 'Firms bidding every week' },
-  { name: 'Pro', pricePerMonth: 1999, tendersPerMonth: 40, forWho: 'Busy firms and tender consultants' },
+/** Monthly subscription plans shown on /pricing. The server enforces the
+ *  same numbers (backend/src/bidpilot/plans.js); a backend test fails if they
+ *  differ. Subscriptions are started by email until online payment exists. */
+export const PLANS: Array<{ name: string; pricePerMonth: number; tendersPerMonth: number; forWho: string }> = [
+  { name: 'Starter', pricePerMonth: 3999, tendersPerMonth: 10, forWho: 'Firms that bid a few times a month' },
+  { name: 'Growth', pricePerMonth: 5999, tendersPerMonth: 15, forWho: 'Firms bidding every week' },
+  { name: 'Pro', pricePerMonth: 8999, tendersPerMonth: 30, forWho: 'Busy firms and tender consultants' },
 ];

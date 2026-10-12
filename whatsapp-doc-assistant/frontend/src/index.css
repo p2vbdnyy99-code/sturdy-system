@@ -2245,6 +2245,11 @@ a:hover {
   margin: 0 0 0.35rem;
 }
 
+.pricing-plan-cta {
+  margin-top: 1rem;
+  align-self: flex-start;
+}
+
 .pricing-questions {
   display: grid;
   grid-template-columns: repeat(3, 1fr);

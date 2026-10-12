@@ -105,10 +105,15 @@ sibling of `backend/`/`frontend/`, since the Docker build needs both).
   (`migrate(drizzle(pool), { migrationsFolder: './drizzle' })`) with the
   server's own `DATABASE_URL`. First check that
   `drizzle.__drizzle_migrations` already lists every earlier migration.
-- **Giving a paying company unlimited tenders** (until payments are built):
-  insert a subscription row, e.g. in `fly ssh console`:
-  `insert into subscriptions (company_id, plan, status) values ('<company id>', 'GROWTH', 'ACTIVE');`
-  Insert a newer row with status `CANCELED` to end it; the latest row wins.
+- **Subscriptions (monthly plans, until online payment exists):** when a
+  firm has paid, run on the server, from `/app/backend`:
+  `node scripts/subscription.mjs status` to find the company id, then
+  `node scripts/subscription.mjs activate <companyId> STARTER|GROWTH|PRO`.
+  Use `renew <companyId>` each month after payment (it starts when the
+  current month ends) and `cancel <companyId>` to return the firm to the
+  free trial. Use `UNLIMITED` only for internal accounts. Prices and limits
+  live in `backend/src/bidpilot/plans.js` and must match
+  `frontend/src/config/site.ts` (a test checks this).
 
 **One-time setup** (from `whatsapp-doc-assistant/`):
 ```

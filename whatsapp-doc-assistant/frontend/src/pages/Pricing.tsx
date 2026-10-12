@@ -2,11 +2,11 @@ import { Link } from 'react-router-dom';
 import { PublicLayout, PageIntro } from '../components/PublicLayout';
 import { Icon } from '../components/Icon';
 import { PRODUCT_NAME } from '../config/product';
-import { CONTACT_EMAIL, FREE_TRIAL_TENDERS, PLANNED_PLANS } from '../config/site';
+import { CONTACT_EMAIL, FREE_TRIAL_TENDERS, PLANS } from '../config/site';
 
-// Nothing is billed today: there is no payment code. Early access starts
-// with a free trial; the paid plans are shown as planned, so contractors can
-// say whether the price makes sense.
+// A free trial, then monthly plans (enforced by the server, see
+// backend/src/bidpilot/plans.js). There is no online payment yet: a firm
+// subscribes by email, and nothing is ever charged automatically.
 const INCLUDED = [
   'Key facts: deadline, EMD, fee, estimated value',
   'Eligibility checklist and check against your company profile',
@@ -20,11 +20,10 @@ const inr = (n: number) => `₹${n.toLocaleString('en-IN')}`;
 export function PricingPage() {
   return (
     <PublicLayout>
-      <PageIntro kicker="Early access pricing" title={`Start with ${FREE_TRIAL_TENDERS} tenders free`}>
+      <PageIntro kicker="Pricing" title={`Start with ${FREE_TRIAL_TENDERS} tenders free`}>
         <p>
-          {PRODUCT_NAME} is in early access. Your free trial includes every feature for your first
-          {' '}{FREE_TRIAL_TENDERS} tenders. Paid plans aren&rsquo;t switched on yet; we&rsquo;ll tell you before
-          anything is charged, and nothing is ever charged automatically.
+          Try every feature of {PRODUCT_NAME} on your first {FREE_TRIAL_TENDERS} tenders, free. After that, choose
+          a monthly plan by how many tenders you analyse. Nothing is ever charged automatically.
         </p>
       </PageIntro>
 
@@ -43,18 +42,24 @@ export function PricingPage() {
             </ul>
           </div>
 
-          <h2 className="pricing-planned-heading">Plans after your free trial</h2>
+          <h2 className="pricing-planned-heading">Monthly plans</h2>
           <p className="muted pricing-planned-note">
-            Prices may change before launch, and GST may apply. Every plan includes everything listed above;
-            they differ only in how many tenders you can analyse each month.
+            Every plan includes everything listed above; they differ only in how many new tenders you can analyse
+            each month. Unused tenders don&rsquo;t carry over to the next month.
           </p>
           <div className="pricing-plans">
-            {PLANNED_PLANS.map((plan) => (
+            {PLANS.map((plan) => (
               <div key={plan.name} className="pricing-plan">
                 <p className="pricing-plan-name">{plan.name}</p>
                 <p className="pricing-price">{inr(plan.pricePerMonth)}<span> / month</span></p>
                 <p className="pricing-plan-quota">{plan.tendersPerMonth} tenders a month</p>
                 <p className="muted">{plan.forWho}</p>
+                {CONTACT_EMAIL && (
+                  <a className="btn-link btn-primary pricing-plan-cta"
+                    href={`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(`Subscribe to the ${plan.name} plan`)}`}>
+                    Choose {plan.name}
+                  </a>
+                )}
               </div>
             ))}
           </div>
@@ -66,16 +71,16 @@ export function PricingPage() {
                 profile are included.</p>
             </div>
             <div>
-              <h3>What happens after my free trial?</h3>
-              <p>Your company profile and analysed tenders stay in your account, and you can still open and re-run
-                them. Paid plans aren&rsquo;t live yet;
-                {CONTACT_EMAIL
-                  ? <> to analyse more tenders, email <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>.</>
-                  : <> we&rsquo;ll contact you before anything changes.</>}</p>
+              <h3>How do I subscribe?</h3>
+              <p>{CONTACT_EMAIL
+                ? <>Email <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a> with the plan you want and your company
+                  name. We&rsquo;ll send the payment details, and your plan starts when the payment is received.</>
+                : <>Write to us with the plan you want and your company name.</>}</p>
             </div>
             <div>
-              <h3>Have a view on the price?</h3>
-              <p>Tell us. Early-access users&rsquo; feedback decides the final plans. <Link to="/faq">More questions</Link></p>
+              <h3>What happens after my free trial?</h3>
+              <p>Your company profile and analysed tenders stay in your account, and you can still open and re-run
+                them. To analyse new tenders, choose a monthly plan. <Link to="/faq">More questions</Link></p>
             </div>
           </div>
         </div>

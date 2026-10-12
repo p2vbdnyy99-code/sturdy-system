@@ -17,7 +17,7 @@ import { listDates } from '../../src/bidpilot/repo/dates.js';
 import { listRedFlags } from '../../src/bidpilot/repo/redFlags.js';
 import { replaceAnalysis, markAnalysisFailed } from '../../src/bidpilot/repo/analysis.js';
 import { runAnalysis, safeErrorMessage } from '../../src/bidpilot/analysis/pipeline.js';
-import { getTrialStatus } from '../../src/bidpilot/analysis/budget.js';
+import { getAllowance } from '../../src/bidpilot/analysis/budget.js';
 import { setProvider } from '../../src/ai/index.js';
 import { setDb, closeDb } from '../../src/db/client.js';
 import { createSession } from '../../src/bidpilot/auth/sessionService.js';
@@ -25,7 +25,7 @@ import { csrfTokenFor } from '../../src/bidpilot/auth/csrf.js';
 import { cookieParserMiddleware, SESSION_COOKIE_NAME } from '../../src/bidpilot/auth/cookies.js';
 import { createAuthRouter } from '../../src/bidpilot/routes/auth.js';
 import { createTendersRouter } from '../../src/bidpilot/routes/tenders.js';
-import { tenderEvents, tenderBoqItems } from '../../src/db/schema/index.js';
+import { tenderEvents, tenderBoqItems, subscriptions, usageRecords } from '../../src/db/schema/index.js';
 import { eq } from 'drizzle-orm';
 import { config } from '../../src/config.js';
 
@@ -601,6 +601,18 @@ test('POST /tenders/:id/analyze (HTTP integration)', { skip: SKIP_REASON, timeou
     await waitForAnalysis(counted[0].id);
   });
 
+  await t.test('on a monthly plan with every tender used, a new tender gets 402 plan_exhausted', async () => {
+    const scope = await requireCompanyAccess(db, { userId: userA.id, companyId: companyA.id });
+    const periodStart = new Date(Date.now() - 86_400_000);
+    await db.insert(subscriptions).values({ companyId: companyA.id, plan: 'STARTER', status: 'ACTIVE', periodStart, periodEnd: new Date(Date.now() + 29 * 86_400_000) });
+    await db.insert(usageRecords).values(Array.from({ length: 10 }, () => ({ companyId: companyA.id, kind: 'plan_tender', quantity: 1 })));
+    const tender = await makeCompletedTender(scope);
+    const res = await req('POST', `/bidpilot/tenders/${tender.id}/analyze`, { auth: authA, body: { companyId: companyA.id } });
+    assert.equal(res.status, 402);
+    assert.equal(res.json.code, 'plan_exhausted');
+    assert.match(res.json.error, /Starter plan includes 10 tenders a month/);
+  });
+
   await t.test('a tender refused as too large does not use a trial slot', async () => {
     const scope = await requireCompanyAccess(db, { userId: userA.id, companyId: companyA.id });
     const bigPageText = 'x'.repeat(config.bidpilot.analysis.chunkChars + 1000);
@@ -610,7 +622,7 @@ test('POST /tenders/:id/analyze (HTTP integration)', { skip: SKIP_REASON, timeou
     const tender = await makeCompletedTender(scope, pages);
     const res = await req('POST', `/bidpilot/tenders/${tender.id}/analyze`, { auth: authA, body: { companyId: companyA.id } });
     assert.equal(res.status, 413);
-    assert.equal((await getTrialStatus(db, companyA.id)).used, 0);
+    assert.equal((await getAllowance(db, companyA.id)).used, 0);
   });
 
   await t.test('Company A cannot analyze Company B\'s tender', async () => {

@@ -2970,3 +2970,94 @@ and which would track visitors across sites), the site counts visits itself.
   - No cookies are set; a headless browser isn't counted.
   - No CSP violations or console errors.
   - The 23-check UI run still passes, and the report prints correctly.
+
+# Monthly subscription plans (Oct 2026)
+
+Plans changed from planned ₹499/₹999/₹1,999 (5/15/40 tenders) to monthly
+subscriptions, which are now enforced:
+
+| Plan | Price a month | New tenders a month |
+|---|---|---|
+| Starter | ₹3,999 | 10 |
+| Growth | ₹5,999 | 15 |
+| Pro | ₹8,999 | 30 |
+
+The founder chose monthly billing and no GST wording. There's no online
+payment yet: a firm subscribes by email, and the subscription is recorded by
+hand with a script.
+
+- **`backend/src/bidpilot/plans.js`** (new):
+  - The catalogue (`STARTER`, `GROWTH`, `PRO`), plus an internal `UNLIMITED`
+    plan that is never shown on the site.
+  - `planFor()` and `addMonths()`; a period ends on the same day next month,
+    or on the month's last day.
+- **`analysis/budget.js`:**
+  - `getEntitlement()` replaces the ACTIVE = unlimited rule:
+    - the latest row ACTIVE with plan UNLIMITED: no limit;
+    - otherwise the newest ACTIVE row for a sold plan whose period includes
+      now gives that plan's tenders for that period. Rows are scanned newest
+      first and the scan stops at the first non-ACTIVE row, so a cancellation
+      ends everything before it. An early renewal (a row starting when the
+      current one ends) doesn't cut the current period short;
+    - the latest row ACTIVE for a sold plan whose period has ended:
+      `plan_expired`;
+    - anything else: the free trial, as before.
+  - `claimTenderSlot()` replaces `claimTrialTender()`:
+    - it writes `plan_tender` on a plan and `trial_tender` on the trial;
+    - a tender with a row of either kind re-runs free, including a trial
+      tender re-run on a plan;
+    - a plan counts its `plan_tender` rows created within the current period,
+      and the trial counts its rows all time;
+    - it still takes the company row lock;
+    - it throws `plan_exhausted` or `plan_expired` with a message naming the
+      plan and the date (India time).
+  - `getAllowance()` replaces `getTrialStatus()`.
+- **Routes:** analyze answers 402 for `trial_exhausted`, `plan_exhausted` and
+  `plan_expired`. `GET /dashboard/summary` returns `allowance` (kind, limit,
+  used, remaining, plus planName and periodEnd for a plan) instead of
+  `trial`.
+- **`backend/scripts/subscription.mjs`** (new): `status`,
+  `activate <companyId> <PLAN> [months]`, `renew <companyId> [months]`
+  (starts when the current period ends) and `cancel`. Each change adds a row,
+  so the history is kept.
+- **Frontend:**
+  - `config/site.ts` `PLANS` holds the new numbers.
+  - `test/bidpilot/plans.test.js` reads site.ts and fails if its numbers
+    differ from `plans.js`.
+  - Pricing page: "Monthly plans" (unused tenders don't carry over), a
+    "Choose <plan>" email button per plan, "How do I subscribe?", and no GST
+    or "planned" wording.
+  - The FAQ trial answer and the home teaser are updated.
+  - Dashboard: `allowance.ts` (with unit tests) words the notice for the
+    trial, a plan with tenders left (and the end date), a used-up plan and an
+    ended plan. Each offers the pricing page or an email with a subject.
+- **Search and privacy:** the `/pricing` description lists the plans. The
+  privacy policy says the plan and its dates are stored and used for the
+  plan's limit (`LAST_UPDATED` is 12 October 2026; set it to the deploy date
+  if that's later).
+
+## Verification
+
+- **New backend tests:**
+  - Starter allows 10 then `plan_exhausted`, with re-runs free.
+  - A plan ignores earlier trial use; a trial tender re-runs free on a plan.
+  - A new period resets the count; an early renewal keeps the current period.
+  - An ended plan gives `plan_expired` and still re-runs counted tenders.
+  - Two tenders racing for the last slot: exactly one wins.
+  - UNLIMITED has no limit; ACTIVE without a sold plan or period falls back
+    to the trial; a later CANCELED row brings back the trial.
+  - HTTP 402 `plan_exhausted`; the dashboard summary for trial and plan; the
+    catalogue, its sync with site.ts, and `addMonths`.
+- **Frontend unit tests:** 27, including 5 for the notice wording.
+- **The script on the local database:** activate, early renew, an unknown
+  plan refused, cancel, renew after cancel refused, UNLIMITED, an unknown
+  company refused.
+- **Browser on the harness (15 checks):**
+  - The 3 plans and prices show, with no GST or old prices.
+  - The mailto subjects are right, and "How do I subscribe?" is shown.
+  - No sideways scroll on a phone.
+  - The search description and FAQ text are updated.
+  - Dashboard: the trial, Growth with 15 of 15 left, a used-up plan (with its
+    email link and the Analyze message), and an ended plan.
+  - No CSP violations or console errors.
+- `scripts/verify.sh` results are in the run's checks.md.

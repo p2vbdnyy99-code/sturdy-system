@@ -111,7 +111,7 @@ export function HomePage() {
           <Link to="/pricing" className="home-teaser">
             <p className="home-kicker">Pricing</p>
             <h3>Your first {FREE_TRIAL_TENDERS} tenders free</h3>
-            <p>Every feature in the free trial, no card needed. See the plans for afterwards.</p>
+            <p>Every feature in the free trial, no card needed. Monthly plans after that.</p>
             <span className="home-teaser-link">See pricing <Icon name="arrowRight" /></span>
           </Link>
           <Link to="/faq" className="home-teaser">

@@ -11,6 +11,7 @@ import { useSession } from '../auth/SessionProvider';
 import { ApiError } from '../api/client';
 import { getDashboardSummary, type DashboardSummary } from '../api/dashboard';
 import { CONTACT_EMAIL } from '../config/site';
+import { allowanceNotice, type Allowance } from '../allowance';
 import {
   listTenders, uploadTender, TENDER_STATUSES, ANALYSIS_STATUSES,
   type TenderListItem, type TenderStatus, type AnalysisStatus,
@@ -166,7 +167,7 @@ export function DashboardPage() {
         {summaryError && <p role="alert" className="error-text">{summaryError}</p>}
         {!summaryError && (
           <>
-            {summary?.trial && <TrialNotice trial={summary.trial} />}
+            {summary?.allowance && <AllowanceBanner allowance={summary.allowance} />}
             <div className="dashboard-tiles">
               <SummaryTile icon="layers" label="Total tenders" value={summary?.totalTenders} loading={summaryLoading} />
               <SummaryTile icon="clock" label="Processing" value={summary?.processing} loading={summaryLoading} />
@@ -285,23 +286,18 @@ export function DashboardPage() {
   );
 }
 
-/** Re-running an already-counted tender is free, so the wording is about new tenders. */
-function TrialNotice({ trial }: { trial: NonNullable<DashboardSummary['trial']> }) {
-  if (trial.remaining > 0) {
-    return (
-      <div className="notice notice-info">
-        <span className="notice-text">
-          Free trial: <strong>{trial.remaining} of {trial.limit}</strong> {trial.remaining === 1 ? 'tender' : 'tenders'} left
-          to analyse.
-        </span>
-      </div>
-    );
-  }
+/** The free trial or monthly plan, from allowance.ts's wording. */
+function AllowanceBanner({ allowance }: { allowance: Allowance }) {
+  const n = allowanceNotice(allowance);
+  const subject = n.next === 'renew' ? 'Renew my TenderTez plan' : 'TenderTez monthly plan';
   return (
-    <div className="notice">
+    <div className={n.tone === 'info' ? 'notice notice-info' : 'notice'}>
       <span className="notice-text">
-        You&rsquo;ve used all {trial.limit} free-trial tenders. You can still open and re-run them.
-        {CONTACT_EMAIL && <> To analyse new tenders, email <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a> about a paid plan.</>}
+        {n.before}<strong>{n.bold}</strong>{n.after}
+        {n.next === 'pricing' && <> <Link to="/pricing">See the plans</Link>.</>}
+        {n.next && CONTACT_EMAIL && (
+          <> Email <a href={`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(subject)}`}>{CONTACT_EMAIL}</a>.</>
+        )}
       </span>
     </div>
   );

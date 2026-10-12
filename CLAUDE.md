@@ -62,6 +62,9 @@ Follow `harness/README.md`. In short:
   founder background. Don't promise a feature the product lacks; for example,
   there is no bid/no-bid verdict.
 - No model identifiers in commits, PRs or code.
+- Plan prices and limits live in `backend/src/bidpilot/plans.js` and
+  `frontend/src/config/site.ts`. Change both; `test/bidpilot/plans.test.js`
+  fails if they differ. No GST wording on the site (the founder's choice).
 - The privacy policy (`frontend/src/pages/Privacy.tsx`) must match the code.
   Update it, and its `LAST_UPDATED` date, whenever data collected, service
   providers, cookies or retention change. The date is the day it goes live.
@@ -76,6 +79,7 @@ Rules that must always hold are enforced by code, not by this file.
 | Secret scan | `whatsapp-doc-assistant/scripts/secret-scan.sh [--all]` | Fly, OpenAI, GitHub, AWS, Google and Slack keys, private keys, and database URLs with passwords (local and `xxxx` placeholders are allowed). |
 | Verification | `whatsapp-doc-assistant/scripts/verify.sh [--checks FILE]` | Backend tests in 3 setups, frontend build, lint and unit tests, and the secret scan, as a table of step, requirement, verdict and evidence. |
 | Visits report | `whatsapp-doc-assistant/backend/scripts/visits-report.mjs [days]` | Funnel and visit numbers. Run it inside the Fly machine (see `OPERATIONS.md`). |
+| Subscriptions | `whatsapp-doc-assistant/backend/scripts/subscription.mjs status\|activate\|renew\|cancel` | Starts, renews and ends monthly plans by hand until online payment exists. Run only after payment or the user's go-ahead. |
 
 If a hook blocks something you need, don't work around it. Tell the user what
 was blocked and why.
@@ -127,6 +131,12 @@ was blocked and why.
     Share any document you create with advayaicopilot@gmail.com.
 13. The test databases are `bidpilot_dev` and the harness on port 8790
     (scratchpad `design-server.mjs`). Never point tests at production.
+14. When replacing part of a file with a script, replace an exact string,
+    assert it occurs once, and check `git diff` for deletions you didn't
+    intend. A slice "to the next bullet" once removed half of
+    `OPERATIONS.md`; it was caught by reading the diff.
+15. `psql -At` with `RETURNING` also prints `INSERT 0 1`. Use `-qAt` when
+    capturing an id.
 
 ## Parallel work
 

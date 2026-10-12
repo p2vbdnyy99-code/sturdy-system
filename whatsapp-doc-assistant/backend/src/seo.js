@@ -18,8 +18,8 @@ export const PUBLIC_PAGES = {
   },
   '/pricing': {
     title: 'Pricing | TenderTez',
-    description: 'Your first 5 tenders are free, with no card needed. Planned plans start at ₹499 a month for '
-      + '5 tenders.',
+    description: 'Your first 5 tenders are free, with no card needed. Then monthly plans: ₹3,999 for 10 tenders, '
+      + '₹5,999 for 15 or ₹8,999 for 30.',
   },
   '/faq': {
     title: 'Questions and answers | TenderTez',
