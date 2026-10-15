@@ -33,7 +33,7 @@
   an extra record (append only).
 
 ## Next action
-1. On the founder's "commit" / "deploy": check nothing is mid-analysis, then deploy.
+1. Done: committed (11bfb61), pushed and deployed on 16 Oct 2026 (IST). Live checks pass. GA4 is off until the secrets are set.
 2. The founder creates the GA4 property and stream, and sets the Fly secrets
    `BIDPILOT_GA4_MEASUREMENT_ID` and `BIDPILOT_GA4_API_SECRET`.
 3. The founder adds the Search Console Domain property and submits the sitemap.

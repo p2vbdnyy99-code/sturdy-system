@@ -23,3 +23,6 @@
 | secret scan | no secrets in the change | pass | secret-scan: clean (--changes) |
 | live | Search Console verified, sitemap submitted | unresolved | needs the founder's Google account (OPERATIONS.md) |
 | live | GA4 Realtime shows a visit to tendertez.in | unresolved | needs the deploy, then the founder's Measurement ID and API secret as Fly secrets |
+| live | nothing mid-analysis; deploy healthy | pass | `analyzing_now=0 migrations=11` (no migration in this change); `flyctl deploy` exit 0 (commit 11bfb61); log `Google Analytics: off (BIDPILOT_GA4_MEASUREMENT_ID / _API_SECRET not set)`, collector on |
+| live | search pages and sitemap | pass | tendertez.in: `/government-tenders` and `/features` carry their canonical URL and no noindex, `/dashboard` noindex; sitemap lists 8 pages including both; CSP header identical |
+| live | browser on tendertez.in (phone width) | pass | `ga-live.mjs` 6/6: privacy names Google Analytics and what it gets, dated 16 October 2026; tender search shows tenders; 0 cookies on public pages; every request to tendertez.in; no CSP errors |
