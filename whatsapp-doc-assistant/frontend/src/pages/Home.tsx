@@ -1,4 +1,5 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { getFeedFacets, type FeedFacets } from '../api/feed';
 import { Link, Navigate, useLocation } from 'react-router-dom';
 import { useSession } from '../auth/SessionProvider';
 import { PublicLayout } from '../components/PublicLayout';
@@ -9,13 +10,15 @@ import { FREE_TRIAL_TENDERS } from '../config/site';
 // Public homepage at "/". Signed-in users keep the old behaviour of "/"
 // (straight to the dashboard). Copy describes only what the product does
 // today: no customer logos, testimonials or usage numbers.
-const FEATURES: Array<{ icon: IconName; title: string; body: string }> = [
-  { icon: 'calendar', title: 'Key facts at a glance', body: 'Submission deadline, EMD, tender fee, estimated value and contract period, pulled to the top.' },
-  { icon: 'list', title: 'Eligibility checklist', body: 'Turnover, experience, licences and documents the tender asks for, grouped so nothing is missed.' },
-  { icon: 'briefcase', title: 'Check against your company', body: 'Save your company profile once and see which conditions you appear to meet, and which you don’t.' },
-  { icon: 'flag', title: 'Risky clauses flagged', body: 'Penalties, payment terms and rejection conditions worth reading closely before you commit.' },
-  { icon: 'layers', title: 'BOQ extracted', body: 'Bill of quantities items with quantity and unit, ready to price.' },
-  { icon: 'search', title: 'Every answer has a source', body: 'Each point shows the page it came from, with the quoted text, so you can verify in seconds.' },
+const FEATURES: Array<{ icon: IconName; title: string; body: string; to: string }> = [
+  { icon: 'globe', title: 'Find government tenders', body: 'Central, state-wise and GeM tenders in one search, by state or organisation. Free, no sign-in.', to: '/government-tenders' },
+  { icon: 'calendar', title: 'Key facts at a glance', body: 'Submission deadline, EMD, tender fee, estimated value and contract period, pulled to the top.', to: '/features#read' },
+  { icon: 'briefcase', title: 'Check against your company', body: 'Save your company profile once and see which conditions you appear to meet, and which you don’t.', to: '/features#eligibility' },
+  { icon: 'flag', title: 'Bid tracker', body: 'Every tender from first look to result: stages, your internal deadline, notes and the portal ID.', to: '/features#tracker' },
+  { icon: 'check', title: 'Submission checklist', body: 'The documents and proofs the tender asks for, with page numbers. Tick them off; download as Excel.', to: '/features#checklist' },
+  { icon: 'history', title: 'Corrigendum check', body: 'Upload an amendment and see what changed in the deadline, EMD or dates, quoted with its page.', to: '/features#corrigendum' },
+  { icon: 'users', title: 'Client workspaces', body: 'For consultants: a profile per client, and each tender checked against the right one.', to: '/features#clients' },
+  { icon: 'search', title: 'Every answer has a source', body: 'Each point shows the page it came from, with the quoted text, so you can verify in seconds.', to: '/features#read' },
 ];
 
 const STEPS = [
@@ -49,7 +52,7 @@ export function HomePage() {
               <Link to="/register" className="btn-link btn-accent btn-lg">
                 Start your free trial <Icon name="arrowRight" />
               </Link>
-              <Link to="/login" className="btn-link btn-ghost-light btn-lg">Log in</Link>
+              <Link to="/government-tenders" className="btn-link btn-ghost-light btn-lg">Find tenders</Link>
             </div>
             <p className="home-hero-note">Your first {FREE_TRIAL_TENDERS} tenders are free. No card needed. Works on your phone.</p>
           </div>
@@ -57,19 +60,22 @@ export function HomePage() {
         </div>
       </section>
 
+      <TenderBand />
+
       <section className="home-section" id="features">
         <div className="home-container">
           <p className="home-kicker">What you get</p>
-          <h2 className="home-heading">Everything you check before bidding, in one place</h2>
+          <h2 className="home-heading">From finding a tender to submitting the bid</h2>
           <div className="home-features">
             {FEATURES.map((f) => (
-              <div key={f.title} className="home-feature">
+              <Link key={f.title} to={f.to} className="home-feature home-feature-link">
                 <span className="home-feature-icon"><Icon name={f.icon} /></span>
                 <h3>{f.title}</h3>
                 <p>{f.body}</p>
-              </div>
+              </Link>
             ))}
           </div>
+          <p className="home-features-more"><Link to="/features" className="home-teaser-link">See every feature <Icon name="arrowRight" /></Link></p>
         </div>
       </section>
 
@@ -131,6 +137,51 @@ export function HomePage() {
       </section>
 
     </PublicLayout>
+  );
+}
+
+// Live counts from the public tender search, with shortcuts into it. Shows
+// nothing until the counts arrive (and nothing if there are none yet).
+function TenderBand() {
+  const [facets, setFacets] = useState<FeedFacets | null>(null);
+  useEffect(() => { getFeedFacets().then(setFacets).catch(() => setFacets(null)); }, []);
+  const total = facets ? facets.open.central + facets.open.state + facets.open.gem : 0;
+  const topStates = facets ? [...facets.states].sort((a, b) => b.count - a.count).slice(0, 8) : [];
+  return (
+    <section className="home-section home-section-alt home-tenders" aria-labelledby="home-tenders-title">
+      <div className="home-container">
+        <p className="home-kicker">Find tenders</p>
+        <h2 className="home-heading" id="home-tenders-title">Government tenders across India, in one search</h2>
+        <p className="home-tenders-lead">
+          Central ministries and PSUs, state e-procurement portals and GeM bids, from the Central Public Procurement
+          Portal. Search by state, organisation or work, free and without signing in.
+        </p>
+        <div className="home-tender-kinds">
+          <Link to="/government-tenders?kind=central" className="home-tender-kind">
+            <span>Central government</span>
+            <strong>{facets ? facets.open.central.toLocaleString('en-IN') : '—'}</strong><small>open</small>
+          </Link>
+          <Link to="/government-tenders?kind=state" className="home-tender-kind">
+            <span>State portals</span>
+            <strong>{facets ? facets.open.state.toLocaleString('en-IN') : '—'}</strong><small>open</small>
+          </Link>
+          <Link to="/government-tenders?kind=gem" className="home-tender-kind">
+            <span>GeM bids</span>
+            <strong>{facets ? facets.open.gem.toLocaleString('en-IN') : '—'}</strong><small>open</small>
+          </Link>
+        </div>
+        {topStates.length > 0 && (
+          <div className="home-tender-states" aria-label="Browse by state">
+            {topStates.map((s) => (
+              <Link key={s.name} to={`/government-tenders?kind=state&state=${encodeURIComponent(s.name)}`} className="chip-link">{s.name}</Link>
+            ))}
+          </div>
+        )}
+        <Link to="/government-tenders" className="btn-link btn-primary">
+          {total > 0 ? `Search ${total.toLocaleString('en-IN')} open tenders` : 'Search tenders'} <Icon name="arrowRight" />
+        </Link>
+      </div>
+    </section>
   );
 }
 

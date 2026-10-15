@@ -33,7 +33,7 @@ export async function truncateAll() {
   const db = testDb();
   await db.execute(`
     TRUNCATE TABLE
-      public_tenders, checklist_items, tender_corrigenda, client_profiles, clients,
+      public_tenders, discovery_state, checklist_items, tender_corrigenda, client_profiles, clients,
       phone_otps, auth_identities, page_views, audit_logs, notifications, telegram_users, usage_records, subscriptions,
       tender_events, tender_questions, compliance_items, tender_boq_items,
       tender_requirement_evidence, tender_requirements, tender_pages,

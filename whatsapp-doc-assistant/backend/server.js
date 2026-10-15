@@ -25,6 +25,7 @@ import { createAuthRouter } from './src/bidpilot/routes/auth.js';
 import { createDashboardRouter } from './src/bidpilot/routes/dashboard.js';
 import { createCompaniesRouter } from './src/bidpilot/routes/companies.js';
 import { createFeedRouter } from './src/bidpilot/routes/feed.js';
+import { createPublicTendersRouter } from './src/bidpilot/routes/publicTenders.js';
 import { cookieParserMiddleware } from './src/bidpilot/auth/cookies.js';
 import { bidpilotCors } from './src/bidpilot/auth/cors.js';
 import { recoverInterruptedWork } from './src/bidpilot/recovery.js';
@@ -224,6 +225,7 @@ if (config.db.url) {
   app.use('/bidpilot', createDashboardRouter());
   app.use('/bidpilot', createTendersRouter());
   app.use('/bidpilot', createFeedRouter());
+  app.use('/bidpilot', createPublicTendersRouter());
   app.use('/bidpilot', createDownloadRouter());
   app.use('/bidpilot', createVisitsRouter({ ownHosts: [SITE_HOSTNAME, ...config.bidpilot.redirectHosts] }));
 } else {

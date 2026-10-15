@@ -386,12 +386,18 @@ export function buildBidpilotConfig(env = {}) {
       language: String(env.BIDPILOT_WHATSAPP_OTP_LANGUAGE || 'en'),
       apiVersion: String(env.BIDPILOT_WHATSAPP_API_VERSION || 'v21.0'),
     },
-    // The tender feed (bidpilot/discovery/): reads the public CPPP "latest
-    // active tenders" page. Off unless BIDPILOT_DISCOVERY_CPPP=on. Never more
-    // often than every 5 minutes; backs off on any error.
+    // The tender feed (bidpilot/discovery/): reads CPPP's public "latest
+    // active tenders" lists (central, state, GeM) page by page. Off unless
+    // BIDPILOT_DISCOVERY_CPPP=on. One request at a time with a pause of at
+    // least 2 seconds; the newest pages are re-read every intervalMinutes
+    // (never under 5); backs off on any error.
     discovery: {
       cppp: String(env.BIDPILOT_DISCOVERY_CPPP || '').toLowerCase() === 'on',
       intervalMinutes: Math.max(5, Number(env.BIDPILOT_DISCOVERY_INTERVAL_MINUTES) || 10),
+      lists: String(env.BIDPILOT_DISCOVERY_LISTS || 'central,state,gem')
+        .split(',').map((s) => s.trim()).filter((s) => ['central', 'state', 'gem'].includes(s)),
+      delaySeconds: Math.max(2, Number(env.BIDPILOT_DISCOVERY_DELAY_SECONDS) || 3),
+      keepClosedDays: Math.max(7, Number(env.BIDPILOT_DISCOVERY_KEEP_CLOSED_DAYS) || 60),
     },
     redirectHosts: String(env.BIDPILOT_REDIRECT_HOSTS || '')
       .split(',')

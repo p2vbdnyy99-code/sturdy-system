@@ -1,31 +1,71 @@
-// Matches src/bidpilot/routes/feed.js: public tenders collected from the
-// CPPP latest-tenders page, and Track to add one to the company's tenders.
+// Matches src/bidpilot/routes/publicTenders.js (no sign-in) and
+// src/bidpilot/routes/feed.js (in the app, with Track): government tenders
+// collected from CPPP's public lists of central, state and GeM tenders.
 import { request } from './client';
 
-export type FeedWhen = 'open' | 'closing' | 'closed' | 'all';
+export type FeedKind = 'central' | 'state' | 'gem';
+export type FeedStatus = 'open' | 'closing' | 'closed' | 'all';
+export type FeedSort = 'newest' | 'closing';
+
+export type FeedQuery = {
+  kind: FeedKind | 'all';
+  status: FeedStatus;
+  sort: FeedSort;
+  search: string;
+  state: string;
+  organisation: string;
+  page: number;
+};
 
 export type FeedTender = {
   id: string;
-  source: string;
+  kind: FeedKind;
   title: string;
   reference: string | null;
+  tenderId: string | null;
   organisation: string | null;
+  department: string | null;
+  state: string | null;
+  category: string | null;
   publishedAt: string | null;
   closingAt: string | null;
   openingAt: string | null;
-  url: string | null;
+  /** Where to open it: GeM opens the bid; others open the portal's search, with `searchFor` to look up. */
+  find: { url: string; label: string; searchFor: string | null };
 };
 
-export type FeedResult = {
-  tenders: FeedTender[];
-  total: number;
-  page: number;
-  limit: number;
-  coverage: { collecting: boolean; since: string | null; lastUpdate: string | null; stored: number };
+export type FeedResult = { tenders: FeedTender[]; total: number; page: number; limit: number };
+
+export type FeedFacets = {
+  open: Record<FeedKind, number>;
+  states: Array<{ name: string; count: number }>;
+  organisations: { central: Array<{ name: string; count: number }>; gem: Array<{ name: string; count: number }> };
+  lists: Partial<Record<FeedKind, { lastSuccessAt: string | null; lastSweepFinishedAt: string | null; totalPages: number | null; nextPage: number }>>;
 };
 
-export function getFeed(query: { when: FeedWhen; search?: string; page?: number }) {
-  return request<FeedResult>('/bidpilot/feed', { query: { when: query.when, search: query.search || undefined, page: query.page } });
+function params(q: FeedQuery) {
+  return {
+    kind: q.kind,
+    status: q.status,
+    sort: q.sort,
+    search: q.search || undefined,
+    state: q.state || undefined,
+    organisation: q.organisation || undefined,
+    page: q.page > 1 ? q.page : undefined,
+  };
+}
+
+export function getPublicTenders(q: FeedQuery) {
+  return request<FeedResult>('/bidpilot/public/tenders', { query: params(q) });
+}
+
+export function getFeedFacets() {
+  return request<FeedFacets>('/bidpilot/public/tenders/facets');
+}
+
+/** The in-app feed: the same search, signed in. */
+export function getFeed(q: FeedQuery) {
+  return request<FeedResult & { collecting: boolean }>('/bidpilot/feed', { query: params(q) });
 }
 
 export function trackFeedTender(feedId: string, companyId: string) {

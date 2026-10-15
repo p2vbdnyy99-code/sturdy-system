@@ -87,10 +87,17 @@ Follow `harness/README.md`. In short:
   every time; never store or show a checklist line that isn't one of them
   (users may add their own, marked as theirs). Corrigendum changes must quote
   text that is on the page they name, or they are dropped.
-- The tender feed collector reads only CPPP's public latest-tenders page:
-  slowly, identifying itself, off unless `BIDPILOT_DISCOVERY_CPPP=on`. Never
-  solve or bypass a captcha, never use proxies, never download documents, and
-  say plainly in the app that the feed is not every tender.
+- The tender feed collector reads only CPPP's public "latest active
+  tenders" lists (central, state, GeM), one page at a time with a pause of
+  at least 2 seconds, identifying itself; off unless
+  `BIDPILOT_DISCOVERY_CPPP=on`. Never solve or bypass a captcha, never use
+  proxies, never download documents or open a tender's own page, never read
+  a site whose robots.txt forbids it (IREPS does), and never copy another
+  aggregator's data. Every list of tenders credits CPPP as the source, opens
+  portal links in a new tab, and says plainly that it is not every tender.
+  Store only links that work for anyone (GeM's); for central and state
+  tenders show the tender ID and the portal's search page
+  (`discovery/portals.js`).
 - A "try" for the profile rule is a tender with a document; a tender tracked
   from the feed is analysed only after its PDF is attached.
 - Sign-in with Google and with a WhatsApp code each stay hidden until their
@@ -172,6 +179,9 @@ was blocked and why.
     one that only notes a redirect) is not evidence; don't count it.
 17. Check keyboard focus by its outline, not "any box-shadow": the current
     rail icon's own shadow once passed a focus check while hiding the ring.
+18. Open a scraped link in a fresh browser with no cookies before storing
+    it. CPPP's tender links are tied to the session that loaded the list,
+    and the first feed shipped links that showed every user "Invalid Url".
 
 ## Parallel work
 

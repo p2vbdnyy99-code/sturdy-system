@@ -126,11 +126,19 @@ const GROUPS: Array<{ title: string; items: Array<{ q: string; a: ReactNode }> }
           The eligibility check then uses that client&rsquo;s details. All your clients share your one plan.</>,
       },
       {
-        q: 'Where do the tenders in the feed come from?',
-        a: <>From the public &ldquo;latest tenders&rdquo; page of the Central Public Procurement Portal (CPPP).
-          That page shows only the newest tenders, so the feed is not every tender in India, and GeM and state
-          portals aren&rsquo;t included yet. Track a tender to add it to your list, then download its document
-          from the portal and attach it to analyse it.</>,
+        q: 'Where do the tenders in the search come from?',
+        a: <>From the Central Public Procurement Portal (CPPP), the Government of India&rsquo;s tender portal. It
+          publishes lists of active tenders from central ministries and PSUs (railways and defence included), from
+          the state e-procurement portals, and from GeM. We read those lists through the day: new central and
+          state tenders usually appear within the hour, GeM bids within a day. It is not every tender in India: a
+          tender that a department never publishes on CPPP isn&rsquo;t there. Track a tender to add it to your list,
+          then download its document from the portal and attach it to analyse it.</>,
+      },
+      {
+        q: 'Why doesn’t the portal link open the tender directly?',
+        a: <>Government portals ask for a captcha before they show a tender, and their tender links only work in
+          the browser that opened them. So for central and state tenders we open the right portal&rsquo;s search
+          page and show the tender ID to copy and search for there. GeM bids open directly.</>,
       },
       {
         q: 'Can I use it on my phone?',

@@ -47,10 +47,11 @@ const SECTIONS: Array<{ title: string; body: ReactNode }> = [
         <li><strong>Your clients</strong> (if you use client workspaces): the names of the firms you bid for and
           the profile details you enter for each, the same fields as the company profile. Please add a client
           only with that firm&rsquo;s agreement.</li>
-        <li><strong>The tender feed:</strong> public tender notices (title, department, reference number, dates
-          and the portal link) read from the Central Public Procurement Portal&rsquo;s public &ldquo;latest
-          tenders&rdquo; page. These are public notices, not about you, and we don&rsquo;t download their
-          documents.</li>
+        <li><strong>The tender search:</strong> public tender notices (title, organisation, department or state,
+          reference number, tender ID, dates and, for GeM bids, the portal link) read from the Central Public
+          Procurement Portal&rsquo;s public lists of central, state and GeM tenders. These are public notices, not
+          about you; we don&rsquo;t download their documents, and we delete each one 60 days after it closes.
+          Anyone can search them on our site without an account.</li>
         <li><strong>Signing in:</strong> a record of each signed-in session, including the name and version of
           your browser. We don&rsquo;t store your IP address with your account. When a sign-in code is requested
           for a mobile number, we keep the code (scrambled), the number and the IP address that asked for it for

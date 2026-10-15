@@ -137,14 +137,23 @@ sibling of `backend/`/`frontend/`, since the Docker build needs both).
   shows a "Complete your company profile" dialog. The number is
   `FREE_TENDERS_WITHOUT_PROFILE` in `backend/src/bidpilot/profileGate.js`
   and `frontend/src/shell/profileGate.ts` (a test keeps them equal).
-- **Tender feed collector (off by default):** set the Fly secret
-  `BIDPILOT_DISCOVERY_CPPP=on` to start reading CPPP's public latest-tenders
-  page every 10 minutes (`BIDPILOT_DISCOVERY_INTERVAL_MINUTES`, minimum 5).
-  Logs: `metric bidpilot_discovery source=cppp stored=N`, or `bidpilot
-  discovery: cppp read failed (...)` with the next try time (it backs off up
-  to 2 hours). Turn it off by removing the secret. If NIC replies to the
-  access request (draft in Gmail to support-eproc@nic.in), follow their terms
-  before anything else.
+- **Tender feed collector:** on while the Fly secret
+  `BIDPILOT_DISCOVERY_CPPP=on` is set (switched on 15 Oct 2026). It reads
+  CPPP's public central, state and GeM lists one page at a time:
+  - `BIDPILOT_DISCOVERY_DELAY_SECONDS` (default 3, minimum 2) between pages;
+  - `BIDPILOT_DISCOVERY_INTERVAL_MINUTES` (default 10, minimum 5): how often
+    the newest pages of the central and state lists are re-read;
+  - `BIDPILOT_DISCOVERY_LISTS` (default `central,state,gem`);
+  - `BIDPILOT_DISCOVERY_KEEP_CLOSED_DAYS` (default 60, minimum 7).
+  A full pass of all three lists is about 12,700 pages, roughly 14 hours;
+  where each list is lives in the `discovery_state` table, so a deploy
+  carries on. Logs: `metric bidpilot_discovery list=central page=200/2889`
+  every 200 pages and at the end of each list, `pruned=N` when old tenders
+  are deleted, and `bidpilot discovery: cppp read failed (...)` with the next
+  try (it backs off from 1 minute to 30). Database size: about 1 KB per
+  tender, so ~130,000 tenders is ~150 MB. Turn it off by removing the secret.
+  If NIC replies to the access request (draft in Gmail to
+  support-eproc@nic.in), follow their terms before anything else.
 - **Corrigenda** use one AI call each against the company's daily analysis
   cap; they don't use the plan's tender allowance.
 - **Subscriptions (monthly plans, until online payment exists):** when a

@@ -3450,3 +3450,98 @@ One migration, `0009_melted_sugar_man.sql`, additive only: tables
   processing (keyed on status); the phone top bar overflowed with eight
   buttons (smaller buttons, initial hidden).
 - Earlier suites rerun: restyle 35/35, optional profile 20/20.
+
+# Tender search: central, state and GeM lists, working links, features on the public site (Oct 2026)
+
+**Why.** The founder found that a CPPP link from the feed opened "Invalid
+Url" on CPPP, that the feed showed very few tenders, and that none of the
+new features were visible before signing in. They asked for the best of
+TendersOnTime and TenderJunction: tenders by state, by agency and from GeM,
+simple to use. Run folder: `harness/runs/2026-10-15-tender-search/`.
+
+## What was wrong
+- CPPP's `tendersfullview/...` links carry the session of whoever loaded the
+  list (a hash and a timestamp). Anyone else gets "Invalid Url.Please
+  Check", and even in the session the page asks for a captcha. The first
+  collector stored those links.
+- The first collector read only page 1 of the central list. The earlier
+  note that "paging needs a captcha" was wrong: the captcha on those pages
+  belongs to the search box. Paging through the lists needs none.
+
+## Sources
+- CPPP "latest active tenders", three lists, 10 rows a page:
+  - central (`cpppdata`, about 2,900 pages): ministries, PSUs, Ministry of
+    Railways, MES, CPWD, municipal bodies;
+  - state (`mmpdata`, about 6,000 pages): the state e-procurement portals,
+    with the state's name;
+  - GeM (`gemdata`, about 3,800 pages): bid number, quantity, product
+    category, organisation and department.
+- Not used: IREPS (robots.txt disallows everything; search needs a captcha
+  and OTP; railway tenders still arrive via CPPP's central list), GePNIC
+  "tenders by organisation" pages (captcha), TendersOnTime and
+  TenderJunction (their own databases; they block automated visitors).
+- CPPP's terms: linking needs no permission (they ask to be told; pages open
+  in a new window). Reproducing material needs "proper permission from the
+  respective Organisation / Department", accurately and with the source
+  prominently acknowledged. Every list credits CPPP; the NIC draft asks for
+  permission.
+
+## How it works
+- `discovery/cppp.js`: one parser for the three lists, the last page from
+  the pager, and page URLs built the way the portal's pager builds them.
+  Central and state rows store no link; they keep the portal's tender ID
+  (`tender_id`). GeM rows keep `gemtendersfullview/<hash>`, which opens for
+  anyone. A GeM "category" that is only item codes is dropped.
+- `discovery/portals.js`: where to find a tender. GeM: its link. State: the
+  state's GePNIC advanced search (29 portals, each checked to answer 200 on
+  15 Oct 2026; others fall back to CPPP). Central: CPPP's tender search.
+  Each row shows the ID to search for and a Copy button.
+- `discovery/collector.js`: one request at a time, 3 s apart (never under
+  2), `TenderTezBot/1.0` user agent. Every `intervalMinutes` (10) it re-reads
+  pages 1–3 of the central and state lists (newest first); between those it
+  sweeps every page of all three lists in turn, about 12,700 pages or 14
+  hours a pass. The cursor lives in `discovery_state`, so a restart or
+  deploy carries on. Errors or a page without the list (say, a captcha wall)
+  double the pause, from 1 minute up to 30. Tenders closed more than 60 days
+  ago are deleted. Never a captcha, a proxy, a document or a tender's own
+  page.
+- Migration 0010: `public_tenders` gains `kind`, `tender_id`, `department`,
+  `state`, `category` and indexes; new `discovery_state`; the old
+  session-bound links are blanked.
+- `repo/publicTenders.js`: search (list, state, organisation, open / closing
+  in 7 days / closed, newest or closing first, text over title, organisation,
+  tender ID, reference, department and state) and counts for the filter
+  menus (cached 5 minutes).
+- `GET /bidpilot/public/tenders` and `/public/tenders/facets`: no sign-in,
+  60 requests a minute per IP. `GET /feed` (signed in) uses the same search;
+  `POST /feed/:id/track` now finds an already-tracked tender by its tender
+  ID and stores the portal search link and the ID.
+
+## Pages
+- `/government-tenders` (public): tabs All / Central govt / States / GeM with
+  open counts, a grid of states and of the busiest organisations, state and
+  organisation menus with counts, status and sort, search; each row shows
+  its list, organisation or state, dates, a closing badge, the tender ID with
+  Copy, the portal link (new tab) and "Track free" (sign-up). Filters live in
+  the URL, so `?kind=state&state=Maharashtra` can be shared.
+- The in-app Tender feed is the same component with Track.
+- Public menu and footer: Find tenders, Features. Home: a "Find tenders" band
+  with live counts per list and the busiest states; eight feature cards
+  (tender search, key facts, eligibility, bid tracker, checklist, corrigendum
+  check, client workspaces, sources), each linking to `/features`, a new
+  page describing everything the product does.
+
+## Verification
+- Backend: `feed.test.js` (16): parsers on saved real pages
+  (`test/fixtures/cppp/`), links on allow-listed hosts, the collector
+  (order, cursor, resume, retention, errors), the public API (filters,
+  facets, rate limit) and Track. Full suite: the run's checks.md.
+- Frontend unit: URL filters round trip, row tags.
+- A real run against CPPP from the sandbox: 40 requests, no errors, 264
+  tenders.
+- Browser on the harness with those real tenders, 29/29
+  (`tender-search-verify.mjs`), including a stored GeM link opened with no
+  session (bid details shown, no "Invalid Url").
+- Found by the browser check: after a tab change the old list stayed on
+  screen with no sign it was stale; the list is now `aria-busy` and dimmed
+  until the new rows arrive.

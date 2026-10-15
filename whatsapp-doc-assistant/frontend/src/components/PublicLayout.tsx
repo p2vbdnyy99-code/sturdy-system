@@ -5,10 +5,13 @@ import { Logo } from './Logo';
 import { PRODUCT_NAME } from '../config/product';
 import { CONTACT_EMAIL } from '../config/site';
 
-// Header and footer for the public pages (home, pricing, FAQ, about). The
+// Header and footer for the public pages (home, tenders, features, pricing,
+// FAQ, about). The
 // phone menu is a <details> element: no script, so nothing for the CSP to
 // object to, and it works with the keyboard out of the box.
 const LINKS = [
+  { to: '/government-tenders', label: 'Find tenders' },
+  { to: '/features', label: 'Features' },
   { to: '/pricing', label: 'Pricing' },
   { to: '/faq', label: 'FAQ' },
   { to: '/about', label: 'About' },
@@ -53,10 +56,12 @@ export function PublicLayout({ children }: { children: ReactNode }) {
           <div className="public-footer-grid">
             <div className="public-footer-brand">
               <Logo size={26} />
-              <p>Reads government tender documents so you can decide faster whether to bid.</p>
+              <p>Find government tenders, read their documents in minutes, and track every bid to the result.</p>
             </div>
             <div>
               <p className="public-footer-heading">Product</p>
+              <Link to="/government-tenders">Find tenders</Link>
+              <Link to="/features">Features</Link>
               <Link to="/#how-it-works">How it works</Link>
               <Link to="/pricing">Pricing</Link>
               <Link to="/faq">FAQ</Link>
