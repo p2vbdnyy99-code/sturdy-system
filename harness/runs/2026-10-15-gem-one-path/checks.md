@@ -13,3 +13,5 @@
 | frontend lint | lint exits 0 | pass | 15 warnings, 0 errors |
 | frontend unit tests | all pass | pass | pass 47, fail 0, skipped 0 |
 | secret scan | no secrets in the change | pass | secret-scan: clean (--changes) |
+| live | deploy | pass | `analyzing_now=0 migrations=11` (no migration); `flyctl deploy` exit 0 (commit d8539ed) |
+| live | tendertez.in | pass | `gemfind-live.mjs` 14/14, PC and Pixel 7: "Find on GeM" copies GEM/2026/B/8127195 and opens GeM's list in a new tab; the GeM instruction shows; no "Bid details"; API rows have no `details`; `/document` 404; no sideways scroll; no console or CSP errors |

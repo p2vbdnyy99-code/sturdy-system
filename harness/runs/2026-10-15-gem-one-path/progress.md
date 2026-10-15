@@ -16,4 +16,4 @@ CLAUDE.md, architecture notes. Browser script `gem-find-verify.mjs` 14/14.
 None.
 
 ## Next action
-Wait for "commit and deploy". No migration.
+Deployed 15 Oct 2026 (commit d8539ed); live checks 14/14. Done.
