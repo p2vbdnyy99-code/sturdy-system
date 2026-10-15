@@ -12,7 +12,7 @@ import { fileURLToPath } from 'node:url';
 import express from 'express';
 import pg from 'pg';
 import { parseCpppList, parseLastPage, cpppPageUrl, cpppIdFromUrl, CPPP_LISTS } from '../../src/bidpilot/discovery/cppp.js';
-import { findOnPortal, bidDetails, normaliseState, LINK_HOSTS } from '../../src/bidpilot/discovery/portals.js';
+import { findOnPortal, normaliseState, LINK_HOSTS } from '../../src/bidpilot/discovery/portals.js';
 import { createCrawler, setDiscoveryFetch, USER_AGENT } from '../../src/bidpilot/discovery/collector.js';
 import { parseFeedQuery } from '../../src/bidpilot/repo/publicTenders.js';
 import { dbAvailable, DB_URL, testDb, closeTestDb, truncateAll } from '../db/helpers.js';
@@ -103,9 +103,6 @@ test('portals: every tender gets an https link on a known government host', () =
   const gem = findOnPortal({ kind: 'gem', tenderId: 'GEM/2026/B/1', url: 'https://eprocure.gov.in/cppp/gemtendersfullview/abc=' });
   assert.deepEqual(gem, { url: 'https://bidplus.gem.gov.in/all-bids', label: 'Find on GeM', searchFor: 'GEM/2026/B/1' },
     'GeM bids go to GeM\'s own bid list with the bid number (CPPP\'s doc_cppp PDF link failed on every device)');
-  assert.deepEqual(bidDetails({ kind: 'gem', url: 'https://eprocure.gov.in/cppp/gemtendersfullview/abc=' }), { url: 'https://eprocure.gov.in/cppp/gemtendersfullview/abc=', label: 'Bid details' });
-  assert.equal(bidDetails({ kind: 'gem', url: 'https://evil.example/cppp/gemtendersfullview/abc=' }), null, 'only CPPP GeM pages');
-  assert.equal(bidDetails({ kind: 'gem', url: null }), null);
   for (const list of ['central', 'state', 'gem']) {
     for (const row of parseCpppList(PAGES[list], list).rows) {
       const u = new URL(findOnPortal(row).url);
@@ -113,9 +110,6 @@ test('portals: every tender gets an https link on a known government host', () =
       assert.ok(LINK_HOSTS.has(u.host), `${u.host} is allow-listed`);
       assert.ok(!u.pathname.includes('tendersfullview'), 'no CPPP full-view link, GeM included');
       assert.ok(findOnPortal(row).searchFor, 'always an ID to search for');
-      const details = bidDetails(row);
-      if (list === 'gem') assert.match(details.url, /^https:\/\/eprocure\.gov\.in\/cppp\/gemtendersfullview\/[A-Za-z0-9+/=]+$/, 'GeM: CPPP\'s bid page, which opens for anyone');
-      else assert.equal(details, null, 'central and state tender pages need CPPP\'s session, so none');
     }
   }
 });
@@ -325,8 +319,7 @@ test('public tender search and the in-app feed with Track (HTTP)', { skip: SKIP_
       label: 'Search the Keralam e-tender portal', searchFor: '2026_LSGD_5_1',
     });
     assert.deepEqual(by['Office chairs'].find, { url: 'https://bidplus.gem.gov.in/all-bids', label: 'Find on GeM', searchFor: 'GEM/2026/B/6' });
-    assert.deepEqual(by['Office chairs'].details, { url: 'https://eprocure.gov.in/cppp/gemtendersfullview/abc=', label: 'Bid details' });
-    assert.ok(rows.filter((r) => r.kind !== 'gem').every((r) => r.details === null));
+    assert.ok(rows.every((r) => !('details' in r)), 'no CPPP GeM page link (its document link is broken)');
     assert.equal(by['Road repair Pune'].find.url, 'https://eprocure.gov.in/cppp/tendersearch');
     assert.equal(by['Road repair Pune'].find.searchFor, '2026_CPWD_1_1');
     assert.ok(!('url' in by['Road repair Pune']), 'no raw portal link is sent');

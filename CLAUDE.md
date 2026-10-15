@@ -99,8 +99,9 @@ Follow `harness/README.md`. In short:
   with the tender ID or bid number to search for (`discovery/portals.js`).
   CPPP's central and state tender links and its GeM `doc_cppp` PDF links
   don't work for users; don't use them. CPPP's GeM bid pages
-  (`gemtendersfullview/...`) do open for anyone and are shown as "Bid
-  details".
+  (`gemtendersfullview/...`) open, but their document link is that broken
+  doc_cppp link, so they aren't linked either (the founder removed "Bid
+  details"). GeM documents come from GeM's own search.
 - A "try" for the profile rule is a tender with a document; a tender tracked
   from the feed is analysed only after its PDF is attached.
 - Sign-in with Google and with a WhatsApp code each stay hidden until their

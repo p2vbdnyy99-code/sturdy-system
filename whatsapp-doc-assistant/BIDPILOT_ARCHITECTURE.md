@@ -3641,3 +3641,22 @@ button on every GeM row and none on state rows, new tab, full width on the
 phone. A details link opened with no session: 200, bid GEM/2026/B/8003830
 with organisation, dates, quantity and category; no "Invalid Url", no
 captcha.
+
+# One path to a GeM bid's document (Oct 2026)
+
+**Why.** The founder confirmed GeM's search finds a bid from its number, and
+that "Bid details" (CPPP's GeM page) led to a blank page: the page itself
+loads (checked in a phone browser, still showing the bid after 10 s), but
+its document link is CPPP's broken doc_cppp link. The founder asked to
+remove it. Run folder: `harness/runs/2026-10-15-gem-one-path/`.
+
+**Changed.** Removed `bidDetails`, the `details` field and the button. After
+"Find on GeM" the row says: "Bid number copied. On GeM, paste it into the
+search box, open the bid and download the document." FAQ and the CLAUDE.md
+rule updated: CPPP's GeM pages aren't linked.
+
+**Verification.** `feed.test.js` (17): rows carry no `details`.
+`gem-find-verify.mjs` 14/14 (PC and Pixel 7): no "Bid details", "Find on
+GeM" copies the bid number and opens GeM's list in a new tab, the GeM
+instruction shows, a state row copies its tender ID, full-width phone
+buttons, no CSP errors.
