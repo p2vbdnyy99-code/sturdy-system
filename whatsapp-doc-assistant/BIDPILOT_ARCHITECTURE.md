@@ -3545,3 +3545,42 @@ simple to use. Run folder: `harness/runs/2026-10-15-tender-search/`.
 - Found by the browser check: after a tab change the old list stayed on
   screen with no sign it was stale; the list is now `aria-busy` and dimmed
   until the new rows arrive.
+
+# GeM bid documents on phone and PC (Oct 2026)
+
+**Why.** The founder, on a phone, opened a GeM bid through CPPP, saw a few
+details and a bid document link, and got a blank page. Run folder:
+`harness/runs/2026-10-15-gem-documents/`.
+
+**Found.** CPPP's GeM page links the PDF at
+`bidplus.gem.gov.in/doc_cppp/<token>` (a plain link; the token was the same
+on repeated fetches). bidplus refuses connections from outside India, so the
+PDF can't be fetched from the sandbox or the Singapore server. Chrome on
+Android doesn't display PDFs: a PDF opened in a new tab downloads in the
+background and leaves the tab blank, which matches what the founder saw.
+
+**Changed.**
+- `GET /bidpilot/public/tenders/:id/document` (no sign-in, 20 a minute per
+  IP): for a GeM row only, reads its CPPP GeM page (only
+  `https://eprocure.gov.in/cppp/gemtendersfullview/...`), takes the doc_cppp
+  link (`discovery/gemDocument.js`), caches it 12 hours and answers 302 to
+  it; without a link, or on a network error, 302 to the GeM page; 404 for
+  other rows. The PDF is never fetched by us. Rows carry `documentUrl`.
+- GeM rows show "Bid document (PDF)". On a computer it opens in a new tab
+  (the browser shows the PDF); on a touch phone it opens in the same tab, so
+  Android shows its download prompt and the user stays on the list. One
+  line above the list on phones says where the download goes. "Open on
+  GeM-CPPP" is now "GeM bid page".
+- Phone layout: shorter intro and source note, the four tabs in one row,
+  filters two to a row (state or organisation full width), the state or
+  organisation grid shows its top 6 (the menu has all), row buttons full
+  width and 44 px tall. The first tender is now ~1,170 px down instead of
+  ~1,770.
+
+**Verification.** `feed.test.js` (18): the link on a saved real GeM page,
+only CPPP GeM pages fetched, redirect, cache (one fetch for two clicks),
+fallbacks, 404s, rate limit. Browser (`gem-doc-verify.mjs`, 10/10): PC new
+tab and phone same tab both go to the real doc_cppp URL (resolved live from
+CPPP); no new tab on the phone; buttons 44 px and full width; no sideways
+scroll; no CSP errors. What happens after GeM answers can only be seen from
+India. Tender search suite rerun 29/29.

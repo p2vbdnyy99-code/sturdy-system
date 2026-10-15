@@ -4587,6 +4587,20 @@ textarea {
   color: var(--navy-900);
 }
 
+.tb-doc {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.9rem;
+  box-shadow: none;
+}
+
+.tb-doc-hint {
+  margin: 0.25rem 0 0;
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+}
+
 .tb-cta {
   display: flex;
   flex-wrap: wrap;
@@ -4742,19 +4756,94 @@ textarea {
 }
 
 @media (max-width: 640px) {
+  /* Phone: get to the tenders sooner. */
+  .page-intro {
+    padding: 1.5rem 0 1.25rem;
+  }
+
+  .page-intro h1 {
+    font-size: 1.6rem;
+  }
+
+  .page-intro-lead p {
+    font-size: 0.98rem;
+  }
+
+  .tb-section {
+    padding-top: 1rem;
+  }
+
+  .tb-source {
+    padding: 0.65rem 0.8rem;
+    font-size: 0.82rem;
+  }
+
   .tb-kinds {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     width: 100%;
   }
 
-  .tb-select,
+  .tb-kinds button {
+    flex-direction: column;
+    gap: 0;
+    padding: 0.45rem 0.25rem;
+    font-size: 0.85rem;
+    line-height: 1.2;
+  }
+
+  .tb-filters {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+  }
+
+  .tb-search,
+  .tb-select-wide {
+    grid-column: 1 / -1;
+  }
+
+  /* The menus above list every state and organisation; the grid shows the top 6. */
+  .tb-grid-item:nth-child(n + 7) {
+    display: none;
+  }
+
+  .tb-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .tb-grid-item {
+    padding: 0.55rem 0.65rem;
+    font-size: 0.85rem;
+  }
+
   .tb-select select {
-    flex: 1 1 100%;
+    width: 100%;
     max-width: none;
+    min-height: 44px;
   }
 
+  /* Phone: the row's actions stack full width with thumb-sized targets. */
   .tb-side {
+    display: grid;
+    grid-template-columns: 1fr;
     width: 100%;
+    gap: 0.5rem;
+  }
+
+  .tb-side .queue-chip {
+    justify-self: start;
+  }
+
+  .tb-side .btn-link,
+  .tb-side button {
+    justify-content: center;
+    width: 100%;
+    min-height: 44px;
+  }
+
+  .tb-copy {
+    min-height: 44px;
+    padding: 0 0.5rem;
   }
 
   .home-tender-kinds {

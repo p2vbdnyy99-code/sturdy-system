@@ -138,7 +138,9 @@ const GROUPS: Array<{ title: string; items: Array<{ q: string; a: ReactNode }> }
         q: 'Why doesn’t the portal link open the tender directly?',
         a: <>Government portals ask for a captcha before they show a tender, and their tender links only work in
           the browser that opened them. So for central and state tenders we open the right portal&rsquo;s search
-          page and show the tender ID to copy and search for there. GeM bids open directly.</>,
+          page and show the tender ID to copy and search for there. For GeM bids, &ldquo;Bid document (PDF)&rdquo; takes
+          you straight to the bid&rsquo;s PDF on GeM; on a phone it downloads, so open it from your notifications or
+          Downloads.</>,
       },
       {
         q: 'Can I use it on my phone?',

@@ -18,10 +18,7 @@ export function GovernmentTendersPage() {
   return (
     <PublicLayout>
       <PageIntro kicker="Government tenders" title="Find government tenders across India">
-        <p>
-          Central ministries and PSUs, state e-procurement portals and GeM bids, in one search.
-          Filter by state or organisation and see what closes soon. Free, no sign-in needed.
-        </p>
+        <p>Central, state and GeM tenders in one search, by state or organisation. Free, no sign-in needed.</p>
         {open !== null && open > 0 && (
           <p className="tb-intro-count"><strong>{open.toLocaleString('en-IN')}</strong> open tenders right now</p>
         )}

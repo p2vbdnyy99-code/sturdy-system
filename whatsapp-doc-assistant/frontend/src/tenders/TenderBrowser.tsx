@@ -68,6 +68,7 @@ export function TenderBrowser({ load, onTrack }: Props) {
     }
   }
 
+  const touch = useTouchScreen();
   const pages = data ? Math.max(1, Math.ceil(data.total / data.limit)) : 1;
   const orgOptions = query.kind === 'central' || query.kind === 'gem' ? facets?.organisations[query.kind] ?? [] : [];
   const showStateGrid = query.kind === 'state' && !query.state && !query.search && (facets?.states.length ?? 0) > 0;
@@ -93,7 +94,7 @@ export function TenderBrowser({ load, onTrack }: Props) {
             onChange={(e) => setSearchInput(e.target.value)} />
         </label>
         {query.kind === 'state' && (
-          <label className="tb-select">
+          <label className="tb-select tb-select-wide">
             <span>State</span>
             <select value={query.state} onChange={(e) => update({ state: e.target.value })}>
               <option value="">All states</option>
@@ -103,7 +104,7 @@ export function TenderBrowser({ load, onTrack }: Props) {
           </label>
         )}
         {(query.kind === 'central' || query.kind === 'gem') && (
-          <label className="tb-select">
+          <label className="tb-select tb-select-wide">
             <span>Organisation</span>
             <select value={query.organisation} onChange={(e) => update({ organisation: e.target.value })}>
               <option value="">All organisations</option>
@@ -154,6 +155,9 @@ export function TenderBrowser({ load, onTrack }: Props) {
           {query.organisation && <> from {query.organisation}</>}
         </p>
       )}
+      {touch && data?.tenders.some((t) => t.documentUrl) && (
+        <p className="tb-doc-hint">On a phone a bid document downloads: open it from your notifications or Downloads.</p>
+      )}
       {data && data.tenders.length === 0 && (
         <EmptyState title="No tenders match" message={query.search ? 'Try fewer or different words.' : 'Try another status or list.'} />
       )}
@@ -177,6 +181,7 @@ export function TenderBrowser({ load, onTrack }: Props) {
 
 function TenderRow({ t, busy, onTrack }: { t: FeedTender; busy: boolean; onTrack?: () => void }) {
   const due = dueLabel(t.closingAt);
+  const touch = useTouchScreen();
   const [copied, setCopied] = useState(false);
   const who = [t.organisation, t.department && t.department !== t.organisation ? t.department : null].filter(Boolean).join(' · ');
 
@@ -212,6 +217,15 @@ function TenderRow({ t, busy, onTrack }: { t: FeedTender; busy: boolean; onTrack
       </div>
       <div className="tb-side">
         <span className={`queue-chip queue-chip-${due.tone}`} title={due.title}>{due.text}</span>
+        {t.documentUrl && (
+          // A computer shows the PDF in a new tab. A phone (Android especially)
+          // downloads PDFs instead, which left a blank new tab, so on a touch
+          // screen the link opens in this tab and the browser shows its
+          // download prompt while the user stays on this page.
+          <a className="btn-link btn-accent tb-doc" href={t.documentUrl} {...(touch ? {} : { target: '_blank', rel: 'noopener noreferrer' })}>
+            <Icon name="file" /> Bid document (PDF)
+          </a>
+        )}
         <a className="btn-link btn-secondary tb-find" href={t.find.url} target="_blank" rel="noopener noreferrer"
           title={t.find.searchFor ? `Opens the portal's search. Search for ${t.find.searchFor}.` : 'Opens the bid on the portal'}>
           {t.find.label} <span aria-hidden="true">↗</span>
@@ -222,4 +236,12 @@ function TenderRow({ t, busy, onTrack }: { t: FeedTender; busy: boolean; onTrack
       </div>
     </li>
   );
+}
+
+/** True on phones and tablets (a coarse pointer, no hover). */
+function useTouchScreen(): boolean {
+  const [touch] = useState(() => typeof window !== 'undefined'
+    && typeof window.matchMedia === 'function'
+    && window.matchMedia('(hover: none) and (pointer: coarse)').matches);
+  return touch;
 }

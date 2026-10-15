@@ -66,7 +66,7 @@ export const LINK_HOSTS = new Set(['eprocure.gov.in', ...Object.values(STATE_POR
  *   opens the tender itself).
  */
 export function findOnPortal({ kind, state, tenderId, url }) {
-  if (kind === 'gem' && url) return { url, label: 'Open on GeM-CPPP', searchFor: null };
+  if (kind === 'gem' && url) return { url, label: 'GeM bid page', searchFor: null };
   if (kind === 'state') {
     const host = STATE_PORTALS[normaliseState(state)];
     if (host) return { url: `https://${host}${SEARCH_PATH}`, label: `Search the ${state} e-tender portal`, searchFor: tenderId ?? null };

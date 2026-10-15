@@ -32,6 +32,8 @@ export type FeedTender = {
   openingAt: string | null;
   /** Where to open it: GeM opens the bid; others open the portal's search, with `searchFor` to look up. */
   find: { url: string; label: string; searchFor: string | null };
+  /** GeM bids: our link that sends the browser on to the bid's PDF on GeM. */
+  documentUrl: string | null;
 };
 
 export type FeedResult = { tenders: FeedTender[]; total: number; page: number; limit: number };

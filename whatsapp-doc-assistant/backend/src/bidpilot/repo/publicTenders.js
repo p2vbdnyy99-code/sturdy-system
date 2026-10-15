@@ -6,6 +6,7 @@
 import { and, asc, desc, eq, gte, ilike, isNotNull, lt, or, sql } from 'drizzle-orm';
 import { publicTenders, discoveryState } from '../../db/schema/index.js';
 import { findOnPortal } from '../discovery/portals.js';
+import { isGemViewUrl } from '../discovery/gemDocument.js';
 
 export const KINDS = ['central', 'state', 'gem'];
 export const STATUSES = ['open', 'closing', 'closed', 'all'];
@@ -77,6 +78,8 @@ export function toFeedRow(r) {
     closingAt: r.closingAt,
     openingAt: r.openingAt,
     find,
+    // GeM bids: our redirect to the bid's PDF on GeM (routes/publicTenders.js).
+    documentUrl: r.kind === 'gem' && isGemViewUrl(r.url) ? `/bidpilot/public/tenders/${r.id}/document` : null,
   };
 }
 

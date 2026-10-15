@@ -91,7 +91,10 @@ Follow `harness/README.md`. In short:
   tenders" lists (central, state, GeM), one page at a time with a pause of
   at least 2 seconds, identifying itself; off unless
   `BIDPILOT_DISCOVERY_CPPP=on`. Never solve or bypass a captcha, never use
-  proxies, never download documents or open a tender's own page, never read
+  proxies, never download documents or open a tender's own page (the one
+  exception: when a user clicks "Bid document" on a GeM bid, its public CPPP
+  GeM page is read once to find the PDF link, cached 12 hours, and the user
+  is redirected; the PDF itself is never fetched), never read
   a site whose robots.txt forbids it (IREPS does), and never copy another
   aggregator's data. Every list of tenders credits CPPP as the source, opens
   portal links in a new tab, and says plainly that it is not every tender.
