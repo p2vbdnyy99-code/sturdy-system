@@ -1,8 +1,12 @@
 // Where a user can open a tender from the feed. Government portals need a
 // captcha to show a tender, and CPPP's own links only work inside the
-// session that loaded its list, so for central and state tenders we link to
-// the right portal's search page and show the tender id to search for.
-// GeM bids have a stable public link (stored with the row).
+// session that loaded its list, so we link to the right portal's search page
+// and give the tender id (or GeM bid number) to search for.
+// GeM: CPPP's GeM pages link the PDF at bidplus.gem.gov.in/doc_cppp/..., and
+// that link failed for the founder on every device (Oct 2026). GeM's own
+// document links need GeM's internal bid number, which only GeM's
+// India-only servers give out, so GeM bids go to GeM's public bid list,
+// where searching the bid number shows the bid and GeM's document link.
 //
 // State portals: every URL below answered 200 with the NIC e-procurement
 // system (GePNIC) when checked on 15 Oct 2026. A state that isn't listed (or
@@ -10,6 +14,7 @@
 // CPPP's search. Keys are the state names as CPPP writes them, normalised.
 
 const CPPP_SEARCH = 'https://eprocure.gov.in/cppp/tendersearch';
+const GEM_BIDS = 'https://bidplus.gem.gov.in/all-bids';
 const SEARCH_PATH = '/nicgep/app?page=FrontEndAdvancedSearch&service=page';
 
 const STATE_PORTALS = {
@@ -58,15 +63,14 @@ export function normaliseState(name) {
 }
 
 /** The host names links may point to (tests check every link against these). */
-export const LINK_HOSTS = new Set(['eprocure.gov.in', ...Object.values(STATE_PORTALS)]);
+export const LINK_HOSTS = new Set(['eprocure.gov.in', 'bidplus.gem.gov.in', ...Object.values(STATE_PORTALS)]);
 
 /**
  * @returns {{ url: string, label: string, searchFor: string | null }}
- *   `searchFor` is the id to search for on that page (null when the link
- *   opens the tender itself).
+ *   `searchFor` is the id to search for on that page.
  */
-export function findOnPortal({ kind, state, tenderId, url }) {
-  if (kind === 'gem' && url) return { url, label: 'GeM bid page', searchFor: null };
+export function findOnPortal({ kind, state, tenderId }) {
+  if (kind === 'gem') return { url: GEM_BIDS, label: 'Find on GeM', searchFor: tenderId ?? null };
   if (kind === 'state') {
     const host = STATE_PORTALS[normaliseState(state)];
     if (host) return { url: `https://${host}${SEARCH_PATH}`, label: `Search the ${state} e-tender portal`, searchFor: tenderId ?? null };

@@ -4587,18 +4587,11 @@ textarea {
   color: var(--navy-900);
 }
 
-.tb-doc {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  font-size: 0.9rem;
-  box-shadow: none;
-}
-
-.tb-doc-hint {
-  margin: 0.25rem 0 0;
-  color: var(--color-text-muted);
+.tb-copied {
+  flex: 1 1 100%;
+  color: var(--color-success);
   font-size: 0.85rem;
+  font-weight: 600;
 }
 
 .tb-cta {

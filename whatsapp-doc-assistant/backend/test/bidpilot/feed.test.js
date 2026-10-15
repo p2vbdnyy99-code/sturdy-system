@@ -27,7 +27,6 @@ import { createTendersRouter } from '../../src/bidpilot/routes/tenders.js';
 import { createFeedRouter } from '../../src/bidpilot/routes/feed.js';
 import { createPublicTendersRouter } from '../../src/bidpilot/routes/publicTenders.js';
 import { _reset as resetRateLimits } from '../../src/ratelimit.js';
-import { parseGemDocumentLink, isGemViewUrl, setGemDocumentFetch, _resetGemDocumentCache } from '../../src/bidpilot/discovery/gemDocument.js';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const fixture = (name) => readFileSync(path.join(here, '..', 'fixtures', 'cppp', `${name}.html`), 'utf8');
@@ -102,25 +101,16 @@ test('portals: every tender gets an https link on a known government host', () =
   const central = findOnPortal({ kind: 'central', tenderId: '2026_NTPC_112765_1' });
   assert.equal(central.label, 'Search on CPPP');
   const gem = findOnPortal({ kind: 'gem', tenderId: 'GEM/2026/B/1', url: 'https://eprocure.gov.in/cppp/gemtendersfullview/abc=' });
-  assert.equal(gem.searchFor, null, 'the GeM link opens the bid itself');
+  assert.deepEqual(gem, { url: 'https://bidplus.gem.gov.in/all-bids', label: 'Find on GeM', searchFor: 'GEM/2026/B/1' },
+    'GeM bids go to GeM\'s own bid list with the bid number (CPPP\'s doc_cppp PDF link failed on every device)');
   for (const list of ['central', 'state', 'gem']) {
     for (const row of parseCpppList(PAGES[list], list).rows) {
       const u = new URL(findOnPortal(row).url);
       assert.equal(u.protocol, 'https:');
       assert.ok(LINK_HOSTS.has(u.host), `${u.host} is allow-listed`);
-      assert.ok(!u.pathname.includes('tendersfullview/') || list === 'gem', 'no session-bound link');
+      assert.ok(!u.pathname.includes('tendersfullview'), 'no CPPP full-view link, GeM included');
+      assert.ok(findOnPortal(row).searchFor, 'always an ID to search for');
     }
-  }
-});
-
-test('GeM document: the link on a saved real GeM page, and only CPPP GeM pages are fetched', () => {
-  assert.equal(parseGemDocumentLink(fixture('gem-view')),
-    'https://bidplus.gem.gov.in/doc_cppp/QIR1TV-89CMqf4eE6v3jszbgFydz1q8Tozz7plvMaZq0VspgxwamQJjABWPKF6bneZUTxMJxxTdbkArGGptF1A');
-  assert.equal(parseGemDocumentLink('<a href="https://evil.example/doc_cppp/x">x</a>'), null);
-  assert.equal(isGemViewUrl('https://eprocure.gov.in/cppp/gemtendersfullview/abc='), true);
-  for (const bad of ['https://evil.example/cppp/gemtendersfullview/abc=', 'http://eprocure.gov.in/cppp/gemtendersfullview/abc=',
-    'https://eprocure.gov.in/cppp/tendersfullview/abc=', 'https://eprocure.gov.in/cppp/gemtendersfullview/abc=/../x', null]) {
-    assert.equal(isGemViewUrl(bad), false, String(bad));
   }
 });
 
@@ -321,14 +311,14 @@ test('public tender search and the in-app feed with Track (HTTP)', { skip: SKIP_
     assert.deepEqual([page.json.total, page.json.page, page.json.tenders.length], [5, 2, 2]);
   });
 
-  await t.test('each row says where to find it; GeM opens directly, others give the id to search', async () => {
+  await t.test('each row says where to find it and the id to search for', async () => {
     const rows = (await pub('?status=all&limit=50')).json.tenders;
     const by = Object.fromEntries(rows.map((r) => [r.title, r]));
     assert.deepEqual(by['School building, Kochi'].find, {
       url: 'https://etenders.kerala.gov.in/nicgep/app?page=FrontEndAdvancedSearch&service=page',
       label: 'Search the Keralam e-tender portal', searchFor: '2026_LSGD_5_1',
     });
-    assert.deepEqual(by['Office chairs'].find, { url: 'https://eprocure.gov.in/cppp/gemtendersfullview/abc=', label: 'GeM bid page', searchFor: null });
+    assert.deepEqual(by['Office chairs'].find, { url: 'https://bidplus.gem.gov.in/all-bids', label: 'Find on GeM', searchFor: 'GEM/2026/B/6' });
     assert.equal(by['Road repair Pune'].find.url, 'https://eprocure.gov.in/cppp/tendersearch');
     assert.equal(by['Road repair Pune'].find.searchFor, '2026_CPWD_1_1');
     assert.ok(!('url' in by['Road repair Pune']), 'no raw portal link is sent');
@@ -345,35 +335,11 @@ test('public tender search and the in-app feed with Track (HTTP)', { skip: SKIP_
     assert.equal(f.json.lists.central.totalPages, 2889);
   });
 
-  await t.test('GeM rows carry a document link that redirects to the PDF on GeM', async () => {
-    const DOC = 'https://bidplus.gem.gov.in/doc_cppp/QIR1TV-89CMqf4eE6v3jszbgFydz1q8Tozz7plvMaZq0VspgxwamQJjABWPKF6bneZUTxMJxxTdbkArGGptF1A';
-    const fetched = [];
-    let page = fixture('gem-view');
-    setGemDocumentFetch(async (url) => { fetched.push(url); if (page === null) throw new Error('network down'); return { status: 200, text: async () => page }; });
-    _resetGemDocumentCache();
-    try {
-      const rows = (await pub('?status=all&limit=50')).json.tenders;
-      const gem = rows.find((r) => r.kind === 'gem');
-      assert.equal(gem.documentUrl, `/bidpilot/public/tenders/${gem.id}/document`);
-      assert.ok(rows.filter((r) => r.kind !== 'gem').every((r) => r.documentUrl === null));
-      const first = await send('GET', gem.documentUrl, { signedOut: true });
-      assert.deepEqual([first.status, first.location], [302, DOC]);
-      await send('GET', gem.documentUrl, { signedOut: true });
-      assert.deepEqual(fetched, ['https://eprocure.gov.in/cppp/gemtendersfullview/abc='], 'one fetch of the GeM page, then the cache');
-      _resetGemDocumentCache();
-      page = '<html>no link here</html>';
-      assert.equal((await send('GET', gem.documentUrl, { signedOut: true })).location, 'https://eprocure.gov.in/cppp/gemtendersfullview/abc=', 'no link found: the GeM page');
-      page = null;
-      assert.equal((await send('GET', gem.documentUrl, { signedOut: true })).location, 'https://eprocure.gov.in/cppp/gemtendersfullview/abc=', 'network error: the GeM page');
-      const central = rows.find((r) => r.kind === 'central');
-      assert.equal((await send('GET', `/bidpilot/public/tenders/${central.id}/document`, { signedOut: true })).status, 404);
-      assert.equal((await send('GET', '/bidpilot/public/tenders/not-a-uuid/document', { signedOut: true })).status, 404);
-      let last;
-      for (let i = 0; i < 20; i += 1) last = await send('GET', gem.documentUrl, { signedOut: true });
-      assert.equal(last.status, 429, '20 a minute per visitor');
-    } finally {
-      setGemDocumentFetch((...a) => fetch(...a));
-    }
+  await t.test('no document redirect: GeM rows point to GeM\'s bid search', async () => {
+    const rows = (await pub('?status=all&limit=50')).json.tenders;
+    const gem = rows.find((r) => r.kind === 'gem');
+    assert.ok(rows.every((r) => !('documentUrl' in r)));
+    assert.equal((await send('GET', `/bidpilot/public/tenders/${gem.id}/document`, { signedOut: true })).status, 404);
   });
 
   await t.test('the public search is rate-limited per visitor', async () => {

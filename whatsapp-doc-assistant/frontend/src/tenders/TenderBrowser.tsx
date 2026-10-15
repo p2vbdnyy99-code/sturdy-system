@@ -68,7 +68,6 @@ export function TenderBrowser({ load, onTrack }: Props) {
     }
   }
 
-  const touch = useTouchScreen();
   const pages = data ? Math.max(1, Math.ceil(data.total / data.limit)) : 1;
   const orgOptions = query.kind === 'central' || query.kind === 'gem' ? facets?.organisations[query.kind] ?? [] : [];
   const showStateGrid = query.kind === 'state' && !query.state && !query.search && (facets?.states.length ?? 0) > 0;
@@ -155,9 +154,6 @@ export function TenderBrowser({ load, onTrack }: Props) {
           {query.organisation && <> from {query.organisation}</>}
         </p>
       )}
-      {touch && data?.tenders.some((t) => t.documentUrl) && (
-        <p className="tb-doc-hint">On a phone a bid document downloads: open it from your notifications or Downloads.</p>
-      )}
       {data && data.tenders.length === 0 && (
         <EmptyState title="No tenders match" message={query.search ? 'Try fewer or different words.' : 'Try another status or list.'} />
       )}
@@ -181,16 +177,16 @@ export function TenderBrowser({ load, onTrack }: Props) {
 
 function TenderRow({ t, busy, onTrack }: { t: FeedTender; busy: boolean; onTrack?: () => void }) {
   const due = dueLabel(t.closingAt);
-  const touch = useTouchScreen();
-  const [copied, setCopied] = useState(false);
+  const [copied, setCopied] = useState<'button' | 'portal' | null>(null);
   const who = [t.organisation, t.department && t.department !== t.organisation ? t.department : null].filter(Boolean).join(' · ');
 
-  async function copy() {
-    if (!t.tenderId) return;
+  async function copy(how: 'button' | 'portal') {
+    const id = how === 'portal' ? t.find.searchFor : t.tenderId;
+    if (!id) return;
     try {
-      await navigator.clipboard.writeText(t.tenderId);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      await navigator.clipboard.writeText(id);
+      setCopied(how);
+      setTimeout(() => setCopied(null), how === 'portal' ? 8000 : 2000);
     } catch { /* the id stays visible to copy by hand */ }
   }
 
@@ -209,39 +205,31 @@ function TenderRow({ t, busy, onTrack }: { t: FeedTender; busy: boolean; onTrack
           <span className="tb-id">
             <span className="tb-id-label">{t.kind === 'gem' ? 'Bid number' : 'Tender ID'}</span>
             <code>{t.tenderId}</code>
-            <button type="button" className="link-button tb-copy" onClick={copy} aria-label={`Copy ${t.tenderId}`}>
-              {copied ? 'Copied' : 'Copy'}
+            <button type="button" className="link-button tb-copy" onClick={() => copy('button')} aria-label={`Copy ${t.tenderId}`}>
+              {copied === 'button' ? 'Copied' : 'Copy'}
             </button>
           </span>
         )}
       </div>
       <div className="tb-side">
         <span className={`queue-chip queue-chip-${due.tone}`} title={due.title}>{due.text}</span>
-        {t.documentUrl && (
-          // A computer shows the PDF in a new tab. A phone (Android especially)
-          // downloads PDFs instead, which left a blank new tab, so on a touch
-          // screen the link opens in this tab and the browser shows its
-          // download prompt while the user stays on this page.
-          <a className="btn-link btn-accent tb-doc" href={t.documentUrl} {...(touch ? {} : { target: '_blank', rel: 'noopener noreferrer' })}>
-            <Icon name="file" /> Bid document (PDF)
-          </a>
-        )}
+        {/* Portals need a search before they show a tender, so the button
+            copies the ID it needs as it opens the portal in a new tab. */}
         <a className="btn-link btn-secondary tb-find" href={t.find.url} target="_blank" rel="noopener noreferrer"
-          title={t.find.searchFor ? `Opens the portal's search. Search for ${t.find.searchFor}.` : 'Opens the bid on the portal'}>
+          onClick={() => { void copy('portal'); }}
+          title={t.find.searchFor ? `Copies ${t.find.searchFor} and opens the portal's search` : 'Opens the portal'}>
           {t.find.label} <span aria-hidden="true">↗</span>
         </a>
         {onTrack
           ? <button type="button" className="btn-primary" disabled={busy} onClick={onTrack}>{busy ? 'Adding…' : 'Track'}</button>
           : <Link to="/register" className="btn-link btn-primary">Track free</Link>}
+        {copied === 'portal' && (
+          <span className="tb-copied" role="status">
+            {t.kind === 'gem' ? 'Bid number' : 'Tender ID'} copied: paste it into the portal&rsquo;s search box.
+          </span>
+        )}
       </div>
     </li>
   );
 }
 
-/** True on phones and tablets (a coarse pointer, no hover). */
-function useTouchScreen(): boolean {
-  const [touch] = useState(() => typeof window !== 'undefined'
-    && typeof window.matchMedia === 'function'
-    && window.matchMedia('(hover: none) and (pointer: coarse)').matches);
-  return touch;
-}

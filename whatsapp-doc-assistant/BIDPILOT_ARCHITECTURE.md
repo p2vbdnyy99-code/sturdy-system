@@ -3584,3 +3584,37 @@ tab and phone same tab both go to the real doc_cppp URL (resolved live from
 CPPP); no new tab on the phone; buttons 44 px and full width; no sideways
 scroll; no CSP errors. What happens after GeM answers can only be seen from
 India. Tender search suite rerun 29/29.
+
+# GeM bids open GeM's own bid search (Oct 2026)
+
+**Why.** The "Bid document (PDF)" button (previous section) didn't work for
+the founder on Windows, iPhone or Android. It redirected to the
+`bidplus.gem.gov.in/doc_cppp/<token>` link that CPPP publishes, the same
+link that had shown a blank page on CPPP. GeM's working document links
+(`showbidDocument/<n>`) use GeM's internal bid number, which is not the bid
+number (GEM/2025/B/6799413's document is `showbidDocument/8483482`) and is
+given out only by GeM's servers, which refuse connections from outside India.
+The founder chose to send users to GeM's own bid search. Run folder:
+`harness/runs/2026-10-15-gem-find/`.
+
+**Changed.**
+- Removed the redirect route, `discovery/gemDocument.js`, `documentUrl` and
+  the PDF button. CPPP's GeM pages are no longer read at all.
+- GeM rows: "Find on GeM" opens `https://bidplus.gem.gov.in/all-bids` with
+  the bid number to search for; bidplus is an allowed link host.
+- Every row's portal button (central, state, GeM) copies the tender ID or
+  bid number as it opens the portal in a new tab, and the row says "copied:
+  paste it into the portal's search box".
+- Tracking a GeM bid stores GeM's bid list as its portal link and the bid
+  number as its reference.
+- The phone layout from the previous change stays.
+- CLAUDE.md lesson 19: don't ship a link you couldn't open yourself.
+
+**Verification.** `feed.test.js` (17): GeM → all-bids with the bid number,
+every fixture row's link https on an allowed host with an ID to search, no
+`documentUrl`, `/document` → 404. Browser (`gem-find-verify.mjs`, 11/11, PC
+and Pixel 7): "Find on GeM" goes to GeM's bid list in a new tab and the
+clipboard holds the bid number; a state row copies its tender ID; the
+copied note shows; no PDF button; no sideways scroll; no CSP errors. Tender
+search suite 29/29. GeM's bid search can only be tried from India: the
+founder checks it after the deploy.

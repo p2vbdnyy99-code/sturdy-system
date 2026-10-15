@@ -152,11 +152,9 @@ sibling of `backend/`/`frontend/`, since the Docker build needs both).
   are deleted, and `bidpilot discovery: cppp read failed (...)` with the next
   try (it backs off from 1 minute to 30). Database size: about 1 KB per
   tender, so ~130,000 tenders is ~150 MB. Turn it off by removing the secret.
-  "Bid document" on a GeM bid reads that bid's CPPP GeM page once (cached 12
-  hours, 20 clicks a minute per visitor) and redirects to the PDF on GeM;
-  failures log `bidpilot gem document: lookup failed (...)` and send the user
-  to the GeM page instead. bidplus.gem.gov.in refuses connections from
-  outside India, so the PDF can only be tested from an Indian network.
+  GeM bids link to GeM's bid list (bidplus.gem.gov.in/all-bids) with the bid
+  number copied; bidplus refuses connections from outside India, so GeM
+  links can only be tested from an Indian network.
   If NIC replies to the access request (draft in Gmail to
   support-eproc@nic.in), follow their terms before anything else.
 - **Corrigenda** use one AI call each against the company's daily analysis
