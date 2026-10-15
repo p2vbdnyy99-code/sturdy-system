@@ -20,8 +20,23 @@ export type DashboardSummary = {
   }>;
   /** Free trial or monthly plan; null when the company has no limit. */
   allowance: Allowance | null;
+  /** New tenders for the company's saved searches, not yet seen. */
+  newAlerts: number;
 };
 
 export function getDashboardSummary(companyId: string) {
   return request<DashboardSummary>('/bidpilot/dashboard/summary', { query: { companyId } });
+}
+
+/** EMD and bank guarantees still with buyers (routes/dashboard.js). */
+export type HeldSecurity = import('./tenders').Security & { tenderId: string; tenderTitle: string | null; tenderNumber: string | null };
+export type SecuritiesOverview = {
+  held: { count: number; amount: number; unknownAmounts: number };
+  expiringSoon: HeldSecurity[];
+  expired: HeldSecurity[];
+  items: HeldSecurity[];
+};
+
+export function getSecuritiesOverview(companyId: string) {
+  return request<SecuritiesOverview>('/bidpilot/dashboard/securities', { query: { companyId } });
 }

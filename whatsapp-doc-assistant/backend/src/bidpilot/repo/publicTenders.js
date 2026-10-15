@@ -41,7 +41,8 @@ export function parseFeedQuery(q) {
   };
 }
 
-function whereFor({ kind, status, search, state, organisation }, now) {
+/** The search's conditions; also used to match saved searches (savedSearches.js). */
+export function feedWhere({ kind, status, search, state, organisation }, now) {
   const c = [];
   if (kind !== 'all') c.push(eq(publicTenders.kind, kind));
   if (state) c.push(eq(publicTenders.state, state));
@@ -81,7 +82,7 @@ export function toFeedRow(r) {
 }
 
 export async function searchFeed(db, filters, now = new Date()) {
-  const where = whereFor(filters, now);
+  const where = feedWhere(filters, now);
   const order = filters.status === 'closed'
     ? [desc(publicTenders.closingAt)]
     : filters.sort === 'closing'

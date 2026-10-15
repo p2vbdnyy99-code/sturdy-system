@@ -31,6 +31,13 @@ export type CompanyProfile = {
   oemRelationships: string[];
   experience: Array<{ description?: string; value?: string; year?: string; client?: string }>;
   otherQualifications: string | null;
+  /** Optional letterhead details (LETTERHEAD_FIELDS), used to fill annexure drafts. */
+  registeredAddress: string | null;
+  pan: string | null;
+  signatoryName: string | null;
+  signatoryDesignation: string | null;
+  contactPhone: string | null;
+  contactEmail: string | null;
   /** Fields answered "None" (see profileFields.ts). */
   noneFields: string[];
   /** Mandatory fields still unanswered; empty when the profile is complete. */

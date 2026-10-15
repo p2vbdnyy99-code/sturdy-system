@@ -47,3 +47,16 @@ export function describeMissing(keys: string[]): string {
   if (labels.length <= 3) return labels.join(', ');
   return `${labels.slice(0, 2).join(', ')} and ${labels.length - 2} more`;
 }
+
+/** Optional letterhead details (backend letterhead.js): never needed for a
+ *  complete profile; annexure drafts fill their blanks from them. */
+export type LetterheadKey = 'registeredAddress' | 'pan' | 'signatoryName' | 'signatoryDesignation' | 'contactPhone' | 'contactEmail';
+
+export const LETTERHEAD_FIELDS: Array<{ key: LetterheadKey; label: string; hint?: string; multiline?: boolean; maxLength: number }> = [
+  { key: 'registeredAddress', label: 'Registered address', multiline: true, maxLength: 400 },
+  { key: 'pan', label: 'PAN', hint: 'e.g. ABCDE1234F', maxLength: 10 },
+  { key: 'signatoryName', label: 'Authorised signatory', hint: 'the person who signs bids', maxLength: 120 },
+  { key: 'signatoryDesignation', label: 'Signatory\u2019s designation', hint: 'e.g. Proprietor, Director', maxLength: 120 },
+  { key: 'contactPhone', label: 'Phone', maxLength: 20 },
+  { key: 'contactEmail', label: 'Email', maxLength: 160 },
+];

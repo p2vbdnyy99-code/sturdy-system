@@ -141,6 +141,17 @@ sibling of `backend/`/`frontend/`, since the Docker build needs both).
   - `BIDPILOT_GA4_ENDPOINT` can point at
     `https://www.google-analytics.com/debug/mp/collect` to check payloads
     (nothing is recorded there).
+- **EMD and guarantees, saved-search alerts, annexure drafts (Oct 2026):**
+  - They need migration 0011, which is additive: four tables and six
+    optional profile columns.
+  - The saved-search matcher runs in the app every 10 minutes and logs
+    `metric bidpilot_alerts new_matches=N`.
+  - Annexure drafts are one AI call each, at most
+    `BIDPILOT_ANNEXURE_MAX_DRAFTS_PER_COMPANY_PER_DAY` (default 30) per
+    company per 24 hours, recorded as `tender_annexure_draft` in
+    `usage_records`.
+  - Alerts are only shown in the app. An email digest needs an email
+    service first (none is connected).
 - **Applying a migration from inside the app server** (works with the app's
   own deploy token): after deploying the code that contains it, run in
   `fly ssh console`, from `/app/backend`, drizzle-orm's migrator

@@ -7,7 +7,7 @@ import {
   getCompanyProfile, updateCompanyProfile,
   type CompanyProfile, type CompanyProfilePatch,
 } from '../../api/companies';
-import { PROFILE_FIELDS, describeMissing, type ProfileField, type ProfileFieldKey } from '../../profileFields';
+import { LETTERHEAD_FIELDS, PROFILE_FIELDS, describeMissing, type LetterheadKey, type ProfileField, type ProfileFieldKey } from '../../profileFields';
 import { useShellData } from '../../shell/ShellData';
 import { getClientProfile, listClients, updateClientProfile } from '../../api/clients';
 import { FREE_TENDERS_WITHOUT_PROFILE } from '../../shell/profileGate';
@@ -22,6 +22,16 @@ import { FREE_TENDERS_WITHOUT_PROFILE } from '../../shell/profileGate';
 
 type ExperienceRow = { description: string; value: string; year: string; client: string };
 type FormState = Record<Exclude<ProfileFieldKey, 'experience'>, string> & { experience: ExperienceRow[] };
+type LetterheadState = Record<LetterheadKey, string>;
+const EMPTY_LETTERHEAD: LetterheadState = {
+  registeredAddress: '', pan: '', signatoryName: '', signatoryDesignation: '', contactPhone: '', contactEmail: '',
+};
+const letterheadFrom = (p: CompanyProfile | null): LetterheadState => (p
+  ? Object.fromEntries(LETTERHEAD_FIELDS.map((f) => [f.key, p[f.key] ?? ''])) as LetterheadState
+  : EMPTY_LETTERHEAD);
+const letterheadPatch = (l: LetterheadState): CompanyProfilePatch => Object.fromEntries(
+  LETTERHEAD_FIELDS.map((f) => [f.key, l[f.key].trim() || null]),
+) as CompanyProfilePatch;
 
 const EMPTY_FORM: FormState = {
   industry: '', businessType: '', gstin: '', registrationDetails: '',
@@ -101,6 +111,7 @@ export function CompanyProfilePage() {
   const from = (location.state as { from?: string } | null)?.from;
 
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
+  const [letterhead, setLetterhead] = useState<LetterheadState>(EMPTY_LETTERHEAD);
   const [none, setNone] = useState<Set<string>>(new Set());
   const [missing, setMissing] = useState<string[]>([]);
   const [showMissing, setShowMissing] = useState(false);
@@ -117,6 +128,7 @@ export function CompanyProfilePage() {
       const profile = clientId ? await getClientProfile(companyId, clientId) : await getCompanyProfile(companyId);
       if (clientId) setClientName((await listClients(companyId)).clients.find((c) => c.id === clientId)?.name ?? 'Client');
       setForm(profileToForm(profile));
+      setLetterhead(letterheadFrom(profile));
       setNone(new Set(profile?.noneFields ?? []));
       setMissing(profile?.missing ?? PROFILE_FIELDS.map((f) => f.key));
     } catch (err) {
@@ -153,9 +165,10 @@ export function CompanyProfilePage() {
     setSaving(true);
     setSaved(false);
     try {
-      const patch = formToPatch(form, none);
+      const patch = { ...formToPatch(form, none), ...letterheadPatch(letterhead) };
       const updated = clientId ? await updateClientProfile(companyId, clientId, patch) : await updateCompanyProfile(companyId, patch);
       setForm(profileToForm(updated));
+      setLetterhead(letterheadFrom(updated));
       setNone(new Set(updated.noneFields));
       setMissing(updated.missing);
       setShowMissing(true);
@@ -289,6 +302,31 @@ export function CompanyProfilePage() {
               {PROFILE_FIELDS.filter((f) => f.kind !== 'list' && f.kind !== 'experience' && f.key !== 'otherQualifications').map(renderField)}
             </div>
             {PROFILE_FIELDS.filter((f) => f.kind === 'list' || f.kind === 'experience' || f.key === 'otherQualifications').map(renderField)}
+
+            <fieldset className="letterhead">
+              <legend>Letterhead details <span className="muted">(optional)</span></legend>
+              <p className="field-hint letterhead-hint">
+                Used only to fill annexure drafts from a tender. Leave any of these empty and the draft marks it
+                &ldquo;to fill&rdquo;. They don&rsquo;t count towards a complete profile.
+              </p>
+              <div className="profile-grid">
+                {LETTERHEAD_FIELDS.map((f) => (
+                  <div key={f.key} className={`field${f.multiline ? ' letterhead-wide' : ''}`}>
+                    <label htmlFor={`letterhead-${f.key}`}>
+                      {f.label}{f.hint && <span className="field-hint"> ({f.hint})</span>}
+                    </label>
+                    {f.multiline ? (
+                      <textarea id={`letterhead-${f.key}`} rows={3} maxLength={f.maxLength} value={letterhead[f.key]}
+                        onChange={(e) => { setLetterhead((l) => ({ ...l, [f.key]: e.target.value })); setSaved(false); }} />
+                    ) : (
+                      <input id={`letterhead-${f.key}`} type={f.key === 'contactEmail' ? 'email' : f.key === 'contactPhone' ? 'tel' : 'text'}
+                        maxLength={f.maxLength} value={letterhead[f.key]}
+                        onChange={(e) => { setLetterhead((l) => ({ ...l, [f.key]: e.target.value })); setSaved(false); }} />
+                    )}
+                  </div>
+                ))}
+              </div>
+            </fieldset>
 
             {saveError && <p role="alert" className="error-text">{saveError}</p>}
             {showMissing && missing.length > 0 && !saving && (

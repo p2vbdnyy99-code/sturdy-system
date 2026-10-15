@@ -41,6 +41,15 @@ export function profileColumns() {
     // "experience" requirement.
     experience: jsonb('experience').$type().default(sql`'[]'::jsonb`),
     otherQualifications: text('other_qualifications'),
+    // Letterhead details (Oct 2026): optional, never part of a complete
+    // profile (profileCompleteness.js ignores them). Annexure drafts fill
+    // their blanks from these; an empty one stays a marked blank.
+    registeredAddress: text('registered_address'),
+    pan: text('pan'),
+    signatoryName: text('signatory_name'),
+    signatoryDesignation: text('signatory_designation'),
+    contactPhone: text('contact_phone'),
+    contactEmail: text('contact_email'),
     // Fields the company has answered "None" for (e.g. no OEM tie-ups), so a
     // required list can be complete without inventing an entry. See
     // bidpilot/profileCompleteness.js.

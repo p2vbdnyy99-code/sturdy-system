@@ -4848,3 +4848,343 @@ textarea {
     padding: 1.25rem;
   }
 }
+
+/* ─── EMD & guarantees (tender page) and "Money with buyers" (dashboard) ─── */
+.security-card {
+  padding: 1rem 1.2rem 1.2rem;
+}
+
+.security-hint {
+  margin: 0 0 0.75rem;
+  padding: 0.55rem 0.75rem;
+  border-radius: var(--radius-sm);
+  background: var(--navy-50);
+  font-size: 0.9rem;
+}
+
+.security-list {
+  list-style: none;
+  margin: 0 0 0.75rem;
+  padding: 0;
+  display: grid;
+  gap: 0.6rem;
+}
+
+.security-item {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 0.65rem 0.75rem;
+}
+
+.security-item-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  font-weight: 600;
+}
+
+.security-kind {
+  color: var(--color-text);
+}
+
+.security-amount {
+  color: var(--navy-800);
+  white-space: nowrap;
+}
+
+.security-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.75rem;
+  margin: 0.2rem 0 0;
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+  overflow-wrap: anywhere;
+}
+
+.security-expiry {
+  margin: 0.3rem 0 0;
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}
+
+.security-expiry-soon {
+  color: var(--color-danger);
+  font-weight: 600;
+}
+
+.security-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.security-status select {
+  padding: 0.3rem 0.5rem;
+  font-size: 0.85rem;
+}
+
+.security-form .field input,
+.security-form .field select,
+.security-form .field textarea {
+  display: block;
+  width: 100%;
+  margin-top: 0.35rem;
+  font-weight: 400;
+}
+
+.security-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 0.75rem;
+}
+
+.security-delete {
+  margin-left: auto;
+  color: var(--color-danger);
+}
+
+.security-add {
+  width: 100%;
+}
+
+.securities-summary {
+  padding: 1rem 1.2rem;
+}
+
+.securities-total {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.securities-total strong {
+  font-size: 1.35rem;
+  color: var(--navy-900);
+}
+
+.securities-urgent {
+  list-style: none;
+  margin: 0.85rem 0 0;
+  padding: 0;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.securities-urgent-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.55rem 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+}
+
+.securities-urgent-link {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.securities-urgent-title {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 480px) {
+  .security-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .securities-urgent-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+/* ─── Saved searches: the rail count, the saved list and "New" tags ─────── */
+.shell-rail-link {
+  position: relative;
+}
+
+.shell-rail-badge {
+  position: absolute;
+  top: 2px;
+  right: 0;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: var(--saffron-500);
+  color: var(--navy-950);
+  font-size: 0.7rem;
+  font-weight: 800;
+  line-height: 20px;
+  text-align: center;
+  box-shadow: 0 0 0 2px var(--color-surface);
+}
+
+.tb-tag-new {
+  background: var(--saffron-100);
+  color: var(--saffron-700);
+}
+
+.saved-card {
+  padding: 1rem 1.2rem;
+}
+
+.saved-list {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0 0 0.75rem;
+  padding: 0;
+}
+
+.saved-chip {
+  display: inline-flex;
+  align-items: stretch;
+  max-width: 100%;
+  border: 1px solid var(--navy-200);
+  border-radius: 999px;
+  background: var(--navy-50);
+  overflow: hidden;
+}
+
+.saved-chip-open,
+.saved-chip-delete {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  color: var(--navy-800);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.saved-chip-open {
+  padding: 0.35rem 0.4rem 0.35rem 0.85rem;
+  overflow-wrap: anywhere;
+  text-align: left;
+}
+
+.saved-chip-delete {
+  padding: 0.35rem 0.75rem 0.35rem 0.4rem;
+  color: var(--color-text-muted);
+}
+
+.saved-chip-open:hover:not(:disabled),
+.saved-chip-delete:hover:not(:disabled) {
+  background: var(--navy-100);
+}
+
+.saved-empty {
+  margin: 0;
+}
+
+.saved-message {
+  margin: 0 0 0.75rem;
+}
+
+.saved-save {
+  padding: 0.45rem 0.9rem;
+  font-size: 0.85rem;
+}
+
+/* ─── Annexure drafts (tender page) and letterhead details (profile) ────── */
+.annexures-intro {
+  margin: 0 0 1rem;
+}
+
+.annexure-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.6rem;
+}
+
+.annexure-item {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+}
+
+.annexure-main {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.annexure-title {
+  font-weight: 650;
+  overflow-wrap: anywhere;
+}
+
+.annexure-pages,
+.annexure-blanks {
+  font-size: 0.85rem;
+}
+
+.annexure-missing {
+  font-size: 0.85rem;
+  color: var(--color-warning);
+}
+
+.annexure-notice {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}
+
+.annexure-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.4rem;
+  flex-shrink: 0;
+}
+
+.letterhead {
+  margin: 1.5rem 0 0;
+  padding: 1rem 1rem 0.25rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  min-width: 0;
+}
+
+.letterhead legend {
+  padding: 0 0.4rem;
+  font-weight: 650;
+}
+
+.letterhead-hint {
+  margin: 0 0 0.75rem;
+}
+
+.letterhead-wide {
+  grid-column: 1 / -1;
+}
+
+.letterhead textarea {
+  display: block;
+  width: 100%;
+  margin-top: 0.35rem;
+}
+
+@media (max-width: 560px) {
+  .annexure-item {
+    flex-direction: column;
+  }
+
+  .annexure-actions {
+    align-items: flex-start;
+    flex-direction: row;
+  }
+}

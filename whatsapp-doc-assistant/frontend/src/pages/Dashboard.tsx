@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState, type ChangeEvent } from 'reac
 import { Link } from 'react-router-dom';
 import { Breadcrumb, Panel } from '../components/AppShell';
 import { useShellData } from '../shell/ShellData';
+import { SecuritiesSummary } from '../dashboard/SecuritiesSummary';
 import { profileReminder } from '../shell/profileGate';
 import { STAGE_LABEL } from '../tenderDetail/stages';
 import { listClients, type Client } from '../api/clients';
@@ -220,6 +221,8 @@ export function DashboardPage() {
         </Panel>
         <NextDeadlineCard tender={next} loading={shell.loading} onUpload={onUploadClick} />
       </div>
+
+      <SecuritiesSummary companyId={companyId} reloadKey={summary} />
 
       {summary && summary.recentTenders.length > 0 && (
         <Panel id="recent" icon="history" title="Recently uploaded" aside={<span className="panel-count">{summary.recentTenders.length}</span>}>

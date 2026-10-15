@@ -26,12 +26,17 @@ const GROUPS: Array<{ title: string; items: Array<{ q: string; a: ReactNode }> }
       },
       {
         q: 'Does it find tenders for me?',
-        a: <>No. You bring the tender you&rsquo;re considering; {PRODUCT_NAME} helps you understand it quickly.</>,
+        a: <>It helps. The tender search lists central, state and GeM tenders from the Central Public Procurement
+          Portal&rsquo;s public lists (not every tender in India). Signed in, you can save a search, and new tenders
+          that match it show in the app. Reading a tender still starts with its PDF, which you download from the
+          portal.</>,
       },
       {
         q: 'Does it fill in or submit my bid?',
-        a: <>No. It helps you decide whether to bid and what you&rsquo;ll need. Preparing and submitting the bid
-          stays with you.</>,
+        a: <>It never submits a bid or fills in prices. It can draft the tender&rsquo;s own annexures and forms
+          (undertakings, declarations, bidder details) with your details from your profile, as Word files for you
+          to check, print on your letterhead and sign. Anything your profile doesn&rsquo;t hold is marked &ldquo;to
+          fill&rdquo;. Preparing and submitting the bid stays with you.</>,
       },
     ],
   },
@@ -85,7 +90,9 @@ const GROUPS: Array<{ title: string; items: Array<{ q: string; a: ReactNode }> }
         q: 'Where does my document go?',
         a: <>The PDF is stored on our server. To analyse it, the document&rsquo;s text is sent to OpenAI&rsquo;s API.
           OpenAI states that data sent through its API is not used to train its models and is kept for up to 30
-          days for abuse monitoring (<a href="https://developers.openai.com/api/docs/guides/your-data" target="_blank" rel="noreferrer">OpenAI&rsquo;s data policy</a>).</>,
+          days for abuse monitoring (<a href="https://developers.openai.com/api/docs/guides/your-data" target="_blank" rel="noreferrer">OpenAI&rsquo;s data policy</a>).
+          When you draft an annexure, only the text of that form&rsquo;s pages is sent; your profile details are
+          filled in on our server.</>,
       },
       // Only offered once there is a real address to write to.
       ...(CONTACT_EMAIL ? [{
@@ -118,7 +125,9 @@ const GROUPS: Array<{ title: string; items: Array<{ q: string; a: ReactNode }> }
         a: <>Yes. On each tender, set its stage (Interested, Preparing bid, Submitted, Won and so on), your own
           internal deadline and notes. The Checklist tab lists every condition the tender sets, with its page, so
           you can tick off each document as it&rsquo;s ready and download the list as an Excel sheet. When a
-          department issues a corrigendum, upload it on the tender to see what it changes.</>,
+          department issues a corrigendum, upload it on the tender to see what it changes. You can also record how
+          the EMD or a bank guarantee was given and whether it came back; the dashboard lists guarantees that
+          expire within 30 days.</>,
       },
       {
         q: 'I prepare bids for several firms. Can I keep them apart?',

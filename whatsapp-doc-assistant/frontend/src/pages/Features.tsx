@@ -19,6 +19,7 @@ const FEATURE_GROUPS: Array<{ id: string; icon: IconName; title: string; lead: s
       'GeM bids with their department and bid number',
       'Filter by open, closing within 7 days or closed; sort by newest or closing soonest',
       'Copy the tender ID and open the right portal\'s search in one click',
+      'Save a search (say, Maharashtra road works) and new matching tenders show in the app',
     ],
     link: { to: '/government-tenders', label: 'Search tenders now' },
   },
@@ -50,6 +51,8 @@ const FEATURE_GROUPS: Array<{ id: string; icon: IconName; title: string; lead: s
       'Stages: New, Reviewing, Interested, Preparing bid, Submitted, Won, Not won, Dropped',
       'Your own internal deadline, notes, and the portal\'s tender ID and link',
       'Filter the dashboard by stage; deadlines counted down in the sidebar',
+      'EMD and performance security: online, DD, bank guarantee, FDR or exempt, and whether it came back',
+      'The dashboard shows the money still with buyers and bank guarantees that expire within 30 days',
     ],
   },
   {
@@ -58,6 +61,18 @@ const FEATURE_GROUPS: Array<{ id: string; icon: IconName; title: string; lead: s
     title: 'Submission checklist',
     lead: 'A checklist of the documents and proofs the tender asks for, built from the tender itself, with page numbers.',
     points: ['Tick items as they\'re ready; add your own', 'Download it as an Excel sheet to share with your team'],
+  },
+  {
+    id: 'annexures',
+    icon: 'file',
+    title: 'Annexure drafts',
+    lead: 'The tender\'s own undertakings, declarations and forms, filled in with your details, as Word files to check, print on your letterhead and sign.',
+    points: [
+      'Uses the tender\'s exact wording; nothing is added',
+      'Your name, address, PAN, GSTIN and signatory come from your profile (or your client\'s)',
+      'Anything your profile doesn\'t have is marked "to fill", never guessed',
+      'Price bids and BOQs are never drafted',
+    ],
   },
   {
     id: 'corrigendum',

@@ -175,7 +175,8 @@ export function TenderBrowser({ load, onTrack }: Props) {
   );
 }
 
-function TenderRow({ t, busy, onTrack }: { t: FeedTender; busy: boolean; onTrack?: () => void }) {
+/** One tender in a list; also used for the feed's "New for your searches". */
+export function TenderRow({ t, busy, onTrack, isNew = false }: { t: FeedTender; busy: boolean; onTrack?: () => void; isNew?: boolean }) {
   const due = dueLabel(t.closingAt);
   const [copied, setCopied] = useState<'button' | 'portal' | null>(null);
   const who = [t.organisation, t.department && t.department !== t.organisation ? t.department : null].filter(Boolean).join(' · ');
@@ -194,6 +195,7 @@ function TenderRow({ t, busy, onTrack }: { t: FeedTender; busy: boolean; onTrack
     <li className="tb-item">
       <div className="tb-main">
         <span className={`tb-tag tb-tag-${t.kind}`}>{kindTag(t)}</span>
+        {isNew && <span className="tb-tag tb-tag-new">New</span>}
         <span className="tb-title">{t.title}</span>
         {who && <span className="tb-who">{who}</span>}
         <span className="tb-dates">

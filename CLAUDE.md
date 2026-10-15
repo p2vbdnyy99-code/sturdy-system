@@ -106,6 +106,12 @@ Follow `harness/README.md`. In short:
   (`gemtendersfullview/...`) open, but their document link is that broken
   doc_cppp link, so they aren't linked either (the founder removed "Bid
   details"). GeM documents come from GeM's own search.
+- Annexure drafts: the AI sees the format's page text and field names only,
+  never a profile value; it places placeholders and the server fills them
+  (`analysis/annexures.js`, `annexureDocx.js`). Paragraphs not on the
+  tender's pages are dropped, a missing value prints "[to fill: …]", and
+  price bids and BOQs are never offered. Letterhead fields stay optional and
+  out of `REQUIRED_FIELDS`.
 - A "try" for the profile rule is a tender with a document; a tender tracked
   from the feed is analysed only after its PDF is attached.
 - Sign-in with Google and with a WhatsApp code each stay hidden until their
@@ -204,6 +210,12 @@ was blocked and why.
     `overwrite: true` replaces the whole set and would break email.
 21. `verify.sh` truncates `bidpilot_dev`, which deletes the harness account.
     Run `design-seed.sh` again before a browser check that signs in.
+22. In drizzle, a correlated subquery written with `sql` can render the outer
+    column unqualified ("id"), which then matches the inner table: a count
+    of unseen alerts read 0. Use a separate grouped query instead.
+23. The harness server caches index.html at start. After rebuilding the
+    frontend, restart it, or the page loads old asset names and shows
+    nothing.
 
 ## Parallel work
 

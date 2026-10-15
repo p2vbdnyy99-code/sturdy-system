@@ -13,6 +13,7 @@ import { requireCsrf } from '../auth/csrf.js';
 import { requireCompanyAccess, TenantAccessError } from '../repo/tenants.js';
 import { createCompanyForUser, getCompanyProfile, upsertCompanyProfile } from '../repo/companies.js';
 import { cleanNoneFields, missingProfileFields } from '../profileCompleteness.js';
+import { LETTERHEAD_FIELDS, checkLetterhead } from '../letterhead.js';
 import {
   listClients, getClient, createClient, renameClient, deleteClient, getClientProfile, upsertClientProfile,
   ClientNameTakenError, CLIENT_NAME_MAX,
@@ -25,6 +26,7 @@ const PROFILE_FIELDS = [
   'yearsInBusiness', 'annualTurnover', 'netWorth', 'employeeCount',
   'geography', 'certifications', 'licenses', 'equipment',
   'oemRelationships', 'experience', 'otherQualifications', 'noneFields',
+  ...LETTERHEAD_FIELDS,
 ];
 
 function pickProfileFields(body) {
@@ -81,7 +83,9 @@ export function createCompaniesRouter() {
       const db = getDb();
       await requireCompanyAccess(db, { userId: req.bidpilotUserId, companyId: req.params.id });
       const fields = pickProfileFields(req.body);
-      const profile = await upsertCompanyProfile(db, req.params.id, fields);
+      const letterhead = checkLetterhead(fields);
+      if (!letterhead.ok) return res.status(400).json({ error: letterhead.error });
+      const profile = await upsertCompanyProfile(db, req.params.id, letterhead.fields);
       return res.json({ ...profile, missing: missingProfileFields(profile) });
     } catch (err) {
       handleError(res, err);
@@ -173,7 +177,9 @@ export function createCompaniesRouter() {
     try {
       const ctx = await clientScope(req, res);
       if (!ctx) return;
-      const profile = await upsertClientProfile(ctx.scope, ctx.client.id, pickProfileFields(req.body));
+      const letterhead = checkLetterhead(pickProfileFields(req.body));
+      if (!letterhead.ok) return res.status(400).json({ error: letterhead.error });
+      const profile = await upsertClientProfile(ctx.scope, ctx.client.id, letterhead.fields);
       return res.json({ ...profile, missing: missingProfileFields(profile) });
     } catch (err) {
       handleError(res, err);

@@ -333,3 +333,68 @@ export function attachTenderDocument(tenderId: string, companyId: string, file: 
   form.append('companyId', companyId);
   return request<{ tenderId: string; processingStatus: ProcessingStatus }>(`/bidpilot/tenders/${tenderId}/document`, { method: 'POST', body: form });
 }
+
+// ── EMD and performance security (routes/tenders.js, repo/securities.js) ──
+export type SecurityKind = 'EMD' | 'PERFORMANCE';
+export type SecurityMode = 'ONLINE' | 'DD' | 'BG' | 'FDR' | 'EXEMPTED' | 'NOT_REQUIRED';
+export type SecurityStatus = 'TO_ARRANGE' | 'SUBMITTED' | 'RETURNED' | 'FORFEITED';
+
+export type Security = {
+  id: string;
+  kind: SecurityKind;
+  mode: SecurityMode;
+  amount: number | null;
+  reference: string | null;
+  bank: string | null;
+  issuedOn: string | null;
+  validUntil: string | null;
+  claimUntil: string | null;
+  status: SecurityStatus;
+  notes: string | null;
+  updatedAt: string;
+};
+
+export type SecurityInput = Partial<Omit<Security, 'id' | 'updatedAt'>>;
+
+export function listSecurities(tenderId: string, companyId: string) {
+  return request<{ securities: Security[] }>(`/bidpilot/tenders/${tenderId}/securities`, { query: { companyId } });
+}
+
+export function createSecurity(tenderId: string, companyId: string, input: SecurityInput) {
+  return request<Security>(`/bidpilot/tenders/${tenderId}/securities`, { method: 'POST', body: { companyId, ...input } });
+}
+
+export function updateSecurity(tenderId: string, companyId: string, id: string, input: SecurityInput) {
+  return request<Security>(`/bidpilot/tenders/${tenderId}/securities/${id}`, { method: 'PATCH', body: { companyId, ...input } });
+}
+
+export function deleteSecurity(tenderId: string, companyId: string, id: string) {
+  return request<{ deleted: boolean }>(`/bidpilot/tenders/${tenderId}/securities/${id}`, { method: 'DELETE', body: { companyId } });
+}
+
+// ── Annexure drafts (routes/tenders.js, analysis/annexures.js) ─────────────
+export type AnnexureDraftSummary = {
+  draftedAt: string;
+  paragraphs: number;
+  /** Profile details the draft needs that the profile doesn't have yet. */
+  missing: string[];
+  /** Blanks only the bidder can fill (a date, the tender number). */
+  blanks: number;
+  filled: number;
+};
+export type AnnexureFormat = { key: number; title: string; pages: number[]; draft: AnnexureDraftSummary | null };
+
+export function listAnnexures(tenderId: string, companyId: string) {
+  return request<{ bidder: { name: string; isClient: boolean }; formats: AnnexureFormat[] }>(
+    `/bidpilot/tenders/${tenderId}/annexures`, { query: { companyId } },
+  );
+}
+
+export function draftAnnexure(tenderId: string, companyId: string, key: number) {
+  return request<AnnexureFormat & { dropped: number }>(`/bidpilot/tenders/${tenderId}/annexures/${key}/draft`, { method: 'POST', body: { companyId } });
+}
+
+/** Same-origin download link; the session cookie authorises it. */
+export function annexureDocxUrl(tenderId: string, companyId: string, key: number) {
+  return `/bidpilot/tenders/${tenderId}/annexures/${key}/docx?companyId=${encodeURIComponent(companyId)}`;
+}

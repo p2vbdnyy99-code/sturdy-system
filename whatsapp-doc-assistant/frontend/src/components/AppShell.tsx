@@ -2,7 +2,7 @@ import { useState, type ReactNode } from 'react';
 import { Link, NavLink, Outlet, useMatch, useNavigate } from 'react-router-dom';
 import { logout as apiLogout } from '../api/auth';
 import { useSession } from '../auth/SessionProvider';
-import { ShellDataProvider } from '../shell/ShellData';
+import { ShellDataProvider, useOptionalShellData } from '../shell/ShellData';
 import { PRODUCT_NAME } from '../config/product';
 import { LogoMark } from './Logo';
 import { Icon } from './Icon';
@@ -47,9 +47,7 @@ export function AppShell() {
           <NavLink to="/company-profile" className="shell-rail-link" aria-label="Company profile" title="Company profile">
             <Icon name="briefcase" />
           </NavLink>
-          <NavLink to="/feed" className="shell-rail-link" aria-label="Tender feed" title="Tender feed">
-            <Icon name="globe" />
-          </NavLink>
+          <FeedRailLink />
           <NavLink to="/clients" className="shell-rail-link" aria-label="Clients" title="Clients">
             <Icon name="users" />
           </NavLink>
@@ -84,6 +82,19 @@ export function AppShell() {
   // The provider needs a company; CompanyGate guarantees one on every page
   // that uses the shell.
   return selectedCompanyId ? <ShellDataProvider companyId={selectedCompanyId}>{body}</ShellDataProvider> : body;
+}
+
+/** The tender feed's rail link, with the number of new tenders for the
+ *  company's saved searches (repo/savedSearches.js). */
+function FeedRailLink() {
+  const n = useOptionalShellData()?.summary?.newAlerts ?? 0;
+  const label = n > 0 ? `Tender feed, ${n} new for your saved searches` : 'Tender feed';
+  return (
+    <NavLink to="/feed" className="shell-rail-link" aria-label={label} title={label}>
+      <Icon name="globe" />
+      {n > 0 && <span className="shell-rail-badge" aria-hidden="true">{n > 99 ? '99+' : n}</span>}
+    </NavLink>
+  );
 }
 
 /** "Dashboard › iith": where the page sits, above its title. */

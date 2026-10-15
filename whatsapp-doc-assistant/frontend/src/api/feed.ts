@@ -71,3 +71,35 @@ export function getFeed(q: FeedQuery) {
 export function trackFeedTender(feedId: string, companyId: string) {
   return request<{ tenderId: string; alreadyTracked: boolean }>(`/bidpilot/feed/${feedId}/track`, { method: 'POST', body: { companyId } });
 }
+
+// ── Saved searches and their alerts (routes/feed.js, repo/savedSearches.js) ──
+export type SavedFilters = { kind: FeedKind | 'all'; state: string; organisation: string; search: string };
+export type SavedSearch = { id: string; name: string; filters: SavedFilters; createdAt: string; unseen: number };
+export type AlertMatch = {
+  matchId: string;
+  savedSearchId: string;
+  searchName: string;
+  seen: boolean;
+  matchedAt: string;
+  tender: FeedTender;
+};
+
+export function listSavedSearches(companyId: string) {
+  return request<{ searches: SavedSearch[]; unseen: number }>('/bidpilot/feed/searches', { query: { companyId } });
+}
+
+export function saveSearch(companyId: string, filters: SavedFilters, name?: string) {
+  return request<SavedSearch>('/bidpilot/feed/searches', { method: 'POST', body: { companyId, filters, name } });
+}
+
+export function deleteSavedSearch(companyId: string, id: string) {
+  return request<{ deleted: boolean }>(`/bidpilot/feed/searches/${id}`, { method: 'DELETE', body: { companyId } });
+}
+
+export function listAlerts(companyId: string, savedSearchId?: string) {
+  return request<{ matches: AlertMatch[] }>('/bidpilot/feed/alerts', { query: { companyId, savedSearchId } });
+}
+
+export function markAlertsSeen(companyId: string, matchIds?: string[]) {
+  return request<{ marked: number; unseen: number }>('/bidpilot/feed/alerts/seen', { method: 'POST', body: { companyId, matchIds } });
+}

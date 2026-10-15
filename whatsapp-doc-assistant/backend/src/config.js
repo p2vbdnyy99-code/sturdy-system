@@ -370,6 +370,10 @@ export function buildBidpilotConfig(env = {}) {
     eligibility: {
       maxCallsPerCompanyPerDay: Math.max(1, Number(env.BIDPILOT_ELIGIBILITY_MAX_CALLS_PER_COMPANY_PER_DAY) || 100),
     },
+    // Annexure drafts (analysis/annexures.js): one AI call each.
+    annexures: {
+      maxDraftsPerCompanyPerDay: Math.max(1, Number(env.BIDPILOT_ANNEXURE_MAX_DRAFTS_PER_COMPANY_PER_DAY) || 30),
+    },
     // Sign in with Google: on only when both are set. The redirect URI to
     // register with Google is <BIDPILOT_PUBLIC_BASE_URL>/bidpilot/auth/google/callback.
     google: {

@@ -85,6 +85,12 @@ export function ShellDataProvider({ companyId, children }: { companyId: string; 
   );
 }
 
+/** The shell data when inside the provider, otherwise null (the rail renders
+ *  before a company is chosen too). */
+export function useOptionalShellData(): ShellData | null {
+  return useContext(ShellDataContext);
+}
+
 export function useShellData(): ShellData {
   const value = useContext(ShellDataContext);
   if (!value) throw new Error('useShellData must be used inside AppShell');

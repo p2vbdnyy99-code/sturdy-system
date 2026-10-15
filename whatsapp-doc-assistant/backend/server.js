@@ -30,6 +30,7 @@ import { cookieParserMiddleware } from './src/bidpilot/auth/cookies.js';
 import { bidpilotCors } from './src/bidpilot/auth/cors.js';
 import { recoverInterruptedWork } from './src/bidpilot/recovery.js';
 import { startDiscovery } from './src/bidpilot/discovery/collector.js';
+import { startAlertMatcher } from './src/bidpilot/repo/savedSearches.js';
 import { getDb } from './src/db/client.js';
 import { canonicalHostRedirect, renderIndexHtml, robotsTxt, sitemapXml } from './src/seo.js';
 import { createVisitsRouter } from './src/bidpilot/visits.js';
@@ -321,7 +322,10 @@ async function start() {
     );
   });
   startKeepAlive();
-  if (config.db.url) startDiscovery(getDb());
+  if (config.db.url) {
+    startDiscovery(getDb());
+    startAlertMatcher(getDb());
+  }
 }
 
 // Exported so tests can exercise the real, fully-wired app (route ordering,

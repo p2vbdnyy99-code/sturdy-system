@@ -39,11 +39,15 @@ const SECTIONS: Array<{ title: string; body: ReactNode }> = [
           tenders, then required): industry, business type, GSTIN, registration details, years in business, turnover,
           net worth, number of employees, the states you work in, certifications, licences, equipment,
           manufacturer tie-ups, past projects and other qualifications. Where something doesn&rsquo;t apply, you
-          answer &ldquo;None&rdquo; and we store that answer.</li>
+          answer &ldquo;None&rdquo; and we store that answer. If you add them, also letterhead details: the
+          registered address, PAN, the name and designation of the person who signs, and a contact phone and
+          email. These are optional and used only to fill annexure drafts.</li>
         <li><strong>Your tenders:</strong> the PDFs you upload (including corrigenda), the text read from them,
           and the results of each analysis, corrigendum check and eligibility check. Also what you add to a
           tender yourself: its bid stage, your internal deadline, notes, the portal link and tender ID, which
-          checklist items are ready, items you add to the checklist, and which client it is for.</li>
+          checklist items are ready, items you add to the checklist, which client it is for, and the EMD and
+          guarantees you record (how each was given, amount, reference, bank and dates). Annexure drafts made
+          from the tender are stored too.</li>
         <li><strong>Your clients</strong> (if you use client workspaces): the names of the firms you bid for and
           the profile details you enter for each, the same fields as the company profile. Please add a client
           only with that firm&rsquo;s agreement.</li>
@@ -51,7 +55,8 @@ const SECTIONS: Array<{ title: string; body: ReactNode }> = [
           reference number, tender ID, dates and, for GeM bids, the portal link) read from the Central Public
           Procurement Portal&rsquo;s public lists of central, state and GeM tenders. These are public notices, not
           about you; we don&rsquo;t download their documents, and we delete each one 60 days after it closes.
-          Anyone can search them on our site without an account.</li>
+          Anyone can search them on our site without an account. If you save a search, we keep it and the new
+          tenders that matched it, for your company.</li>
         <li><strong>Signing in:</strong> a record of each signed-in session, including the name and version of
           your browser. We don&rsquo;t store your IP address with your account. When a sign-in code is requested
           for a mobile number, we keep the code (scrambled), the number and the IP address that asked for it for
@@ -106,7 +111,8 @@ const SECTIONS: Array<{ title: string; body: ReactNode }> = [
             is sent to OpenAI&rsquo;s API, and the same for a corrigendum you upload, together with the
             tender&rsquo;s key facts it is compared with. When you run an eligibility check, the tender&rsquo;s
             conditions and your company-profile details (or your client&rsquo;s, for a client&rsquo;s tender) are
-            sent. OpenAI states that data sent through its API is not used to
+            sent. When you draft an annexure, the text of that form&rsquo;s pages is sent; your profile details
+            are not (they are filled in on our server). OpenAI states that data sent through its API is not used to
             train its models and is kept for up to 30 days for abuse monitoring
             (<a href={OPENAI_DATA_POLICY} target="_blank" rel="noreferrer">OpenAI&rsquo;s data policy</a>).</li>
           <li><strong>Fly.io</strong> hosts our servers, database and file storage. Our main server, where

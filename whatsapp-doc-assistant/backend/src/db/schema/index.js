@@ -22,3 +22,4 @@ export * from './authIdentities.js';
 export * from './workflow.js';
 export * from './clients.js';
 export * from './publicTenders.js';
+export * from './alerts.js';

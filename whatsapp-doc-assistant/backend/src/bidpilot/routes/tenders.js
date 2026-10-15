@@ -14,6 +14,9 @@ import {
   getChecklist, setRequirementDone, addCustomItem, setCustomDone, deleteCustomItem, CUSTOM_LABEL_MAX,
 } from '../repo/checklist.js';
 import { buildChecklistXlsx } from '../checklistXlsx.js';
+import {
+  parseSecurity, listSecurities, createSecurity, updateSecurity, deleteSecurity, TooManySecuritiesError,
+} from '../repo/securities.js';
 import { createCorrigendum, listCorrigenda, getCorrigendum, finishCorrigendum, applyCorrigendum } from '../repo/corrigenda.js';
 import { askForChanges, validateCorrigendumResult, APPLICABLE_FIELDS, CORRIGENDUM_FIELDS } from '../analysis/corrigendum.js';
 import { withAnalysisSlot, safeErrorMessage } from '../analysis/pipeline.js';
@@ -22,7 +25,14 @@ import { validateUpload } from '../ingestion/validate.js';
 import { extractStructured } from '../../pdf.js';
 import { spansToText } from '../../extract/spans.js';
 import { recordChunkUsage } from '../analysis/budget.js';
-import { getClient } from '../repo/clients.js';
+import { getClient, getClientProfile } from '../repo/clients.js';
+import { getCompanyProfile } from '../repo/companies.js';
+import { findFormats, formatSource, draftFormat, validateDraft } from '../analysis/annexures.js';
+import { listDrafts, getDraft, saveDraft } from '../repo/annexures.js';
+import { buildAnnexureDocx, draftValues, draftCoverage } from '../annexureDocx.js';
+import { assertAnnexureBudget, recordAnnexureUsage } from '../analysis/budget.js';
+import { companies } from '../../db/schema/index.js';
+import { eq } from 'drizzle-orm';
 import { listPages } from '../repo/pages.js';
 import { listDocumentsForTender, createTenderDocument } from '../repo/documents.js';
 import { sha256 } from '../ingestion/hash.js';
@@ -448,6 +458,149 @@ export function createTendersRouter() {
       const ok = await deleteCustomItem(ctx.scope, ctx.tender.id, req.params.itemId);
       if (!ok) return res.status(404).json({ error: 'Not found.' });
       return res.json(await getChecklist(ctx.scope, ctx.tender.id));
+    } catch (err) {
+      handleError(res, err);
+    }
+  });
+
+  // ── EMD and performance security ────────────────────────────────────────
+  // The user's own record of what was given and whether it came back
+  // (repo/securities.js). Same company check as the checklist.
+  router.get('/tenders/:id/securities', async (req, res) => {
+    try {
+      const ctx = await checklistScope(req, res, req.query.companyId);
+      if (!ctx) return;
+      return res.json({ securities: await listSecurities(ctx.scope, ctx.tender.id) });
+    } catch (err) {
+      handleError(res, err);
+    }
+  });
+
+  router.post('/tenders/:id/securities', async (req, res) => {
+    try {
+      const ctx = await checklistScope(req, res, req.body?.companyId);
+      if (!ctx) return;
+      const parsed = parseSecurity(req.body);
+      if (!parsed.ok) return res.status(400).json({ error: parsed.error });
+      const security = await createSecurity(ctx.scope, ctx.tender.id, parsed.values, req.bidpilotUserId);
+      return res.status(201).json(security);
+    } catch (err) {
+      if (err instanceof TooManySecuritiesError) return res.status(400).json({ error: err.message });
+      handleError(res, err);
+    }
+  });
+
+  router.patch('/tenders/:id/securities/:sid', async (req, res) => {
+    try {
+      const ctx = await checklistScope(req, res, req.body?.companyId);
+      if (!ctx) return;
+      if (!UUID_RE.test(req.params.sid)) return res.status(404).json({ error: 'Not found.' });
+      const parsed = parseSecurity(req.body, { partial: true });
+      if (!parsed.ok) return res.status(400).json({ error: parsed.error });
+      const security = await updateSecurity(ctx.scope, ctx.tender.id, req.params.sid, parsed.values);
+      if (!security) return res.status(404).json({ error: 'Not found.' });
+      return res.json(security);
+    } catch (err) {
+      handleError(res, err);
+    }
+  });
+
+  router.delete('/tenders/:id/securities/:sid', async (req, res) => {
+    try {
+      const ctx = await checklistScope(req, res, req.body?.companyId ?? req.query.companyId);
+      if (!ctx) return;
+      if (!UUID_RE.test(req.params.sid)) return res.status(404).json({ error: 'Not found.' });
+      const ok = await deleteSecurity(ctx.scope, ctx.tender.id, req.params.sid);
+      if (!ok) return res.status(404).json({ error: 'Not found.' });
+      return res.json({ deleted: true });
+    } catch (err) {
+      handleError(res, err);
+    }
+  });
+
+  // ── Annexure drafts (analysis/annexures.js) ─────────────────────────────
+  // The tender's own formats, found in its pages; Draft makes one AI call
+  // that only places placeholders; the Word file fills them from the
+  // profile (the client's, for a client's tender) when it is downloaded.
+  async function bidderFor(scope, tender) {
+    if (tender.clientId) {
+      const client = await getClient(scope, tender.clientId);
+      if (client) return { name: client.name, isClient: true, profile: await getClientProfile(scope, client.id) };
+    }
+    const [company] = await scope.db.select({ name: companies.name }).from(companies).where(eq(companies.id, scope.companyId)).limit(1);
+    return { name: company?.name ?? 'Your company', isClient: false, profile: await getCompanyProfile(scope.db, scope.companyId) };
+  }
+
+  function draftSummary(draft, values) {
+    if (!draft) return null;
+    const c = draftCoverage(draft.blocks, values);
+    return { draftedAt: draft.updatedAt, paragraphs: draft.blocks.length, missing: c.missingLabels, blanks: c.blanks, filled: c.fieldsUsed.length - c.missing.length };
+  }
+
+  router.get('/tenders/:id/annexures', async (req, res) => {
+    try {
+      const ctx = await checklistScope(req, res, req.query.companyId);
+      if (!ctx) return;
+      const [pages, drafts, bidder] = await Promise.all([
+        listPages(ctx.scope, ctx.tender.id), listDrafts(ctx.scope, ctx.tender.id), bidderFor(ctx.scope, ctx.tender),
+      ]);
+      const values = draftValues(bidder.profile, bidder.name);
+      const byKey = new Map(drafts.map((d) => [d.formatKey, d]));
+      return res.json({
+        bidder: { name: bidder.name, isClient: bidder.isClient },
+        formats: findFormats(pages).map((f) => ({ ...f, draft: draftSummary(byKey.get(f.key), values) })),
+      });
+    } catch (err) {
+      handleError(res, err);
+    }
+  });
+
+  router.post('/tenders/:id/annexures/:key/draft', async (req, res) => {
+    try {
+      const ctx = await checklistScope(req, res, req.body?.companyId);
+      if (!ctx) return;
+      const key = Number.parseInt(req.params.key, 10);
+      const pages = await listPages(ctx.scope, ctx.tender.id);
+      const format = findFormats(pages).find((f) => f.key === key);
+      if (!format) return res.status(404).json({ error: 'That format isn\u2019t in this tender.' });
+      await assertAnnexureBudget(getDb(), ctx.scope.companyId);
+      const source = formatSource(pages, format);
+      const parsed = await withAnalysisSlot(() => draftFormat(source));
+      const checked = validateDraft(parsed, source);
+      if (checked.blocks.length === 0) {
+        return res.status(502).json({ error: 'The draft didn\u2019t match the tender\u2019s wording closely enough, so nothing was kept. Please try again.' });
+      }
+      await recordAnnexureUsage(getDb(), { companyId: ctx.scope.companyId, tenderId: ctx.tender.id, metadata: { formatKey: key, dropped: checked.dropped } });
+      const draft = await saveDraft(ctx.scope, {
+        tenderId: ctx.tender.id, clientId: ctx.tender.clientId, formatKey: key, title: format.title,
+        pages: format.pages, blocks: checked.blocks, userId: req.bidpilotUserId,
+      });
+      const bidder = await bidderFor(ctx.scope, ctx.tender);
+      return res.json({ ...format, draft: draftSummary(draft, draftValues(bidder.profile, bidder.name)), dropped: checked.dropped });
+    } catch (err) {
+      if (err instanceof AnalysisBudgetError) return res.status(429).json({ error: err.message });
+      log.error(`bidpilot annexure draft failed: ${safeErrorMessage(err)}`);
+      if (err instanceof TenantAccessError) return handleError(res, err);
+      return res.status(502).json({ error: 'Could not draft this annexure. Please try again.' });
+    }
+  });
+
+  router.get('/tenders/:id/annexures/:key/docx', async (req, res) => {
+    try {
+      const ctx = await checklistScope(req, res, req.query.companyId);
+      if (!ctx) return;
+      const key = Number.parseInt(req.params.key, 10);
+      const draft = Number.isInteger(key) ? await getDraft(ctx.scope, ctx.tender.id, key) : null;
+      if (!draft) return res.status(404).json({ error: 'Draft this annexure first.' });
+      const bidder = await bidderFor(ctx.scope, ctx.tender);
+      const buf = await buildAnnexureDocx({
+        title: draft.title, tenderTitle: String(ctx.tender.title || 'the tender').replace(/\.pdf$/i, ''),
+        pages: draft.pages, blocks: draft.blocks, values: draftValues(bidder.profile, bidder.name), bidderName: bidder.name,
+      });
+      const base = `${String(draft.title).split('·')[0]}`.replace(/[^A-Za-z0-9._-]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 60) || 'annexure';
+      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+      res.setHeader('Content-Disposition', `attachment; filename="${base}-draft.docx"`);
+      return res.send(buf);
     } catch (err) {
       handleError(res, err);
     }

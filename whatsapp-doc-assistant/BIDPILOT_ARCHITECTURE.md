@@ -3753,3 +3753,143 @@ Run folder: `harness/runs/2026-10-15-google-search-analytics/`.
     sent;
   - no CSP errors;
   - the secret never appeared in the server log.
+
+# EMD and bank guarantees, saved-search alerts, annexure drafts (Oct 2026)
+
+**Why.** After researching Tender247, the founder asked for the three features
+it has that TenderTez lacked:
+- EMD and bank-guarantee tracking;
+- alerts for saved searches;
+- annexure drafting from the company profile.
+
+They chose (via AskUserQuestion):
+- alerts in the app now, with email later;
+- annexures as Word files;
+- letterhead details as an optional profile section.
+
+Run folder: `harness/runs/2026-10-16-bid-tools/`.
+
+## Data (migration 0011, additive only)
+
+**New tables:**
+- `tender_securities`:
+  - kind (EMD or PERFORMANCE);
+  - mode (ONLINE, DD, BG, FDR, EXEMPTED or NOT_REQUIRED);
+  - amount, reference, bank;
+  - issued, valid-until and claim-until dates;
+  - status (TO_ARRANGE, SUBMITTED, RETURNED or FORFEITED);
+  - notes.
+- `saved_searches`: the same filters as the search.
+- `saved_search_matches`: unique per search and tender, with `seen_at`.
+- `tender_annexure_drafts`: unique per tender and format page.
+
+**Profile columns:** six nullable letterhead columns on both profile tables,
+through `profileColumns()`: registered address, PAN, signatory name and
+designation, phone and email.
+
+**Tests:** the table count is now 35, and `truncateAll` lists the new tables.
+
+## EMD and bank guarantees
+- **`repo/securities.js`:**
+  - validates entries. Amounts like "₹1,27,300" become numbers. Dates must
+    be real calendar dates, and expiry can't come before issue (nor claim
+    before expiry).
+  - caps a tender at 10 entries.
+- **Routes:** `GET/POST /tenders/:id/securities` and
+  `PATCH/DELETE /tenders/:id/securities/:sid`. They use the same company
+  check as the checklist, and update and delete also match the company and
+  the tender.
+- **`GET /dashboard/securities`:**
+  - money still with buyers: entries SUBMITTED by online payment, DD, BG or
+    FDR;
+  - bank guarantees expiring within 30 days, and ones already expired, both
+    counted in India days.
+- **Tender page:** an "EMD & guarantees" card under "Your bid". It shows the
+  EMD the analysis found, with its page, as a hint only.
+- **Dashboard:** a "Money with buyers" panel, shown once something is
+  recorded.
+
+## Saved searches and alerts
+- **`repo/savedSearches.js`:**
+  - filters are the search's own (kind, state, organisation, words), and at
+    least one is needed;
+  - up to 10 searches per company.
+- **The matcher (`matchSavedSearches`):**
+  - started by `server.js` one minute after start, then every 10 minutes;
+  - finds open tenders first seen after the search was saved, using
+    `publicTenders.js` `feedWhere`;
+  - records each match once (`ON CONFLICT DO NOTHING`), at most 200 per
+    search per run.
+- **Routes** under `/feed/searches` and `/feed/alerts`. Opening the feed
+  marks the shown matches seen. `GET /dashboard/summary` returns
+  `newAlerts`, which ShellData passes to the rail's Feed badge.
+- **Feed page:** "Save this search", and a "New for your searches" panel.
+  Rows that were unseen keep a "New" tag for that visit.
+- **Email:** an email digest can read the same unseen matches once an email
+  service is connected.
+
+## Letterhead details and annexure drafts
+- **`letterhead.js`:** checks PAN, email, phone and length. The fields are
+  never part of `REQUIRED_FIELDS`, so no company becomes incomplete.
+- **Finding formats (`analysis/annexures.js` `findFormats`):**
+  - a format is a page whose first lines start with Annexure, Form, Format,
+    Proforma or Appendix, and that has blanks (dot leaders, underlines,
+    "Signature", "Date:", "letter head");
+  - it continues for up to 3 pages, until the next heading;
+  - BOQs, price bids, specifications, maps and lists are never offered.
+  - On four real tenders (IIT Hyderabad, SBI civil, IIT Kanpur, GIL network)
+    it found 19 formats, such as "ANNEXURE-A · UNDERTAKING", "FORM OF
+    TENDER", "FORM “B-1” · … NET WORTH …" and "Annexure A · Format of
+    Earnest Money Deposit in the form of Bank Guarantee". No BOQ or map was
+    offered.
+- **Drafting:**
+  - One AI call per draft, inside `withAnalysisSlot`, with its own daily cap
+    (`BIDPILOT_ANNEXURE_MAX_DRAFTS_PER_COMPANY_PER_DAY`, default 30).
+  - The AI gets the format's page text and the field names only, never a
+    profile value. It returns the form's wording with `{{field:key}}` or
+    `{{blank:label}}` placeholders.
+  - `validateDraft` drops any paragraph whose words aren't the tender's own,
+    in order (70% of its word triples must be found on the pages, and every
+    short segment's words). It turns unknown fields into blanks.
+  - Values are filled by the server when the Word file is made
+    (`annexureDocx.js`), from the current company or client profile.
+    Missing ones print as yellow "[to fill: …]".
+- **Routes:**
+  - `GET /tenders/:id/annexures`: formats, each with its draft's filled,
+    missing and blank counts;
+  - `POST /tenders/:id/annexures/:key/draft`;
+  - `GET /tenders/:id/annexures/:key/docx`.
+- **UI:** an "Annexures" tab on the tender page and a "Letterhead details
+  (optional)" section on company and client profiles.
+- **Privacy policy:** lists the letterhead details, EMD records, saved
+  searches and drafts. It says only the form's page text goes to OpenAI for
+  a draft.
+
+## Verification
+- **Backend tests:**
+  - `securities.test.js` (6): validation, CRUD, the 10 limit, company
+    isolation, dashboard sums and expiry;
+  - `saved-searches.test.js` (6): filters, only tenders first seen after
+    saving, closed, other list and other state excluded, idempotent, routes,
+    the 10 limit, isolation;
+  - `annexures.test.js` (10): format finding on a real SBI excerpt; an
+    invented sentence and an invented PAN dropped; an unknown field becomes
+    a blank; the .docx is filled only from the profile; a client's tender
+    uses the client's profile; 502 when nothing matches; 429 at the cap;
+    isolation; letterhead saved and checked.
+- **verify.sh:** 624/387/317 backend tests pass; frontend build, lint and 49
+  unit tests pass; the secret scan is clean.
+- **Browser on the harness, 31/31 (`bid-tools-verify.mjs`):**
+  - add a bank guarantee, with the hint, countdown and highlight; change its
+    status; the dashboard panel and its link;
+  - save a search; existing tenders aren't alerts; a new matching tender
+    gives the rail badge "1" and an accessible label; opening the feed lists
+    it as New and clears the badge; a non-matching state isn't alerted;
+  - a bad PAN is refused; letterhead saves with the PAN upper-cased and the
+    profile stays complete;
+  - Annexures tab lists 4 formats of the SBI tender; Draft, then Download
+    Word, gives the tender's own wording with "[to fill]" blanks;
+  - 375 px with no sideways scroll on 4 pages;
+  - no CSP or page errors.
+- **Not yet verified:** the drafting prompt with the real AI. The harness
+  used a rule-based stand-in. This needs one live draft after deploy.

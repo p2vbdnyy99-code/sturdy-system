@@ -18,8 +18,10 @@ import { KeyFacts } from '../tenderDetail/KeyFacts';
 import { DatesTimeline } from '../tenderDetail/DatesTimeline';
 import { DeadlineCard } from '../tenderDetail/DeadlineCard';
 import { BidPanel } from '../tenderDetail/BidPanel';
+import { SecuritiesPanel } from '../tenderDetail/SecuritiesPanel';
 import { ChecklistTab } from '../tenderDetail/ChecklistTab';
 import { CorrigendaTab } from '../tenderDetail/CorrigendaTab';
+import { AnnexuresTab } from '../tenderDetail/AnnexuresTab';
 import { STAGE_LABEL } from '../tenderDetail/stages';
 import { biddingStatus } from '../tenderDetail/biddingStatus';
 import { AttachDocumentNotice } from '../tenderDetail/AttachDocumentNotice';
@@ -28,12 +30,13 @@ import { Icon } from '../components/Icon';
 import { useShellData } from '../shell/ShellData';
 import { displayTitle, formatDate } from '../format';
 
-type TabKey = 'overview' | 'requirements' | 'checklist' | 'boq' | 'dates' | 'redFlags' | 'corrigenda' | 'document';
+type TabKey = 'overview' | 'requirements' | 'checklist' | 'annexures' | 'boq' | 'dates' | 'redFlags' | 'corrigenda' | 'document';
 
 const TABS: Array<{ key: TabKey; label: string }> = [
   { key: 'overview', label: 'Overview' },
   { key: 'requirements', label: 'Requirements' },
   { key: 'checklist', label: 'Checklist' },
+  { key: 'annexures', label: 'Annexures' },
   { key: 'boq', label: 'BOQ' },
   { key: 'dates', label: 'Dates' },
   { key: 'redFlags', label: 'Red flags' },
@@ -379,6 +382,10 @@ function TenderDetailBody({
                 </div>
               )}
               {tab === 'checklist' && <ChecklistTab tenderId={tender.id} companyId={companyId} analysed={completed} />}
+              {tab === 'annexures' && (
+                <AnnexuresTab tenderId={tender.id} companyId={companyId} clientId={tender.clientId}
+                  extracted={Boolean(tender.document) && tender.processingStatus === 'COMPLETED'} />
+              )}
               {tab === 'boq' && <BoqTab items={tender.boq} />}
               {tab === 'dates' && <DatesTab dates={tender.dates} />}
               {tab === 'redFlags' && <RedFlagsTab redFlags={tender.redFlags} />}
@@ -391,6 +398,7 @@ function TenderDetailBody({
         </Panel>
         <div className="side-stack">
           <BidPanel key={tender.id} tender={tender} companyId={companyId} onSaved={onPatch} />
+          <SecuritiesPanel key={`sec-${tender.id}`} tenderId={tender.id} companyId={companyId} emdFromDocument={tender.overview.emd} />
           {completed && (
             <Panel id="key-dates" title="Key dates" aside={<span className="panel-count">{tender.dates.length}</span>}>
               <div className="card"><DatesTimeline dates={tender.dates} /></div>
