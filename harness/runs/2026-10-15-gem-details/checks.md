@@ -13,3 +13,6 @@
 | frontend lint | lint exits 0 | pass | 15 warnings, 0 errors |
 | frontend unit tests | all pass | pass | pass 47, fail 0, skipped 0 |
 | secret scan | no secrets in the change | pass | secret-scan: clean (--changes) |
+| live | deploy | pass | `analyzing_now=0 migrations=11` (no migration); `flyctl deploy` exit 0 (commit 832b82d) |
+| live | the buttons on tendertez.in | pass | `gemfind-live.mjs` 14/14, PC and Pixel 7: "Bid details" → CPPP GeM page in a new tab; "Find on GeM" still copies GEM/2026/B/8128028 and opens GeM's list; API: GeM rows carry details, central rows none; `/document` 404; no sideways scroll; no console or CSP errors |
+| live | the live details link opens for anyone | pass | the first GeM row's link fetched with no session: 200, bid GEM/2026/B/8128028 shown, no "Invalid Url", no captcha |

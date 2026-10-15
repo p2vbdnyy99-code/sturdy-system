@@ -18,4 +18,6 @@ Steps 1–3 done and verified locally. Not committed or deployed.
   founder; screenshots of GeM's search would show why.
 
 ## Next action
-Wait for "commit and deploy". No migration.
+Deployed 15 Oct 2026 (commit 832b82d); live checks 14/14 and the live
+details link opens with no session. GeM's bid search still needs the
+founder's screenshots.
