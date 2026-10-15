@@ -121,6 +121,11 @@ Rules that must always hold are enforced by code, not by this file.
 | Visits report | `whatsapp-doc-assistant/backend/scripts/visits-report.mjs [days]` | Funnel and visit numbers. Run it inside the Fly machine (see `OPERATIONS.md`). |
 | Subscriptions | `whatsapp-doc-assistant/backend/scripts/subscription.mjs status\|activate\|renew\|cancel` | Starts, renews and ends monthly plans by hand until online payment exists. Run only after payment or the user's go-ahead. |
 
+Business-planning skills `founder-*` (third-party, MIT, read in full before
+adding on 15 Oct 2026) live in `.claude/skills/`; their output goes to
+`founder/`, which is git-ignored. Their buyer panel is simulated: never present
+its answers as customers or testimonials.
+
 If a hook blocks something you need, don't work around it. Tell the user what
 was blocked and why.
 
