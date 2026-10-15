@@ -386,6 +386,13 @@ export function buildBidpilotConfig(env = {}) {
       language: String(env.BIDPILOT_WHATSAPP_OTP_LANGUAGE || 'en'),
       apiVersion: String(env.BIDPILOT_WHATSAPP_API_VERSION || 'v21.0'),
     },
+    // The tender feed (bidpilot/discovery/): reads the public CPPP "latest
+    // active tenders" page. Off unless BIDPILOT_DISCOVERY_CPPP=on. Never more
+    // often than every 5 minutes; backs off on any error.
+    discovery: {
+      cppp: String(env.BIDPILOT_DISCOVERY_CPPP || '').toLowerCase() === 'on',
+      intervalMinutes: Math.max(5, Number(env.BIDPILOT_DISCOVERY_INTERVAL_MINUTES) || 10),
+    },
     redirectHosts: String(env.BIDPILOT_REDIRECT_HOSTS || '')
       .split(',')
       .map((h) => h.trim())

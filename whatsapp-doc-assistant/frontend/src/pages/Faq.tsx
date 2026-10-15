@@ -114,6 +114,25 @@ const GROUPS: Array<{ title: string; items: Array<{ q: string; a: ReactNode }> }
           tick &ldquo;None&rdquo;. It takes a few minutes, once.</>,
       },
       {
+        q: 'Can I keep track of my bids?',
+        a: <>Yes. On each tender, set its stage (Interested, Preparing bid, Submitted, Won and so on), your own
+          internal deadline and notes. The Checklist tab lists every condition the tender sets, with its page, so
+          you can tick off each document as it&rsquo;s ready and download the list as an Excel sheet. When a
+          department issues a corrigendum, upload it on the tender to see what it changes.</>,
+      },
+      {
+        q: 'I prepare bids for several firms. Can I keep them apart?',
+        a: <>Yes. Add each firm under Clients and fill in its profile, then choose on a tender who it is for.
+          The eligibility check then uses that client&rsquo;s details. All your clients share your one plan.</>,
+      },
+      {
+        q: 'Where do the tenders in the feed come from?',
+        a: <>From the public &ldquo;latest tenders&rdquo; page of the Central Public Procurement Portal (CPPP).
+          That page shows only the newest tenders, so the feed is not every tender in India, and GeM and state
+          portals aren&rsquo;t included yet. Track a tender to add it to your list, then download its document
+          from the portal and attach it to analyse it.</>,
+      },
+      {
         q: 'Can I use it on my phone?',
         a: <>Yes. It works in your phone&rsquo;s browser, so there&rsquo;s no app to install.</>,
       },

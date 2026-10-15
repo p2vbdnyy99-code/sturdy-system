@@ -8,7 +8,7 @@ import { CONTACT_EMAIL, FOUNDER } from '../config/site';
 // (see BIDPILOT_ARCHITECTURE.md, "Privacy policy page"). Change this page
 // whenever that changes: a new service provider, analytics, payments, or
 // email sending.
-const LAST_UPDATED = '12 October 2026';
+const LAST_UPDATED = '15 October 2026';
 
 const OPENAI_DATA_POLICY = 'https://developers.openai.com/api/docs/guides/your-data';
 
@@ -40,8 +40,17 @@ const SECTIONS: Array<{ title: string; body: ReactNode }> = [
           net worth, number of employees, the states you work in, certifications, licences, equipment,
           manufacturer tie-ups, past projects and other qualifications. Where something doesn&rsquo;t apply, you
           answer &ldquo;None&rdquo; and we store that answer.</li>
-        <li><strong>Your tenders:</strong> the PDFs you upload, the text read from them, and the results of each
-          analysis and eligibility check.</li>
+        <li><strong>Your tenders:</strong> the PDFs you upload (including corrigenda), the text read from them,
+          and the results of each analysis, corrigendum check and eligibility check. Also what you add to a
+          tender yourself: its bid stage, your internal deadline, notes, the portal link and tender ID, which
+          checklist items are ready, items you add to the checklist, and which client it is for.</li>
+        <li><strong>Your clients</strong> (if you use client workspaces): the names of the firms you bid for and
+          the profile details you enter for each, the same fields as the company profile. Please add a client
+          only with that firm&rsquo;s agreement.</li>
+        <li><strong>The tender feed:</strong> public tender notices (title, department, reference number, dates
+          and the portal link) read from the Central Public Procurement Portal&rsquo;s public &ldquo;latest
+          tenders&rdquo; page. These are public notices, not about you, and we don&rsquo;t download their
+          documents.</li>
         <li><strong>Signing in:</strong> a record of each signed-in session, including the name and version of
           your browser. We don&rsquo;t store your IP address with your account. When a sign-in code is requested
           for a mobile number, we keep the code (scrambled), the number and the IP address that asked for it for
@@ -91,8 +100,10 @@ const SECTIONS: Array<{ title: string; body: ReactNode }> = [
         <p>Only the services we need to run {PRODUCT_NAME}:</p>
         <ul>
           <li><strong>OpenAI</strong> analyses your tenders. When you run an analysis, the text of the document
-            is sent to OpenAI&rsquo;s API. When you run an eligibility check, the tender&rsquo;s conditions and
-            your company-profile details are sent. OpenAI states that data sent through its API is not used to
+            is sent to OpenAI&rsquo;s API, and the same for a corrigendum you upload, together with the
+            tender&rsquo;s key facts it is compared with. When you run an eligibility check, the tender&rsquo;s
+            conditions and your company-profile details (or your client&rsquo;s, for a client&rsquo;s tender) are
+            sent. OpenAI states that data sent through its API is not used to
             train its models and is kept for up to 30 days for abuse monitoring
             (<a href={OPENAI_DATA_POLICY} target="_blank" rel="noreferrer">OpenAI&rsquo;s data policy</a>).</li>
           <li><strong>Fly.io</strong> hosts our servers, database and file storage. Our main server, where
@@ -138,7 +149,8 @@ const SECTIONS: Array<{ title: string; body: ReactNode }> = [
     title: 'How long we keep it, and deleting it',
     body: (
       <p>
-        We keep your account, company details and tenders for as long as your account exists. To have them
+        We keep your account, company details, clients and tenders for as long as your account exists. Removing a
+        client deletes its profile straight away; its tenders stay, as your own. To have them
         deleted, email <Mail /> from the address you registered with, and we will delete your account, your
         company&rsquo;s data and your tenders, and confirm by email. Visit counts are deleted automatically
         after about 13 months.

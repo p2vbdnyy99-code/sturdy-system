@@ -34,6 +34,8 @@
 
 import { tenderEvents } from '../../db/schema/index.js';
 import { getCompanyProfile } from '../repo/companies.js';
+import { getClientProfile } from '../repo/clients.js';
+import { getTender } from '../repo/tenders.js';
 import { listRequirements, applyEligibilityResults } from '../repo/requirements.js';
 import { assertEligibilityBudget, recordEligibilityUsage } from './budget.js';
 import { evaluateEligibility, validateEligibilityResult } from './eligibility.js';
@@ -129,13 +131,20 @@ export async function runEligibility(scope, tenderId) {
     return { evaluated: 0, results: [] };
   }
 
-  const profile = await getCompanyProfile(scope.db, scope.companyId);
+  // A tender marked as being for one of a consultant's clients is checked
+  // against that client's profile; otherwise against the company's own.
+  const tender = await getTender(scope, tenderId);
+  const profile = tender?.clientId
+    ? await getClientProfile(scope, tender.clientId)
+    : await getCompanyProfile(scope.db, scope.companyId);
 
   if (!profile) {
     const results = requirements.map((r) => ({
       requirementId: r.id,
       companyStatus: 'UNKNOWN',
-      actionRequired: 'Complete your company profile to check eligibility.',
+      actionRequired: tender?.clientId
+        ? 'Complete this client\'s profile to check eligibility.'
+        : 'Complete your company profile to check eligibility.',
       companyEvidence: [],
     }));
     await applyEligibilityResults(scope, results);

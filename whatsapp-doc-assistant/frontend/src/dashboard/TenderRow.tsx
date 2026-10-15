@@ -6,15 +6,18 @@ import { deriveAttentionState } from './attentionState';
 import { useTenderPolling, type PollTarget } from './useTenderPolling';
 import { AttentionBadge } from '../components/AttentionBadge';
 import { useShellData } from '../shell/ShellData';
+import { STAGE_LABEL } from '../tenderDetail/stages';
 import { daysUntil, displayTitle, formatDate, relativeDays } from '../format';
 
 type TenderRowProps = {
   tender: TenderListItem;
+  /** The consultant's client this tender is for, if any. */
+  clientName?: string | null;
   companyId: string;
   onUpdate: (tenderId: string, patch: Partial<TenderListItem>) => void;
 };
 
-export function TenderRow({ tender, companyId, onUpdate }: TenderRowProps) {
+export function TenderRow({ tender, companyId, onUpdate, clientName = null }: TenderRowProps) {
   const attention = deriveAttentionState(tender);
   const navigate = useNavigate();
   const detailPath = `/tenders/${tender.id}`;
@@ -73,7 +76,10 @@ export function TenderRow({ tender, companyId, onUpdate }: TenderRowProps) {
     <tr className="row-link" onClick={onRowClick}>
       <td>
         <Link to={detailPath} className="tender-cell-title">{displayTitle(tender.title)}</Link>
-        <span className="tender-cell-sub">{tender.organization || 'Organisation not found yet'}</span>
+        <span className="tender-cell-sub">
+          {clientName && <span className="queue-stage">For {clientName}</span>}
+          {tender.organization || 'Organisation not found yet'}
+        </span>
       </td>
       <td>
         {due ? (
@@ -85,9 +91,12 @@ export function TenderRow({ tender, companyId, onUpdate }: TenderRowProps) {
           </>
         ) : <span className="muted">&mdash;</span>}
       </td>
-      <td><AttentionBadge state={attention} /></td>
+      <td>{tender.hasDocument === false
+        ? <span className="badge badge-neutral">Needs its PDF</span>
+        : <AttentionBadge state={attention} />}</td>
+      <td><span className={`stage-label stage-${tender.status.toLowerCase()}`}>{STAGE_LABEL[tender.status]}</span></td>
       <td className="tender-cell-actions">
-        {(attention === 'ANALYSIS_REQUIRED' || attention === 'ANALYSIS_FAILED') && (
+        {tender.hasDocument !== false && (attention === 'ANALYSIS_REQUIRED' || attention === 'ANALYSIS_FAILED') && (
           <button type="button" className="btn-primary" onClick={onAnalyzeClick} disabled={analyzing}>
             {analyzing ? 'Starting…' : attention === 'ANALYSIS_FAILED' ? 'Retry analysis' : 'Analyze'}
           </button>

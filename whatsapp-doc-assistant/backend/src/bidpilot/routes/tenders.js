@@ -9,9 +9,23 @@ import { log } from '../../logger.js';
 import { requireSession } from './auth.js';
 import { requireCsrf } from '../auth/csrf.js';
 import { requireCompanyAccess, TenantAccessError } from '../repo/tenants.js';
-import { getTender, startAnalysis, listTendersPaginated } from '../repo/tenders.js';
+import { getTender, startAnalysis, listTendersPaginated, updateTenderTracking, updateProcessingStatus, NOTES_MAX } from '../repo/tenders.js';
+import {
+  getChecklist, setRequirementDone, addCustomItem, setCustomDone, deleteCustomItem, CUSTOM_LABEL_MAX,
+} from '../repo/checklist.js';
+import { buildChecklistXlsx } from '../checklistXlsx.js';
+import { createCorrigendum, listCorrigenda, getCorrigendum, finishCorrigendum, applyCorrigendum } from '../repo/corrigenda.js';
+import { askForChanges, validateCorrigendumResult, APPLICABLE_FIELDS, CORRIGENDUM_FIELDS } from '../analysis/corrigendum.js';
+import { withAnalysisSlot, safeErrorMessage } from '../analysis/pipeline.js';
+import { parseTenderDate } from '../analysis/dates.js';
+import { validateUpload } from '../ingestion/validate.js';
+import { extractStructured } from '../../pdf.js';
+import { spansToText } from '../../extract/spans.js';
+import { recordChunkUsage } from '../analysis/budget.js';
+import { getClient } from '../repo/clients.js';
 import { listPages } from '../repo/pages.js';
-import { listDocumentsForTender } from '../repo/documents.js';
+import { listDocumentsForTender, createTenderDocument } from '../repo/documents.js';
+import { sha256 } from '../ingestion/hash.js';
 import { listRequirements, listEvidenceForRequirement } from '../repo/requirements.js';
 import { listBoq } from '../repo/boq.js';
 import { listDates } from '../repo/dates.js';
@@ -80,6 +94,10 @@ export function createTendersRouter() {
       if (analysisStatus && !tenderAnalysisStatus.enumValues.includes(analysisStatus)) {
         return res.status(400).json({ error: `Invalid analysisStatus. Must be one of: ${tenderAnalysisStatus.enumValues.join(', ')}` });
       }
+      const { clientId } = req.query;
+      if (clientId && clientId !== 'none' && !UUID_RE.test(clientId)) {
+        return res.status(400).json({ error: "clientId must be a client's id or 'none'." });
+      }
       if (sortBy && !['deadline', 'createdAt'].includes(sortBy)) {
         return res.status(400).json({ error: "sortBy must be 'deadline' or 'createdAt'." });
       }
@@ -91,7 +109,7 @@ export function createTendersRouter() {
       const limit = Number.parseInt(req.query.limit, 10) || 20;
 
       const result = await listTendersPaginated(scope, {
-        page, limit, status, analysisStatus, search, sortBy, sortOrder,
+        page, limit, status, analysisStatus, search, clientId, sortBy, sortOrder,
       });
       return res.json(result);
     } catch (err) {
@@ -185,6 +203,11 @@ export function createTendersRouter() {
         title: tender.title,
         source: tender.source,
         status: tender.status,
+        internalDeadline: tender.internalDeadline,
+        notes: tender.notes,
+        portalUrl: tender.portalUrl,
+        portalRef: tender.portalRef,
+        clientId: tender.clientId,
         processingStatus: tender.processingStatus,
         processingError: tender.processingError,
         analysisStatus: tender.analysisStatus,
@@ -216,6 +239,10 @@ export function createTendersRouter() {
       });
       const tender = await getTender(scope, req.params.id);
       if (!tender) return res.status(404).json({ error: 'Not found.' });
+      // A tender tracked from the feed has no document until one is attached.
+      if ((await listDocumentsForTender(scope, tender.id)).length === 0) {
+        return res.status(409).json({ error: 'Attach the tender document first, then analyse it.', code: 'no_document' });
+      }
       if (await refuseIfProfileNeeded(db, scope.companyId, res, tender.id)) return;
 
       // Analysis needs completed extraction text to work from — cannot run
@@ -312,7 +339,333 @@ export function createTendersRouter() {
     }
   });
 
+  // ── Bid tracker ─────────────────────────────────────────────────────────
+  // Stage, internal deadline, notes, portal link and client. Every field is
+  // optional; only those sent are changed.
+  router.patch('/tenders/:id', async (req, res) => {
+    try {
+      const db = getDb();
+      const scope = await requireCompanyAccess(db, { userId: req.bidpilotUserId, companyId: req.body?.companyId });
+      const parsed = await parseTrackingChanges(db, scope, req.body ?? {});
+      if (parsed.error) return res.status(400).json({ error: parsed.error });
+      const row = await updateTenderTracking(scope, req.params.id, parsed.changes, req.bidpilotUserId);
+      if (!row) return res.status(404).json({ error: 'Not found.' });
+      return res.json({
+        id: row.id, status: row.status, internalDeadline: row.internalDeadline, notes: row.notes,
+        portalUrl: row.portalUrl, portalRef: row.portalRef, clientId: row.clientId,
+      });
+    } catch (err) {
+      handleError(res, err);
+    }
+  });
+
+  // ── Submission checklist ────────────────────────────────────────────────
+  async function checklistScope(req, res, companyId) {
+    const db = getDb();
+    const scope = await requireCompanyAccess(db, { userId: req.bidpilotUserId, companyId });
+    const tender = await getTender(scope, req.params.id);
+    if (!tender) { res.status(404).json({ error: 'Not found.' }); return null; }
+    return { scope, tender };
+  }
+
+  router.get('/tenders/:id/checklist', async (req, res) => {
+    try {
+      const ctx = await checklistScope(req, res, req.query.companyId);
+      if (!ctx) return;
+      return res.json(await getChecklist(ctx.scope, ctx.tender.id));
+    } catch (err) {
+      handleError(res, err);
+    }
+  });
+
+  router.get('/tenders/:id/checklist.xlsx', async (req, res) => {
+    try {
+      const ctx = await checklistScope(req, res, req.query.companyId);
+      if (!ctx) return;
+      const checklist = await getChecklist(ctx.scope, ctx.tender.id);
+      const deadline = ctx.tender.submissionDeadline
+        ? ctx.tender.submissionDeadline.toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'medium', timeStyle: 'short' })
+        : null;
+      const buf = await buildChecklistXlsx({ tender: ctx.tender, checklist, deadline });
+      const base = String(ctx.tender.title || 'tender').replace(/\.pdf$/i, '').replace(/[^A-Za-z0-9._-]+/g, '-').slice(0, 60) || 'tender';
+      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+      res.setHeader('Content-Disposition', `attachment; filename="${base}-checklist.xlsx"`);
+      return res.send(buf);
+    } catch (err) {
+      handleError(res, err);
+    }
+  });
+
+  router.put('/tenders/:id/checklist/requirement', async (req, res) => {
+    try {
+      const ctx = await checklistScope(req, res, req.body?.companyId);
+      if (!ctx) return;
+      const { key, done } = req.body ?? {};
+      if (typeof key !== 'string' || typeof done !== 'boolean') {
+        return res.status(400).json({ error: 'key (string) and done (true/false) are required.' });
+      }
+      const ok = await setRequirementDone(ctx.scope, ctx.tender.id, key, done, req.bidpilotUserId);
+      if (!ok) return res.status(404).json({ error: 'That item is no longer in this tender.' });
+      return res.json(await getChecklist(ctx.scope, ctx.tender.id));
+    } catch (err) {
+      handleError(res, err);
+    }
+  });
+
+  router.post('/tenders/:id/checklist/custom', async (req, res) => {
+    try {
+      const ctx = await checklistScope(req, res, req.body?.companyId);
+      if (!ctx) return;
+      const label = typeof req.body?.label === 'string' ? req.body.label.trim() : '';
+      if (!label) return res.status(400).json({ error: 'Write what the item is.' });
+      if (label.length > CUSTOM_LABEL_MAX) return res.status(400).json({ error: `Keep it under ${CUSTOM_LABEL_MAX} characters.` });
+      await addCustomItem(ctx.scope, ctx.tender.id, label);
+      return res.status(201).json(await getChecklist(ctx.scope, ctx.tender.id));
+    } catch (err) {
+      handleError(res, err);
+    }
+  });
+
+  router.patch('/tenders/:id/checklist/custom/:itemId', async (req, res) => {
+    try {
+      const ctx = await checklistScope(req, res, req.body?.companyId);
+      if (!ctx) return;
+      if (typeof req.body?.done !== 'boolean') return res.status(400).json({ error: 'done (true/false) is required.' });
+      if (!UUID_RE.test(req.params.itemId)) return res.status(404).json({ error: 'Not found.' });
+      const ok = await setCustomDone(ctx.scope, ctx.tender.id, req.params.itemId, req.body.done, req.bidpilotUserId);
+      if (!ok) return res.status(404).json({ error: 'Not found.' });
+      return res.json(await getChecklist(ctx.scope, ctx.tender.id));
+    } catch (err) {
+      handleError(res, err);
+    }
+  });
+
+  router.delete('/tenders/:id/checklist/custom/:itemId', async (req, res) => {
+    try {
+      const ctx = await checklistScope(req, res, req.body?.companyId ?? req.query.companyId);
+      if (!ctx) return;
+      if (!UUID_RE.test(req.params.itemId)) return res.status(404).json({ error: 'Not found.' });
+      const ok = await deleteCustomItem(ctx.scope, ctx.tender.id, req.params.itemId);
+      if (!ok) return res.status(404).json({ error: 'Not found.' });
+      return res.json(await getChecklist(ctx.scope, ctx.tender.id));
+    } catch (err) {
+      handleError(res, err);
+    }
+  });
+
+  // ── Attach the document to a tender tracked from the feed ───────────────
+  // Same checks as an upload (it becomes a counted tender once it has a
+  // document), then the usual extraction in the background.
+  router.post('/tenders/:id/document', (req, res) => {
+    upload.single('file')(req, res, async (multerErr) => {
+      if (multerErr) return res.status(413).json({ error: 'Upload rejected (file too large or malformed).' });
+      try {
+        const ctx = await checklistScope(req, res, req.body?.companyId);
+        if (!ctx) return;
+        if (!req.file) return res.status(400).json({ error: 'No file uploaded (expected multipart field "file").' });
+        if ((await listDocumentsForTender(ctx.scope, ctx.tender.id)).length > 0) {
+          return res.status(409).json({ error: 'This tender already has its document.' });
+        }
+        const { displayFilename } = validateUpload({ buffer: req.file.buffer, mimeType: req.file.mimetype, filename: req.file.originalname });
+        if (await refuseIfProfileNeeded(getDb(), ctx.scope.companyId, res)) return;
+        const storage = getStorage();
+        const key = storage.newKey('pdf');
+        await storage.putObject({ key, buffer: req.file.buffer, contentType: 'application/pdf' });
+        await createTenderDocument(ctx.scope, ctx.tender.id, {
+          filename: displayFilename, storagePath: key, mimeType: 'application/pdf', sizeBytes: req.file.buffer.length,
+          contentHash: sha256(req.file.buffer), uploadedBy: req.bidpilotUserId,
+        });
+        await updateProcessingStatus(ctx.scope, ctx.tender.id, 'UPLOADED');
+        res.status(201).json({ tenderId: ctx.tender.id, processingStatus: 'UPLOADED' });
+        setImmediate(() => {
+          processExtraction(ctx.scope, ctx.tender.id, req.file.buffer).catch((err) => {
+            log.error(`bidpilot: unhandled extraction failure for tender=${ctx.tender.id}:`, err);
+          });
+        });
+      } catch (err) {
+        handleError(res, err);
+      }
+    });
+  });
+
+  // ── Corrigenda ──────────────────────────────────────────────────────────
+  // Upload an amendment to an existing tender; it is checked against the
+  // tender's key facts in the background (GET the list to see the result).
+  // Not a new tender, so it doesn't use the plan allowance; the AI call
+  // counts against the company's daily analysis cap like any other.
+  router.post('/tenders/:id/corrigenda', (req, res) => {
+    upload.single('file')(req, res, async (multerErr) => {
+      if (multerErr) return res.status(413).json({ error: 'Upload rejected (file too large or malformed).' });
+      try {
+        const ctx = await checklistScope(req, res, req.body?.companyId);
+        if (!ctx) return;
+        if (!req.file) return res.status(400).json({ error: 'No file uploaded (expected multipart field "file").' });
+        const { displayFilename } = validateUpload({ buffer: req.file.buffer, mimeType: req.file.mimetype, filename: req.file.originalname });
+        try {
+          await assertAnalysisBudget(getDb(), ctx.scope.companyId, 1);
+        } catch (err) {
+          if (err instanceof AnalysisBudgetError) return res.status(429).json({ error: err.message });
+          throw err;
+        }
+        const storage = getStorage();
+        const storageKey = storage.newKey('pdf');
+        await storage.putObject({ key: storageKey, buffer: req.file.buffer, contentType: 'application/pdf' });
+        const row = await createCorrigendum(ctx.scope, ctx.tender.id, { filename: displayFilename, storageKey, createdBy: req.bidpilotUserId });
+        res.status(201).json({ id: row.id, status: row.status });
+        processCorrigendum(ctx.scope, ctx.tender, row.id, req.file.buffer).catch((err) => log.error('corrigendum processing crashed:', err));
+      } catch (err) {
+        handleError(res, err);
+      }
+    });
+  });
+
+  router.get('/tenders/:id/corrigenda', async (req, res) => {
+    try {
+      const ctx = await checklistScope(req, res, req.query.companyId);
+      if (!ctx) return;
+      const rows = await listCorrigenda(ctx.scope, ctx.tender.id);
+      return res.json({ corrigenda: rows.map(publicCorrigendum) });
+    } catch (err) {
+      handleError(res, err);
+    }
+  });
+
+  router.post('/tenders/:id/corrigenda/:cid/apply', async (req, res) => {
+    try {
+      const ctx = await checklistScope(req, res, req.body?.companyId);
+      if (!ctx) return;
+      if (!UUID_RE.test(req.params.cid)) return res.status(404).json({ error: 'Not found.' });
+      const corr = await getCorrigendum(ctx.scope, ctx.tender.id, req.params.cid);
+      if (!corr || corr.status !== 'COMPLETED') return res.status(404).json({ error: 'Not found.' });
+      const wanted = Array.isArray(req.body?.fields) ? req.body.fields : [];
+      const values = {};
+      const evidence = {};
+      const skipped = [];
+      for (const field of wanted) {
+        if (!APPLICABLE_FIELDS.includes(field)) continue;
+        const change = (corr.changes || []).find((c) => c.field === field);
+        if (!change) continue;
+        let value = change.after;
+        if (field === 'submissionDeadline' || field === 'openingDate') {
+          value = parseTenderDate(change.after);
+          if (!value) { skipped.push(`${CORRIGENDUM_FIELDS[field]}: "${change.after}" is not a date we can read`); continue; }
+        }
+        values[field] = value;
+        evidence[field] = {
+          sourcePage: null,
+          evidenceText: `From the corrigendum ${corr.filename}, page ${change.sourcePage}: ${change.evidenceText}`,
+          rawValue: change.after,
+        };
+      }
+      if (Object.keys(values).length === 0) {
+        return res.status(400).json({ error: skipped[0] ?? 'Choose at least one change to apply.', skipped });
+      }
+      await applyCorrigendum(ctx.scope, ctx.tender, corr, values, evidence, req.bidpilotUserId);
+      return res.json({ applied: Object.keys(values), skipped });
+    } catch (err) {
+      handleError(res, err);
+    }
+  });
+
   return router;
+}
+
+function publicCorrigendum(c) {
+  return {
+    id: c.id, filename: c.filename, status: c.status, error: c.error, pageCount: c.pageCount,
+    summary: c.summary, changes: c.changes ?? [], appliedAt: c.appliedAt, createdAt: c.createdAt,
+  };
+}
+
+/** The tender's current key facts, as the corrigendum check compares them. */
+function corrigendumFacts(tender) {
+  const ev = tender.overviewEvidence || {};
+  const when = (d, field) => (d
+    ? d.toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'medium', timeStyle: 'short' })
+    : ev[field]?.rawValue ?? null);
+  return {
+    submissionDeadline: when(tender.submissionDeadline, 'submissionDeadline'),
+    openingDate: when(tender.openingDate, 'openingDate'),
+    emd: tender.emd ?? null,
+    estimatedValue: tender.estimatedValue ?? null,
+    tenderFee: tender.tenderFee ?? null,
+    contractDuration: tender.contractDuration ?? null,
+  };
+}
+
+async function processCorrigendum(scope, tender, id, buffer) {
+  const start = Date.now();
+  try {
+    const result = await extractStructured(buffer);
+    const pages = result.spanPages.map((p) => ({ pageNumber: p.page, rawText: spansToText([p]) }));
+    if (!pages.some((p) => p.rawText && p.rawText.trim())) {
+      await finishCorrigendum(scope, id, { status: 'FAILED', pageCount: pages.length, error: 'No readable text was found in this PDF.' });
+      return;
+    }
+    const facts = corrigendumFacts(tender);
+    const raw = await withAnalysisSlot(() => askForChanges({ facts, pages }));
+    await recordChunkUsage(scope.db, { companyId: scope.companyId, tenderId: tender.id, metadata: { kind: 'corrigendum', corrigendumId: id } });
+    if (!raw) {
+      await finishCorrigendum(scope, id, { status: 'FAILED', pageCount: pages.length, error: 'The check could not read this corrigendum. Please try again.' });
+      return;
+    }
+    const { summary, changes, dropped } = validateCorrigendumResult(raw, { pages, facts });
+    await finishCorrigendum(scope, id, { status: 'COMPLETED', pageCount: pages.length, summary, changes });
+    log.info(`metric bidpilot_corrigendum company=${scope.companyId} tender=${tender.id} changes=${changes.length} dropped=${dropped} ms=${Date.now() - start}`);
+  } catch (err) {
+    await finishCorrigendum(scope, id, { status: 'FAILED', error: safeErrorMessage(err) }).catch(() => {});
+    log.info(`metric bidpilot_error company=${scope.companyId} tender=${tender.id} kind=corrigendum ms=${Date.now() - start}`);
+  }
+}
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/** Validates PATCH /tenders/:id. Returns { changes } or { error }. */
+async function parseTrackingChanges(db, scope, body) {
+  const changes = {};
+  if ('status' in body) {
+    if (!tenderStatus.enumValues.includes(body.status)) return { error: 'Unknown stage.' };
+    changes.status = body.status;
+  }
+  if ('internalDeadline' in body) {
+    if (body.internalDeadline === null || body.internalDeadline === '') changes.internalDeadline = null;
+    else {
+      const d = new Date(body.internalDeadline);
+      if (typeof body.internalDeadline !== 'string' || Number.isNaN(d.getTime())) return { error: 'The internal deadline is not a date.' };
+      changes.internalDeadline = d;
+    }
+  }
+  if ('notes' in body) {
+    if (body.notes !== null && typeof body.notes !== 'string') return { error: 'Notes must be text.' };
+    const notes = (body.notes ?? '').trim();
+    if (notes.length > NOTES_MAX) return { error: `Notes can be up to ${NOTES_MAX} characters.` };
+    changes.notes = notes || null;
+  }
+  if ('portalUrl' in body) {
+    const url = typeof body.portalUrl === 'string' ? body.portalUrl.trim() : '';
+    if (url) {
+      let u;
+      try { u = new URL(url); } catch { return { error: 'The portal link is not a web address.' }; }
+      if (!['http:', 'https:'].includes(u.protocol) || url.length > 600) return { error: 'The portal link is not a web address.' };
+    }
+    changes.portalUrl = url || null;
+  }
+  if ('portalRef' in body) {
+    const ref = typeof body.portalRef === 'string' ? body.portalRef.trim() : '';
+    if (ref.length > 120) return { error: 'The tender ID is too long.' };
+    changes.portalRef = ref || null;
+  }
+  if ('clientId' in body) {
+    if (body.clientId === null || body.clientId === '') changes.clientId = null;
+    else {
+      if (typeof body.clientId !== 'string' || !UUID_RE.test(body.clientId)) return { error: 'Unknown client.' };
+      const client = await getClient(scope, body.clientId);
+      if (!client) return { error: 'Unknown client.' };
+      changes.clientId = client.id;
+    }
+  }
+  if (Object.keys(changes).length === 0) return { error: 'Nothing to change.' };
+  return { changes };
 }
 
 /** The company profile is optional for the first FREE_TENDERS_WITHOUT_PROFILE

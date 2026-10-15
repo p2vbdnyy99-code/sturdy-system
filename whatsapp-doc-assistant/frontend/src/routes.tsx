@@ -10,6 +10,8 @@ import { CreateCompanyPage } from './pages/onboarding/CreateCompany';
 import { DashboardPage } from './pages/Dashboard';
 import { TenderDetailPage } from './pages/TenderDetail';
 import { CompanyProfilePage } from './pages/settings/CompanyProfile';
+import { ClientsPage } from './pages/Clients';
+import { FeedPage } from './pages/Feed';
 import { HomePage } from './pages/Home';
 import { PricingPage } from './pages/Pricing';
 import { FaqPage } from './pages/Faq';
@@ -38,6 +40,9 @@ export function AppRoutes() {
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/tenders/:id" element={<TenderDetailPage />} />
           <Route path="/company-profile" element={<CompanyProfilePage />} />
+          <Route path="/clients" element={<ClientsPage />} />
+          <Route path="/feed" element={<FeedPage />} />
+          <Route path="/clients/:clientId/profile" element={<CompanyProfilePage />} />
         </Route>
       </Route>
 

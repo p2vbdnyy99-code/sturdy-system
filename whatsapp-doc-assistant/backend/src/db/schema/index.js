@@ -19,3 +19,6 @@ export * from './notifications.js';
 export * from './audit.js';
 export * from './analytics.js';
 export * from './authIdentities.js';
+export * from './workflow.js';
+export * from './clients.js';
+export * from './publicTenders.js';

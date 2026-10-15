@@ -44,3 +44,8 @@ test('eligibilityWasChecked: only a check after the latest analysis counts', () 
   assert.equal(eligibilityWasChecked([ev('analysis_completed', 9), ev('eligibility_checked', 10), ev('analysis_replaced', 11)]), false);
   assert.equal(eligibilityWasChecked([ev('analysis_completed', 9)]), false);
 });
+
+test('a client tender names the client\u2019s profile', () => {
+  const s = deadlineSummary(day(5), [req('MEETS')], false, now, 'the client\u2019s profile');
+  assert.equal(s.headline, '1 of 1 requirement appear met by the client\u2019s profile');
+});

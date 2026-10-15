@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { Breadcrumb, Panel } from '../../components/AppShell';
 import { useSession } from '../../auth/SessionProvider';
 import { ApiError } from '../../api/client';
@@ -9,6 +9,7 @@ import {
 } from '../../api/companies';
 import { PROFILE_FIELDS, describeMissing, type ProfileField, type ProfileFieldKey } from '../../profileFields';
 import { useShellData } from '../../shell/ShellData';
+import { getClientProfile, listClients, updateClientProfile } from '../../api/clients';
 import { FREE_TENDERS_WITHOUT_PROFILE } from '../../shell/profileGate';
 
 // The eligibility check's other input (see eligibilityPipeline.js): every
@@ -87,10 +88,14 @@ function formToPatch(form: FormState, none: Set<string>): CompanyProfilePatch {
 export function CompanyProfilePage() {
   const { me, selectedCompanyId, refresh } = useSession();
   const companyId = selectedCompanyId as string; // CompanyGate guarantees this
+  // /clients/:clientId/profile edits one of a consultant's clients with the
+  // same form; /company-profile edits the company's own.
+  const { clientId } = useParams<{ clientId?: string }>();
+  const [clientName, setClientName] = useState<string | null>(null);
   const navigate = useNavigate();
   const location = useLocation();
   const { profile: gate } = useShellData();
-  const incomplete = !me?.companies.find((c) => c.companyId === companyId)?.profileComplete;
+  const incomplete = !clientId && !me?.companies.find((c) => c.companyId === companyId)?.profileComplete;
   // Where to go back to once the profile is complete (the dialog and the
   // dashboard reminder pass it).
   const from = (location.state as { from?: string } | null)?.from;
@@ -109,16 +114,17 @@ export function CompanyProfilePage() {
     setLoading(true);
     setLoadError(null);
     try {
-      const profile = await getCompanyProfile(companyId);
+      const profile = clientId ? await getClientProfile(companyId, clientId) : await getCompanyProfile(companyId);
+      if (clientId) setClientName((await listClients(companyId)).clients.find((c) => c.id === clientId)?.name ?? 'Client');
       setForm(profileToForm(profile));
       setNone(new Set(profile?.noneFields ?? []));
       setMissing(profile?.missing ?? PROFILE_FIELDS.map((f) => f.key));
     } catch (err) {
-      setLoadError(err instanceof ApiError ? err.message : 'Could not load your company profile.');
+      setLoadError(err instanceof ApiError ? err.message : 'Could not load the profile.');
     } finally {
       setLoading(false);
     }
-  }, [companyId]);
+  }, [companyId, clientId]);
 
   useEffect(() => { fetchProfile(); }, [fetchProfile]);
 
@@ -147,13 +153,14 @@ export function CompanyProfilePage() {
     setSaving(true);
     setSaved(false);
     try {
-      const updated = await updateCompanyProfile(companyId, formToPatch(form, none));
+      const patch = formToPatch(form, none);
+      const updated = clientId ? await updateClientProfile(companyId, clientId, patch) : await updateCompanyProfile(companyId, patch);
       setForm(profileToForm(updated));
       setNone(new Set(updated.noneFields));
       setMissing(updated.missing);
       setShowMissing(true);
       setSaved(true);
-      if (updated.missing.length === 0) {
+      if (updated.missing.length === 0 && !clientId) {
         await refresh(); // the company is now marked complete, so CompanyGate lets the app open
         if (incomplete && from && from !== '/company-profile') navigate(from, { replace: true });
       }
@@ -239,12 +246,21 @@ export function CompanyProfilePage() {
     <>
       <header className="page-head">
         <div className="page-head-text">
-          <Breadcrumb items={[{ label: 'Dashboard', to: '/dashboard' }, { label: 'Company profile' }]} />
-          <h1 className="page-title">Company profile</h1>
-          {company && <p className="page-meta"><span>{company.name}</span><span>{PROFILE_FIELDS.length} fields</span></p>}
+          <Breadcrumb items={clientId
+            ? [{ label: 'Dashboard', to: '/dashboard' }, { label: 'Clients', to: '/clients' }, { label: clientName ?? 'Client' }]
+            : [{ label: 'Dashboard', to: '/dashboard' }, { label: 'Company profile' }]} />
+          <h1 className="page-title">{clientId ? (clientName ?? 'Client profile') : 'Company profile'}</h1>
+          {clientId
+            ? <p className="page-meta"><span>Client of {company?.name}</span><span>{PROFILE_FIELDS.length} fields</span></p>
+            : company && <p className="page-meta"><span>{company.name}</span><span>{PROFILE_FIELDS.length} fields</span></p>}
         </div>
       </header>
-        {incomplete ? (
+        {clientId ? (
+          <p className="muted">
+            Tenders you mark as being for this client are checked against these details instead of your own
+            company&rsquo;s. Tick &ldquo;None&rdquo; for anything that doesn&rsquo;t apply.
+          </p>
+        ) : incomplete ? (
           <div className="notice notice-info profile-setup-notice">
             <span className="notice-text">
               <strong>Fill this in for clearer eligibility results.</strong> The eligibility check compares each
@@ -267,7 +283,7 @@ export function CompanyProfilePage() {
         )}
 
         {!loading && !loadError && (
-          <Panel id="profile-form" title="Your company" aside={<span className="muted">Tick &ldquo;None&rdquo; where a field doesn&rsquo;t apply</span>}>
+          <Panel id="profile-form" title={clientId ? 'Client details' : 'Your company'} aside={<span className="muted">Tick &ldquo;None&rdquo; where a field doesn&rsquo;t apply</span>}>
           <form onSubmit={onSubmit} className="card profile-form" noValidate>
             <div className="profile-grid">
               {PROFILE_FIELDS.filter((f) => f.kind !== 'list' && f.kind !== 'experience' && f.key !== 'otherQualifications').map(renderField)}
@@ -282,7 +298,7 @@ export function CompanyProfilePage() {
             )}
             {saved && !saving && missing.length === 0 && <p className="save-confirmation">Saved. Your profile is complete.</p>}
             <button type="submit" className="submit-button" disabled={saving}>
-              {saving ? 'Saving…' : incomplete && from ? 'Save and continue' : 'Save company profile'}
+              {saving ? 'Saving…' : incomplete && from ? 'Save and continue' : clientId ? 'Save client profile' : 'Save company profile'}
             </button>
           </form>
           </Panel>

@@ -10,7 +10,14 @@ import pg from 'pg';
 import { dbAvailable, DB_URL, testDb, closeTestDb, truncateAll, completeProfile } from '../db/helpers.js';
 import { createCompanyWithOwner } from '../../src/bidpilot/repo/companies.js';
 import { requireCompanyAccess } from '../../src/bidpilot/repo/tenants.js';
-import { createTender, getTender, updateProcessingStatus } from '../../src/bidpilot/repo/tenders.js';
+import { createTender as createTenderRow, getTender, updateProcessingStatus } from '../../src/bidpilot/repo/tenders.js';
+import { attachTestDocument } from '../db/helpers.js';
+// Real uploads always have a document; analysis refuses a tender without one.
+const createTender = async (scope, fields) => {
+  const t = await createTenderRow(scope, fields);
+  await attachTestDocument(t.id);
+  return t;
+};
 import { insertPages } from '../../src/bidpilot/repo/pages.js';
 import { listRequirements, listEvidenceForRequirement } from '../../src/bidpilot/repo/requirements.js';
 import { listDates } from '../../src/bidpilot/repo/dates.js';

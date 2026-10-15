@@ -137,6 +137,16 @@ sibling of `backend/`/`frontend/`, since the Docker build needs both).
   shows a "Complete your company profile" dialog. The number is
   `FREE_TENDERS_WITHOUT_PROFILE` in `backend/src/bidpilot/profileGate.js`
   and `frontend/src/shell/profileGate.ts` (a test keeps them equal).
+- **Tender feed collector (off by default):** set the Fly secret
+  `BIDPILOT_DISCOVERY_CPPP=on` to start reading CPPP's public latest-tenders
+  page every 10 minutes (`BIDPILOT_DISCOVERY_INTERVAL_MINUTES`, minimum 5).
+  Logs: `metric bidpilot_discovery source=cppp stored=N`, or `bidpilot
+  discovery: cppp read failed (...)` with the next try time (it backs off up
+  to 2 hours). Turn it off by removing the secret. If NIC replies to the
+  access request (draft in Gmail to support-eproc@nic.in), follow their terms
+  before anything else.
+- **Corrigenda** use one AI call each against the company's daily analysis
+  cap; they don't use the plan's tender allowance.
 - **Subscriptions (monthly plans, until online payment exists):** when a
   firm has paid, run on the server, from `/app/backend`:
   `node scripts/subscription.mjs status` to find the company id, then

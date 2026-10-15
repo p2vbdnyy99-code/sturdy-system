@@ -2,8 +2,8 @@
 // a bare companyId, so it's structurally impossible to call these without
 // having first proven the caller belongs to that company.
 
-import { and, asc, desc, eq, ilike, ne, or, sql } from 'drizzle-orm';
-import { tenders } from '../../db/schema/index.js';
+import { and, asc, desc, eq, ilike, inArray, isNull, ne, or, sql } from 'drizzle-orm';
+import { tenders, tenderEvents, tenderDocuments } from '../../db/schema/index.js';
 
 const SORTABLE_COLUMNS = {
   deadline: tenders.submissionDeadline,
@@ -29,11 +29,14 @@ export async function listTenders(scope) {
  * bounded slice plus the total count needed to render pagination controls.
  */
 export async function listTendersPaginated(scope, {
-  page = 1, limit = 20, status, analysisStatus, search,
+  page = 1, limit = 20, status, analysisStatus, search, clientId,
   sortBy = 'deadline', sortOrder = 'asc',
 } = {}) {
   const conditions = [eq(tenders.companyId, scope.companyId)];
   if (status) conditions.push(eq(tenders.status, status));
+  // A client's id, or 'none' for the company's own tenders.
+  if (clientId === 'none') conditions.push(isNull(tenders.clientId));
+  else if (clientId) conditions.push(eq(tenders.clientId, clientId));
   if (analysisStatus) conditions.push(eq(tenders.analysisStatus, analysisStatus));
   if (search) {
     const pattern = `%${search}%`;
@@ -56,7 +59,13 @@ export async function listTendersPaginated(scope, {
     scope.db.select({ count: sql`count(*)::int` }).from(tenders).where(where),
   ]);
 
-  return { tenders: rows, total: count, page: safePage, limit: safeLimit };
+  // Whether each tender has its document yet (a tender tracked from the feed
+  // doesn't until the user attaches it), so the list can say so.
+  const withDocs = rows.length
+    ? new Set((await scope.db.select({ id: tenderDocuments.tenderId }).from(tenderDocuments)
+      .where(inArray(tenderDocuments.tenderId, rows.map((r) => r.id)))).map((r) => r.id))
+    : new Set();
+  return { tenders: rows.map((r) => ({ ...r, hasDocument: withDocs.has(r.id) })), total: count, page: safePage, limit: safeLimit };
 }
 
 /** Dashboard summary: aggregate counts plus a short recent/upcoming slice —
@@ -135,4 +144,51 @@ export async function startAnalysis(scope, tenderId) {
     ))
     .returning();
   return row;
+}
+
+/** Bid stages as users see them (tenders.status). */
+export const STAGE_LABELS = {
+  NEW: 'New',
+  REVIEWING: 'Reviewing',
+  INTERESTED: 'Interested',
+  PREPARING_BID: 'Preparing bid',
+  SUBMITTED: 'Submitted',
+  AWARDED: 'Won',
+  NOT_AWARDED: 'Not won',
+  CLOSED: 'Dropped',
+};
+
+export const NOTES_MAX = 2000;
+
+/**
+ * The bid tracker: stage, internal deadline, notes, the portal link and the
+ * client the tender is for. Only the fields
+ * present in `changes` are written. A stage change is recorded as a
+ * `status_changed` event. Returns the updated tender, or undefined when it
+ * isn't this company's.
+ */
+export async function updateTenderTracking(scope, tenderId, changes, userId) {
+  return scope.db.transaction(async (tx) => {
+    const s = scope.withDb(tx);
+    const before = await getTender(s, tenderId);
+    if (!before) return undefined;
+    const values = { updatedAt: new Date() };
+    if ('status' in changes) values.status = changes.status;
+    if ('internalDeadline' in changes) values.internalDeadline = changes.internalDeadline;
+    if ('notes' in changes) values.notes = changes.notes;
+    if ('portalUrl' in changes) values.portalUrl = changes.portalUrl;
+    if ('portalRef' in changes) values.portalRef = changes.portalRef;
+    if ('clientId' in changes) values.clientId = changes.clientId;
+    const row = await s.updateOwned(tenders, tenders.id, tenders.companyId, tenderId, values);
+    if ('status' in changes && changes.status !== before.status) {
+      await tx.insert(tenderEvents).values({
+        tenderId,
+        eventType: 'status_changed',
+        description: `Stage changed to ${STAGE_LABELS[changes.status]}`,
+        metadata: { from: before.status, to: changes.status },
+        createdBy: userId ?? null,
+      });
+    }
+    return row;
+  });
 }

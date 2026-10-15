@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import { Breadcrumb, Panel } from '../components/AppShell';
 import { useShellData } from '../shell/ShellData';
 import { profileReminder } from '../shell/profileGate';
+import { STAGE_LABEL } from '../tenderDetail/stages';
+import { listClients, type Client } from '../api/clients';
 import { EmptyState } from '../components/EmptyState';
 import { AttentionBadge } from '../components/AttentionBadge';
 import { Icon, type IconName } from '../components/Icon';
@@ -36,6 +38,13 @@ export function DashboardPage() {
   // Filters — changing any of these resets to page 1.
   const [status, setStatus] = useState<TenderStatus | ''>('');
   const [analysisStatus, setAnalysisStatus] = useState<AnalysisStatus | ''>('');
+  // '' = all, 'none' = the company's own, otherwise a client's id.
+  const [clientFilter, setClientFilter] = useState('');
+  const [clients, setClients] = useState<Client[]>([]);
+  useEffect(() => {
+    listClients(companyId).then((r) => setClients(r.clients)).catch(() => setClients([]));
+  }, [companyId]);
+  const clientNames = new Map(clients.map((c) => [c.id, c.name]));
   const [searchInput, setSearchInput] = useState('');
   const [search, setSearch] = useState('');
   const [sortBy, setSortBy] = useState<'deadline' | 'createdAt'>('deadline');
@@ -70,6 +79,7 @@ export function DashboardPage() {
         companyId, page, limit: PAGE_SIZE,
         status: status || undefined,
         analysisStatus: analysisStatus || undefined,
+        clientId: clientFilter || undefined,
         search: search || undefined,
         sortBy, sortOrder,
       });
@@ -80,7 +90,7 @@ export function DashboardPage() {
     } finally {
       setListLoading(false);
     }
-  }, [companyId, page, status, analysisStatus, search, sortBy, sortOrder]);
+  }, [companyId, page, status, analysisStatus, clientFilter, search, sortBy, sortOrder]);
 
   useEffect(() => { fetchList(); }, [fetchList]);
 
@@ -130,12 +140,13 @@ export function DashboardPage() {
   function clearFilters() {
     setStatus('');
     setAnalysisStatus('');
+    setClientFilter('');
     setSearchInput('');
     setSearch('');
     setPage(1);
   }
 
-  const hasActiveFilters = Boolean(status || analysisStatus || search);
+  const hasActiveFilters = Boolean(status || analysisStatus || clientFilter || search);
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   const counts = summary
@@ -241,8 +252,8 @@ export function DashboardPage() {
             onChange={(e) => setSearchInput(e.target.value)}
           />
           <select value={status} onChange={(e) => { setStatus(e.target.value as TenderStatus | ''); setPage(1); }}>
-            <option value="">All statuses</option>
-            {TENDER_STATUSES.map((s) => <option key={s} value={s}>{humanizeEnum(s)}</option>)}
+            <option value="">All stages</option>
+            {TENDER_STATUSES.map((s) => <option key={s} value={s}>{STAGE_LABEL[s]}</option>)}
           </select>
           <select
             value={analysisStatus}
@@ -251,6 +262,13 @@ export function DashboardPage() {
             <option value="">All analysis states</option>
             {ANALYSIS_STATUSES.map((s) => <option key={s} value={s}>{humanizeEnum(s)}</option>)}
           </select>
+          {clients.length > 0 && (
+            <select aria-label="Client" value={clientFilter} onChange={(e) => { setClientFilter(e.target.value); setPage(1); }}>
+              <option value="">All clients</option>
+              <option value="none">Our own tenders</option>
+              {clients.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+            </select>
+          )}
           {hasActiveFilters && (
             <button type="button" onClick={clearFilters}>Clear filters</button>
           )}
@@ -290,12 +308,14 @@ export function DashboardPage() {
                       </button>
                     </th>
                     <th>Status</th>
+                    <th>Stage</th>
                     <th><span className="visually-hidden">Actions</span></th>
                   </tr>
                 </thead>
                 <tbody>
                   {tenders.map((t) => (
-                    <TenderRow key={t.id} tender={t} companyId={companyId} onUpdate={handleRowUpdate} />
+                    <TenderRow key={t.id} tender={t} companyId={companyId} onUpdate={handleRowUpdate}
+                      clientName={t.clientId ? clientNames.get(t.clientId) ?? null : null} />
                   ))}
                 </tbody>
               </table>

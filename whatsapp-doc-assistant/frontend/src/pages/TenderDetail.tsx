@@ -17,19 +17,27 @@ import { DocumentTab } from '../tenderDetail/DocumentTab';
 import { KeyFacts } from '../tenderDetail/KeyFacts';
 import { DatesTimeline } from '../tenderDetail/DatesTimeline';
 import { DeadlineCard } from '../tenderDetail/DeadlineCard';
+import { BidPanel } from '../tenderDetail/BidPanel';
+import { ChecklistTab } from '../tenderDetail/ChecklistTab';
+import { CorrigendaTab } from '../tenderDetail/CorrigendaTab';
+import { STAGE_LABEL } from '../tenderDetail/stages';
+import { biddingStatus } from '../tenderDetail/biddingStatus';
+import { AttachDocumentNotice } from '../tenderDetail/AttachDocumentNotice';
 import { eligibilityWasChecked } from '../tenderDetail/deadlineSummary';
 import { Icon } from '../components/Icon';
 import { useShellData } from '../shell/ShellData';
 import { displayTitle, formatDate } from '../format';
 
-type TabKey = 'overview' | 'requirements' | 'boq' | 'dates' | 'redFlags' | 'document';
+type TabKey = 'overview' | 'requirements' | 'checklist' | 'boq' | 'dates' | 'redFlags' | 'corrigenda' | 'document';
 
 const TABS: Array<{ key: TabKey; label: string }> = [
   { key: 'overview', label: 'Overview' },
   { key: 'requirements', label: 'Requirements' },
+  { key: 'checklist', label: 'Checklist' },
   { key: 'boq', label: 'BOQ' },
   { key: 'dates', label: 'Dates' },
   { key: 'redFlags', label: 'Red flags' },
+  { key: 'corrigenda', label: 'Corrigenda' },
   { key: 'document', label: 'Document' },
 ];
 
@@ -104,6 +112,7 @@ export function TenderDetailPage() {
           onTabChange={setTab}
           companyId={companyId}
           onRefetch={fetchTender}
+          onPatch={(patch) => setTender((t) => (t ? { ...t, ...patch } : t))}
           pollTimedOut={pollState?.status === 'timeout'}
           onPollRetry={() => setPollRetryKey((k) => k + 1)}
         />
@@ -128,13 +137,14 @@ const PROCESSING_STAGE_LABELS: Record<TenderDetailType['processingStatus'], stri
 };
 
 function TenderDetailBody({
-  tender, tab, onTabChange, companyId, onRefetch, pollTimedOut, onPollRetry,
+  tender, tab, onTabChange, companyId, onRefetch, onPatch, pollTimedOut, onPollRetry,
 }: {
   tender: TenderDetailType;
   tab: TabKey;
   onTabChange: (tab: TabKey) => void;
   companyId: string;
   onRefetch: () => void;
+  onPatch: (patch: Partial<TenderDetailType>) => void;
   pollTimedOut: boolean;
   onPollRetry: () => void;
 }) {
@@ -230,8 +240,21 @@ function TenderDetailBody({
                 </button>
               </li>
             )}
+            {tender.status !== 'NEW' && <li><span className="chip chip-stage">{STAGE_LABEL[tender.status]}</span></li>}
             <li><AttentionBadge state={attention} /></li>
+            {(() => {
+              const b = biddingStatus(deadline && !Number.isNaN(Date.parse(deadline)) ? deadline : null);
+              return b && <li><span className={`chip chip-bidding-${b.tone}`} title="From the deadline in the document">{b.label}</span></li>;
+            })()}
             {tenderNumber && <li><span className="chip"><Icon name="file" />{tenderNumber}</span></li>}
+            {tender.portalUrl && (
+              <li>
+                <a className="chip chip-link" href={tender.portalUrl} target="_blank" rel="noopener noreferrer">
+                  <Icon name="globe" />{tender.portalRef || 'Open on the portal'} ↗
+                </a>
+              </li>
+            )}
+            {!tender.portalUrl && tender.portalRef && <li><span className="chip"><Icon name="globe" />{tender.portalRef}</span></li>}
             {location && <li><span className="chip">{location}</span></li>}
             {duration && <li><span className="chip">{duration}</span></li>}
           </ul>
@@ -268,7 +291,8 @@ function TenderDetailBody({
           <span className="notice-text">Analyzing the document against your requirements checklist…</span>
         </div>
       )}
-      {tender.processingStatus === 'COMPLETED' && tender.analysisStatus === 'NOT_STARTED' && (
+      {!tender.document && <AttachDocumentNotice tender={tender} companyId={companyId} onAttached={onRefetch} />}
+      {tender.document && tender.processingStatus === 'COMPLETED' && tender.analysisStatus === 'NOT_STARTED' && (
         <div className="notice notice-info">
           <Icon name="info" />
           <span className="notice-text">
@@ -312,12 +336,13 @@ function TenderDetailBody({
             deadline={deadline}
             requirements={tender.requirements}
             eligibilityChecked={eligibilityWasChecked(tender.activity)}
+            forClient={Boolean(tender.clientId)}
             onOpenRequirements={() => openTab('requirements')}
           />
         </div>
       )}
 
-      <div className={completed ? 'grid-main-side' : ''}>
+      <div className="grid-main-side">
         <Panel
           id="tender-details"
           title="Details"
@@ -353,20 +378,25 @@ function TenderDetailBody({
                   <RequirementsTab requirements={tender.requirements} />
                 </div>
               )}
+              {tab === 'checklist' && <ChecklistTab tenderId={tender.id} companyId={companyId} analysed={completed} />}
               {tab === 'boq' && <BoqTab items={tender.boq} />}
               {tab === 'dates' && <DatesTab dates={tender.dates} />}
               {tab === 'redFlags' && <RedFlagsTab redFlags={tender.redFlags} />}
+              {tab === 'corrigenda' && <CorrigendaTab tenderId={tender.id} companyId={companyId} onApplied={onRefetch} />}
               {tab === 'document' && (
                 <DocumentTab tenderId={tender.id} companyId={companyId} document={tender.document} />
               )}
             </div>
           </div>
         </Panel>
-        {completed && (
-          <Panel id="key-dates" title="Key dates" aside={<span className="panel-count">{tender.dates.length}</span>}>
-            <div className="card"><DatesTimeline dates={tender.dates} /></div>
-          </Panel>
-        )}
+        <div className="side-stack">
+          <BidPanel key={tender.id} tender={tender} companyId={companyId} onSaved={onPatch} />
+          {completed && (
+            <Panel id="key-dates" title="Key dates" aside={<span className="panel-count">{tender.dates.length}</span>}>
+              <div className="card"><DatesTimeline dates={tender.dates} /></div>
+            </Panel>
+          )}
+        </div>
       </div>
     </div>
   );

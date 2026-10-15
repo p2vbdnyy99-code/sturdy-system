@@ -40,6 +40,17 @@ export type TenderListItem = {
   source: string;
   createdAt: string;
   updatedAt: string;
+  /** False for a tender tracked from the feed until its PDF is attached. */
+  hasDocument: boolean;
+} & TenderTracking;
+
+/** The bid tracker's fields (PATCH /tenders/:id). */
+export type TenderTracking = {
+  internalDeadline: string | null;
+  notes: string | null;
+  portalUrl: string | null;
+  portalRef: string | null;
+  clientId: string | null;
 };
 
 export type TenderListResult = {
@@ -56,6 +67,8 @@ export type TenderListQuery = {
   status?: TenderStatus;
   analysisStatus?: AnalysisStatus;
   search?: string;
+  /** A client's id, or 'none' for the company's own tenders. */
+  clientId?: string;
   sortBy?: 'deadline' | 'createdAt';
   sortOrder?: 'asc' | 'desc';
 };
@@ -154,7 +167,7 @@ export type TenderActivityEvent = {
   createdAt: string;
 };
 
-export type TenderDetail = {
+export type TenderDetail = TenderTracking & {
   id: string;
   title: string | null;
   source: string;
@@ -220,4 +233,103 @@ export function checkEligibility(tenderId: string, companyId: string) {
   return request<{ tenderId: string; evaluated: number; requirements: Array<{
     id: string; companyStatus: EligibilityStatus; actionRequired: string | null; companyEvidence: CompanyEvidenceEntry[];
   }> }>(`/bidpilot/tenders/${tenderId}/eligibility`, { method: 'POST', body: { companyId } });
+}
+
+// ── Bid tracker and submission checklist ──────────────────────────────────
+
+export function updateTracking(
+  tenderId: string, companyId: string,
+  changes: Partial<TenderTracking & { status: TenderStatus }>,
+) {
+  return request<TenderTracking & { id: string; status: TenderStatus }>(
+    `/bidpilot/tenders/${tenderId}`, { method: 'PATCH', body: { companyId, ...changes } },
+  );
+}
+
+export type ChecklistItem = {
+  key: string;
+  label: string;
+  detail: string | null;
+  category: string;
+  mandatory: boolean;
+  sourcePage: number | null;
+  done: boolean;
+  doneAt: string | null;
+};
+export type ChecklistCustomItem = { id: string; label: string; done: boolean; doneAt: string | null };
+export type Checklist = { items: ChecklistItem[]; custom: ChecklistCustomItem[]; total: number; done: number };
+
+export function getChecklist(tenderId: string, companyId: string) {
+  return request<Checklist>(`/bidpilot/tenders/${tenderId}/checklist`, { query: { companyId } });
+}
+
+export function setChecklistItem(tenderId: string, companyId: string, key: string, done: boolean) {
+  return request<Checklist>(`/bidpilot/tenders/${tenderId}/checklist/requirement`, { method: 'PUT', body: { companyId, key, done } });
+}
+
+export function addChecklistItem(tenderId: string, companyId: string, label: string) {
+  return request<Checklist>(`/bidpilot/tenders/${tenderId}/checklist/custom`, { method: 'POST', body: { companyId, label } });
+}
+
+export function setCustomChecklistItem(tenderId: string, companyId: string, itemId: string, done: boolean) {
+  return request<Checklist>(`/bidpilot/tenders/${tenderId}/checklist/custom/${itemId}`, { method: 'PATCH', body: { companyId, done } });
+}
+
+export function deleteChecklistItem(tenderId: string, companyId: string, itemId: string) {
+  return request<Checklist>(`/bidpilot/tenders/${tenderId}/checklist/custom/${itemId}`, { method: 'DELETE', body: { companyId } });
+}
+
+/** Same-origin download link; the session cookie authorises it. */
+export function checklistXlsxUrl(tenderId: string, companyId: string) {
+  return `/bidpilot/tenders/${tenderId}/checklist.xlsx?companyId=${encodeURIComponent(companyId)}`;
+}
+
+// ── Corrigenda ─────────────────────────────────────────────────────────────
+
+export type CorrigendumChange = {
+  field: string;
+  label: string;
+  before: string | null;
+  after: string;
+  sourcePage: number;
+  evidenceText: string;
+};
+export type Corrigendum = {
+  id: string;
+  filename: string;
+  status: 'PROCESSING' | 'COMPLETED' | 'FAILED';
+  error: string | null;
+  pageCount: number | null;
+  summary: string | null;
+  changes: CorrigendumChange[];
+  appliedAt: string | null;
+  createdAt: string;
+};
+
+/** Changes that can be written onto the tender; the rest are shown only. */
+export const APPLICABLE_CORRIGENDUM_FIELDS = ['submissionDeadline', 'openingDate', 'emd', 'estimatedValue', 'tenderFee', 'contractDuration'];
+
+export function listCorrigenda(tenderId: string, companyId: string) {
+  return request<{ corrigenda: Corrigendum[] }>(`/bidpilot/tenders/${tenderId}/corrigenda`, { query: { companyId } });
+}
+
+export function uploadCorrigendum(tenderId: string, companyId: string, file: File) {
+  const form = new FormData();
+  form.append('file', file);
+  form.append('companyId', companyId);
+  return request<{ id: string; status: string }>(`/bidpilot/tenders/${tenderId}/corrigenda`, { method: 'POST', body: form });
+}
+
+export function applyCorrigendum(tenderId: string, companyId: string, corrigendumId: string, fields: string[]) {
+  return request<{ applied: string[]; skipped: string[] }>(
+    `/bidpilot/tenders/${tenderId}/corrigenda/${corrigendumId}/apply`, { method: 'POST', body: { companyId, fields } },
+  );
+}
+
+/** Attach the PDF to a tender tracked from the tender feed. */
+export function attachTenderDocument(tenderId: string, companyId: string, file: File) {
+  const form = new FormData();
+  form.append('file', file);
+  form.append('companyId', companyId);
+  return request<{ tenderId: string; processingStatus: ProcessingStatus }>(`/bidpilot/tenders/${tenderId}/document`, { method: 'POST', body: form });
 }

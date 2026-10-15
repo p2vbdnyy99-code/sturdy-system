@@ -83,6 +83,16 @@ Follow `harness/README.md`. In short:
   (`none_fields`); never force invented entries. Past the free tenders,
   uploads and analysis answer 409 `profile_incomplete` and the app opens its
   "complete your profile" dialog. No forced redirect to the profile.
+- The submission checklist is built from the tender's extracted requirements
+  every time; never store or show a checklist line that isn't one of them
+  (users may add their own, marked as theirs). Corrigendum changes must quote
+  text that is on the page they name, or they are dropped.
+- The tender feed collector reads only CPPP's public latest-tenders page:
+  slowly, identifying itself, off unless `BIDPILOT_DISCOVERY_CPPP=on`. Never
+  solve or bypass a captcha, never use proxies, never download documents, and
+  say plainly in the app that the feed is not every tender.
+- A "try" for the profile rule is a tender with a document; a tender tracked
+  from the feed is analysed only after its PDF is attached.
 - Sign-in with Google and with a WhatsApp code each stay hidden until their
   Fly secrets are set (`BIDPILOT_GOOGLE_*`, `BIDPILOT_WHATSAPP_*`; see
   `OPERATIONS.md`). Never log an OTP code in production. A user may have no

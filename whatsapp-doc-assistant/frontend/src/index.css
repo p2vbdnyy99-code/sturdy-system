@@ -3856,9 +3856,28 @@ button.chip-danger:hover:not(:disabled) {
     display: none;
   }
 
+  /* Eight round buttons don't fit a phone's width: smaller buttons, and the
+     initial (decorative; Log out stays) is left out. */
+  .shell-rail,
+  .shell-rail-links,
+  .shell-rail-bottom {
+    gap: 0.3rem;
+  }
+
+  .shell-rail-link,
   .shell-queue-toggle {
-    width: 42px;
+    width: 38px;
+    height: 38px;
     padding: 0;
+  }
+
+  .shell-rail-logo .logo-mark {
+    width: 32px;
+    height: 32px;
+  }
+
+  .shell-avatar {
+    display: none;
   }
 
   .feature-figure-value {
@@ -3957,4 +3976,451 @@ button.chip-danger:hover:not(:disabled) {
 /* The dashboard's reminder about the optional profile. */
 .profile-reminder .notice-text {
   flex: 1 1 18rem;
+}
+
+/* ─── Bid tracker and submission checklist ─────────────────────────────── */
+textarea {
+  font: inherit;
+  color: var(--color-text);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  padding: 0.6rem 0.75rem;
+  resize: vertical;
+}
+
+.side-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  min-width: 0;
+}
+
+.side-stack > .panel {
+  margin-bottom: 0;
+}
+
+.bid-form {
+  padding: 0.4rem 1.2rem 1.2rem;
+}
+
+.bid-form .field input,
+.bid-form .field select,
+.bid-form .field textarea {
+  display: block;
+  width: 100%;
+  margin-top: 0.35rem;
+  font-weight: 400;
+}
+
+.bid-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.chip-stage {
+  border-color: var(--navy-200);
+  background: var(--navy-50);
+  color: var(--navy-900);
+}
+
+.stage-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+.stage-preparing_bid,
+.stage-interested {
+  color: var(--navy-700);
+}
+
+.stage-submitted,
+.stage-awarded {
+  color: var(--color-success);
+}
+
+.stage-not_awarded,
+.stage-closed {
+  color: var(--color-text-subtle);
+}
+
+.queue-stage {
+  margin-right: 0.35rem;
+  padding: 0 0.4rem;
+  border-radius: 999px;
+  background: var(--navy-50);
+  color: var(--navy-800);
+  font-weight: 600;
+}
+
+.checklist-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.checklist-progress-text {
+  margin: 0 0 0.35rem;
+}
+
+.checklist-progress-text strong {
+  font-size: 1.4rem;
+}
+
+.checklist-progress {
+  width: min(320px, 70vw);
+  height: 10px;
+  border: none;
+  border-radius: 999px;
+  background: var(--color-neutral-bg);
+  overflow: hidden;
+  appearance: none;
+}
+
+.checklist-progress::-webkit-progress-bar {
+  background: var(--color-neutral-bg);
+  border-radius: 999px;
+}
+
+.checklist-progress::-webkit-progress-value {
+  background: var(--navy-800);
+  border-radius: 999px;
+}
+
+.checklist-progress::-moz-progress-bar {
+  background: var(--navy-800);
+  border-radius: 999px;
+}
+
+.checklist-download {
+  border: 1px solid var(--color-border);
+}
+
+.checklist-group {
+  margin-top: 1.25rem;
+}
+
+.checklist-group-title {
+  margin: 0 0 0.4rem;
+  color: var(--color-text-muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.checklist-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.checklist-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.7rem 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.checklist-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.7rem;
+  min-width: 0;
+  cursor: pointer;
+}
+
+.checklist-check input {
+  flex-shrink: 0;
+  width: 1.15rem;
+  height: 1.15rem;
+  margin-top: 0.15rem;
+  accent-color: var(--navy-800);
+}
+
+.checklist-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.checklist-label {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.checklist-detail {
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+  overflow-wrap: anywhere;
+}
+
+.checklist-item-done .checklist-label {
+  color: var(--color-text-muted);
+  text-decoration: line-through;
+}
+
+.checklist-meta {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.checklist-page {
+  padding: 0.05rem 0.45rem;
+  border-radius: 999px;
+  background: var(--navy-50);
+  color: var(--navy-800);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.checklist-add {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.checklist-add input {
+  flex: 1;
+  min-width: 0;
+}
+
+.checklist-foot {
+  margin-top: 1.25rem;
+  font-size: 0.85rem;
+}
+
+/* ─── Corrigenda tab ─────────────────────────────────────────────────────── */
+.corrigenda-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.corrigenda-head p {
+  flex: 1 1 22rem;
+  margin: 0;
+}
+
+.corrigendum {
+  margin-top: 1rem;
+  padding: 1rem 1.1rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.corrigendum-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.25rem 1rem;
+  margin-bottom: 0.6rem;
+}
+
+.corrigendum-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-weight: 650;
+  overflow-wrap: anywhere;
+}
+
+.corrigendum-summary {
+  font-weight: 550;
+}
+
+.corrigendum-changes {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.corrigendum-change {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  padding: 0.75rem 0;
+  border-top: 1px solid var(--color-border);
+}
+
+.corrigendum-values {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.4rem;
+  overflow-wrap: anywhere;
+}
+
+.corrigendum-before {
+  color: var(--color-text-muted);
+  text-decoration: line-through;
+}
+
+.corrigendum-quote {
+  color: var(--color-text-muted);
+  font-size: 0.88rem;
+  font-style: italic;
+  overflow-wrap: anywhere;
+}
+
+/* ─── Clients page ─────────────────────────────────────────────────────── */
+.client-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.client-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1rem;
+  padding: 0.9rem 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.client-name {
+  flex: 1 1 12rem;
+  font-weight: 650;
+  overflow-wrap: anywhere;
+}
+
+.client-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.9rem;
+}
+
+.client-rename {
+  display: flex;
+  flex: 1;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.client-rename input {
+  flex: 1 1 14rem;
+}
+
+.client-add {
+  margin: 1rem 0 0.9rem;
+}
+
+.client-actions .btn-pill {
+  border: 1px solid var(--color-border);
+  padding: 0.45rem 0.9rem;
+}
+
+/* Bidding status and portal link chips on the tender page */
+.chip-bidding-open {
+  border-color: #b7e4c7;
+  background: var(--color-success-bg);
+  color: var(--color-success);
+}
+
+.chip-bidding-soon {
+  border-color: #f8dfb8;
+  background: var(--color-warning-bg);
+  color: var(--color-warning);
+}
+
+.chip-bidding-closed {
+  color: var(--color-text-subtle);
+}
+
+.chip-link,
+.chip-link:hover {
+  color: var(--navy-800);
+  text-decoration: none;
+}
+
+.chip-link:hover {
+  border-color: var(--navy-700);
+}
+
+/* ─── Tender feed ────────────────────────────────────────────────────────── */
+.feed-coverage {
+  margin-bottom: 1.5rem;
+}
+
+.feed-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem 1rem;
+  margin: 1rem 0 0.5rem;
+}
+
+.feed-when {
+  grid-template-columns: repeat(4, auto);
+}
+
+.feed-search {
+  flex: 1 1 16rem;
+  margin-top: 0;
+}
+
+.feed-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.feed-item {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.6rem 1.25rem;
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.feed-main {
+  display: flex;
+  flex: 1 1 22rem;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.feed-title {
+  font-weight: 650;
+  overflow-wrap: anywhere;
+}
+
+.feed-sub,
+.feed-dates {
+  color: var(--color-text-muted);
+  font-size: 0.88rem;
+  overflow-wrap: anywhere;
+}
+
+.feed-side {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+@media (max-width: 640px) {
+  .feed-when {
+    grid-template-columns: repeat(2, 1fr);
+    width: 100%;
+  }
 }

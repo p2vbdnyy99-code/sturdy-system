@@ -4,13 +4,15 @@ import { deadlineSummary } from './deadlineSummary';
 
 // The tender page's dark card: time left to submit and the eligibility
 // counts, both straight from the analysis. It gives no bid/no-bid verdict.
-export function DeadlineCard({ deadline, requirements, eligibilityChecked, onOpenRequirements }: {
+export function DeadlineCard({ deadline, requirements, eligibilityChecked, forClient = false, onOpenRequirements }: {
   deadline: string | null;
   requirements: Requirement[];
   eligibilityChecked: boolean;
+  /** The tender is for one of the consultant's clients. */
+  forClient?: boolean;
   onOpenRequirements: () => void;
 }) {
-  const s = deadlineSummary(deadline, requirements, eligibilityChecked);
+  const s = deadlineSummary(deadline, requirements, eligibilityChecked, undefined, forClient ? 'the client\u2019s profile' : 'your profile');
   return (
     <section className="feature-card" aria-labelledby="deadline-card-heading">
       <p className="feature-pill"><Icon name="file" />From the tender document</p>

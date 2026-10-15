@@ -37,6 +37,8 @@ export function deadlineSummary(
   requirements: Array<{ companyStatus: Status }>,
   checkedFlag: boolean,
   now: Date = new Date(),
+  /** Whose profile the check used: "your profile" or "the client's profile". */
+  profileOf = 'your profile',
 ): DeadlineSummary {
   const days = daysUntil(deadline, now);
   const date = formatDate(deadline);
@@ -62,7 +64,7 @@ export function deadlineSummary(
   const n = requirements.length;
   const reqs = `${n} ${n === 1 ? 'requirement' : 'requirements'}`;
   const headline = eligibility
-    ? `${eligibility.met} of ${reqs} appear met by your profile`
+    ? `${eligibility.met} of ${reqs} appear met by ${profileOf}`
     : n > 0
       ? `${reqs} found. Eligibility not checked yet.`
       : 'No requirements were found in the document.';

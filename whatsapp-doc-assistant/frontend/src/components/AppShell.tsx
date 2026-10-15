@@ -47,6 +47,12 @@ export function AppShell() {
           <NavLink to="/company-profile" className="shell-rail-link" aria-label="Company profile" title="Company profile">
             <Icon name="briefcase" />
           </NavLink>
+          <NavLink to="/feed" className="shell-rail-link" aria-label="Tender feed" title="Tender feed">
+            <Icon name="globe" />
+          </NavLink>
+          <NavLink to="/clients" className="shell-rail-link" aria-label="Clients" title="Clients">
+            <Icon name="users" />
+          </NavLink>
           <button
             type="button"
             className="shell-rail-link shell-queue-toggle"

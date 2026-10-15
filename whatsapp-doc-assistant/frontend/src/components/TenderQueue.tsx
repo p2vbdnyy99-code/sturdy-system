@@ -5,6 +5,7 @@ import { useShellData } from '../shell/ShellData';
 import { dueLabel, filterQueue, isDueSoon, type QueueMode } from '../shell/queue';
 import { deriveAttentionState, ATTENTION_LABELS } from '../dashboard/attentionState';
 import { displayTitle } from '../format';
+import { STAGE_LABEL } from '../tenderDetail/stages';
 import type { Allowance } from '../allowance';
 import { Icon } from './Icon';
 
@@ -69,7 +70,10 @@ export function TenderQueue({ activeTenderId, onNavigate }: { activeTenderId?: s
                 <span className={`queue-chip queue-chip-${due.tone}`} title={due.title}>{due.text}</span>
                 <span className="queue-item-text">
                   <span className="queue-item-title">{displayTitle(t.title)}</span>
-                  <span className="queue-item-sub">{t.organization || ATTENTION_LABELS[deriveAttentionState(t)]}</span>
+                  <span className="queue-item-sub">
+                    {t.status !== 'NEW' && <span className="queue-stage">{STAGE_LABEL[t.status]}</span>}
+                    {t.organization || ATTENTION_LABELS[deriveAttentionState(t)]}
+                  </span>
                 </span>
               </Link>
             </li>

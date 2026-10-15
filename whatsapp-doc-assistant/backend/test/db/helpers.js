@@ -33,6 +33,7 @@ export async function truncateAll() {
   const db = testDb();
   await db.execute(`
     TRUNCATE TABLE
+      public_tenders, checklist_items, tender_corrigenda, client_profiles, clients,
       phone_otps, auth_identities, page_views, audit_logs, notifications, telegram_users, usage_records, subscriptions,
       tender_events, tender_questions, compliance_items, tender_boq_items,
       tender_requirement_evidence, tender_requirements, tender_pages,
@@ -56,4 +57,13 @@ export async function completeProfile(companyId) {
   };
   await db.insert(companyProfiles).values({ companyId, ...values })
     .onConflictDoUpdate({ target: companyProfiles.companyId, set: values });
+}
+
+/** Give a test tender a document record, as a real upload has. Analysis
+ *  refuses a tender without one (a tender tracked from the feed). */
+export async function attachTestDocument(tenderId) {
+  const db = testDb();
+  await db.insert(schema.tenderDocuments).values({
+    tenderId, filename: 'test.pdf', storagePath: `test-${tenderId}`, mimeType: 'application/pdf', sizeBytes: 10,
+  });
 }

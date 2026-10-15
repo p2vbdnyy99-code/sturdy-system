@@ -24,9 +24,11 @@ import { createDownloadRouter } from './src/bidpilot/routes/download.js';
 import { createAuthRouter } from './src/bidpilot/routes/auth.js';
 import { createDashboardRouter } from './src/bidpilot/routes/dashboard.js';
 import { createCompaniesRouter } from './src/bidpilot/routes/companies.js';
+import { createFeedRouter } from './src/bidpilot/routes/feed.js';
 import { cookieParserMiddleware } from './src/bidpilot/auth/cookies.js';
 import { bidpilotCors } from './src/bidpilot/auth/cors.js';
 import { recoverInterruptedWork } from './src/bidpilot/recovery.js';
+import { startDiscovery } from './src/bidpilot/discovery/collector.js';
 import { getDb } from './src/db/client.js';
 import { canonicalHostRedirect, renderIndexHtml, robotsTxt, sitemapXml } from './src/seo.js';
 import { createVisitsRouter } from './src/bidpilot/visits.js';
@@ -221,6 +223,7 @@ if (config.db.url) {
   app.use('/bidpilot', createCompaniesRouter());
   app.use('/bidpilot', createDashboardRouter());
   app.use('/bidpilot', createTendersRouter());
+  app.use('/bidpilot', createFeedRouter());
   app.use('/bidpilot', createDownloadRouter());
   app.use('/bidpilot', createVisitsRouter({ ownHosts: [SITE_HOSTNAME, ...config.bidpilot.redirectHosts] }));
 } else {
@@ -308,6 +311,7 @@ async function start() {
     );
   });
   startKeepAlive();
+  if (config.db.url) startDiscovery(getDb());
 }
 
 // Exported so tests can exercise the real, fully-wired app (route ordering,

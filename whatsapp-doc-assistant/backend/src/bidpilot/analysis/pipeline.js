@@ -58,13 +58,19 @@ function releaseSlot() {
   else activeSlots -= 1;
 }
 
-async function extractWithSlot(chunk) {
+/** Run one AI call inside the process-wide slot limit. Other bidpilot AI
+ *  features (the corrigendum check) share the same limit through this. */
+export async function withAnalysisSlot(fn) {
   await acquireSlot();
   try {
-    return await extractChunk(chunk);
+    return await fn();
   } finally {
     releaseSlot();
   }
+}
+
+async function extractWithSlot(chunk) {
+  return withAnalysisSlot(() => extractChunk(chunk));
 }
 
 /**

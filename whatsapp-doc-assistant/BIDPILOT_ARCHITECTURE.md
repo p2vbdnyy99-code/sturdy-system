@@ -3335,3 +3335,118 @@ tender (the founder's choice).
   phone width; no CSP or console errors.
 - The restyle's 35 browser checks rerun, with the two setup checks changed
   to the new behaviour.
+
+# Bid workflow: tracker, checklist, corrigenda, clients and a tender feed (Oct 2026)
+
+The founder asked to "integrate the best features" of TendersOnTime and
+TenderJunction. Both block automated visitors, so their published pages were
+compared through search: tender discovery and alerts across portals,
+corrigendum tracking, shortlisting by business profile, award archives, and
+staff-run bid services. The founder chose: a bid tracker, a submission
+checklist, client workspaces, a corrigendum check, and "all past, live and
+future government tenders and their status" (light version, a draft request
+to NIC for official data, and our own collector). Run folder:
+`harness/runs/2026-10-15-bid-workflow/`.
+
+One migration, `0009_melted_sugar_man.sql`, additive only: tables
+`checklist_items`, `tender_corrigenda`, `clients`, `client_profiles`,
+`public_tenders`; tender columns `internal_deadline`, `notes`, `portal_url`,
+`portal_ref`, `client_id`.
+
+## Bid tracker
+- `PATCH /tenders/:id`: stage (`tenders.status`), internal deadline, notes
+  (≤ 2,000 chars), portal link (http/https only) and tender ID, client.
+  Company-scoped; a stage change writes a `status_changed` event.
+- Stage names: `frontend/src/tenderDetail/stages.ts` and `STAGE_LABELS` in
+  `repo/tenders.js`, checked equal by `stages-sync.test.js`.
+- App: "Your bid" panel on the tender page; stage chip; "Bidding open /
+  closes today / closed" chip from the document's deadline
+  (`biddingStatus.ts`, says nothing about the portal itself); portal link
+  chip; Stage column and stage filter on the dashboard; stage in the queue.
+
+## Submission checklist
+- Built at read time from the tender's requirements (`repo/checklist.js`),
+  documents first, duplicates merged, each with its page. Only ticks and
+  added items are stored. A tick is keyed on a hash of the requirement's
+  category and text, so it survives a re-analysis that finds the same
+  requirement and drops away for one that changed.
+- Excel download (`checklistXlsx.js`, ExcelJS): tender, reference,
+  organisation, deadline, "Ready: n of m", then every line with category,
+  mandatory, page and ready.
+- App: a Checklist tab with instant ticks (restored from the server on an
+  error), progress bar, added items, and the download.
+
+## Corrigendum check
+- Upload a PDF on a tender (`POST /tenders/:id/corrigenda`): same PDF checks
+  and storage as uploads; the daily AI cap is checked first and one call is
+  recorded; it does not use the plan's tender allowance. Processed in the
+  background, inside the shared AI slot limit (`withAnalysisSlot`).
+- `analysis/corrigendum.js` asks for changes to the deadline, opening date,
+  EMD, value, fee, duration, other dates and conditions, each with a quote.
+  `validateCorrigendumResult` drops any change whose quote is not on the
+  page it names, unknown fields and empty values; "before" values come from
+  the tender, never the AI.
+- Apply (`POST .../corrigenda/:cid/apply`) writes the chosen structured
+  fields onto the tender (dates through `parseTenderDate`, day/month/year),
+  cites the corrigendum in `overview_evidence`, and records an event.
+- App: a Corrigenda tab: upload, progress, summary, each change with before →
+  after, page and quote, ticks and "Apply".
+
+## Client workspaces
+- `clients` and `client_profiles` (same columns as the company profile, via
+  `profileColumns()`), under the consultant's one company and one plan
+  (allowances unchanged: all clients share the plan — a decision to confirm
+  with a paying consultant).
+- Routes under `/companies/:id/clients` (list with profile status, add,
+  rename, remove, profile get/patch); names unique per company; removing a
+  client deletes its profile and keeps its tenders as the company's own.
+- A tender's `client_id`: eligibility uses that client's profile
+  (`eligibilityPipeline.js`); the dark card then says "the client's profile".
+  Tender list filter `clientId=<id>|none`.
+- App: Clients page (rail icon), the profile form reused at
+  `/clients/:clientId/profile`, a "For" choice in Your bid, a client filter
+  and "For <client>" on the dashboard.
+
+## Tender feed (past, live and future tenders)
+- What exists: no official CPPP or GeM API was found. CPPP's public "latest
+  active tenders" page loads without a captcha but shows only the newest 10;
+  searching and paging need a captcha. So the feed is a growing record from
+  the day collection starts, not every tender; GeM and state portals are not
+  included; "future" tenders are not published anywhere before the notice.
+- `discovery/cppp.js` parses that page (portal id from the full-view link,
+  title, reference and tender id, organisation, IST dates; foreign links
+  ignored). `discovery/collector.js` reads it every 10 minutes (never under
+  5), one request, User-Agent `TenderTezBot/1.0 (+https://tendertez.in;
+  advayaicopilot@gmail.com)`, doubles its wait after any error up to 2 hours,
+  never solves captchas, uses no proxies, downloads no documents. **Off
+  unless `BIDPILOT_DISCOVERY_CPPP=on`.**
+- `GET /feed` (open / closing in 7 days / closed / all, search, coverage);
+  `POST /feed/:id/track` adds a tender (source `feed`, stage Interested, no
+  document), once per portal link.
+- A tender with no document: analysis answers 409 `no_document` before any
+  allowance is touched; it does not count towards the 2 tenders allowed
+  without a profile (`profileGate.js` now counts tenders that have a
+  document); `POST /tenders/:id/document` attaches the PDF (same checks as an
+  upload) and starts processing. The list carries `hasDocument`.
+- App: Tender feed page (rail icon) with an honest coverage note; Track; an
+  "Attach the tender PDF" prompt on the tender; "Needs its PDF" on the
+  dashboard instead of Analyze.
+- A draft email to `support-eproc@nic.in` asks about official access to
+  CPPP's tender metadata and permitted automated reading (not sent).
+
+## Verification
+- Backend tests: `bid-workflow` (9), `corrigendum` (2 unit + 3 HTTP),
+  `clients` (4), `feed` (parser, collector, 4 HTTP), `stages-sync`; the
+  profile-gate, analysis and detail tests now give analysable test tenders a
+  document. Full suite: see the run's checks.md.
+- Frontend unit tests: deadline wording (client), bidding status.
+- Browser on the harness, 24/24 (`workflow-verify.mjs`): tracker saved and
+  shown; checklist count equals requirements, ticks and items kept, Excel
+  download; corrigendum changes quoted and applied to key facts; clients,
+  client profile, "For", filter; feed views, search, Track, PDF prompt,
+  dashboard row, attach; phone widths; no CSP or console errors.
+- Found and fixed by the checks: ticks waited for the server (now instant);
+  corrigendum ticks started empty when the card first appeared while
+  processing (keyed on status); the phone top bar overflowed with eight
+  buttons (smaller buttons, initial hidden).
+- Earlier suites rerun: restyle 35/35, optional profile 20/20.

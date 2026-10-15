@@ -13,6 +13,7 @@ import { dbAvailable, DB_URL, testDb, closeTestDb, truncateAll, completeProfile 
 import { createCompanyWithOwner } from '../../src/bidpilot/repo/companies.js';
 import { requireCompanyAccess } from '../../src/bidpilot/repo/tenants.js';
 import { createTender, updateProcessingStatus } from '../../src/bidpilot/repo/tenders.js';
+import { attachTestDocument } from '../db/helpers.js';
 import { insertPages } from '../../src/bidpilot/repo/pages.js';
 import { createTenderDocument } from '../../src/bidpilot/repo/documents.js';
 import { setProvider } from '../../src/ai/index.js';
@@ -211,6 +212,7 @@ test('GET /tenders/:id (HTTP integration)', { skip: SKIP_REASON, timeout: 30_000
   await t.test('a partial analysis reports which share of the document could not be read', async () => {
     const scopeA = await requireCompanyAccess(db, { userId: userA.id, companyId: companyA.id });
     const tender = await createTender(scopeA, { title: 'Partly Unreadable Tender' });
+    await attachTestDocument(tender.id); // analysis needs a document
     const big = 'x'.repeat(config.bidpilot.analysis.chunkChars + 1000); // one chunk per page
     await insertPages(scopeA, tender.id, [
       { pageNumber: 1, rawText: `p1 ${big}`, ocrUsed: false },
@@ -231,6 +233,7 @@ test('GET /tenders/:id (HTTP integration)', { skip: SKIP_REASON, timeout: 30_000
   await t.test('overview submissionDeadline: a calendar-parseable AI value lands in the typed column', async () => {
     const scopeA = await requireCompanyAccess(db, { userId: userA.id, companyId: companyA.id });
     const tender = await createTender(scopeA, { title: 'Parseable Deadline Tender' });
+    await attachTestDocument(tender.id); // analysis needs a document
     await insertPages(scopeA, tender.id, [{ pageNumber: 1, rawText: 'text', ocrUsed: false }]);
     await updateProcessingStatus(scopeA, tender.id, 'COMPLETED');
     setProvider({
@@ -251,6 +254,7 @@ test('GET /tenders/:id (HTTP integration)', { skip: SKIP_REASON, timeout: 30_000
   await t.test('overview submissionDeadline: an honest but non-calendar AI value is preserved as text, never dropped or fabricated into a date', async () => {
     const scopeA = await requireCompanyAccess(db, { userId: userA.id, companyId: companyA.id });
     const tender = await createTender(scopeA, { title: 'Unparseable Deadline Tender' });
+    await attachTestDocument(tender.id); // analysis needs a document
     await insertPages(scopeA, tender.id, [{ pageNumber: 1, rawText: 'text', ocrUsed: false }]);
     await updateProcessingStatus(scopeA, tender.id, 'COMPLETED');
     setProvider({

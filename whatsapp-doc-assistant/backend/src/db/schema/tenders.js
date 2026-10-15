@@ -7,6 +7,7 @@
 import { pgTable, uuid, text, integer, boolean, timestamp, jsonb, index, unique } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
 import { companies, users } from './identity.js';
+import { clients } from './clients.js';
 import { tenderStatus, tenderProcessingStatus, tenderAnalysisStatus } from './enums.js';
 
 export const tenders = pgTable('tenders', {
@@ -65,6 +66,21 @@ export const tenders = pgTable('tenders', {
   // exists; 'scraper' only once automatic discovery is ever built (not yet).
   source: text('source').notNull().default('upload'),
 
+  // Bid tracker (Oct 2026): the user's own working deadline (often days
+  // before the official one) and free-text notes. `status` above is the bid
+  // stage (NEW … AWARDED / NOT_AWARDED / CLOSED).
+  internalDeadline: timestamp('internal_deadline', { withTimezone: true }),
+  notes: text('notes'),
+
+  // Where the tender lives on a government portal, pasted by the user or
+  // filled when tracked from the tender feed (publicTenders.js).
+  portalUrl: text('portal_url'),
+  portalRef: text('portal_ref'),
+
+  // The consultant's client this tender is for (clients.js); null means the
+  // company itself. Eligibility is checked against that client's profile.
+  clientId: uuid('client_id').references(() => clients.id, { onDelete: 'set null' }),
+
   createdBy: uuid('created_by').references(() => users.id, { onDelete: 'set null' }),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
@@ -74,6 +90,7 @@ export const tenders = pgTable('tenders', {
   index('tenders_processing_status_idx').on(t.processingStatus),
   index('tenders_analysis_status_idx').on(t.analysisStatus),
   index('tenders_deadline_idx').on(t.submissionDeadline),
+  index('tenders_client_idx').on(t.clientId),
 ]);
 
 export const tenderPages = pgTable('tender_pages', {
