@@ -18,6 +18,8 @@ const ANDROID = 'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KH
 test('pages are stored as known routes, never with ids or query strings', () => {
   assert.equal(normalizePath('/'), '/');
   assert.equal(normalizePath('/pricing/'), '/pricing');
+  assert.equal(normalizePath('/government-tenders?kind=gem'), '/government-tenders');
+  assert.equal(normalizePath('/features'), '/features');
   assert.equal(normalizePath('/register?utm_source=linkedin'), '/register');
   assert.equal(normalizePath('/tenders/9f1c2a3b-0000-4000-8000-000000000000'), '/tenders/:id');
   assert.equal(normalizePath('/privacy-policy#cookies'), '/privacy-policy');

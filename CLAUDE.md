@@ -55,6 +55,10 @@ Follow `harness/README.md`. In short:
   every commit.
 - Never expose or log session tokens or verification links in production.
 - Company isolation is mandatory: every tender query is scoped to its company.
+- Analytics are sent by the server only (`bidpilot/ga4.js`, public pages
+  only, no IP or user agent); never add a Google tag or any browser analytics
+  script. A new public page goes in `PUBLIC_PAGES` (`backend/src/seo.js`), or
+  it is served noindex, is left out of the sitemap and never reaches GA4.
 - Strict CSP: no inline styles, no third-party scripts, styles or fonts. Use
   plain CSS classes in `frontend/src/index.css` and no new UI frameworks.
 - Signed-in pages render inside the `AppShell` layout route (rail, tender
@@ -195,6 +199,11 @@ was blocked and why.
     reached from outside India, and a "Bid document (PDF)" button built on
     CPPP's doc_cppp link went live untested and failed on every device. If
     only the founder can test it, ask them to before calling it done.
+20. tendertez.in's `@` TXT records hold the SPF record and Google's site
+    verification together. Add DNS records with `overwrite: false`;
+    `overwrite: true` replaces the whole set and would break email.
+21. `verify.sh` truncates `bidpilot_dev`, which deletes the harness account.
+    Run `design-seed.sh` again before a browser check that signs in.
 
 ## Parallel work
 

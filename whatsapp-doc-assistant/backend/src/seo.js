@@ -16,6 +16,16 @@ export const PUBLIC_PAGES = {
     description: 'Upload a tender PDF from CPPP, GeM or a state portal. TenderTez finds the deadline, EMD, '
       + 'eligibility conditions, BOQ and risky clauses, each with its page number. Your first 5 tenders are free.',
   },
+  '/government-tenders': {
+    title: 'Find government tenders across India | TenderTez',
+    description: 'Search central, state and GeM tenders in one place, by state or organisation. Free, no sign-in '
+      + 'needed. Tender notices from the Central Public Procurement Portal\'s public lists.',
+  },
+  '/features': {
+    title: 'Features | TenderTez',
+    description: 'Find government tenders, read a tender PDF with every point linked to its page, check '
+      + 'eligibility, and track bids with a submission checklist, corrigendum check and client workspaces.',
+  },
   '/pricing': {
     title: 'Pricing | TenderTez',
     description: 'Your first 5 tenders are free, with no card needed. Then monthly plans: ₹3,999 for 10 tenders, '
@@ -34,7 +44,7 @@ export const PUBLIC_PAGES = {
   '/privacy-policy': {
     title: 'Privacy policy | TenderTez',
     description: 'What TenderTez collects, why, who it is shared with, and how to have it deleted. Your tenders '
-      + 'are used only to analyse them for you, and visits are counted without cookies or tracking tools.',
+      + 'are used only to analyse them for you, and visits are counted without cookies.',
   },
   '/register': {
     title: 'Start your free trial | TenderTez',

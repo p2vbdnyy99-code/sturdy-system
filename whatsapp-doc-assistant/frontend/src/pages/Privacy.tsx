@@ -8,7 +8,7 @@ import { CONTACT_EMAIL, FOUNDER } from '../config/site';
 // (see BIDPILOT_ARCHITECTURE.md, "Privacy policy page"). Change this page
 // whenever that changes: a new service provider, analytics, payments, or
 // email sending.
-const LAST_UPDATED = '15 October 2026';
+const LAST_UPDATED = '16 October 2026';
 
 const OPENAI_DATA_POLICY = 'https://developers.openai.com/api/docs/guides/your-data';
 
@@ -64,7 +64,8 @@ const SECTIONS: Array<{ title: string; body: ReactNode }> = [
           and whether you&rsquo;re on a phone or a computer. To count unique visitors without cookies, we also
           store a short code made from your connection and browser that changes every day and can&rsquo;t be
           traced back to you. Your IP address is not stored, and visit counts aren&rsquo;t linked to your
-          account.</li>
+          account. For the public pages, our server also sends these details to Google Analytics (see
+          &ldquo;Who we share it with&rdquo;).</li>
         <li><strong>Emails you send us.</strong></li>
       </ul>
     ),
@@ -74,8 +75,9 @@ const SECTIONS: Array<{ title: string; body: ReactNode }> = [
     body: (
       <ul>
         <li>We don&rsquo;t sell or rent your data, and we don&rsquo;t show advertising.</li>
-        <li>The website has no advertising or tracking tools and loads no scripts from other companies. We count
-          visits ourselves, as described above, without cookies.</li>
+        <li>The website has no advertising tools and loads no scripts from other companies, so no other company
+          can follow you on it or set cookies. We count visits ourselves, as described above, without cookies, and
+          our server passes the counts for the public pages to Google Analytics.</li>
         <li>We don&rsquo;t use your tenders or company details to market to anyone else.</li>
       </ul>
     ),
@@ -110,6 +112,12 @@ const SECTIONS: Array<{ title: string; body: ReactNode }> = [
           <li><strong>Fly.io</strong> hosts our servers, database and file storage. Our main server, where
             uploaded files are kept, is in Singapore.</li>
           <li><strong>Google (Gmail)</strong> holds the emails you send us and our replies.</li>
+          <li><strong>Google Analytics</strong> shows us how people find the website. Our server (not your
+            browser) sends it the visit details for the public pages only (home, tender search, features,
+            pricing, FAQ, about, this policy and sign-up): the page, the date, the website you came from, the
+            campaign name in the link, phone or computer, and the daily code described above. It gets no cookie,
+            no IP address, no account details and nothing from your tenders, and nothing from the pages you see
+            when signed in.</li>
           <li><strong>Google sign-in:</strong> if you choose &ldquo;Continue with Google&rdquo;, Google confirms who
             you are and shares your name, email address and Google account ID with us.</li>
           <li><strong>Meta (WhatsApp)</strong> delivers sign-in codes: if you sign in with your mobile number, we
@@ -129,7 +137,8 @@ const SECTIONS: Array<{ title: string; body: ReactNode }> = [
     body: (
       <p>
         Our servers are run by Fly.io, with the main server in Singapore, and OpenAI processes text on its own
-        servers, which are also outside India. Google and Meta, when you use their sign-in or WhatsApp codes, may
+        servers, which are also outside India. Google Analytics, which receives the visit counts for the public
+        pages, also stores them outside India. Google and Meta, when you use their sign-in or WhatsApp codes, may
         also process your details outside India. By using {PRODUCT_NAME} you agree to your data being stored and
         processed there.
       </p>
@@ -199,7 +208,8 @@ export function PrivacyPage() {
       <PageIntro kicker="Privacy" title="Privacy policy">
         <p>
           What {PRODUCT_NAME} collects, why, who it&rsquo;s shared with, and how to have it deleted. In short:
-          we use your tenders only to analyse them for you, and we count visits without cookies or tracking tools.
+          we use your tenders only to analyse them for you, we count visits without cookies, and no other
+          company&rsquo;s scripts run on the site.
         </p>
       </PageIntro>
       <section className="home-section legal-section">

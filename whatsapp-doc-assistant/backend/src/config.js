@@ -399,6 +399,14 @@ export function buildBidpilotConfig(env = {}) {
       delaySeconds: Math.max(2, Number(env.BIDPILOT_DISCOVERY_DELAY_SECONDS) || 3),
       keepClosedDays: Math.max(7, Number(env.BIDPILOT_DISCOVERY_KEEP_CLOSED_DAYS) || 60),
     },
+    // Google Analytics 4, sent by the server (bidpilot/ga4.js): on only when
+    // both are set and the ID looks like G-XXXXXXX. The endpoint can point at
+    // Google's /debug/mp/collect to check payloads.
+    ga4: {
+      measurementId: String(env.BIDPILOT_GA4_MEASUREMENT_ID || '').trim(),
+      apiSecret: String(env.BIDPILOT_GA4_API_SECRET || '').trim(),
+      endpoint: String(env.BIDPILOT_GA4_ENDPOINT || '').trim() || 'https://www.google-analytics.com/mp/collect',
+    },
     redirectHosts: String(env.BIDPILOT_REDIRECT_HOSTS || '')
       .split(',')
       .map((h) => h.trim())

@@ -99,6 +99,48 @@ sibling of `backend/`/`frontend/`, since the Docker build needs both).
   "Visit counting". Tag links you share with `?utm_source=<name>` (e.g.
   `https://tendertez.in/?utm_source=linkedin`) to see which ones bring
   visitors.
+- **Google Search Console** (which Google searches show TenderTez, clicks,
+  and indexing problems). Nothing runs on the site for it.
+  1. At https://search.google.com/search-console, add a **Domain** property
+     for `tendertez.in`, using the Google account that should own it.
+  2. Google shows a TXT record. tendertez.in's DNS (Hostinger) already holds
+     one `google-site-verification=…` record. If Google shows the same value,
+     press Verify. If it shows a new one, add it as an extra TXT record on
+     `@`. **Append only:** with the Hostinger API use `overwrite: false`. The
+     same `@` TXT set holds the SPF record for email, and replacing the set
+     would break sending.
+  3. Under Sitemaps, submit `https://tendertez.in/sitemap.xml`. It lists
+     every public page in `backend/src/seo.js` (`PUBLIC_PAGES`); signed-in
+     pages carry `noindex` and are blocked in `robots.txt`.
+- **Google Analytics 4 (sent by the server).** The browser loads no Google
+  script and gets no cookie (the CSP stays `'self'`). The visit counter
+  passes each counted visit to `backend/src/bidpilot/ga4.js`, which sends
+  public pages only to GA4 as a `page_view` through the Measurement Protocol.
+  Off until both secrets are set; the startup log says which.
+  1. At https://analytics.google.com create a GA4 property (time zone India,
+     currency INR) and a **Web** data stream for `https://tendertez.in`.
+     Turn **off** Enhanced measurement: there is no tag on the site.
+  2. In the stream, copy the Measurement ID (`G-…`). Under "Measurement
+     Protocol API secrets", create a secret.
+  3. Set the Fly secrets `BIDPILOT_GA4_MEASUREMENT_ID` and
+     `BIDPILOT_GA4_API_SECRET` (dashboard → Secrets, so the secret never
+     passes through chat). The machine restarts; check first that nothing is
+     mid-analysis.
+  4. Check in GA4 → Reports → Realtime while you open https://tendertez.in
+     on a phone.
+  5. Optional: in Admin → Custom definitions, add event-scoped custom
+     dimensions `visit_source` and `visit_campaign`.
+
+  What GA4 will and won't show:
+  - Visitors are counted per day: the id changes daily, so "returning users"
+    means within a day.
+  - There's no country or city: no IP is sent.
+  - GA4's own "Traffic acquisition" may say Direct or (not set) for
+    server-sent views. The real source is in `visit_source` and
+    `visit_campaign`, and in `visits-report.mjs`.
+  - `BIDPILOT_GA4_ENDPOINT` can point at
+    `https://www.google-analytics.com/debug/mp/collect` to check payloads
+    (nothing is recorded there).
 - **Applying a migration from inside the app server** (works with the app's
   own deploy token): after deploying the code that contains it, run in
   `fly ssh console`, from `/app/backend`, drizzle-orm's migrator

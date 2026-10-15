@@ -31,6 +31,15 @@ test('app pages, login and unknown paths are kept out of search', () => {
   }
 });
 
+test('the tender search and the features page can be found in search', () => {
+  for (const path of ['/government-tenders', '/features']) {
+    const html = renderIndexHtml(INDEX, path, BASE);
+    assert.doesNotMatch(html, /noindex/, path);
+    assert.ok(html.includes(`<link rel="canonical" href="${BASE}${path}" />`), path);
+    assert.ok(sitemapXml(BASE).includes(`<loc>${BASE}${path}</loc>`), path);
+  }
+});
+
 test('every description is a sensible length for search results', () => {
   for (const [path, page] of Object.entries(PUBLIC_PAGES)) {
     assert.ok(page.description.length >= 70 && page.description.length <= 200, `${path}: ${page.description.length}`);

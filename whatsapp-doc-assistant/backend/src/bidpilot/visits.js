@@ -26,6 +26,8 @@ export const RETENTION_DAYS = 395; // about 13 months
 
 const ROUTES = [
   [/^\/$/, '/'],
+  [/^\/government-tenders$/, '/government-tenders'],
+  [/^\/features$/, '/features'],
   [/^\/pricing$/, '/pricing'],
   [/^\/faq$/, '/faq'],
   [/^\/about$/, '/about'],
@@ -116,7 +118,12 @@ export function createVisitRateLimit({ max = 60, windowMs = 60_000 } = {}) {
   };
 }
 
-export function createVisitsRouter({ ownHosts = [], db: injectedDb } = {}) {
+/**
+ * `forward`, when given, also receives each counted visit (ga4.js sends the
+ * public pages to Google Analytics). It runs after the 204 and never blocks
+ * or fails the visit row.
+ */
+export function createVisitsRouter({ ownHosts = [], db: injectedDb, forward = null } = {}) {
   const router = express.Router();
   const hosts = new Set(ownHosts.map((h) => h.toLowerCase()));
   const allow = createVisitRateLimit();
@@ -136,14 +143,18 @@ export function createVisitsRouter({ ownHosts = [], db: injectedDb } = {}) {
       const path = normalizePath(req.body?.path);
       if (!path) return;
       const day = istDay();
-      await dbFor().insert(pageViews).values({
+      const visit = {
         day,
         path,
         source: sourceFrom(req.body?.referrer, hosts),
         campaign: campaignFrom(req.body?.utm),
         device: deviceFrom(ua),
         visitorId: visitorIdFor(saltFor(day), req.ip, ua),
-      });
+      };
+      if (forward) {
+        try { Promise.resolve(forward(visit)).catch(() => {}); } catch { /* never fails the visit */ }
+      }
+      await dbFor().insert(pageViews).values(visit);
     } catch (err) {
       log.warn(`visits: could not record a page view: ${err.message}`);
     }

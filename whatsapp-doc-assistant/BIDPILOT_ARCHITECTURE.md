@@ -3660,3 +3660,96 @@ rule updated: CPPP's GeM pages aren't linked.
 GeM" copies the bid number and opens GeM's list in a new tab, the GeM
 instruction shows, a state row copies its tender ID, full-width phone
 buttons, no CSP errors.
+
+# Google Search Console and Google Analytics (Oct 2026)
+
+**Why.** The founder asked to connect the website to Google Search Console and
+Google Analytics. They chose (via AskUserQuestion):
+- **server-side GA4**, so that no Google script runs in the browser, the site
+  sets no analytics cookie, and the strict CSP stays as it is;
+- **DNS verification** for Search Console.
+
+Run folder: `harness/runs/2026-10-15-google-search-analytics/`.
+
+## Found on the way
+- The tender search (`/government-tenders`) and `/features` were missing from
+  `PUBLIC_PAGES` in `backend/src/seo.js`. They were served with
+  `<meta name="robots" content="noindex">` and left out of the sitemap, so
+  Google was told not to index the tender search.
+- The visit counter filed both pages under `(other)`.
+- tendertez.in's DNS already has a `google-site-verification` TXT record,
+  next to the SPF record on `@`.
+
+## How it works
+- **Search Console:** nothing runs on the site. The founder adds a Domain
+  property and verifies it with the DNS TXT record, then submits
+  `/sitemap.xml` (steps in OPERATIONS.md). Both pages are now in
+  `PUBLIC_PAGES`: they get a title, description, canonical URL and Open Graph
+  tags, they're in the sitemap, and the visit counter names them.
+- **GA4 (`backend/src/bidpilot/ga4.js`):** `createVisitsRouter` takes an
+  optional `forward` function. After the 204, each counted visit (people, not
+  bots) is passed to it, and the visit row is written as before.
+  `createGa4Forwarder` sends a `page_view` to the Measurement Protocol only
+  for paths in `PUBLIC_PAGES`. It never sends a signed-in, sign-in or unknown
+  page.
+- **Body sent to GA4:**
+  - `client_id`: made from the counter's daily-rotating anonymous visitor id;
+  - `session_id`: the India day;
+  - `page_location` on the main address (plus `?utm_source=` when the visit
+    had one), and `page_title` from `PUBLIC_PAGES`;
+  - `page_referrer`: the referring hostname only;
+  - custom `visit_source` and `visit_campaign`;
+  - `engagement_time_msec: 100`;
+  - `device.category`.
+
+  It sends no IP, no user agent, no user id and no cookie.
+- **Behaviour:**
+  - Off unless `BIDPILOT_GA4_MEASUREMENT_ID` (must look like `G-…`) and
+    `BIDPILOT_GA4_API_SECRET` are set; the startup log says on or off.
+  - It never throws and gives up after 3 s.
+  - The API secret is in the request URL, so neither the URL nor an error
+    message is logged. Only `HTTP <status>` or the error's name is logged, at
+    most once every 10 minutes.
+  - `BIDPILOT_GA4_ENDPOINT` can point at Google's debug endpoint.
+- **Limits, stated to the founder:**
+  - GA4 users are per day;
+  - there is no geography;
+  - GA4's standard acquisition reports may show server-sent views as Direct;
+    the source is in `visit_source` and `visit_campaign`, and in
+    `visits-report.mjs`.
+- **Privacy policy:** Google Analytics is named as a provider, with what it
+  receives, that it gets no cookie, IP or account data and nothing from
+  signed-in pages, and that it stores data outside India. "Loads no scripts
+  from other companies" still holds. The `/privacy-policy` search
+  description no longer says "no tracking tools". `LAST_UPDATED` is
+  16 October 2026, the go-live day in India.
+
+## Verification
+- **Backend tests:** `test/bidpilot/ga4.test.js` (7) covers:
+  - the settings;
+  - the exact body;
+  - private pages never sent;
+  - the request shape, with no IP or user agent;
+  - a failure, a 403 or a timeout never throws, and the secret is never
+    logged;
+  - the log throttle;
+  - over HTTP: forwarded after the 204, bots never forwarded, a throwing
+    forwarder still records the row.
+
+  `seo.test.js` checks that both pages are indexable and in the sitemap, and
+  `visits.test.js` checks that they're named.
+- **Google's validation server** (`/debug/mp/collect`) returned
+  `validationMessages: []` for our payload. A deliberately bad payload got
+  `NAME_INVALID`.
+- **Browser on the harness, 14/14 (`ga-verify.mjs`), with GA4 pointed at a
+  local stand-in:**
+  - CSP header unchanged;
+  - both pages indexable with canonical URLs, `/dashboard` still noindex,
+    sitemap lists both;
+  - public pages set no cookies and every browser request stays on the site;
+  - 4 public views reached the stand-in in order, with the LinkedIn source,
+    one session and no IP or user agent;
+  - login, dashboard and profile visits were counted by the site but never
+    sent;
+  - no CSP errors;
+  - the secret never appeared in the server log.
