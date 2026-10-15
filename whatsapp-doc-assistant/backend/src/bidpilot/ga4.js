@@ -23,6 +23,7 @@
 // part of the request URL, so the URL is never logged.
 
 import { PUBLIC_PAGES } from '../seo.js';
+import { isLandingPath } from '../landingPages.js';
 import { log } from '../logger.js';
 
 export const GA4_ENDPOINT = 'https://www.google-analytics.com/mp/collect';
@@ -36,7 +37,7 @@ function dayStartSeconds(day) {
 
 /** Measurement Protocol body for one page view, or null for a page that isn't public. */
 export function buildPageView({ path, source, campaign, device, visitorId, day }, baseUrl) {
-  const page = PUBLIC_PAGES[path];
+  const page = PUBLIC_PAGES[path] ?? (isLandingPath(path) ? { title: 'Government tenders | TenderTez' } : null);
   if (!page || !/^[0-9a-f]{16}$/.test(String(visitorId)) || !/^\d{4}-\d{2}-\d{2}$/.test(String(day))) return null;
   const dayStart = dayStartSeconds(day);
   const location = `${baseUrl}${path}${campaign ? `?utm_source=${encodeURIComponent(campaign)}` : ''}`;

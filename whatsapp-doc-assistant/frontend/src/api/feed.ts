@@ -103,3 +103,8 @@ export function listAlerts(companyId: string, savedSearchId?: string) {
 export function markAlertsSeen(companyId: string, matchIds?: string[]) {
   return request<{ marked: number; unseen: number }>('/bidpilot/feed/alerts/seen', { method: 'POST', body: { companyId, matchIds } });
 }
+
+/** The tender-search landing pages that exist now (backend landingPages.js). */
+export function getLandingPages() {
+  return request<{ pages: import('../tenders/landing').LandingPage[] }>('/bidpilot/public/tenders/landing');
+}

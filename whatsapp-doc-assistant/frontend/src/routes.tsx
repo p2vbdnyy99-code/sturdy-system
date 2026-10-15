@@ -51,6 +51,7 @@ export function AppRoutes() {
       {/* Public homepage; it sends signed-in users on to /dashboard itself. */}
       <Route path="/" element={<HomePage />} />
       <Route path="/government-tenders" element={<GovernmentTendersPage />} />
+      <Route path="/government-tenders/:group/:slug" element={<GovernmentTendersPage />} />
       <Route path="/features" element={<FeaturesPage />} />
       <Route path="/pricing" element={<PricingPage />} />
       <Route path="/faq" element={<FaqPage />} />

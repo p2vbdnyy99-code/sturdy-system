@@ -59,6 +59,13 @@ Follow `harness/README.md`. In short:
   only, no IP or user agent); never add a Google tag or any browser analytics
   script. A new public page goes in `PUBLIC_PAGES` (`backend/src/seo.js`), or
   it is served noindex, is left out of the sitemap and never reaches GA4.
+- Tender-search landing pages (`src/landingPages.js`) exist only for lists
+  with 20 or more open tenders and always show the real list, the CPPP credit
+  and "not every tender". Never generate pages without that content (no
+  doorway pages). Structured data and `/llms.txt` state only what the public
+  pages state.
+- The GitHub repository is public. Prospect, contact and CRM data live in
+  `marketing/data/` (git-ignored), never in a commit.
 - Strict CSP: no inline styles, no third-party scripts, styles or fonts. Use
   plain CSS classes in `frontend/src/index.css` and no new UI frameworks.
 - Signed-in pages render inside the `AppShell` layout route (rail, tender

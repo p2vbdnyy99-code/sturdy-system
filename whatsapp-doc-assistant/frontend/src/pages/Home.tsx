@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { LANDING_MIN_OPEN, statePath } from '../tenders/landing';
 import { getFeedFacets, type FeedFacets } from '../api/feed';
 import { Link, Navigate, useLocation } from 'react-router-dom';
 import { useSession } from '../auth/SessionProvider';
@@ -173,7 +174,7 @@ function TenderBand() {
         {topStates.length > 0 && (
           <div className="home-tender-states" aria-label="Browse by state">
             {topStates.map((s) => (
-              <Link key={s.name} to={`/government-tenders?kind=state&state=${encodeURIComponent(s.name)}`} className="chip-link">{s.name}</Link>
+              <Link key={s.name} to={s.count >= LANDING_MIN_OPEN ? statePath(s.name) : `/government-tenders?kind=state&state=${encodeURIComponent(s.name)}`} className="chip-link">{s.name}</Link>
             ))}
           </div>
         )}

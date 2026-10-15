@@ -21,6 +21,7 @@ import { lt } from 'drizzle-orm';
 import { getDb } from '../db/client.js';
 import { pageViews } from '../db/schema/index.js';
 import { log } from '../logger.js';
+import { isLandingPath } from '../landingPages.js';
 
 export const RETENTION_DAYS = 395; // about 13 months
 
@@ -47,6 +48,8 @@ const BOT_UA = /bot|crawl|spider|slurp|headless|lighthouse|preview|facebookexter
 export function normalizePath(raw) {
   if (typeof raw !== 'string' || !raw.startsWith('/')) return null;
   const path = raw.split(/[?#]/)[0].replace(/\/+$/, '') || '/';
+  // Tender-search landing pages are public lists, counted by their own path.
+  if (isLandingPath(path)) return path;
   for (const [re, name] of ROUTES) if (re.test(path)) return name;
   return '(other)';
 }

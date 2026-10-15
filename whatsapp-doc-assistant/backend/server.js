@@ -32,7 +32,9 @@ import { recoverInterruptedWork } from './src/bidpilot/recovery.js';
 import { startDiscovery } from './src/bidpilot/discovery/collector.js';
 import { startAlertMatcher } from './src/bidpilot/repo/savedSearches.js';
 import { getDb } from './src/db/client.js';
-import { canonicalHostRedirect, renderIndexHtml, robotsTxt, sitemapXml } from './src/seo.js';
+import { canonicalHostRedirect, renderIndexHtml, robotsTxt, sitemapXml, llmsTxt } from './src/seo.js';
+import { landingPagesFrom, isLandingPath, renderLandingHtml, createLandingCache, LIST_SIZE } from './src/landingPages.js';
+import { cachedFacets, searchFeed } from './src/bidpilot/repo/publicTenders.js';
 import { createVisitsRouter } from './src/bidpilot/visits.js';
 import { createGa4Forwarder } from './src/bidpilot/ga4.js';
 
@@ -252,9 +254,35 @@ if (frontendDistExists) {
   // index: false so "/" reaches the fallback below and gets its own head tags.
   app.use(express.static(FRONTEND_DIST, { index: false }));
 
+  // Landing pages for the tender search (src/landingPages.js): which exist
+  // comes from the search's own counts, cached for a few minutes.
+  const landingFacets = cachedFacets();
+  const landingCache = createLandingCache();
+  const landingPages = async () => (config.db.url ? landingPagesFrom(await landingFacets(getDb())) : []);
+
   app.get('/robots.txt', (_req, res) => res.type('text/plain').send(robotsTxt(SITE_BASE_URL)));
-  app.get('/sitemap.xml', (_req, res) => res.type('application/xml').send(sitemapXml(SITE_BASE_URL)));
+  app.get('/llms.txt', (_req, res) => res.type('text/plain').send(llmsTxt(SITE_BASE_URL)));
+  app.get('/sitemap.xml', async (_req, res) => {
+    let extra = [];
+    try { extra = (await landingPages()).map((p) => p.path); } catch (err) { log.warn(`sitemap: landing pages unavailable (${err.message})`); }
+    res.type('application/xml').send(sitemapXml(SITE_BASE_URL, extra));
+  });
   const indexHtml = fs.readFileSync(path.join(FRONTEND_DIST, 'index.html'), 'utf8');
+
+  async function sendLanding(req, res) {
+    const cached = landingCache.get(req.path);
+    if (cached) return res.type('html').send(cached);
+    const pages = await landingPages();
+    const page = pages.find((p) => p.path === req.path);
+    if (!page) return res.status(404).type('html').send(renderIndexHtml(indexHtml, req.path, SITE_BASE_URL));
+    const { tenders } = await searchFeed(getDb(), {
+      kind: page.kind, state: page.state, organisation: page.organisation, search: '',
+      status: 'open', sort: 'closing', page: 1, limit: LIST_SIZE,
+    });
+    const html = renderLandingHtml(indexHtml, page, tenders, SITE_BASE_URL, pages);
+    landingCache.set(req.path, html);
+    return res.type('html').send(html);
+  }
 
   // SPA fallback: Express 5 (path-to-regexp 8) rejects a bare '*' route
   // pattern ("Missing parameter name") — verified against the actual
@@ -270,6 +298,12 @@ if (frontendDistExists) {
     // serve is a genuinely missing asset (e.g. a stale hashed bundle
     // reference) — 404 it honestly rather than masking the problem as HTML.
     if (/\.[^/]+$/.test(req.path)) return next();
+    if (isLandingPath(req.path)) {
+      return sendLanding(req, res).catch((err) => {
+        log.error('landing page error:', err);
+        res.type('html').send(renderIndexHtml(indexHtml, req.path, SITE_BASE_URL));
+      });
+    }
     res.type('html').send(renderIndexHtml(indexHtml, req.path, SITE_BASE_URL));
   });
 }

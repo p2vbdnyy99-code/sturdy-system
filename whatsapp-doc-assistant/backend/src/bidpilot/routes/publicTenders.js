@@ -8,6 +8,7 @@ import { getDb } from '../../db/client.js';
 import { log } from '../../logger.js';
 import { allow } from '../../ratelimit.js';
 import { parseFeedQuery, searchFeed, cachedFacets } from '../repo/publicTenders.js';
+import { landingPagesFrom } from '../../landingPages.js';
 
 const PER_MINUTE = 60;
 
@@ -39,6 +40,18 @@ export function createPublicTendersRouter() {
       return res.json(await facets(getDb()));
     } catch (err) {
       log.error('bidpilot public tender facets error:', err);
+      return res.status(500).json({ error: 'Internal server error.' });
+    }
+  });
+
+  // The landing pages that exist now (src/landingPages.js), so the app can
+  // show /government-tenders/<group>/<slug> with the right filter.
+  router.get('/public/tenders/landing', async (_req, res) => {
+    try {
+      res.set('Cache-Control', 'public, max-age=300');
+      return res.json({ pages: landingPagesFrom(await facets(getDb())) });
+    } catch (err) {
+      log.error('bidpilot landing pages error:', err);
       return res.status(500).json({ error: 'Internal server error.' });
     }
   });

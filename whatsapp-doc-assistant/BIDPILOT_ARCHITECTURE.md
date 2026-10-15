@@ -3893,3 +3893,72 @@ designation, phone and email.
   - no CSP or page errors.
 - **Not yet verified:** the drafting prompt with the real AI. The harness
   used a rule-based stand-in. This needs one live draft after deploy.
+
+# Search landing pages, structured data and llms.txt (Oct 2026)
+
+**Why.** This is the first website change of the growth engine
+(`marketing/`). People search Google for "Maharashtra government tenders" or
+"MES tenders", not for "AI tender analysis", and the 41,000 open tenders in
+the search were invisible to them. Run folder:
+`harness/runs/2026-10-16-growth-engine/`.
+
+## What changed
+- **`src/landingPages.js`:** one page per list with at least 20 open
+  tenders:
+  - the central list and GeM;
+  - every state;
+  - the top 20 central organisations by open count.
+
+  Each lives at `/government-tenders/{list|state|organisation}/<slug>`.
+  The server renders:
+  - its own title, description and canonical URL;
+  - the 25 tenders closing soonest, as plain HTML inside `#root`, readable
+    before the app loads;
+  - CPPP credited as the source, with "not every tender";
+  - links to every other list.
+
+  Lists below 20 tenders get no page, so there are no thin or doorway
+  pages. An unknown slug answers 404 with `noindex`. Rendered pages are
+  cached for 10 minutes.
+- **Sitemap and API:** `/sitemap.xml` adds the landing paths, from the
+  cached search counts. `GET /bidpilot/public/tenders/landing` lists the
+  pages, so the app (`GovernmentTendersPage` at `:group/:slug`) opens on
+  the right filter and heading.
+- **Home page:** state chips link to the state pages.
+- **Slugs:** `frontend/src/tenders/landing.ts` and the backend slug function
+  are tested to agree, and so are the minimum list sizes.
+- **Structured data (`seo.js` `structuredData`):**
+  - Organization and WebSite on `/`;
+  - SoftwareApplication with the three plans' INR prices (from `plans.js`)
+    on `/pricing`.
+
+  JSON-LD is a data block, not a script, so the strict CSP stays as it is.
+  The browser check shows no CSP errors.
+- **`/llms.txt`:** a plain summary of what TenderTez does and costs, for AI
+  assistants that look for one. It's a proposed convention, so nothing
+  guarantees it is read. It states only what the public pages state,
+  including "no bid/no-bid verdict".
+- **Visits and GA4:** both count landing pages by their own path.
+
+## Verification
+- **`test/landing-pages.test.js` (6):**
+  - slugs and the minimum size agree with the app;
+  - pages exist only at 20+ tenders;
+  - path checks;
+  - rendered HTML (one title, canonical, no noindex, escaped text, source
+    note, links to the other lists, titles of 60 characters or fewer);
+  - structured-data prices equal `PLANS`;
+  - llms.txt;
+  - visits and GA4 paths;
+  - over HTTP on the real app: Goa page 200 with 25 rows, unknown slug 404
+    noindex, sitemap, llms.txt, landing API.
+- **verify.sh:** 630/393/322 backend tests pass; build, lint and 49 unit
+  tests pass; the secret scan is clean.
+- **Browser on the harness, 14/14 (`landing-verify.mjs`), desktop and
+  375 px:**
+  - the server HTML holds the list;
+  - the app opens on the Goa list and the Railways list, with the heading;
+  - no sideways scroll;
+  - pricing JSON-LD present, with no CSP or console errors (the signed-out
+    401 excepted);
+  - the home chip links to `/government-tenders/state/goa`.
