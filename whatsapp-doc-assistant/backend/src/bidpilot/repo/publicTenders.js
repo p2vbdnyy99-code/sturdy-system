@@ -5,7 +5,7 @@
 
 import { and, asc, desc, eq, gte, ilike, isNotNull, lt, or, sql } from 'drizzle-orm';
 import { publicTenders, discoveryState } from '../../db/schema/index.js';
-import { findOnPortal } from '../discovery/portals.js';
+import { findOnPortal, bidDetails } from '../discovery/portals.js';
 
 export const KINDS = ['central', 'state', 'gem'];
 export const STATUSES = ['open', 'closing', 'closed', 'all'];
@@ -77,6 +77,7 @@ export function toFeedRow(r) {
     closingAt: r.closingAt,
     openingAt: r.openingAt,
     find,
+    details: bidDetails(r),
   };
 }
 

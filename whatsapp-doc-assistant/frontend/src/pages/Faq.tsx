@@ -139,7 +139,9 @@ const GROUPS: Array<{ title: string; items: Array<{ q: string; a: ReactNode }> }
         a: <>Government portals ask for a captcha before they show a tender, and their tender links only work in
           the browser that opened them. So for central and state tenders we open the right portal&rsquo;s search
           page (for GeM, GeM&rsquo;s own bid list), and the button copies the tender ID or GeM bid number as it opens:
-          paste it into the portal&rsquo;s search box to find the tender and its documents.</>,
+          paste it into the portal&rsquo;s search box to find the tender and its documents. GeM bids also have
+          &ldquo;Bid details&rdquo;: CPPP&rsquo;s page for the bid, with its dates, quantity, item and buyer. Its
+          document link may not open, so download the bid document from GeM.</>,
       },
       {
         q: 'Can I use it on my phone?',

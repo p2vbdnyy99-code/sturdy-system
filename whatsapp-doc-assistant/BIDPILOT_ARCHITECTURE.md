@@ -3618,3 +3618,26 @@ clipboard holds the bid number; a state row copies its tender ID; the
 copied note shows; no PDF button; no sideways scroll; no CSP errors. Tender
 search suite 29/29. GeM's bid search can only be tried from India: the
 founder checks it after the deploy.
+
+# "Bid details" on GeM tenders (Oct 2026)
+
+**Why.** The founder found that searching a bid number on GeM's bid list
+didn't show the bid, declined a paid server in India for direct PDF links,
+and chose a "Bid details" button: CPPP's page for the GeM bid, which opens
+for anyone. Run folder: `harness/runs/2026-10-15-gem-details/`.
+
+**Changed.** `discovery/portals.js` `bidDetails(row)`: GeM rows whose stored
+link is a CPPP GeM page (`https://eprocure.gov.in/cppp/gemtendersfullview/...`)
+get `details: { url, label: 'Bid details' }`; every other row `null`. The
+tender row shows "Bid details ↗" (new tab) after "Find on GeM", with a
+tooltip that the document comes from GeM. FAQ and the CLAUDE.md rule say
+which CPPP links work (GeM bid pages) and which don't (central and state
+tender pages, doc_cppp).
+
+**Verification.** `feed.test.js` (17): GeM fixture rows get a CPPP GeM page,
+central and state rows none, a foreign stored link none, the API row
+carries it. Browser (`gem-find-verify.mjs`, 16/16, PC and Pixel 7): the
+button on every GeM row and none on state rows, new tab, full width on the
+phone. A details link opened with no session: 200, bid GEM/2026/B/8003830
+with organisation, dates, quantity and category; no "Invalid Url", no
+captcha.

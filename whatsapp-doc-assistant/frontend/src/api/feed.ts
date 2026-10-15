@@ -32,6 +32,8 @@ export type FeedTender = {
   openingAt: string | null;
   /** Where to find it: the portal's search page (GeM's bid list for GeM), and the ID to search for. */
   find: { url: string; label: string; searchFor: string | null };
+  /** GeM bids: CPPP's page for the bid (details only; its PDF link doesn't work). */
+  details: { url: string; label: string } | null;
 };
 
 export type FeedResult = { tenders: FeedTender[]; total: number; page: number; limit: number };

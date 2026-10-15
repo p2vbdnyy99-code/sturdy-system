@@ -220,6 +220,12 @@ function TenderRow({ t, busy, onTrack }: { t: FeedTender; busy: boolean; onTrack
           title={t.find.searchFor ? `Copies ${t.find.searchFor} and opens the portal's search` : 'Opens the portal'}>
           {t.find.label} <span aria-hidden="true">↗</span>
         </a>
+        {t.details && (
+          <a className="btn-link btn-secondary tb-find tb-details" href={t.details.url} target="_blank" rel="noopener noreferrer"
+            title="Bid number, dates, quantity, item and buyer on CPPP. Download the bid document from GeM.">
+            {t.details.label} <span aria-hidden="true">↗</span>
+          </a>
+        )}
         {onTrack
           ? <button type="button" className="btn-primary" disabled={busy} onClick={onTrack}>{busy ? 'Adding…' : 'Track'}</button>
           : <Link to="/register" className="btn-link btn-primary">Track free</Link>}

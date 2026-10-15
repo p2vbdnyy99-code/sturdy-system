@@ -62,6 +62,17 @@ export function normaliseState(name) {
     .trim();
 }
 
+const GEM_VIEW_RE = /^https:\/\/eprocure\.gov\.in\/cppp\/gemtendersfullview\/[A-Za-z0-9+/=]+$/;
+
+/**
+ * GeM bids: CPPP's page for the bid (bid number, dates, quantity, item,
+ * buyer). It opens for anyone, unlike CPPP's central and state tender pages;
+ * only its PDF link (doc_cppp) is broken. Null for everything else.
+ */
+export function bidDetails({ kind, url }) {
+  return kind === 'gem' && GEM_VIEW_RE.test(String(url ?? '')) ? { url, label: 'Bid details' } : null;
+}
+
 /** The host names links may point to (tests check every link against these). */
 export const LINK_HOSTS = new Set(['eprocure.gov.in', 'bidplus.gem.gov.in', ...Object.values(STATE_PORTALS)]);
 
