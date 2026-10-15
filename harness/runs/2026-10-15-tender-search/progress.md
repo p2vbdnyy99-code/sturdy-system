@@ -36,8 +36,7 @@ All 8 steps done and verified locally. Not committed or deployed.
   search fills up over the first day.
 
 ## Next action
-Wait for "commit and deploy". Then: commit, push; check nothing is
-ANALYZING; apply 0010 in the machine before deploying (additive); deploy
-(the collector is already on, so it starts the new sweep); check live,
-including a GeM link opened with no session; watch the logs and the
-database size after a few hours.
+Deployed 15 Oct 2026 (commit f87ef35), migration 0010 applied before the
+deploy, the collector sweeping. In a day: check the logs for `read failed`,
+the counts per list, and the database size (expect ~150 MB at full
+coverage). The privacy date 15 October 2026 is the go-live day.
