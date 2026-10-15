@@ -8,7 +8,9 @@
 | 3 | one tap copies and opens, PC and phone | pass | `gem-find-verify.mjs` 11/11: PC and Pixel 7, "Find on GeM" → `https://bidplus.gem.gov.in/all-bids` in a new tab and the clipboard holds the bid number; the row says "Bid number copied"; a Kerala row copies its tender ID and opens the Kerala portal search; no PDF button; no sideways scroll; no CSP errors |
 | regression | tender search suite | pass | `tender-search-verify.mjs` 29/29 (GeM expectations moved to all-bids; two checks now wait for the state grid and filter; the Track-twice count scoped to the company) |
 | 4 | docs | pass | architecture section; FAQ; OPERATIONS; CLAUDE.md rule and lesson 19 |
-| live | GeM's bid search finds the bid and its document | unresolved | only reachable from India; the founder to try after the deploy |
+| live | deploy | pass | `analyzing_now=0 migrations=11` (no migration); `flyctl deploy` exit 0 (commit 1b8e760) |
+| live | the button on tendertez.in | pass | `gemfind-live.mjs` 11/11: PC and Pixel 7, "Find on GeM" → all-bids in a new tab with GEM/2026/B/8126355 on the clipboard and the copied note; no PDF button; API rows point to all-bids with the bid number, no `documentUrl`; `/document` → 404; no sideways scroll; no console or CSP errors |
+| live | GeM's bid search finds the bid and its document | unresolved | only reachable from India; the founder to try |
 | backend tests: database + CSRF secret | all backend tests pass | pass | pass 594, fail 0, skipped 1 |
 | backend tests: database only | all backend tests pass | pass | pass 373, fail 0, skipped 22 |
 | backend tests: no database | all backend tests pass | pass | pass 303, fail 0, skipped 34 |

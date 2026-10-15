@@ -19,6 +19,6 @@ Steps 1–4 done and verified locally. Not committed or deployed.
 - GeM's bid search can only be tried from India.
 
 ## Next action
-Wait for "commit and deploy". No migration. Then deploy, check live, and ask
-the founder to tap "Find on GeM", paste the bid number and confirm the bid
-and its document come up.
+Deployed 15 Oct 2026 (commit 1b8e760); live checks 11/11. Waiting for the
+founder to tap "Find on GeM", paste the bid number and confirm the bid and
+its document come up.
