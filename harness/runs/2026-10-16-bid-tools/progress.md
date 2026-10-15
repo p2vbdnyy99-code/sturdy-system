@@ -39,9 +39,11 @@
 - 3 new lint warnings of an existing kind.
 
 ## Next action
-On the founder's "commit and deploy", in order:
-1. Check that nothing is mid-analysis.
-2. Deploy.
-3. Check the migrations list.
-4. Run migrator 0011.
-5. Run the live browser check, and one real draft.
+Done on 16 Oct 2026 (IST):
+- committed 4d550ea and deployed;
+- migration 0011 run in production (11 → 12);
+- the public pages checked live.
+
+Still to do: check the signed-in features on production and make one real
+AI draft. This needs the founder to try it, or their go-ahead for a test
+account in the live database.
