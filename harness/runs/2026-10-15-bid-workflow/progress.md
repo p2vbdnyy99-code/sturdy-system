@@ -33,7 +33,6 @@ See plan.md "Decisions during the run".
 - Privacy date must be the deploy day.
 
 ## Next action
-Wait for "commit and deploy". Then: check nothing is ANALYZING; apply 0009
-in the machine before deploying (additive, so the running code is
-unaffected); deploy; check live; switch the collector on only if the founder
-says so.
+All steps done. Deployed 15 Oct 2026 (commit 91bb9bb), migration 0009 applied
+before the deploy. Switch the collector on only if the founder says so
+(`flyctl secrets set BIDPILOT_DISCOVERY_CPPP=on`, see OPERATIONS.md).

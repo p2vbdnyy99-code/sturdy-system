@@ -19,4 +19,7 @@
 | browser | all features at 1440 and 375 px, no CSP/console errors | pass | `workflow-verify.mjs` 24/24 after fixing: instant ticks, corrigendum ticks keyed on status, phone top bar overflow |
 | regression | earlier suites | pass | restyle 35/35, optional profile 20/20 |
 | docs | architecture, operations, CLAUDE.md, privacy (15 Oct 2026), FAQ | pass | sections added; privacy lists tracker data, clients, corrigenda, the feed |
-| live | deploy, migration 0009, collector switched on | unresolved | not done: waiting for "commit and deploy"; the collector stays off until the founder says to switch it on |
+| live | nothing mid-analysis; migration 0009 before the deploy; deploy healthy | pass | `analyzing_now=0 migrations=9`; migrator: `migrations 9 -> 10`, 5 new tables and 5 new tender columns present; `flyctl deploy` exit 0 (commit 91bb9bb); `/health` ok |
+| live | text and code served | pass | `workflow-live.mjs` 20/20: 3 new FAQ questions; privacy dated 15 October 2026 names clients and the feed; bundle has Tender feed, Checklist, Corrigenda, Clients, Preparing bid; `/feed` and `/clients` signed out → sign-in, no sideways scroll at 375 px; feed, PATCH tender, checklist and clients APIs signed out → 401; no console or CSP errors |
+| live | the features with a signed-in account | unresolved | not exercised live (a test account would write to the live database). Covered by the 24 harness checks on the same build |
+| live | collector switched on | unresolved | off (no `BIDPILOT_DISCOVERY_CPPP`); waits for the founder |
