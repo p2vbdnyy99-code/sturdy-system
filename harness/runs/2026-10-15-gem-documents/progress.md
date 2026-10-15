@@ -22,6 +22,6 @@ Steps 1–3 done and verified locally. Not committed or deployed.
   opens on the founder's phone can only be confirmed by the founder.
 
 ## Next action
-Wait for "commit and deploy". No migration. Then check nothing is
-ANALYZING, deploy, check live (the redirect resolves to a doc_cppp link),
-and ask the founder to tap "Bid document (PDF)" on a GeM bid on their phone.
+Deployed 15 Oct 2026 (commit 69301d0); live checks 9/9. Waiting for the
+founder to tap "Bid document (PDF)" on a GeM bid on their phone and say
+whether the PDF downloads.

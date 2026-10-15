@@ -19,3 +19,6 @@
 | frontend lint | lint exits 0 | pass | 15 warnings, 0 errors |
 | frontend unit tests | all pass | pass | pass 47, fail 0, skipped 0 |
 | secret scan | no secrets in the change | pass | secret-scan: clean (--changes) |
+| live | deploy | pass | `analyzing_now=0 migrations=11` (no migration); `flyctl deploy` exit 0 (commit 69301d0) |
+| live | the button and the redirect | pass | `gemdoc-live.mjs` 9/9 on https://tendertez.in: GeM rows carry `documentUrl`, central rows don't; the live redirect answers 302 to `bidplus.gem.gov.in/doc_cppp/...` for GEM/2026/B/8057294; PC opens a new tab; phone (Pixel 7) same tab with the hint; buttons 44 px; no sideways scroll; first tender at 1,107 px; no console or CSP errors |
+| live | the PDF on the founder's phone | unresolved | GeM's server can't be reached from outside India; waiting for the founder to try it |
