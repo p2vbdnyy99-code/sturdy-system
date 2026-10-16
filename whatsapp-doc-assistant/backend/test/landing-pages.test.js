@@ -76,6 +76,9 @@ test('a landing page: its own head, the real list, the source and links to the o
     assert.ok(landingTitle(p).length <= 60, landingTitle(p));
     assert.ok(landingDescription(p).length <= 200, landingDescription(p));
   }
+  const longOrg = { kind: 'central', label: 'Bharat Sanchar Nigam Limited (A Govt. of India Enterprise) Corporate Office', count: 1234 };
+  assert.ok(landingDescription(longOrg).length < 200, 'a long organisation name keeps the description short');
+  assert.match(landingDescription(longOrg), /portal links\.$/);
 });
 
 test('structured data states only published facts; llms.txt matches the plans', () => {

@@ -14,6 +14,11 @@ next step.
 - The internal code namespace is `bidpilot`. Keep it; only user-facing text
   says TenderTez.
 - `ai-copilot-prototype/` is a separate project. Don't touch it unless asked.
+- `marketing/` is the marketing workspace (`marketing/README.md`): CRM,
+  content approval queue, weekly report, SEO audit and the Tendertez
+  Marketing MCP (`.mcp.json`). It never sends, posts or spends; the founder
+  approves and acts. Its data lives in `marketing/data/` (git-ignored).
+  Run its tests with `cd marketing/automation && python3 -m unittest discover -s tests`.
 - Work on the branch `claude/whatsapp-ai-document-assistant-1yc51a`.
 - `BIDPILOT_ARCHITECTURE.md` gets a section for every change: what changed,
   why, and its verification. `OPERATIONS.md` is how to run production.
@@ -223,6 +228,12 @@ was blocked and why.
 23. The harness server caches index.html at start. After rebuilding the
     frontend, restart it, or the page loads old asset names and shows
     nothing.
+24. Marketing docs in `marketing/` are committed to a public repository. A
+    first draft named prospects and a real user in strategy and persona
+    notes; it was caught by grepping before commit. Names, contacts and
+    replies stay in `marketing/data/`; committed docs use counts.
+25. A claim filter must not block the domain's own words: "bank guarantee"
+    tripped the "guarantee" rule. Test the filter on real tender wording.
 
 ## Parallel work
 

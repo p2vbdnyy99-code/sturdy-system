@@ -78,8 +78,10 @@ export function landingTitle(page) {
 
 export function landingDescription(page) {
   const what = page.kind === 'gem' ? 'GeM bids' : page.kind === 'state' ? `tenders in ${page.label}` : `${page.label} tenders`;
-  return `${page.count.toLocaleString('en-IN')} open ${what}, closing soonest first, with tender IDs and portal links. `
-    + 'Free search by state or organisation, updated daily from CPPP’s public lists.';
+  const first = `${page.count.toLocaleString('en-IN')} open ${what}, closing soonest first, with tender IDs and portal links.`;
+  const full = `${first} Free search, updated daily from CPPP’s public lists.`;
+  // Search results cut descriptions at about 160 characters; long organisation names keep the first sentence only.
+  return full.length <= 160 ? full : first;
 }
 
 /** The search URL with this page's filters (what the app shows). */

@@ -3962,3 +3962,81 @@ the search were invisible to them. Run folder:
   - pricing JSON-LD present, with no CSP or console errors (the signed-out
     401 excepted);
   - the home chip links to `/government-tenders/state/goa`.
+
+# Marketing workspace and Tendertez Marketing MCP (Oct 2026)
+
+**Why.** The founder asked for a working, ₹0 customer-acquisition system:
+find real tender bidders, keep track of every conversation, queue content for
+approval and report only real numbers. Nothing in it sends, posts or spends;
+the founder approves and acts, and the system records the result. Run folder:
+`harness/runs/2026-10-16-growth-engine/`.
+
+## What changed
+- **`marketing/automation/ttm/`** (Python standard library, no new
+  dependencies). The data lives in `marketing/data/` (git-ignored), as JSON
+  files written atomically under a file lock, plus an event log.
+  - `prospects.py`: the CRM.
+    - Funnel: identified → verified → drafted → approved → contacted →
+      replied → demo → activated → paid, plus lost and opted out.
+      `contacted` needs an approved draft.
+    - Duplicate detection by domain, normalised name and contact.
+    - Opt-outs go on a suppression list.
+    - A "contacted before" list for businesses emailed outside the CRM.
+      Free-mail domains match only the exact address.
+    - Imports of those contacts at the stage they really reached.
+    - Evidence-based scoring from config, one follow-up at most, and a leads
+      CSV in the requested columns.
+  - `content.py`: the approval queue.
+    - Every draft needs an audience and a purpose.
+    - The lint refuses accuracy promises, "win bids", bid/no-bid verdicts,
+      superlatives, testimonials, time-saved claims and unsourced numbers.
+      "Bank guarantee" and "performance guarantee" are allowed.
+    - X length is counted with links as 23 characters.
+    - tendertez.in links get `utm_source=<platform>.<campaign>`. The site
+      stores only `utm_source` (`page_views.campaign`), so this keeps both
+      the channel and the campaign.
+  - `report.py`: the weekly report, built only from recorded events and site
+    numbers. Missing data reads "not available". Imports are shown
+    separately, and recommended next actions are computed from the state.
+  - `dashboard.py`: one self-contained HTML file with escaped content and no
+    network requests.
+  - `seo_audit.py`: reads the live server HTML. It checks titles,
+    descriptions, canonicals, robots, the sitemap, redirects, broken
+    internal links and missing alt attributes.
+  - `safety.py`: a global kill switch, checked by every command that changes
+    data, and dry-run mode (default on).
+- **`marketing/automation/mcp_server.py` and `/.mcp.json`:** the Tendertez
+  Marketing MCP, over stdio JSON-RPC. It has nine tools (content queue, LinkedIn
+  and X drafts, prospect search, details and save, outreach approval,
+  campaign results, weekly report). There is deliberately no publish or send
+  tool; `marketing/research/connector-matrix.md` says why and what one would
+  need.
+- **Skills** in `.claude/skills/`: `marketing-daily`, `find-prospects`,
+  `content-batch`, `seo-review`, `follow-up-review`, `weekly-growth-report`.
+- **Docs:** `marketing/` (README, strategy, brand guide, research, leads,
+  seo, analytics, a 30-day calendar). Committed files name no prospect or
+  user; names live only in `marketing/data/`.
+- **Website:** landing page descriptions keep only the first sentence when
+  the full text would pass about 160 characters (`landingPages.js`). The
+  live audit found one at 208.
+
+## Verification
+- **`marketing/automation/tests` (22, mock data, no network):**
+  - save, duplicate refusal and validation;
+  - the funnel with approval before contact;
+  - opt-outs, contacted-before blocking, free-mail handling and imports;
+  - the kill switch;
+  - claim lint, the bank-guarantee false positive, sources and X length;
+  - queue → approve → publish → metrics;
+  - per-platform adaptation and UTM tagging;
+  - the weekly report;
+  - the dashboard (escaped);
+  - the SEO audit with a mock fetcher;
+  - the MCP protocol and a full workflow over MCP;
+  - the CLI, including the leads CSV.
+- **Live in a Claude Code session:** the MCP server loaded from `.mcp.json`.
+  `search_saved_prospects` and `draft_linkedin_post`/`draft_x_post` worked,
+  and a draft claiming "100% accurate … win bids" was refused.
+- **`landing-pages.test.js`:** a new assertion that a long organisation name
+  gives a description under 200 characters that ends at the first sentence.
+- **verify.sh:** see the run's `checks.md`.

@@ -1,0 +1,15 @@
+keyword,intent,volume,current_page,action,status
+AI tender analysis India,find a tool,not measured,/,keep; add sample analysis page,seed (unverified)
+tender document summary,find a tool,not measured,/,keep,seed (unverified)
+tender eligibility checker,find a tool or check a tender,not measured,/features,keep; mention eligibility check against profile,seed (unverified)
+tender compliance checklist,find a tool,not measured,/features,keep; checklist built from the tender's requirements,seed (unverified)
+government tender risk analysis,find a tool,not measured,/,keep (risky clauses with page numbers),seed (unverified)
+tender consultant software,find a tool,not measured,/features,add client workspaces wording if missing,seed (unverified)
+GeM tender analysis,find a tool,not measured,/,keep,seed (unverified)
+how to check eligibility in a government tender,learn,not measured,none,article (needs founder approval for an articles section),opportunity
+EMD exemption for MSE on GeM,learn,not measured,none,article with sources (GFR Rule 170; DoE OM 12 Nov 2020; GeM bid documents),opportunity
+bid security declaration,learn,not measured,none,article,opportunity
+Make in India class I local supplier tender,learn,not measured,none,article,opportunity
+government tenders in <state>,find tenders,not measured,/government-tenders/state/<slug>,live (states with 20+ open tenders),live
+<organisation> tenders,find tenders,not measured,/government-tenders/organisation/<slug>,live (top 20 organisations),live
+GeM bids list,find tenders,not measured,/government-tenders/list/gem,live,live

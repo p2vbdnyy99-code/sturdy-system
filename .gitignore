@@ -1,2 +1,9 @@
 # Output of the founder-* skills (business-planning drafts), kept out of git
 /founder/
+
+# Marketing workspace: prospect, contact and CRM data and local settings never
+# go into git (the repository is public). Backed up to Google Drive instead.
+/marketing/data/
+/marketing/marketing-config.json
+/marketing/automation/logs/
+__pycache__/
