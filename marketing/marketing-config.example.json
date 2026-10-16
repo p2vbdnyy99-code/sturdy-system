@@ -1,0 +1,45 @@
+{
+  "_comment": "Copy to marketing-config.json (git-ignored) to change settings. kill_switch true stops every action that changes data; dry_run true makes external-facing commands only print what they would do.",
+  "kill_switch": false,
+  "dry_run": true,
+  "require_approval": {
+    "publish": true,
+    "message": true,
+    "email": true,
+    "public_comment": true,
+    "website_change": true,
+    "spend": true
+  },
+  "limits": {
+    "outreach_per_day": 10,
+    "follow_up_after_days": 5,
+    "max_follow_ups": 1
+  },
+  "site": "https://tendertez.in",
+  "utm_campaign_default": "growth",
+  "lead_scoring": {
+    "signals": {
+      "explicit_tender_consultancy": 35,
+      "government_tender_experience": 25,
+      "public_award_evidence": 25,
+      "recent_tender_participation": 15,
+      "gem_seller": 15,
+      "supplies_public_institutions": 15,
+      "discusses_tender_difficulty": 10
+    },
+    "category_bonus": {
+      "tender_consultant": 15,
+      "procurement_consultant": 10,
+      "civil_contractor": 5,
+      "electrical_contractor": 5,
+      "mechanical_contractor": 5,
+      "gem_seller": 5,
+      "medical_supplier": 5,
+      "it_supplier": 5,
+      "pharma_supplier": 5,
+      "msme_supplier": 0
+    },
+    "public_contact_bonus": 10,
+    "tiers": {"A": 70, "B": 40}
+  }
+}
