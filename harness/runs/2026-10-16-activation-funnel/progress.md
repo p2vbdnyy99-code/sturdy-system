@@ -5,7 +5,7 @@
 - [x] 3 Follow-up draft to the consultancy with 2 waiting uploads (Gmail draft)
 - [x] 4 verify.sh pass; ARCHITECTURE and OPERATIONS updated; growth plan written
 
-Waiting for the founder: "commit" / "deploy" for steps 1–2; send the draft;
+Committed 8d0b331 and deployed 16 Oct. Waiting for the founder: send the draft;
 submit the sitemap in Search Console; decide on the public sample analysis
 (one AI run) and on payment.
 Measure after deploy: `visits-report.mjs 7` weekly. Watch "waiting for the

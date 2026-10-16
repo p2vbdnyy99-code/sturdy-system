@@ -12,3 +12,4 @@
 | 2 | funnel report queries | pass | `funnel-report.test.js` 4/4 (Postgres); `visits-report.mjs 7` runs locally |
 | 2 | production baseline (read-only) | pass | 30 d: uploads 6 → analysed 4 (4 within 24 h), waiting 2, failed 0; feed 2, PDF 0; 1 new account linked to a same-day journey |
 | 3 | follow-up draft | pass | Gmail draft in the existing thread; not sent |
+| 5 | deployed (8d0b331) | pass | `visits-report.mjs 30` in production prints Uploads (6 → 4 analysed, 2 waiting) and Sign-ups by entry; served bundle contains the ready-to-analyse text; live smoke at 375 px: /, a landing page, /login, /dashboard (→ sign-in) with no console errors and no sideways scroll |
