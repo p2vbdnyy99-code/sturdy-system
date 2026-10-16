@@ -25,6 +25,7 @@ export function PricingPage() {
           Try every feature of {PRODUCT_NAME} on your first {FREE_TRIAL_TENDERS} tenders, free. After that, choose
           a monthly plan by how many tenders you analyse. Nothing is ever charged automatically.
         </p>
+        <p>Want to see the output first? <Link to="/sample-analysis">Here is a real analysis of a public tender</Link>.</p>
       </PageIntro>
 
       <section className="home-section pricing-section">

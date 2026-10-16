@@ -103,6 +103,14 @@ sibling of `backend/`/`frontend/`, since the Docker build needs both).
   **sign-ups by entry** (first page, site and `utm_source` → saw `/register`
   → new account → reached the app; same-day journeys only, because visitor
   ids reset daily). The marketing workspace uses `utm_source=<channel>.<campaign>`.
+- **Sample analysis** (`/sample-analysis`): the stored output of one real
+  analysis of a public AIIMS Bhubaneswar tender
+  (`backend/src/sample/aiims-bbsr-pump-motors.json`). To make a new one,
+  change the URL and SHA-256 in `scripts/sample-analysis-run.mjs`, run it in
+  the machine (`fly ssh console --app tenderlytic-api -C "sh -c 'cd /app/backend
+  && node scripts/sample-analysis-run.mjs'"`; it costs one analysis and writes
+  nothing to the database), save the JSON after `SAMPLE_JSON `, check every
+  quote against the PDF, then update the page's intro text and tests.
 - **Google Search Console** (which Google searches show TenderTez, clicks,
   and indexing problems). Nothing runs on the site for it.
   1. At https://search.google.com/search-console, add a **Domain** property

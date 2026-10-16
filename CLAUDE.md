@@ -124,6 +124,10 @@ Follow `harness/README.md`. In short:
   tender's pages are dropped, a missing value prints "[to fill: …]", and
   price bids and BOQs are never offered. Letterhead fields stay optional and
   out of `REQUIRED_FIELDS`.
+- The sample analysis (`/sample-analysis`, `src/samplePage.js`) shows one
+  stored real analysis of a public tender exactly as produced; never edit
+  its JSON or add points to it. Check every quote against the PDF before
+  replacing it.
 - A "try" for the profile rule is a tender with a document; a tender tracked
   from the feed is analysed only after its PDF is attached.
 - Sign-in with Google and with a WhatsApp code each stay hidden until their

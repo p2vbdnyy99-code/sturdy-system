@@ -4102,3 +4102,86 @@ folder: `harness/runs/2026-10-16-activation-funnel/`; ranking:
 
 **Reverse:** `git revert` the commit. No migration, and the summary field is
 additive.
+
+# Public sample analysis (Oct 2026)
+
+**Why.** In the last 30 days, 30 of 45 visitor-days entered on the home page
+and 2 of them reached `/register`. The only preview of the product was an
+illustrative "Example" card. A visitor should be able to see a real
+analysis before creating an account (`marketing/growth-plan.md`, row 5; the
+founder approved the one AI run). Run folder:
+`harness/runs/2026-10-16-sample-analysis/`.
+
+## How the sample was made
+- **The tender:** AIIMS Bhubaneswar's NIT No.
+  AIIMS/BBSR/ENGG./ELECT./11/2026, for pump motor sets: 35 pages, text-based,
+  a schedule of quantities, closed 30 May 2026. It is the PDF on AIIMS's own
+  site, and its SHA-256 is pinned.
+- **The run:** `scripts/sample-analysis-run.mjs` ran once inside the
+  production machine, for its AI provider. It used the app's own extraction,
+  chunking, AI call (with one retry on unparseable output), validation and
+  aggregation, all in memory: nothing was written to the database and no
+  account was used.
+  - 3 chunks, 0 failed, about 36,000 tokens on the flex tier, 72 seconds.
+  - Output: 8 key facts, 6 dates, 64 requirements, 17 points to check, 19
+    BOQ items.
+- **Stored as produced:** the output is in
+  `backend/src/sample/aiims-bbsr-pump-motors.json`, and a test checks the
+  page shows it unchanged.
+- **Checked before publishing:** every quote was compared with
+  `pdftotext` of its cited page.
+  - 26 of 34 quoted snippets match exactly; the other 8 are split across
+    table cells or broken by a superscript on the same page.
+  - Word overlap with the cited page is at least 90% for 99 of 100
+    requirement, flag and BOQ items. The 100th is a list that starts on page
+    25 and continues on page 26; the page says so.
+  - No emails, phone numbers or personal names.
+
+## What changed
+- **`src/samplePage.js`:**
+  - `sampleView()` arranges the stored output the way the app does. Key
+    facts and dates come straight from the analysis. The checklist uses
+    `requirementKey`, `labelFor` and `CATEGORY_ORDER` from
+    `repo/checklist.js`, now exported. Then come the points to check and the
+    BOQ.
+  - `renderSampleHtml()` server-renders the page text. Page numbers link to
+    the PDF with `#page=N`.
+  - `GET /bidpilot/public/sample-analysis` serves the data, cached for 1
+    hour.
+- **`seo.js` PUBLIC_PAGES:** `/sample-analysis`, so it is in the sitemap and
+  `/llms.txt` and is sent to GA4. `visits.js` counts it by its own path.
+  `server.js` serves its server HTML (rendered once).
+- **Frontend:**
+  - `pages/SampleAnalysis.tsx`: key-fact cards, dates, points to check,
+    checklist groups (`<details>`) and a BOQ table. Each point has a page
+    chip that opens the quote and an "Open page N of the tender PDF" link.
+    The page says the tender closed and that nothing was edited.
+  - A link from the home hero ("See a real analysis of a 35-page AIIMS
+    tender") and from the pricing intro.
+  - CSS classes only (CSP).
+- **No privacy change:** no new data is collected.
+
+## Verification
+- **`test/sample-page.test.js` (3):**
+  - the stored output is shown unchanged;
+  - the checklist equals the distinct requirements, documents first;
+  - every page is within 1–35;
+  - the server HTML has one title, canonical, no noindex and PDF page links;
+  - title ≤ 60 and description ≤ 160 characters;
+  - sitemap, visits and GA4 paths;
+  - the real app serves the page and its data.
+- **Browser on the harness (`sample-check.mjs`), 20/20, phone 375 px and
+  desktop:**
+  - 8 key facts, 17 points, 19 BOQ rows, 11 checklist groups (first open);
+  - a page chip shows the quote and a `#page=4` link to the PDF;
+  - no sideways scroll, no console or CSP errors;
+  - the home hero link opens the sample, and pricing links to it.
+- **The source PDF** opens without cookies (200, `application/pdf`, served
+  inline). On Android Chrome PDFs download, so `#page` falls back to page 1.
+- **verify.sh:** see the run's `checks.md`.
+
+**Measure:** visits to `/sample-analysis` and their sign-ups
+(`visits-report.mjs`, "Sign-ups by entry"); the home → `/register` rate,
+from 2 of 30 home-entry journeys in the last 30 days.
+
+**Reverse:** `git revert` the commit. There is no migration.

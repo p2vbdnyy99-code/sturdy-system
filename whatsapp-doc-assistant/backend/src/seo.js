@@ -24,6 +24,11 @@ export const PUBLIC_PAGES = {
     description: 'Search central, state and GeM tenders in one place, by state or organisation. Free, no sign-in '
       + 'needed. Tender notices from the Central Public Procurement Portal\'s public lists.',
   },
+  '/sample-analysis': {
+    title: 'Sample tender analysis: AIIMS Bhubaneswar | TenderTez',
+    description: 'TenderTez\u2019s real analysis of a public AIIMS Bhubaneswar tender: key facts, dates, '
+      + 'eligibility, documents and risky clauses, each with its page number.',
+  },
   '/features': {
     title: 'Features | TenderTez',
     description: 'Find government tenders, read a tender PDF with every point linked to its page, check '

@@ -56,6 +56,9 @@ export function HomePage() {
               <Link to="/government-tenders" className="btn-link btn-ghost-light btn-lg">Find tenders</Link>
             </div>
             <p className="home-hero-note">Your first {FREE_TRIAL_TENDERS} tenders are free. No card needed. Works on your phone.</p>
+            <p className="home-hero-sample">
+              <Link to="/sample-analysis">See a real analysis of a 35-page AIIMS tender <Icon name="arrowRight" /></Link>
+            </p>
           </div>
           <HeroPreview />
         </div>

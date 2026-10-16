@@ -17,7 +17,7 @@ import { listRequirements, listEvidenceForRequirement } from './requirements.js'
 export const CUSTOM_LABEL_MAX = 300;
 
 // Documents first, then the rest in a stable order.
-const CATEGORY_ORDER = ['DOCUMENT', 'FINANCIAL', 'EXPERIENCE', 'CERTIFICATION', 'LICENSE', 'LEGAL', 'TECHNICAL',
+export const CATEGORY_ORDER = ['DOCUMENT', 'FINANCIAL', 'EXPERIENCE', 'CERTIFICATION', 'LICENSE', 'LEGAL', 'TECHNICAL',
   'MANPOWER', 'EQUIPMENT', 'OEM', 'GEOGRAPHIC', 'SPECIAL_CONDITION', 'OTHER'];
 
 const normalise = (s) => String(s ?? '').toLowerCase().replace(/\s+/g, ' ').trim();
@@ -28,7 +28,7 @@ export function requirementKey(requirement) {
   return crypto.createHash('sha1').update(text).digest('hex');
 }
 
-function labelFor(r) {
+export function labelFor(r) {
   const title = (r.title ?? '').trim();
   if (title) return title;
   const d = r.description.trim();

@@ -29,6 +29,7 @@ const ROUTES = [
   [/^\/$/, '/'],
   [/^\/government-tenders$/, '/government-tenders'],
   [/^\/features$/, '/features'],
+  [/^\/sample-analysis$/, '/sample-analysis'],
   [/^\/pricing$/, '/pricing'],
   [/^\/faq$/, '/faq'],
   [/^\/about$/, '/about'],

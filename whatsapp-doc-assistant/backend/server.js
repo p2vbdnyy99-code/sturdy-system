@@ -26,13 +26,14 @@ import { createDashboardRouter } from './src/bidpilot/routes/dashboard.js';
 import { createCompaniesRouter } from './src/bidpilot/routes/companies.js';
 import { createFeedRouter } from './src/bidpilot/routes/feed.js';
 import { createPublicTendersRouter } from './src/bidpilot/routes/publicTenders.js';
+import { SAMPLE_PATH, renderSampleHtml, createSampleRouter } from './src/samplePage.js';
 import { cookieParserMiddleware } from './src/bidpilot/auth/cookies.js';
 import { bidpilotCors } from './src/bidpilot/auth/cors.js';
 import { recoverInterruptedWork } from './src/bidpilot/recovery.js';
 import { startDiscovery } from './src/bidpilot/discovery/collector.js';
 import { startAlertMatcher } from './src/bidpilot/repo/savedSearches.js';
 import { getDb } from './src/db/client.js';
-import { canonicalHostRedirect, renderIndexHtml, robotsTxt, sitemapXml, llmsTxt } from './src/seo.js';
+import { canonicalHostRedirect, renderIndexHtml, robotsTxt, sitemapXml, llmsTxt, PUBLIC_PAGES } from './src/seo.js';
 import { landingPagesFrom, isLandingPath, renderLandingHtml, createLandingCache, LIST_SIZE } from './src/landingPages.js';
 import { cachedFacets, searchFeed } from './src/bidpilot/repo/publicTenders.js';
 import { createVisitsRouter } from './src/bidpilot/visits.js';
@@ -230,6 +231,7 @@ if (config.db.url) {
   app.use('/bidpilot', createTendersRouter());
   app.use('/bidpilot', createFeedRouter());
   app.use('/bidpilot', createPublicTendersRouter());
+  app.use('/bidpilot', createSampleRouter());
   app.use('/bidpilot', createDownloadRouter());
   const ga4Forward = createGa4Forwarder({ ...config.bidpilot.ga4, baseUrl: SITE_BASE_URL });
   log.info(ga4Forward
@@ -268,6 +270,7 @@ if (frontendDistExists) {
     res.type('application/xml').send(sitemapXml(SITE_BASE_URL, extra));
   });
   const indexHtml = fs.readFileSync(path.join(FRONTEND_DIST, 'index.html'), 'utf8');
+  let sampleHtml = null; // the sample analysis never changes while running
 
   async function sendLanding(req, res) {
     const cached = landingCache.get(req.path);
@@ -298,6 +301,10 @@ if (frontendDistExists) {
     // serve is a genuinely missing asset (e.g. a stale hashed bundle
     // reference) — 404 it honestly rather than masking the problem as HTML.
     if (/\.[^/]+$/.test(req.path)) return next();
+    if (req.path === SAMPLE_PATH) {
+      sampleHtml ??= renderSampleHtml(indexHtml, SITE_BASE_URL, PUBLIC_PAGES[SAMPLE_PATH]);
+      return res.type('html').send(sampleHtml);
+    }
     if (isLandingPath(req.path)) {
       return sendLanding(req, res).catch((err) => {
         log.error('landing page error:', err);

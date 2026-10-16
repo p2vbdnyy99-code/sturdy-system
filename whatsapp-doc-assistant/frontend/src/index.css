@@ -1661,6 +1661,111 @@ a:hover {
   margin: 1rem 0 0;
 }
 
+.home-hero-sample {
+  margin: 0.6rem 0 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.home-hero-sample a {
+  color: var(--saffron-100);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+/* Public sample analysis (/sample-analysis). */
+.sample-note {
+  font-size: 0.9rem;
+}
+
+.sample-heading {
+  margin-top: 1.75rem;
+}
+
+.sample-lead {
+  color: var(--color-text-muted);
+  margin: 0 0 1rem;
+}
+
+.key-facts.sample-key-facts {
+  grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+}
+
+.sample-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.6rem;
+}
+
+.sample-list li {
+  overflow-wrap: anywhere;
+}
+
+.sample-flags li {
+  display: flex;
+  gap: 0.55rem;
+  align-items: flex-start;
+}
+
+.sample-flags li > svg {
+  flex: none;
+  margin-top: 0.2rem;
+  color: var(--saffron-700);
+}
+
+.sample-detail {
+  display: block;
+  color: var(--color-text-muted);
+  font-size: 0.88rem;
+  margin-top: 0.2rem;
+}
+
+.sample-group {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 0.75rem 1rem;
+  margin: 0 0 0.75rem;
+}
+
+.sample-group summary {
+  cursor: pointer;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.sample-group[open] summary {
+  margin-bottom: 0.75rem;
+}
+
+.sample-pdf-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin-top: 0.4rem;
+  font-weight: 600;
+}
+
+.sample-boq {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--color-surface);
+  font-size: 0.9rem;
+}
+
+.sample-boq th,
+.sample-boq td {
+  text-align: left;
+  vertical-align: top;
+  padding: 0.55rem 0.6rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
 /* Hero illustration: an example analysed tender, in HTML/CSS. */
 .home-preview {
   background: var(--color-surface);
