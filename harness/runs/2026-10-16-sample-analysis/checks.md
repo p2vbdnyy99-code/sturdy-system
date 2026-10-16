@@ -12,3 +12,4 @@
 | 3 | output checked before publishing | pass | 34 quoted snippets: 26 exact on the cited page, 8 on the cited page across table cells/superscripts; 100 requirement/flag/BOQ items: 99 ≥ 90% word overlap, 1 list continues p.25→26 (stated on the page); no emails, phones or names |
 | 4 | served and stored as produced | pass | `sample-page.test.js` 3/3 with a database |
 | 5 | page and links in the browser | pass | `sample-check.mjs` 20/20 at 375 px and 1280 px |
+| 7 | deployed (eccd243) | pass | live: /sample-analysis server HTML (title, h1, `#page=4` links), API 200, in sitemap and /llms.txt; `sample-check.mjs` against tendertez.in 20/20 at 375 px and 1280 px, no console/CSP errors; home and pricing links work |
