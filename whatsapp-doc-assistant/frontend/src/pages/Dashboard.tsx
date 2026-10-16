@@ -12,6 +12,7 @@ import { Icon, type IconName } from '../components/Icon';
 import { deriveAttentionState } from '../dashboard/attentionState';
 import { daysUntil, displayTitle, formatDate, humanizeEnum } from '../format';
 import { TenderRow } from '../dashboard/TenderRow';
+import { ReadyToAnalyse } from '../dashboard/ReadyToAnalyse';
 import { useSession } from '../auth/SessionProvider';
 import { ApiError } from '../api/client';
 import { CONTACT_EMAIL } from '../config/site';
@@ -196,6 +197,7 @@ export function DashboardPage() {
         </div>
       </header>
       {uploadError && <p role="alert" className="error-text">{uploadError}</p>}
+      <ReadyToAnalyse tenders={summary?.readyToAnalyse ?? []} companyId={companyId} clientNames={clientNames} />
 
       {summaryError && <p role="alert" className="error-text">{summaryError}</p>}
       <ProfileReminder left={shell.profile.freeLeft} />

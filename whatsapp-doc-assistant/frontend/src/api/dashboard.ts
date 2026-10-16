@@ -18,6 +18,8 @@ export type DashboardSummary = {
     processingStatus: ProcessingStatus;
     analysisStatus: AnalysisStatus;
   }>;
+  /** Extracted tenders with a PDF that were never analysed, newest first (up to 3). */
+  readyToAnalyse: Array<{ id: string; title: string | null; clientId: string | null }>;
   /** Free trial or monthly plan; null when the company has no limit. */
   allowance: Allowance | null;
   /** New tenders for the company's saved searches, not yet seen. */

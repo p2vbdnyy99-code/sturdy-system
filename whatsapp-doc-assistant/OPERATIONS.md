@@ -98,7 +98,11 @@ sibling of `backend/`/`frontend/`, since the Docker build needs both).
   of days). The site counts visits itself; see BIDPILOT_ARCHITECTURE.md,
   "Visit counting". Tag links you share with `?utm_source=<name>` (e.g.
   `https://tendertez.in/?utm_source=linkedin`) to see which ones bring
-  visitors.
+  visitors. The report also shows **uploads** (how many reached an analysis,
+  within 24 hours, and how many are waiting for the Analyze click) and
+  **sign-ups by entry** (first page, site and `utm_source` → saw `/register`
+  → new account → reached the app; same-day journeys only, because visitor
+  ids reset daily). The marketing workspace uses `utm_source=<channel>.<campaign>`.
 - **Google Search Console** (which Google searches show TenderTez, clicks,
   and indexing problems). Nothing runs on the site for it.
   1. At https://search.google.com/search-console, add a **Domain** property

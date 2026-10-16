@@ -100,6 +100,22 @@ export async function getDashboardSummary(scope, { upcomingWithinDays = 14 } = {
     .orderBy(desc(tenders.createdAt))
     .limit(5);
 
+  // Uploaded tenders whose PDF is extracted but that nobody has analysed yet:
+  // the dashboard puts these first, with the Analyze button, because a
+  // tender shows nothing useful until it is analysed. Tenders tracked from
+  // the feed without a PDF can't be analysed, so they are left out.
+  const waiting = await scope.db
+    .select({ id: tenders.id, title: tenders.title, clientId: tenders.clientId })
+    .from(tenders)
+    .where(and(companyFilter, eq(tenders.processingStatus, 'COMPLETED'), eq(tenders.analysisStatus, 'NOT_STARTED')))
+    .orderBy(desc(tenders.createdAt))
+    .limit(20);
+  const waitingWithDocs = waiting.length
+    ? new Set((await scope.db.select({ id: tenderDocuments.tenderId }).from(tenderDocuments)
+      .where(inArray(tenderDocuments.tenderId, waiting.map((r) => r.id)))).map((r) => r.id))
+    : new Set();
+  const readyToAnalyse = waiting.filter((r) => waitingWithDocs.has(r.id)).slice(0, 3);
+
   return {
     totalTenders: totals.total,
     processing: totals.processing,
@@ -107,6 +123,7 @@ export async function getDashboardSummary(scope, { upcomingWithinDays = 14 } = {
     analysed: totals.analysed,
     upcomingDeadlines: { count: totals.upcomingDeadlines, withinDays: upcomingWithinDays },
     recentTenders,
+    readyToAnalyse,
   };
 }
 

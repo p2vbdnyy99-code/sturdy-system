@@ -12,6 +12,7 @@ import { dbAvailable, DB_URL, testDb, closeTestDb, truncateAll } from '../db/hel
 import { createCompanyWithOwner } from '../../src/bidpilot/repo/companies.js';
 import { requireCompanyAccess } from '../../src/bidpilot/repo/tenants.js';
 import { createTender, updateProcessingStatus, getDashboardSummary } from '../../src/bidpilot/repo/tenders.js';
+import { createTenderDocument } from '../../src/bidpilot/repo/documents.js';
 import { setDb, closeDb } from '../../src/db/client.js';
 import { createSession } from '../../src/bidpilot/auth/sessionService.js';
 import { csrfTokenFor } from '../../src/bidpilot/auth/csrf.js';
@@ -62,6 +63,29 @@ test('getDashboardSummary (repo-level)', { skip: SKIP_REASON }, async (t) => {
     assert.equal(summary.processing, 1, 'the still-UPLOADED tender counts as processing');
     assert.equal(summary.awaitingAnalysis, 1, 'COMPLETED processing + NOT_STARTED analysis');
     assert.equal(summary.analysed, 0);
+  });
+
+  await t.test('readyToAnalyse lists extracted tenders with a PDF that were never analysed, newest first', async () => {
+    const scope = await scopeFor('Ready Co');
+    assert.deepEqual((await getDashboardSummary(scope)).readyToAnalyse, []);
+    const pdf = { filename: 't.pdf', storagePath: 'k', mimeType: 'application/pdf', sizeBytes: 10 };
+    const older = await createTender(scope, { title: 'Older upload' });
+    await updateProcessingStatus(scope, older.id, 'COMPLETED');
+    await createTenderDocument(scope, older.id, pdf);
+    const feedOnly = await createTender(scope, { title: 'Tracked from the feed, no PDF' });
+    await updateProcessingStatus(scope, feedOnly.id, 'COMPLETED');
+    const stillProcessing = await createTender(scope, { title: 'Still extracting' });
+    await createTenderDocument(scope, stillProcessing.id, pdf);
+    const newer = await createTender(scope, { title: 'Newer upload' });
+    await updateProcessingStatus(scope, newer.id, 'COMPLETED');
+    await createTenderDocument(scope, newer.id, pdf);
+
+    const summary = await getDashboardSummary(scope);
+    assert.deepEqual(summary.readyToAnalyse.map((r) => r.title), ['Newer upload', 'Older upload'],
+      'no feed tender without a PDF, nothing still processing');
+    assert.ok('clientId' in summary.readyToAnalyse[0]);
+    const other = await scopeFor('Other Co');
+    assert.deepEqual((await getDashboardSummary(other)).readyToAnalyse, [], 'scoped to the company');
   });
 
   await t.test('upcomingDeadlines counts only future deadlines within the window, not past or far-future ones', async () => {

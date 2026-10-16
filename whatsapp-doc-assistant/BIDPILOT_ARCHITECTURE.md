@@ -4040,3 +4040,65 @@ the founder approves and acts, and the system records the result. Run folder:
 - **`landing-pages.test.js`:** a new assertion that a long organisation name
   gives a description under 200 characters that ends at the first sentence.
 - **verify.sh:** see the run's `checks.md`.
+
+# Ready-to-analyse next step and sign-ups by entry (Oct 2026)
+
+**Why.** Production, last 30 days (read-only counts, 16 Oct): 6 tenders
+uploaded with a PDF, 4 analysed, 0 failed, and **2 never analysed**. Both
+were from the most engaged prospect, a consultancy that also completed its
+company profile. Analysis starts only on an explicit click (the standing
+decision under "Upload -> processing -> analysis flow"). On a 375 px phone,
+the only Analyze button was about 2,450 px down the dashboard. Separately,
+the visits report could not say which source or page led to a sign-up. Run
+folder: `harness/runs/2026-10-16-activation-funnel/`; ranking:
+`marketing/growth-plan.md`.
+
+## What changed
+- **`repo/tenders.js` `getDashboardSummary`:** adds `readyToAnalyse`, up to
+  3 tenders, newest first. Each is extracted (`processing_status`
+  COMPLETED), `NOT_STARTED`, and has a document, so feed-tracked tenders
+  without a PDF are left out. It uses a separate document query, not a
+  correlated subquery (lesson 22).
+- **`dashboard/ReadyToAnalyse.tsx`:** a notice under the dashboard header
+  that lists those tenders, each with an **Analyze** button. The button
+  makes the same `analyzeTender` call as the row and the tender page, so the
+  click stays explicit and AI spend is unchanged. A `profile_incomplete`
+  answer opens the profile dialog, as the row does. On success it reloads
+  the shell and opens the tender, which shows the analysis progress.
+- **`funnelReport.js` + `scripts/visits-report.mjs`:** two new sections,
+  built from existing data (no new collection, no privacy change):
+  - **Uploads:** uploaded, analysed, analysed within 24 hours, waiting for
+    Analyze, failed, plus tracked from the feed and how many got a PDF.
+  - **Sign-ups by entry:** for each first page, site and `utm_source` of a
+    visitor-day: journeys → saw `/register` → new account → reached the
+    app. A new account is a journey that reaches
+    `/onboarding/create-company`.
+  - Only same-day journeys link, because visitor ids reset daily.
+  - The old "tenders uploaded" figure counted feed-tracked tenders. It now
+    counts uploads only.
+
+## Verification
+- **`dashboard-summary.test.js`** (new case): lists only tenders with a PDF
+  that are extracted and never analysed, newest first and company-scoped. A
+  feed tender without a PDF and a tender still processing are left out.
+- **`funnel-report.test.js` (3 cases, Postgres):**
+  - entry grouping;
+  - the day window;
+  - a returning sign-in is not a new account;
+  - activation counts (24-hour window, waiting, feed).
+- **Browser on the harness (`ready-check.mjs`), 12/12:**
+  - Phone 375 px and desktop, each: the card lists only the waiting tender,
+    its button sits within the first screen (627 px of 812 on the phone; it
+    was about 2,450 px), no sideways scroll, no CSP errors.
+  - Desktop click: the analysis starts, the tender page shows "Analyzing…",
+    and the card is gone back on the dashboard.
+- **Production baseline (read-only, 30 days):**
+  - uploads 6 → analysed 4 (all within 24 hours), 2 waiting, 0 failed;
+  - feed-tracked 2, none with a PDF;
+  - sign-ups by entry: 1 new account linked to a same-day journey (direct,
+    home page); the other 2 sign-ups crossed days or came before visit
+    counting began.
+- **verify.sh:** see the run's `checks.md`.
+
+**Reverse:** `git revert` the commit. No migration, and the summary field is
+additive.
