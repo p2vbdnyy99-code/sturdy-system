@@ -9,7 +9,7 @@ import datetime as dt
 import json
 import sys
 
-from . import content, dashboard, prospects, report, seo_audit, store
+from . import content, daily_post, dashboard, prospects, report, seo_audit, store
 from .config import load_config, data_dir
 from .safety import KillSwitchOn, guard
 
@@ -65,6 +65,8 @@ def main(argv=None) -> int:
     s = sub.add_parser("seo-audit", help="audit the live site"); s.add_argument("--base", default=None); s.add_argument("--json", action="store_true")
     s = sub.add_parser("dashboard", help="write the HTML dashboard (default marketing/data/dashboard.html)")
     s.add_argument("--out", default="")
+    s = sub.add_parser("daily-post", help="today's tender post (JSON: label, linkedin, x, whatsapp); posts nothing")
+    s.add_argument("--date", default=""); s.add_argument("--base", default="")
     sub.add_parser("status", help="settings, kill switch and data counts")
     s = sub.add_parser("export", help="write a backup of all data to a JSON file"); s.add_argument("path")
     s = sub.add_parser("import", help="restore data from a backup (refuses to overwrite non-empty data without --force)")
@@ -143,6 +145,13 @@ def main(argv=None) -> int:
             with open(out, "w", encoding="utf-8") as f:
                 f.write(dashboard.build())
             _print({"dashboard": out})
+        elif a.cmd == "daily-post":
+            day = dt.date.fromisoformat(a.date) if a.date else None
+            try:
+                _print(daily_post.build(a.base or cfg["site"], day))
+            except daily_post.DailyPostError as e:
+                print(f"error: {e}", file=sys.stderr)
+                return 3
         elif a.cmd == "status":
             _print({"data_dir": str(data_dir()), "kill_switch": cfg["kill_switch"], "dry_run": cfg["dry_run"],
                     "prospects": len(store.load("prospects")), "content": len(store.load("content")),

@@ -21,16 +21,24 @@ with `ttm site-metrics --week-ending … --source …`.
 
 ## UTM convention
 
-The site stores only `utm_source` (as `page_views.campaign`, up to 40
-characters of `a-z 0-9 . _ -`), so it carries channel and campaign:
+Links use standard UTMs, built by `links.build_url` (`link-policy.md`):
 
-`https://tendertez.in/<page>?utm_source=<channel>.<campaign>&utm_campaign=<campaign>`
+`https://tendertez.in/<page>?utm_source=<channel>&utm_medium=<medium>&utm_campaign=<campaign>`
 
-- channel: `linkedin`, `x`, `facebook`, `reddit`, `whatsapp`, `email`, `youtube`
+- channel: `linkedin`, `x`, `facebook`, `reddit`, `whatsapp`, `email`,
+  `direct_outreach`, `referral`, `youtube`, `organic_search`
+  (`links.check_url` rejects any other `utm_source`)
+- medium: `organic`, `message`, `newsletter` or `email`
 - campaign: a short slug, e.g. `emd_exemption`, `consultants_oct26`
 
-`ttm draft` and the MCP tools add these automatically to tendertez.in links
-that don't have a `utm_source` yet. `visits-report.mjs` lists visitors per
-`utm_source` under "Campaigns". Sign-ups are not yet attributed to a campaign
+The site stores one tag per visit (`page_views.campaign`, up to 40
+characters). Today it stores `utm_source` only. With the change in
+`frontend/src/api/visits.ts` (16 Oct 2026, not yet deployed), it stores
+`<utm_source>.<utm_campaign>`, e.g. `linkedin.emd_exemption`.
+`utm_medium` is not stored.
+
+`ttm draft` and the MCP tools add these to tendertez.in links that don't have
+a `utm_source` yet. `visits-report.mjs` lists visitors per tag under
+"Campaigns". Sign-ups are not yet attributed to a campaign
 in the product (a possible small change: store the first `utm_source` on the
 company at sign-up; founder approval needed).

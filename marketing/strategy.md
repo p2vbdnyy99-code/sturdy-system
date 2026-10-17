@@ -94,8 +94,9 @@ at this volume and is easy to back up and read).
    at their real stages, 2 personalised drafts waiting in Gmail.
 4. **Live SEO audit script** and report; fixed long meta descriptions on
    landing pages (needs deploy).
-5. **UTM convention the site can actually record** (`utm_source=<platform>.<campaign>`),
-   applied automatically to every queued link.
+5. **UTM convention the site can actually record**, applied automatically to
+   every queued link. Since 16 Oct 2026 it is standard UTMs; the site stores
+   `<source>.<campaign>` (`analytics/kpi-definitions.md`).
 
 ## 5. What only the founder can do
 

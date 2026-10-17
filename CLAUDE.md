@@ -238,6 +238,17 @@ was blocked and why.
     replies stay in `marketing/data/`; committed docs use counts.
 25. A claim filter must not block the domain's own words: "bank guarantee"
     tripped the "guarantee" rule. Test the filter on real tender wording.
+26. Never put links in a Gmail draft or email made through the Gmail
+    connector: it rewrites every link into a google.com/url redirect that
+    shows a "Redirect notice" after 24 hours. Deliver text with links in a
+    Google Doc, and the founder pastes it into Gmail.
+27. Read a cited circular to the end before repeating it. The DoE bid
+    security OM of 12 Nov 2020 applies only to tenders issued until
+    31.12.2021 (para 6), and two queued posts presented it as current.
+28. A fresh container's Postgres may have no `devlocal` password and no
+    `bidpilot_dev`. Set the password, run `createdb bidpilot_dev`, then
+    `npx drizzle-kit migrate` with that `DATABASE_URL`. Otherwise
+    verify.sh's database runs fail on TRUNCATE.
 
 ## Parallel work
 

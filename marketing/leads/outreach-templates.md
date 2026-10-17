@@ -5,7 +5,10 @@ prospect's own public page** (in `[brackets]`), stays under 120 words, makes no
 claim outside `brand-guide.md`, and ends with the opt-out line. Draft with
 `ttm stage <id> draft --message "…"`; the founder approves and sends by hand.
 
-Links: use `https://tendertez.in/?utm_source=email.<campaign>&utm_campaign=<campaign>`.
+Links: build them with `links.build_url("/sample-analysis", source="direct_outreach", medium="email", campaign="<campaign>")`,
+e.g. `https://tendertez.in/sample-analysis?utm_source=direct_outreach&utm_medium=email&utm_campaign=consultants_oct26`.
+Never paste a link copied from a Gmail draft or sent email: Gmail wraps it in a
+Google redirect (`link-policy.md`).
 
 ## 1. Short introduction (any business)
 

@@ -187,9 +187,9 @@ class ContentTests(Base):
                  "link": "https://tendertez.in/government-tenders", "campaign": "edu1"}
         drafts = content.adapt_topic(topic)
         self.assertEqual(set(drafts), set(content.PLATFORMS) - {"reddit"})
-        self.assertIn("utm_source=linkedin.edu1", drafts["linkedin"])
-        self.assertIn("utm_source=whatsapp.edu1", drafts["whatsapp"])
-        self.assertIn("utm_source=x.edu1", drafts["x_thread"])
+        self.assertIn("https://tendertez.in/government-tenders?utm_source=linkedin&utm_medium=organic&utm_campaign=edu1", drafts["linkedin"])
+        self.assertIn("utm_source=whatsapp&utm_medium=message&utm_campaign=edu1", drafts["whatsapp"])
+        self.assertIn("utm_source=x&utm_medium=organic&utm_campaign=edu1", drafts["x_thread"])
         for platform, text in drafts.items():
             self.assertTrue(content.lint(text, platform, [])["ok"], platform)
         self.assertEqual(content.with_utm("https://example.com/x", "x", "c"), "https://example.com/x", "only our own links get UTMs")
@@ -202,10 +202,11 @@ class ContentTests(Base):
     def test_queued_links_are_tagged_once(self):
         rec = content.add_draft(platform="linkedin", text="See https://tendertez.in/pricing. Or https://www.tendertez.in",
                                 topic="EMD exemption for MSEs", audience="MSE bidders", purpose="sign-ups")
-        self.assertIn("https://tendertez.in/pricing?utm_source=linkedin.emd_exemption_for_mses&utm_campaign=emd_exemption_for_mses.", rec["text"])
-        self.assertIn("https://www.tendertez.in?utm_source=linkedin.", rec["text"])
-        kept = content.add_draft(platform="x", text="Read https://tendertez.in/?utm_source=custom now", topic="t", audience="a", purpose="p")
-        self.assertIn("utm_source=custom now", kept["text"], "existing tags are left alone")
+        self.assertIn("https://tendertez.in/pricing?utm_source=linkedin&utm_medium=organic&utm_campaign=emd_exemption_for_mses.", rec["text"])
+        self.assertIn("https://tendertez.in/?utm_source=linkedin&utm_medium=organic", rec["text"], "www link made canonical")
+        self.assertNotIn("www.tendertez.in", rec["text"])
+        kept = content.add_draft(platform="x", text="Read https://tendertez.in/?utm_source=referral now", topic="t", audience="a", purpose="p")
+        self.assertIn("utm_source=referral now", kept["text"], "existing tags are left alone")
 
 
 class ReportTests(Base):

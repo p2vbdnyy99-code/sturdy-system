@@ -1,0 +1,115 @@
+date,channel,topic,audience,kind,draft,sources,kpi,approval_status
+2026-10-19,linkedin,EMD exemption: when MSEs and startups don't pay bid security,MSE manufacturers and service providers,educational,"Before you arrange an EMD, read one clause twice: the exemption clause.
+
+Under Rule 170 of GFR 2017, bid security (EMD) is ordinarily 2% to 5% of the estimated value, and micro and small enterprises are exempt from it. In November 2020 the Department of Expenditure told central ministries to ask for a Bid Security Declaration instead of bid security, for tenders issued until 31 December 2021. Buyers still differ: some ask for an EMD, some for a declaration, so the tender itself decides what applies to you.
+
+On GeM bids, the exemption comes with conditions. Bid documents we have read say:
+1. Only manufacturers of the goods, or providers of the service, qualify under MSE. Traders do not.
+2. You must upload the document for your category (Udyam for MSEs, DPIIT recognition for startups) with the bid.
+3. State government buyers may still ask MSEs for an EMD if their additional terms say so.
+
+So the check before every bid is three questions: is there an EMD or a declaration, am I in an exempt category for this item, and which page asks for the proof?
+
+TenderTez lists the EMD clause and the exemption conditions from a tender PDF with the page they are on, so you can check them yourself: https://tendertez.in/?utm_source=linkedin&utm_medium=organic&utm_campaign=emd_exemption
+
+Sources: Department of Expenditure OM on bid security (12 Nov 2020); GFR 2017 Rule 170; a GeM bid document (RRI, GeM-Bidding-5263261).",https://doe.gov.in/files/circulars_document/Bid_Security_Earnest_Money_Deposit.pdf https://icar.org.in/sites/default/files/inline-files/GFR16082017145035_0.pdf https://www.rri.res.in/sites/default/files/2024-08/GeM-Bidding-5263261.pdf,sign-ups,awaiting founder approval
+2026-10-19,x,Read the eligibility section first,contractors bidding on CPPP,educational,"Before the scope of work, read the eligibility section: turnover years, similar-work definition, and the proof each one needs. If you don't qualify, the rest of the tender doesn't matter.",,replies,awaiting founder approval
+2026-10-20,x,EMD exemption: when MSEs and startups don't pay bid security,MSE manufacturers and service providers,educational,"MSE bidders: GFR 2017 Rule 170 exempts micro and small enterprises from EMD, but on GeM only manufacturers or service providers of the offered item qualify, not traders, and the proof (Udyam) must be uploaded with the bid. Read the clause before paying. https://tendertez.in/?utm_source=x&utm_medium=organic&utm_campaign=emd_exemption",https://icar.org.in/sites/default/files/inline-files/GFR16082017145035_0.pdf https://indianbank.in/wp-content/uploads/2025/02/GeM-Bidding-7504865.pdf,link clicks,awaiting founder approval
+2026-10-21,linkedin,Reading a turnover clause,tender managers at MSMEs,educational,"A turnover clause has four parts, and bids fail on each of them:
+
+1. Which financial years: the last three, or three of the last five?
+2. Average or every year: an average lets one weak year pass; ""each year"" does not.
+3. Whole company or the tendered item: some tenders ask for turnover of the subject item only.
+4. Proof: audited statements, a CA certificate in a set format, or both.
+
+Then check the corrigenda. Turnover thresholds are one of the things corrigenda change.
+
+TenderTez lists the eligibility conditions of a tender PDF with the page each one is on, and checks them against your company profile: https://tendertez.in/?utm_source=linkedin&utm_medium=organic&utm_campaign=turnover_clause",,sign-ups,awaiting founder approval
+2026-10-22,x,Udyam with the bid,MSE bidders on GeM,educational,"On GeM, claiming the MSE EMD exemption usually means uploading the proof for your category with the bid: Udyam for MSEs, DPIIT recognition for startups. Check what the bid document asks for before the last day.",https://tenders.bhel.com/sites/default/files/Corrigenda1-2025-10-17-02%3A14%3A18.pdf https://www.rri.res.in/sites/default/files/2024-08/GeM-Bidding-5263261.pdf,replies,awaiting founder approval
+2026-10-23,linkedin,"A real analysis, with page numbers",contractors and consultants,promotional,"What does a tender analysis look like when every point carries its page number?
+
+We published one: a real public AIIMS Bhubaneswar tender, analysed by TenderTez exactly as produced. It lists the deadline, EMD, eligibility conditions, documents to submit and the clauses worth a second look, each with the page it came from, so you can check every point against the tender. Nothing was edited or added.
+
+Read it before you try it on your own tender:
+https://tendertez.in/sample-analysis?utm_source=linkedin&utm_medium=organic&utm_campaign=sample_analysis
+
+Your first 5 tenders are free, with no card needed.",,sample page visits,awaiting founder approval
+2026-10-24,x,Check corrigenda before you submit,contractors,educational,"A corrigendum can change the closing date, the EMD or the eligibility after you have read the tender. Check the portal for corrigenda the day before you submit, and read the changed clause, not just the notice.",,replies,awaiting founder approval
+2026-10-26,linkedin,Bid Security Declaration instead of EMD,MSE manufacturers and service providers,educational,"Some tenders ask for a Bid Security Declaration instead of an EMD. Check which one yours asks for.
+
+In November 2020 the Department of Expenditure told central ministries to keep only a Bid Security Declaration in bid documents, for tenders issued until 31 December 2021. Buyers still differ, so the tender decides.
+
+What a declaration means for you: no money is blocked, but if you withdraw or change your bid during its validity, you can be suspended from that buyer's tenders for the period the tender states.
+
+So read two lines in every tender: does it ask for an EMD or a declaration, and what is the suspension period?
+
+Source: Department of Expenditure office memorandum on bid security, 12 Nov 2020.
+
+TenderTez lists the EMD or declaration clause with its page: https://tendertez.in/?utm_source=linkedin&utm_medium=organic&utm_campaign=bid_security_declaration",https://doe.gov.in/files/circulars_document/Bid_Security_Earnest_Money_Deposit.pdf,sign-ups,awaiting founder approval
+2026-10-26,x,What counts as similar work,contractors,educational,"""Similar work"" is defined in the tender, not by you. Read the definition: type of work, minimum value per order, client type (govt/PSU), and the period. Then match each past order to it before you bid.",,replies,awaiting founder approval
+2026-10-27,x,Traders and MSE benefits,GeM suppliers,educational,"MSE purchase preference and the MSE EMD exemption are for manufacturers and service providers. Traders, distributors, sole agents and works contracts are outside the MSE procurement policy. Check your role for the item before you claim it.",https://www.dcmsme.gov.in/FAQs-PPP_25032022.pdf https://indianbank.in/wp-content/uploads/2025/02/GeM-Bidding-7504865.pdf,replies,awaiting founder approval
+2026-10-28,linkedin,One workspace per client,tender consultants,promotional,"If you prepare bids for several clients, each tender has to be checked against a different company: its turnover, its experience, its certificates.
+
+In TenderTez each client gets its own workspace with its own profile. Upload the client's tender and you get the deadline, EMD, eligibility conditions and documents to submit with their page numbers, an eligibility check against that client's profile, and a submission checklist built from the tender's own requirements.
+
+First 5 tenders free, no card: https://tendertez.in/features?utm_source=linkedin&utm_medium=organic&utm_campaign=consultant_workspaces",,sign-ups from consultants,awaiting founder approval
+2026-10-29,x,Reading a turnover clause (X),tender managers at MSMEs,educational (X adaptation),"A turnover clause has four parts, and bids fail on each: which years (last 3, or 3 of the last 5), average or every year, whole company or the tendered item, and the proof asked for. Then check the corrigenda.",,replies,awaiting founder approval
+2026-10-30,linkedin,Ask: what slows you down?,tender consultants,engagement,"Question for tender consultants and bid managers: which part of preparing a bid takes your team the longest? Reading the tender, collecting documents from the client, annexures, or checking corrigenda?
+
+I am building TenderTez for the reading and checking part, and I would rather build what you actually need. Replies or DMs welcome.",,comments from consultants,awaiting founder approval
+2026-10-31,x,Rejected on form,bidders,educational,"Bids get rejected on form, not just on price: an unsigned annexure, a missing self-attested page, an EMD in the wrong format, an expired certificate. Make a checklist from the tender itself before you upload.",https://echai.ventures/startingup/selling-to-government/how-do-i-write-a-tender-bid-that-doesn-t-get-thrown-out-on-a-technicality,replies,awaiting founder approval
+2026-11-02,linkedin,MSE purchase preference (L1+15%),MSE suppliers,educational,"If you are a registered MSE, read the purchase preference clause in central tenders.
+
+Under the Public Procurement Policy for MSEs, an MSE that quotes within L1+15% can be allowed to match the L1 price and supply up to 25% of the tender value. The policy also sets an annual target for central ministries and CPSEs to buy from MSEs.
+
+Three things to check in the tender:
+1. Does the clause apply to this item (works contracts are outside the policy)?
+2. Are you a manufacturer or service provider for it (traders are excluded)?
+3. What proof must be uploaded, and on which page is that asked?
+
+Source: Public Procurement Policy for MSEs Order, 2012, and the Ministry of MSME's FAQ on it.
+
+TenderTez lists such clauses with their page: https://tendertez.in/?utm_source=linkedin&utm_medium=organic&utm_campaign=mse_preference",https://www.dcmsme.gov.in/FAQs-PPP_25032022.pdf,sign-ups,awaiting founder approval
+2026-11-02,x,Make in India classes,suppliers in central tenders,educational,"Make in India preference in central procurement: a Class-I local supplier has at least 50% local content, Class-II at least 20%, unless the nodal ministry sets higher. Below that is non-local. Check which classes the tender accepts.",https://www.dpiit.gov.in/static/uploads/2025/07/458478309ccf301ceb58f63d02646f42.pdf,link clicks,awaiting founder approval
+2026-11-03,x,Bid security validity,MSE bidders,educational,"Under GFR 2017 Rule 170, bid security normally stays valid for 45 days beyond the bid validity period. If a buyer extends bid validity, check whether your EMD or bank guarantee needs extending too.",https://icar.org.in/sites/default/files/inline-files/GFR16082017145035_0.pdf,replies,awaiting founder approval
+2026-11-04,linkedin,Reading a BOQ before quoting,civil and electrical contractors,educational,"Before you quote, read the BOQ against the specifications, not on its own.
+
+1. Units: a rate per metre, per number or lump sum changes your price completely.
+2. Items marked ""as per specification"": find that clause and read it.
+3. Quantities written as ""LS"" or ""1 No."": ask in the pre-bid meeting what is included.
+4. Items that appear in the scope of work but not in the BOQ: someone will have to pay for them.
+
+TenderTez reads the BOQ of a tender PDF and lists its items, with page references: https://tendertez.in/?utm_source=linkedin&utm_medium=organic&utm_campaign=boq_reading",,sign-ups,awaiting founder approval
+2026-11-05,x,Three dates in a tender,contractors,educational,"Every tender has at least three dates that matter: the pre-bid meeting (questions), bid submission close, and technical bid opening. Some add a separate date for physical EMD or documents. Put all of them in your calendar.",,replies,awaiting founder approval
+2026-11-06,linkedin,Building in public: free tender search,founders and bidders following TenderTez,promotional,"TenderTez has free pages for every state and organisation with 20 or more open tenders on CPPP's public lists, so a contractor in Maharashtra can open one page and see the open tenders closing soonest, with tender IDs and portal links.
+
+It is free and needs no sign-in. It is not every tender in India: it covers CPPP's public lists of central, state and GeM tenders.
+
+https://tendertez.in/government-tenders?utm_source=linkedin&utm_medium=organic&utm_campaign=free_search",,visits to landing pages,awaiting founder approval
+2026-11-07,x,Reading a BOQ (X),civil and electrical contractors,educational (X adaptation),"Before you quote, read the BOQ against the specification: the unit (per metre, per number, lump sum), items 'as per specification', quantities written as 'LS', and scope items missing from the BOQ.",,replies,awaiting founder approval
+2026-11-09,linkedin,Startups and bid security,startups selling to government,educational,"Startups recognised by DPIIT can be exempt from bid security (EMD) in central procurement: a 2017 amendment to GFR Rule 170 exempts MSEs and recognised startups.
+
+On GeM, bid documents ask you to upload the DPIIT recognition certificate with the bid to claim it. State government buyers may still have their own terms.
+
+Read the EMD clause and the exemption conditions of each tender, and keep the certificate valid.
+
+Sources: GFR amendment (Department of Expenditure); BHEL GeM corrigendum on EMD exemption.
+
+TenderTez lists the EMD clause and its conditions with page numbers: https://tendertez.in/?utm_source=linkedin&utm_medium=organic&utm_campaign=startup_emd",https://dgll.nic.in/sites/default/files/2023-06/GFR%20amendment2.pdf https://tenders.bhel.com/sites/default/files/Corrigenda1-2025-10-17-02%3A14%3A18.pdf,sign-ups,awaiting founder approval
+2026-11-09,x,Use the pre-bid meeting,bidders,educational,"If a clause is unclear, ask in the pre-bid meeting or by the pre-bid query date. Answers usually come in writing, as a corrigendum or pre-bid minutes, so you can rely on them. You can't rely on a guess.",,replies,awaiting founder approval
+2026-11-10,x,Read the ATC on GeM,GeM sellers,educational,"On GeM, the buyer's additional terms (ATC) can add conditions the main bid page doesn't show: experience, OEM authorisation, local office, extra documents. Read the ATC before you decide to bid.",,replies,awaiting founder approval
+2026-11-11,linkedin,What changed in a corrigendum,tender consultants and bid teams,promotional,"A corrigendum notice often says only ""refer to the attached document"". The change might be a new closing date, a lower turnover threshold or a different EMD.
+
+TenderTez's corrigendum check compares the corrigendum with the tender you already analysed and lists each change, quoting the text and the page it is on, so you can check it yourself.
+
+https://tendertez.in/features?utm_source=linkedin&utm_medium=organic&utm_campaign=corrigendum",,sign-ups,awaiting founder approval
+2026-11-12,x,Free tender search,contractors,promotional,"Free search of central, state and GeM tenders from CPPP's public lists, by state or organisation, no sign-in. Not every tender in India, but the ones closing soonest are on top. https://tendertez.in/government-tenders?utm_source=x&utm_medium=organic&utm_campaign=free_search",,visits to landing pages,awaiting founder approval
+2026-11-13,linkedin,A submission checklist from the tender itself,MSME owners,promotional,"A generic tender checklist misses what this tender asks for. Build it from the tender:
+
+1. Every document named in the eligibility section, with its format (attested, notarised, on letterhead).
+2. Every annexure, signed and stamped as the tender says.
+3. EMD or declaration, in the form the tender accepts.
+4. Certificates with their validity on the closing date.
+
+TenderTez builds the checklist from the tender's own requirements, each item linked to its page, and you can add your own items: https://tendertez.in/features?utm_source=linkedin&utm_medium=organic&utm_campaign=checklist",,sign-ups,awaiting founder approval
+2026-11-14,x,Checklist from the tender (X),MSME owners,educational (X adaptation),"A generic checklist misses what this tender asks for. Build it from the tender: every document in the eligibility section, every annexure, the EMD or declaration in the accepted form, and certificates valid on the closing date.",,replies,awaiting founder approval

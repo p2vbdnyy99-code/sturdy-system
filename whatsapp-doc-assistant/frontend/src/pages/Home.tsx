@@ -190,8 +190,11 @@ function TenderBand() {
 }
 
 // Illustration of the tender page, built in HTML/CSS (no screenshot file).
-// Clearly labelled as an example; the values are made up.
+// Clearly labelled as an example; the values are made up. The deadline is
+// always two weeks ahead, so the example never shows a date already passed.
 function HeroPreview() {
+  const [deadline] = useState(() => new Date(Date.now() + 14 * 86_400_000)
+    .toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }));
   return (
     <div className="home-preview" aria-label="Example of an analysed tender">
       <div className="home-preview-bar">
@@ -203,7 +206,7 @@ function HeroPreview() {
         <p className="home-preview-org">Public Works Division &middot; 86 pages</p>
         <div className="home-preview-facts">
           <div className="home-preview-fact home-preview-fact-due">
-            <span>Deadline</span><strong>18 Oct 2026</strong><small>p.3</small>
+            <span>Deadline</span><strong>{deadline}</strong><small>p.3</small>
           </div>
           <div className="home-preview-fact"><span>EMD</span><strong>&#8377;1,27,300</strong><small>p.4</small></div>
           <div className="home-preview-fact"><span>Estimated value</span><strong>&#8377;63.6 lakh</strong><small>p.2</small></div>

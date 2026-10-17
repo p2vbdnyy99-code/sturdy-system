@@ -7,7 +7,7 @@ testimonial, or states a number without a source can't be queued."""
 import re
 from urllib.parse import urlencode, urlparse, parse_qsl, urlunparse
 
-from . import store
+from . import links, store
 from .safety import guard
 
 PLATFORMS = {
@@ -49,6 +49,11 @@ def x_length(text: str) -> int:
     return len(URL_RE.sub("x" * 23, text))
 
 
+def _source_hosts(sources) -> set:
+    """Hosts of a draft's own cited sources may appear as links in it."""
+    return {(urlparse(s).hostname or "").lower() for s in sources or []} - {""}
+
+
 def lint(text: str, platform: str, sources: list) -> dict:
     if platform not in PLATFORMS:
         raise ContentError(f"platform must be one of {', '.join(PLATFORMS)}")
@@ -72,6 +77,8 @@ def lint(text: str, platform: str, sources: list) -> dict:
             errors.append(f"source is not a URL: {s}")
     if platform == "reddit" and "tendertez" in text.lower():
         warnings.append("Reddit: most communities ban self-promotion; read the rules and lead with help, not the product.")
+    for e in links.check_text(text, allowed_hosts=_source_hosts(sources))["errors"]:
+        errors.append(f"link: {e}")
     if platform == "whatsapp" and URL_RE.search(text) is None:
         warnings.append("WhatsApp: no link, so readers can't find the tool.")
     return {"ok": not errors, "errors": errors, "warnings": warnings, "length": length}
@@ -96,18 +103,29 @@ def slug(text: str, limit: int = 24) -> str:
 SITE_LINK = re.compile(r"https?://(?:www\.)?tendertez\.in[^\s)\]>\"']*")
 
 
+# Channel and medium per platform, for standard UTMs (links.build_url).
+PLATFORM_UTM = {
+    "linkedin": ("linkedin", "organic"), "x": ("x", "organic"), "x_thread": ("x", "organic"),
+    "facebook": ("facebook", "organic"), "reddit": ("reddit", "organic"), "whatsapp": ("whatsapp", "message"),
+    "email": ("email", "newsletter"), "video_script": ("youtube", "organic"),
+}
+
+
 def tag_links(text: str, platform: str, campaign: str) -> str:
-    """Tags tendertez.in links that carry no utm_source yet. The site stores
-    only utm_source (page_views.campaign, max 40 chars), so it carries both the
-    channel and the campaign: utm_source=linkedin.emd_exemption."""
-    source = f"{platform.split('_')[0]}.{campaign}"[:40]
+    """Rewrites tendertez.in links that carry no utm_source yet into direct
+    canonical links with standard UTMs (utm_source=<channel>&utm_medium=
+    <medium>&utm_campaign=<campaign>); www/http variants become
+    https://tendertez.in. Links that already have a utm_source are kept."""
+    utm = PLATFORM_UTM.get(platform)
 
     def repl(m):
         url = m.group(0).rstrip(".,;:")
         tail = m.group(0)[len(url):]
-        if "utm_source=" in url:
+        if "utm_source=" in url or utm is None:
             return m.group(0)
-        return with_utm(url, source, campaign) + tail
+        p = urlparse(url)
+        path = (p.path or "/") + (f"?{p.query}" if p.query else "")
+        return links.build_url(path, source=utm[0], medium=utm[1], campaign=campaign) + tail
     return SITE_LINK.sub(repl, text)
 
 

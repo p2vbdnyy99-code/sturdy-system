@@ -4185,3 +4185,67 @@ founder approved the one AI run). Run folder:
 from 2 of 30 home-entry journeys in the last 30 days.
 
 **Reverse:** `git revert` the commit. There is no migration.
+
+# Direct marketing links, campaign tags and two page fixes (Oct 2026)
+
+## Why
+- **Redirect notice:** emails Claude drafted through the Gmail connector
+  opened a Google "Redirect notice" page first. The connector rewrites every
+  link (even a bare `tendertez.in`) into
+  `google.com/url?q=…&ust=<creation + 24 h>`. This was proven with three test
+  drafts, read back as raw MIME and then deleted.
+- **UTMs:** the marketing links used a non-standard form,
+  `utm_source=<platform>.<campaign>`.
+- **Maharashtra page count:** the page said "98,831 open tenders right now"
+  (all of India) under its own heading, while its list showed 1,272.
+- **Home example:** the hero example card showed a fixed deadline of
+  18 Oct 2026, which would soon be in the past.
+
+## What changed
+- **`marketing/automation/ttm/links.py` (new):**
+  - `build_url` makes a direct `https://tendertez.in/<page>` link with
+    standard UTMs.
+  - `check_url` / `check_text` reject:
+    - Google wrappers and shorteners;
+    - `www` / `.com` / `http` variants;
+    - unapproved hosts and malformed links;
+    - repeated UTMs, and a medium or campaign without a source;
+    - a `utm_source` outside the channel list.
+  - With a fetcher, `check_url` also reports redirects, HTTP errors and
+    unreachable links. The app's own `/login` redirect is not an error.
+  - `content.lint` runs it on every draft. `tag_links` builds links with it.
+  - Policy: `marketing/link-policy.md`.
+- **`ttm daily-post` (`ttm/daily_post.py`, new):** builds the daily tender
+  post from the public API, with policy-checked links. It never posts.
+- **`frontend/src/api/visits.ts`:** `campaignTag()` records
+  `<utm_source>.<utm_campaign>` (e.g. `linkedin.emd_exemption`) in the
+  existing `page_views.campaign` field. A source alone, or an older link
+  that already joined them, is kept as it is.
+  - No schema, server or GA4 change.
+  - No privacy change: the policy already says "the campaign name in the
+    link".
+- **`pages/GovernmentTenders.tsx`:** a state or organisation page shows its
+  own list's count (`landing.count`, as its server HTML does). The all-India
+  page still shows the total.
+- **`pages/Home.tsx`:** the example deadline is today + 14 days, computed
+  once.
+
+## Verification
+- **Marketing tests:** `python3 -m unittest discover -s tests` in
+  `marketing/automation`, 35/35. This includes `test_links.py`: the real
+  wrapped link from the test draft, shorteners, variants, the old
+  `linkedin.topic` form, redirect / 404 / network error / app login with a
+  fake fetcher, and the daily post with a fake API.
+- **Frontend unit tests:** `src/api/visits.test.ts` (3 tests), so 52/52
+  overall.
+- **Browser:** a local build, with `/bidpilot/*` answered by the live public
+  API.
+  - The Maharashtra intro reads 1,272, the same as the list. The all-India
+    page reads 98,831.
+  - The home example deadline is 13–14 days ahead.
+- **verify.sh:** see `harness/runs/2026-10-16-growth-sprint/checks.md`.
+
+**Measure:** after deploy, "Campaigns" in `visits-report.mjs` shows
+`linkedin.<campaign>` tags for posts from the 4-week plan.
+
+**Reverse:** `git revert`. There is no migration.

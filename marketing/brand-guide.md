@@ -42,9 +42,9 @@ The content queue refuses most of these automatically (`ttm lint`).
 
 Link to the most relevant public page, not always the home page: a state or
 organisation landing page, `/government-tenders`, `/pricing`, `/faq`.
-`ttm draft` and the MCP tools tag links as
-`?utm_source=<platform>.<campaign>&utm_campaign=<campaign>`; the site stores
-`utm_source`, so the visits report shows both.
+`ttm draft` and the MCP tools tag links with standard UTMs
+(`?utm_source=<platform>&utm_medium=organic&utm_campaign=<campaign>`); see
+`link-policy.md` and `analytics/kpi-definitions.md`.
 
 ## Sign-off
 

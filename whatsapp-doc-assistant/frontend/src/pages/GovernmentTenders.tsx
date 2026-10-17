@@ -43,13 +43,16 @@ export function GovernmentTendersPage() {
   const heading = landing
     ? (landing.kind === 'gem' ? 'GeM bids open now' : `${landing.label} government tenders`)
     : 'Find government tenders across India';
+  // A state or organisation page counts its own list (as its server HTML
+  // does), not every open tender in India.
+  const count = landing ? landing.count : open;
 
   return (
     <PublicLayout>
       <PageIntro kicker="Government tenders" title={heading}>
         <p>Central, state and GeM tenders in one search, by state or organisation. Free, no sign-in needed.</p>
-        {open !== null && open > 0 && (
-          <p className="tb-intro-count"><strong>{open.toLocaleString('en-IN')}</strong> open tenders right now</p>
+        {count !== null && count > 0 && (
+          <p className="tb-intro-count"><strong>{count.toLocaleString('en-IN')}</strong> open tenders right now</p>
         )}
       </PageIntro>
       <section className="home-section tb-section">

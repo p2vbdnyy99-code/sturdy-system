@@ -74,6 +74,7 @@ python3 -m ttm metrics ct_xxxx --impressions 300 --clicks 4 --enquiries 1
 python3 -m ttm site-metrics --week-ending 2026-10-18 --source visits-report.mjs --visits 120 --signups 3
 python3 -m ttm report                          # weekly report (markdown); --json for data
 python3 -m ttm seo-audit > ../seo/technical-audit-live.md
+python3 -m ttm daily-post                      # today's tender post (JSON); posts nothing
 python3 -m ttm export ~/tendertez-marketing-backup.json   # back up data/
 python3 -m ttm import backup.json              # restore (refuses to overwrite without --force)
 ```
@@ -96,8 +97,9 @@ Every draft needs a topic, a named audience and a purpose. The queue refuses:
 accuracy promises ("100% accurate", "never miss"), "win bids", bid/no-bid
 verdicts, superlatives ("best", "#1"), testimonials, "saves N hours", and any
 number without a source URL. X posts are checked at 280 characters (links count
-as 23). Links to tendertez.in get `utm_source=<platform>.<campaign>` (see
-`analytics/kpi-definitions.md`).
+as 23). Links to tendertez.in get standard UTMs, and wrapped
+(`google.com/url?q=`), shortened, non-canonical and non-standard links are
+refused (`link-policy.md`, `ttm/links.py`).
 
 ## Claude Code skills
 
