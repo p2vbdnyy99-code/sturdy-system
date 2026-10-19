@@ -48,8 +48,9 @@ Follow `harness/README.md`. In short:
   in production, or writing to the live database.
 - For email, create a draft first and send only after approval.
 - Never change or delete real users' data without asking. As of Oct 2026 the
-  real accounts are Skylark (shubhamgaur164@gmail.com) and gem tender
-  (santosh.probid@gmail.com, ProBid Consultants).
+  outside users are gem tender (santosh.probid@gmail.com, ProBid
+  Consultants) and TenderJunction. Skylark (shubhamgaur164@gmail.com) is the
+  founder's own account: leave it out of customer and sign-up counts.
 
 ## Product and security rules
 
