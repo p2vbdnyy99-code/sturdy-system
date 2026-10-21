@@ -9,7 +9,12 @@ venturescout/
 └── scanners/                      deterministic data pulls from public marketplace APIs
     ├── atlassian_entrant_scan.py   every Jira/Confluence Cloud app: categories, installs, rating, first release
     ├── atlassian_entrant_report.py where new entrants actually get installs (per category)
-    └── apify_store_scan.py         Apify Store actors by popularity, 30-day users, pricing model
+    ├── apify_store_scan.py         Apify Store actors by popularity, 30-day users, pricing model
+    ├── jira_niche_scan.py          top-N Marketplace results per search term: pricing, free tier, vendor age, bad reviews
+    ├── jira_niche_report.py        per-term summary of the niche scan
+    ├── jira_report_terms.txt       the 40 Jira report search terms
+    └── cohort_tracker.py           re-measures installs of a fixed cohort of new apps (validation experiment)
+models/income_model.py              paying sites needed per price/tax scenario + Forge cost scenarios
 ```
 
 ## Gates, in order (an idea that fails a gate stops there)
@@ -59,6 +64,10 @@ They need Python 3 and outbound HTTPS, so they run in a Claude Code cloud sessio
 python3 scanners/atlassian_entrant_scan.py             # writes cloud_scan.json (~15 min, ~13k requests)
 python3 scanners/atlassian_entrant_report.py cloud_scan.json 2025-04-21 100
 python3 scanners/apify_store_scan.py                   # writes store.json
+python3 scanners/jira_niche_scan.py data/2026-10-21/cloud_scan.json scanners/jira_report_terms.txt niches.json
+python3 scanners/jira_niche_report.py niches.json
+python3 scanners/cohort_tracker.py data/2026-10-21/jira_report_cohort.json data/cohort_snapshots.csv   # day 30/60/90
+python3 models/income_model.py
 ```
 
 Both use public, unauthenticated, read-only endpoints. Keep the request rate modest.

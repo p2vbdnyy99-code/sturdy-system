@@ -1,0 +1,1218 @@
+[
+ {
+  "key": "vudia.planning.poker",
+  "name": "Planning Poker for Jira & Estimation, Sprint planning",
+  "vendor": "Vudia",
+  "first": "2026-08-05",
+  "indep": true,
+  "installs_2026_10_21": 62
+ },
+ {
+  "key": "com.axt.jira.plugins.sprintsuppermanager",
+  "name": "Sprint Super Manager for Jira Cloud",
+  "vendor": "AppX",
+  "first": "2026-08-19",
+  "indep": true,
+  "installs_2026_10_21": 69
+ },
+ {
+  "key": "clockify-v2",
+  "name": "Clockify: Time Tracking & Timesheet 2-Way Sync",
+  "vendor": "CAKE.com Inc",
+  "first": "2026-08-03",
+  "indep": false,
+  "installs_2026_10_21": 1125
+ },
+ {
+  "key": "com.stonikbyte.cumulative-flow-cfd-dashboard-report-agile-kanban",
+  "name": "Cumulative Flow Diagram (CFD) Charts for Agile Scrum Kanban",
+  "vendor": "StonikByte",
+  "first": "2026-09-21",
+  "indep": false,
+  "installs_2026_10_21": 26
+ },
+ {
+  "key": "aging-work-items",
+  "name": "Aging Work Items: Stale & WIP Dashboard Gadget",
+  "vendor": "Vudia",
+  "first": "2026-09-13",
+  "indep": true,
+  "installs_2026_10_21": 13
+ },
+ {
+  "key": "com.stonikbyte.velocity-throughput-report-agile-kanban-scrum",
+  "name": "Velocity & Throughput Charts for Agile, Scrum, Kanban",
+  "vendor": "StonikByte",
+  "first": "2026-09-24",
+  "indep": false,
+  "installs_2026_10_21": 24
+ },
+ {
+  "key": "com.circuitsql.pro.forge",
+  "name": "Circuit SQL Pro - AI2SQL Query, Report, Automate",
+  "vendor": "Realigned Technologies",
+  "first": "2026-08-25",
+  "indep": false,
+  "installs_2026_10_21": 6
+ },
+ {
+  "key": "com.stonikbyte.burndown-burnup-dashboard-report-agile-scrum",
+  "name": "Burndown & Burnup Charts with Forecast for Agile",
+  "vendor": "StonikByte",
+  "first": "2026-09-30",
+  "indep": false,
+  "installs_2026_10_21": 21
+ },
+ {
+  "key": "com.eyzee.addons.ezee-worklog-plus",
+  "name": "eZee Timesheet & Worklog",
+  "vendor": "Eyzee",
+  "first": "2026-10-21",
+  "indep": false,
+  "installs_2026_10_21": 26
+ },
+ {
+  "key": "com.plugthatapp.ganttry",
+  "name": "Ganttry \u2013 Critical Path & Dependencies: Gantt Chart for Jira",
+  "vendor": "Plug That App",
+  "first": "2026-08-24",
+  "indep": true,
+  "installs_2026_10_21": 7
+ },
+ {
+  "key": "com.stonikbyte.wip-aging-run-chart-dashboard-report-agile-kanban",
+  "name": "WIP Run & WIP Aging Charts for Scrum, Kanban & Scaled Agile",
+  "vendor": "StonikByte",
+  "first": "2026-09-16",
+  "indep": false,
+  "installs_2026_10_21": 19
+ },
+ {
+  "key": "com.aw.advancedfilters",
+  "name": "Advanced Filters & Gadgets for Jira Dashboards",
+  "vendor": "Advanced Workspace",
+  "first": "2026-09-17",
+  "indep": true,
+  "installs_2026_10_21": 10
+ },
+ {
+  "key": "com.stonikbyte.pivot-table-chart-dashboard-report-heatmap-agile",
+  "name": "Pivot Tables, Charts & Heatmaps for Jira Agile Reporting",
+  "vendor": "StonikByte",
+  "first": "2026-10-14",
+  "indep": false,
+  "installs_2026_10_21": 5
+ },
+ {
+  "key": "com.stonikbyte.worklog-report-dashboard-timesheets-heatmap-pivot",
+  "name": "Pivot Worklog Reports: Timesheets, Charts & Heatmaps",
+  "vendor": "StonikByte",
+  "first": "2026-10-15",
+  "indep": false,
+  "installs_2026_10_21": 4
+ },
+ {
+  "key": "com.leanzero.jira.costslasher",
+  "name": "Cost Slasher",
+  "vendor": "LeanZero SRL",
+  "first": "2026-10-04",
+  "indep": true,
+  "installs_2026_10_21": 7
+ },
+ {
+  "key": "pulsereports",
+  "name": "Pulse Reports",
+  "vendor": "ExportDataWiz",
+  "first": "2026-09-23",
+  "indep": true,
+  "installs_2026_10_21": 2
+ },
+ {
+  "key": "io.github.leo-liu-522.steadygantt",
+  "name": "SteadyGantt - Gantt Chart for Jira with Safe Rescheduling",
+  "vendor": "SteadyGantt",
+  "first": "2026-08-13",
+  "indep": true,
+  "installs_2026_10_21": 7
+ },
+ {
+  "key": "AAIA",
+  "name": "AI User Story & Bug Report Generator for Jira by Aneto",
+  "vendor": "Aneto Software",
+  "first": "2026-09-26",
+  "indep": false,
+  "installs_2026_10_21": 8
+ },
+ {
+  "key": "io.plugio.jira.suite-free",
+  "name": "Plugio Suite Free - Dashboards, Charts & Reports for Jira",
+  "vendor": "Plugio",
+  "first": "2026-09-19",
+  "indep": true,
+  "installs_2026_10_21": 9
+ },
+ {
+  "key": "com.stonikbyte.cycle-lead-time-in-status-agile-kanban-scrum",
+  "name": "Cycle Time, Lead Time & Time in Status Charts for Agile",
+  "vendor": "StonikByte",
+  "first": "2026-10-01",
+  "indep": false,
+  "installs_2026_10_21": 4
+ },
+ {
+  "key": "com.leanzero.jira.leanzeromanagement",
+  "name": "LeanZero Management: Gantt Charts & PPM for Jira",
+  "vendor": "LeanZero SRL",
+  "first": "2026-08-13",
+  "indep": true,
+  "installs_2026_10_21": 8
+ },
+ {
+  "key": "ac32f68c-7a05-483a-83bc-906cf05c0d53",
+  "name": "Workload Radar for Jira",
+  "vendor": "SG Development, Inc",
+  "first": "2026-08-25",
+  "indep": true,
+  "installs_2026_10_21": 4
+ },
+ {
+  "key": "com.misheno.report-steward",
+  "name": "Client Reporting Software for Jira Service Management",
+  "vendor": "Mikhail Eshchenko",
+  "first": "2026-09-13",
+  "indep": true,
+  "installs_2026_10_21": 3
+ },
+ {
+  "key": "pt.luisivars.jira.dashboard-insights",
+  "name": "Dashboard Insights for Jira",
+  "vendor": "Ivars Apps",
+  "first": "2026-07-24",
+  "indep": true,
+  "installs_2026_10_21": 15
+ },
+ {
+  "key": "bfeaf78d-a27f-49ae-85b7-09da4e9994c3",
+  "name": "Sprint Scope Changes for Jira",
+  "vendor": "Axeri Labs Bt.",
+  "first": "2026-09-11",
+  "indep": true,
+  "installs_2026_10_21": 3
+ },
+ {
+  "key": "eu.yourpaths.flowpaths",
+  "name": "FlowPaths: Flow Analytics and Forecasting for Agile Teams",
+  "vendor": "Pathways Consulting Services P.C",
+  "first": "2026-09-09",
+  "indep": true,
+  "installs_2026_10_21": 3
+ },
+ {
+  "key": "com.schematools.jsm-assets-exporter",
+  "name": "Assets Exporter for Jira Service Management",
+  "vendor": "Schema Tools",
+  "first": "2026-07-23",
+  "indep": true,
+  "installs_2026_10_21": 3
+ },
+ {
+  "key": "com.dyordanov.sprint-ledger",
+  "name": "Sprint Ledger: Sprint Report, Scope Change & JQL for Jira",
+  "vendor": "Yord Soft",
+  "first": "2026-09-24",
+  "indep": true,
+  "installs_2026_10_21": 2
+ },
+ {
+  "key": "SGC",
+  "name": "Simple Gantt Chart & Portfolio Timeline for Jira by Aneto",
+  "vendor": "Aneto Software",
+  "first": "2026-09-26",
+  "indep": false,
+  "installs_2026_10_21": 3
+ },
+ {
+  "key": "com.athena.plugins.AutomatedActions.base",
+  "name": "Automated Actions - Workflow & Automations",
+  "vendor": "Athena IT Solutions",
+  "first": "2026-09-15",
+  "indep": false,
+  "installs_2026_10_21": 2
+ },
+ {
+  "key": "com.ttpsc.apdc.attendance",
+  "name": "Attendance - Capacity & Absences for Jira",
+  "vendor": "Transition Technologies PSC",
+  "first": "2026-09-10",
+  "indep": false,
+  "installs_2026_10_21": 2
+ },
+ {
+  "key": "com.arzenics.power-search",
+  "name": "Power Search, Export & Schedule for Jira",
+  "vendor": "Arzenics  Tech",
+  "first": "2026-09-07",
+  "indep": true,
+  "installs_2026_10_21": 2
+ },
+ {
+  "key": "com.bevelpine.exportpro",
+  "name": "Bulk Excel & CSV Exporter for Jira",
+  "vendor": "Bevelpine Apps",
+  "first": "2026-09-01",
+  "indep": true,
+  "installs_2026_10_21": 2
+ },
+ {
+  "key": "com.niramasolutions.fastgantt",
+  "name": "FastGantt \u2014 Gantt Charts & Timelines for Jira",
+  "vendor": "Nirama Solutions",
+  "first": "2026-08-30",
+  "indep": true,
+  "installs_2026_10_21": 2
+ },
+ {
+  "key": "2552652e-8b57-4aaa-98da-8e1b1c359c47",
+  "name": "Digest \u2014 Weekly Status Reports & Daily Summaries for Jira",
+  "vendor": "keelapps",
+  "first": "2026-08-31",
+  "indep": true,
+  "installs_2026_10_21": 2
+ },
+ {
+  "key": "sk.pro4it.jum",
+  "name": "User Messaging in Jira",
+  "vendor": "PRO4IT s.r.o.",
+  "first": "2026-09-10",
+  "indep": false,
+  "installs_2026_10_21": 2
+ },
+ {
+  "key": "com.northbrace.sprint-history",
+  "name": "Sprint history",
+  "vendor": "Northbrace",
+  "first": "2026-08-23",
+  "indep": true,
+  "installs_2026_10_21": 2
+ },
+ {
+  "key": "com.workflowlinter.jira",
+  "name": "Workflow Linter for Jira",
+  "vendor": "Workflow Linter",
+  "first": "2026-08-19",
+  "indep": true,
+  "installs_2026_10_21": 2
+ },
+ {
+  "key": "io.nixarium.jira.time-in-status",
+  "name": "Time in Status: Gantt Timeline & AI Insights",
+  "vendor": "Nixarium",
+  "first": "2026-08-20",
+  "indep": true,
+  "installs_2026_10_21": 2
+ },
+ {
+  "key": "ro.probiusproiect.field-sum-gadgets",
+  "name": "Sum Story Points, Team & Two Dimensional Filter Gadgets",
+  "vendor": "Probius Apps",
+  "first": "2026-08-16",
+  "indep": true,
+  "installs_2026_10_21": 2
+ },
+ {
+  "key": "com.layercell.track-and-share-project-cost-against-budget",
+  "name": "Budget Tracker for Jira (Team Cost vs. Budget Reporting)",
+  "vendor": "Layercell",
+  "first": "2026-08-23",
+  "indep": true,
+  "installs_2026_10_21": 2
+ },
+ {
+  "key": "dc66d705-dfc3-45e9-84cf-8c53a79def12",
+  "name": "Predictive Delivery Forecaster",
+  "vendor": "PredictiveSpace",
+  "first": "2026-08-04",
+  "indep": true,
+  "installs_2026_10_21": 2
+ },
+ {
+  "key": "com.avakode.jira.signoff",
+  "name": "Signoff: Provable Approval Workflow for Jira",
+  "vendor": "avakode",
+  "first": "2026-07-30",
+  "indep": true,
+  "installs_2026_10_21": 2
+ },
+ {
+  "key": "com.celestisstudio.jira.issue-export",
+  "name": "Issue Export to PDF for Jira",
+  "vendor": "Celestis Studio",
+  "first": "2026-10-02",
+  "indep": true,
+  "installs_2026_10_21": 1
+ },
+ {
+  "key": "io.selana.timebound",
+  "name": "TimeBound: SLA for Jira with Business Hours & Reports",
+  "vendor": "Selana Technologies",
+  "first": "2026-10-02",
+  "indep": true,
+  "installs_2026_10_21": 1
+ },
+ {
+  "key": "org.ursacorp.worklog-pivot",
+  "name": "Worklog Pivot",
+  "vendor": "URSACORP",
+  "first": "2026-08-12",
+  "indep": true,
+  "installs_2026_10_21": 7
+ },
+ {
+  "key": "com.helzbrand.gantt",
+  "name": "Stave: Gantt Charts for Jira",
+  "vendor": "HelzBrand",
+  "first": "2026-09-28",
+  "indep": true,
+  "installs_2026_10_21": 1
+ },
+ {
+  "key": "com.clovity.sprint-delivery-agent",
+  "name": "Pulse AI - Sprint & Delivery Agent",
+  "vendor": "Clovity",
+  "first": "2026-09-22",
+  "indep": true,
+  "installs_2026_10_21": 1
+ },
+ {
+  "key": "br.com.digitalinf.jira.slacustomer",
+  "name": "SLA Customer \u2013 SLAs in the Customer Portal",
+  "vendor": "Digital I",
+  "first": "2026-07-23",
+  "indep": true,
+  "installs_2026_10_21": 6
+ },
+ {
+  "key": "com.groundedwp.jira.bulkexporter",
+  "name": "Grounded Export for Jira",
+  "vendor": "Grounded",
+  "first": "2026-09-16",
+  "indep": true,
+  "installs_2026_10_21": 1
+ },
+ {
+  "key": "com.altimeterapps.flowdeck",
+  "name": "FlowDeck",
+  "vendor": "Altimeter Apps",
+  "first": "2026-09-16",
+  "indep": true,
+  "installs_2026_10_21": 1
+ },
+ {
+  "key": "com.seisukenagahara.jsm.participantflow",
+  "name": "ParticipantFlow for JSM",
+  "vendor": "jsm-public-thread-space",
+  "first": "2026-09-21",
+  "indep": true,
+  "installs_2026_10_21": 1
+ },
+ {
+  "key": "com.productlab.jira.dashboardnotes",
+  "name": "Rich Text & Notes for Dashboards",
+  "vendor": "Product Lab",
+  "first": "2026-09-08",
+  "indep": true,
+  "installs_2026_10_21": 5
+ },
+ {
+  "key": "com.mikhaileshchenko.jira.historysteward",
+  "name": "Issue History Export \u2013 Excel & CSV for Jira",
+  "vendor": "Mikhail Eshchenko",
+  "first": "2026-09-11",
+  "indep": true,
+  "installs_2026_10_21": 1
+ },
+ {
+  "key": "com.helzbrand.dashboard-notes",
+  "name": "Notation: Dashboard Notes for Jira",
+  "vendor": "HelzBrand",
+  "first": "2026-09-12",
+  "indep": true,
+  "installs_2026_10_21": 1
+ },
+ {
+  "key": "ai.cloudbrief.jira.uxdesigninsights",
+  "name": "UX & Product Design Insights Dashboard for Jira",
+  "vendor": "CloudBrief",
+  "first": "2026-09-07",
+  "indep": true,
+  "installs_2026_10_21": 1
+ },
+ {
+  "key": "dev.sellerkit.jira.rich-text-gadget",
+  "name": "Rich Text for Jira Dashboards",
+  "vendor": "sellerkit",
+  "first": "2026-09-04",
+  "indep": true,
+  "installs_2026_10_21": 1
+ },
+ {
+  "key": "nl.getcompliant.time-in-status",
+  "name": "Ballon - Time in Status for Jira",
+  "vendor": "Ballon Apps",
+  "first": "2026-09-02",
+  "indep": true,
+  "installs_2026_10_21": 1
+ },
+ {
+  "key": "com.technofystore.shiftrelay",
+  "name": "ShiftRelay - Shift Handover & Handoff Reports for JSM",
+  "vendor": "TechnofyStore",
+  "first": "2026-08-31",
+  "indep": true,
+  "installs_2026_10_21": 1
+ },
+ {
+  "key": "com.taskhooker.bespoke",
+  "name": "Bespoke Charts & Reports for Confluence with Jira Data",
+  "vendor": "Taskhooker",
+  "first": "2026-08-31",
+  "indep": true,
+  "installs_2026_10_21": 1
+ },
+ {
+  "key": "com.acefoundry.capacity-trail-jira",
+  "name": "Capacity Trail for Jira",
+  "vendor": "Ace Foundry",
+  "first": "2026-08-28",
+  "indep": true,
+  "installs_2026_10_21": 1
+ },
+ {
+  "key": "com.vortexlabsia.dossier",
+  "name": "Dossier - Export Issues to Word & PDF for Jira",
+  "vendor": "Vortex Labs",
+  "first": "2026-09-16",
+  "indep": true,
+  "installs_2026_10_21": 1
+ },
+ {
+  "key": "com.saoirsesoftware.fairhours",
+  "name": "Fair Hours - Timesheets, Rates, Overtime & Cost Reports",
+  "vendor": "Saoirse Software",
+  "first": "2026-08-25",
+  "indep": true,
+  "installs_2026_10_21": 1
+ },
+ {
+  "key": "agile.metrics.analyzer",
+  "name": "Agile & Metrics Analyzer for Jira",
+  "vendor": "Thrivestack Labs",
+  "first": "2026-07-23",
+  "indep": true,
+  "installs_2026_10_21": 5
+ },
+ {
+  "key": "beebee.plugins.pact",
+  "name": "Pact - SLAs for Jira Software",
+  "vendor": "Hullara",
+  "first": "2026-08-20",
+  "indep": true,
+  "installs_2026_10_21": 1
+ },
+ {
+  "key": "1e44cd3c-a137-490b-90c7-841e405e7e36",
+  "name": "Dwel \u2014 Time in Status for Jira",
+  "vendor": "Better Integrations",
+  "first": "2026-09-24",
+  "indep": true,
+  "installs_2026_10_21": 1
+ },
+ {
+  "key": "dev.katabarwalabs.jsm-assets-export",
+  "name": "Assets Export Manager for Jira Service Management",
+  "vendor": "Katabarwa Labs",
+  "first": "2026-08-12",
+  "indep": true,
+  "installs_2026_10_21": 1
+ },
+ {
+  "key": "dev.katabarwalabs.project-export-backup",
+  "name": "Project Export & Backup",
+  "vendor": "Katabarwa Labs",
+  "first": "2026-08-12",
+  "indep": true,
+  "installs_2026_10_21": 1
+ },
+ {
+  "key": "dev.katabarwalabs.access-governance-reporter",
+  "name": "Access Governance Reporter",
+  "vendor": "Katabarwa Labs",
+  "first": "2026-08-11",
+  "indep": true,
+  "installs_2026_10_21": 1
+ },
+ {
+  "key": "agency.overheat.sprintestimate",
+  "name": "SprintEstimate: Planning Poker & Story Points for Jira",
+  "vendor": "SprintEstimate Space",
+  "first": "2026-08-09",
+  "indep": true,
+  "installs_2026_10_21": 1
+ },
+ {
+  "key": "com.appsdynamic.sprint.organizer",
+  "name": "Sprint Organizer for Jira",
+  "vendor": "Apps Dynamic",
+  "first": "2026-08-04",
+  "indep": true,
+  "installs_2026_10_21": 1
+ },
+ {
+  "key": "tools.schema.sprint-scope-gadget",
+  "name": "ScopePulse \u2014 Sprint Scope Change Tracking for Jira",
+  "vendor": "Schema Tools",
+  "first": "2026-08-01",
+  "indep": true,
+  "installs_2026_10_21": 1
+ },
+ {
+  "key": "io.plugion.jira.panels",
+  "name": "Plugio Panels - Progress, Charts & Related Issues for Jira",
+  "vendor": "Plugio",
+  "first": "2026-07-29",
+  "indep": true,
+  "installs_2026_10_21": 1
+ },
+ {
+  "key": "jira-status-duration-bottleneck-tracker",
+  "name": "Time in Status & Bottleneck Analytics for Jira",
+  "vendor": "Codigital Solutions",
+  "first": "2026-07-25",
+  "indep": true,
+  "installs_2026_10_21": 1
+ },
+ {
+  "key": "com.earlywick.queue-aging-heatmap",
+  "name": "Queue Aging Heatmap \u2014 Stale Ticket Reports for JSM",
+  "vendor": "Earlywick",
+  "first": "2026-07-26",
+  "indep": true,
+  "installs_2026_10_21": 1
+ },
+ {
+  "key": "love.berry.tablet-export",
+  "name": "Tablet \u00b7 Export for Jira",
+  "vendor": "berry.love",
+  "first": "2026-07-23",
+  "indep": true,
+  "installs_2026_10_21": 1
+ },
+ {
+  "key": "f6b99d71-629a-4b4d-bf3e-77ee1f99f64d",
+  "name": "Gatekeeper Checklist & Reports for Jira",
+  "vendor": "Codigital Solutions",
+  "first": "2026-07-23",
+  "indep": true,
+  "installs_2026_10_21": 1
+ },
+ {
+  "key": "nl.berkly.easy-workflows-for-jira",
+  "name": "Easy Workflows for Jira",
+  "vendor": "Berk Karabacak",
+  "first": "2026-08-29",
+  "indep": true,
+  "installs_2026_10_21": 1
+ },
+ {
+  "key": "aneto-reports-app",
+  "name": "AI Executive Status Reports for Jira by Aneto",
+  "vendor": "Aneto Software",
+  "first": "2026-09-26",
+  "indep": false,
+  "installs_2026_10_21": 1
+ },
+ {
+  "key": "com.clearlaneapps.velocity",
+  "name": "Clearlane Velocity Chart & Gadget for Jira",
+  "vendor": "Clearlane Apps",
+  "first": "2026-10-07",
+  "indep": true,
+  "installs_2026_10_21": 0
+ },
+ {
+  "key": "com.clearlaneapps.sprint-burndown",
+  "name": "Clearlane Sprint Burndown Chart & Gadget for Jira",
+  "vendor": "Clearlane Apps",
+  "first": "2026-10-07",
+  "indep": true,
+  "installs_2026_10_21": 0
+ },
+ {
+  "key": "com.clearlaneapps.cumulative-flow",
+  "name": "Clearlane Cumulative Flow Diagram & Gadget for Jira",
+  "vendor": "Clearlane Apps",
+  "first": "2026-10-07",
+  "indep": true,
+  "installs_2026_10_21": 0
+ },
+ {
+  "key": "3c30901b-a444-4b9e-954c-dd5b0db2d4ae",
+  "name": "Lognet Time Logger \u2013 Free Timesheets, Reports & Excel Export",
+  "vendor": "Lognet time logger",
+  "first": "2026-08-18",
+  "indep": true,
+  "installs_2026_10_21": 3
+ },
+ {
+  "key": "com.artuplabs.query",
+  "name": "ArtUp Query \u2013 JQL functions for sprints, links & comments",
+  "vendor": "ArtUp Labs",
+  "first": "2026-10-07",
+  "indep": true,
+  "installs_2026_10_21": 0
+ },
+ {
+  "key": "com.clearlaneapps.throughput",
+  "name": "Clearlane Throughput Chart \u2013 Kanban & Scrum Gadget for Jira",
+  "vendor": "Clearlane Apps",
+  "first": "2026-10-15",
+  "indep": true,
+  "installs_2026_10_21": 0
+ },
+ {
+  "key": "com.clearlaneapps.created-vs-resolved",
+  "name": "Clearlane Created vs Resolved Chart & Gadget for Jira",
+  "vendor": "Clearlane Apps",
+  "first": "2026-10-15",
+  "indep": true,
+  "installs_2026_10_21": 0
+ },
+ {
+  "key": "com.renewalhub.workflow-guard-jira",
+  "name": "Workflow Guard for Jira",
+  "vendor": "NexaForge Labs",
+  "first": "2026-10-05",
+  "indep": true,
+  "installs_2026_10_21": 0
+ },
+ {
+  "key": "053513c8-d15a-4b48-9cfd-c422727e0bcc",
+  "name": "Blocked Aging",
+  "vendor": "Bellowsware",
+  "first": "2026-09-16",
+  "indep": true,
+  "installs_2026_10_21": 2
+ },
+ {
+  "key": "com.mahjoubijalel.export-without-limits",
+  "name": "Export Without Limits for Jira",
+  "vendor": "MahjoubiJalel",
+  "first": "2026-10-03",
+  "indep": true,
+  "installs_2026_10_21": 0
+ },
+ {
+  "key": "com.frisforge.sprint-scope-guard",
+  "name": "Sprint Scope Guard",
+  "vendor": "FrisForge LLC",
+  "first": "2026-10-09",
+  "indep": true,
+  "installs_2026_10_21": 1
+ },
+ {
+  "key": "com.foooverse.jira.sprintverdict",
+  "name": "Sprint Verdict",
+  "vendor": "foooverse",
+  "first": "2026-09-06",
+  "indep": true,
+  "installs_2026_10_21": 2
+ },
+ {
+  "key": "com.artuplabs.reports",
+  "name": "ArtUp Reports \u2013 Excel, Word & PDF export for Jira",
+  "vendor": "ArtUp Labs",
+  "first": "2026-09-30",
+  "indep": true,
+  "installs_2026_10_21": 0
+ },
+ {
+  "key": "com.utilitystacklabs.jsm.approval-reports",
+  "name": "Approval Reports for Jira Service Management",
+  "vendor": "UtilityStack Labs",
+  "first": "2026-09-30",
+  "indep": true,
+  "installs_2026_10_21": 0
+ },
+ {
+  "key": "com.clearlaneapps.gantt",
+  "name": "Clearlane Gantt \u2013 Gantt Chart & Milestones for Jira",
+  "vendor": "Clearlane Apps",
+  "first": "2026-09-29",
+  "indep": true,
+  "installs_2026_10_21": 0
+ },
+ {
+  "key": "com.clearlaneapps.pulse",
+  "name": "Clearlane Pulse \u2013 WIP Aging, Stuck Work & Cycle Time",
+  "vendor": "Clearlane Apps",
+  "first": "2026-09-28",
+  "indep": true,
+  "installs_2026_10_21": 0
+ },
+ {
+  "key": "pt.luisivars.jira.capacity-planner",
+  "name": "Capacity Planner - Team Allocation & Availability for Jira",
+  "vendor": "Ivars Apps",
+  "first": "2026-10-07",
+  "indep": true,
+  "installs_2026_10_21": 1
+ },
+ {
+  "key": "io.selana.sheetout",
+  "name": "SheetOut: Export Issues to Excel & CSV for Jira",
+  "vendor": "Selana Technologies",
+  "first": "2026-09-28",
+  "indep": true,
+  "installs_2026_10_21": 0
+ },
+ {
+  "key": "io.selana.stagetime",
+  "name": "StageTime: Time in Status, Cycle Time & Lead Time for Jira",
+  "vendor": "Selana Technologies",
+  "first": "2026-09-28",
+  "indep": true,
+  "installs_2026_10_21": 0
+ },
+ {
+  "key": "pt.luisivars.jira.git-sync-branches-reports-automation",
+  "name": "Git Sync - Branches, Reports & Automation for Jira",
+  "vendor": "Ivars Apps",
+  "first": "2026-10-07",
+  "indep": true,
+  "installs_2026_10_21": 1
+ },
+ {
+  "key": "ai.lunalink.timeinstatus",
+  "name": "Time in Status Panel for Jira",
+  "vendor": "LunaLink AI",
+  "first": "2026-08-14",
+  "indep": true,
+  "installs_2026_10_21": 2
+ },
+ {
+  "key": "c8c2416f-cf62-49c9-b4dc-a2265dcec8b6",
+  "name": "RiskPilot",
+  "vendor": "ATLForge Factory",
+  "first": "2026-09-24",
+  "indep": true,
+  "installs_2026_10_21": 0
+ },
+ {
+  "key": "0eaf2247-be76-4fca-a5bd-47d0e7341dda",
+  "name": "Team Pivot Gadget for Jira",
+  "vendor": "Axeri Labs Bt.",
+  "first": "2026-09-24",
+  "indep": true,
+  "installs_2026_10_21": 0
+ },
+ {
+  "key": "com.toine.cumulative-flow",
+  "name": "Cumulative Flow Diagram for Jira",
+  "vendor": "Toine.com B.V.",
+  "first": "2026-10-07",
+  "indep": true,
+  "installs_2026_10_21": 0
+ },
+ {
+  "key": "com.toine.work-item-aging",
+  "name": "Work Item Aging for Jira",
+  "vendor": "Toine.com B.V.",
+  "first": "2026-10-06",
+  "indep": true,
+  "installs_2026_10_21": 0
+ },
+ {
+  "key": "com.toine.throughput-cycle-time",
+  "name": "Throughput and Cycle Time for Jira",
+  "vendor": "Toine.com B.V.",
+  "first": "2026-10-06",
+  "indep": true,
+  "installs_2026_10_21": 0
+ },
+ {
+  "key": "com.toine.test-summary-report",
+  "name": "Test Summary Report for Jira",
+  "vendor": "Toine.com B.V.",
+  "first": "2026-10-06",
+  "indep": true,
+  "installs_2026_10_21": 0
+ },
+ {
+  "key": "fr.gothtech.sprintscope",
+  "name": "Sprint Scope for Jira",
+  "vendor": "GOTH - Global Online Tech Hub",
+  "first": "2026-09-22",
+  "indep": true,
+  "installs_2026_10_21": 0
+ },
+ {
+  "key": "com.icevid.dev.plugins.sprintdatefields",
+  "name": "Sprint Dates for Jira",
+  "vendor": "Ryan Vidal",
+  "first": "2026-09-21",
+  "indep": true,
+  "installs_2026_10_21": 0
+ },
+ {
+  "key": "com.hosthob.finishline.forecast",
+  "name": "FinishLine Forecast",
+  "vendor": "FinishLine",
+  "first": "2026-09-19",
+  "indep": true,
+  "installs_2026_10_21": 0
+ },
+ {
+  "key": "dev.katabarwalabs.jsm-portal-extension",
+  "name": "Portal Extension for JSM: Fields, SLA, Assignee on Portal",
+  "vendor": "Katabarwa Labs",
+  "first": "2026-09-17",
+  "indep": true,
+  "installs_2026_10_21": 0
+ },
+ {
+  "key": "cyclepulse",
+  "name": "CyclePulse: Issue Time in Status & Exports",
+  "vendor": "NoxVoid Software",
+  "first": "2026-09-18",
+  "indep": true,
+  "installs_2026_10_21": 0
+ },
+ {
+  "key": "co.datadir.dwell",
+  "name": "Linger \u2014 Time in Status & Cycle Time for Jira",
+  "vendor": "Datum",
+  "first": "2026-09-17",
+  "indep": true,
+  "installs_2026_10_21": 0
+ },
+ {
+  "key": "com.ngpilot.checklist.workflow.automation",
+  "name": "Checklist Workflow Automation for Jira",
+  "vendor": "NGPILOT",
+  "first": "2026-09-15",
+  "indep": true,
+  "installs_2026_10_21": 0
+ },
+ {
+  "key": "com.gramshift.jira.issue-export",
+  "name": "Issue Export to PDF & Excel for Jira",
+  "vendor": "GRAMSHIFT",
+  "first": "2026-09-13",
+  "indep": true,
+  "installs_2026_10_21": 0
+ },
+ {
+  "key": "com.fulstech.jira.time-in-status",
+  "name": "Time in Status for Jira",
+  "vendor": "Fulstech",
+  "first": "2026-09-11",
+  "indep": false,
+  "installs_2026_10_21": 0
+ },
+ {
+  "key": "com.technichor.bulkattachmentexport",
+  "name": "Bulk Attachment Export for Jira",
+  "vendor": "Technichor",
+  "first": "2026-09-11",
+  "indep": true,
+  "installs_2026_10_21": 0
+ },
+ {
+  "key": "com.smartechor.capacity",
+  "name": "Capacity by Smartechor \u2014 Sprint & Resource Planning for Jira",
+  "vendor": "Smartechor",
+  "first": "2026-09-10",
+  "indep": true,
+  "installs_2026_10_21": 0
+ },
+ {
+  "key": "com.sovereignworldlabs.versionworkloadreports",
+  "name": "Version Workload Reports for Jira",
+  "vendor": "Sovereign World Labs",
+  "first": "2026-09-12",
+  "indep": true,
+  "installs_2026_10_21": 0
+ },
+ {
+  "key": "com.exportelier.jira",
+  "name": "Exportelier - Visual PDF, Word & Markdown for Jira",
+  "vendor": "Exportelier",
+  "first": "2026-09-06",
+  "indep": true,
+  "installs_2026_10_21": 0
+ },
+ {
+  "key": "io.github.ethanj2k.time-in-status",
+  "name": "Status Clock: Time in Status & SLA for Jira",
+  "vendor": "Two Little Moons Consulting",
+  "first": "2026-09-18",
+  "indep": true,
+  "installs_2026_10_21": 0
+ },
+ {
+  "key": "io.github.ethanj2k.mailpost",
+  "name": "Agile Gadgets for Jira",
+  "vendor": "Two Little Moons Consulting",
+  "first": "2026-09-05",
+  "indep": true,
+  "installs_2026_10_21": 0
+ },
+ {
+  "key": "io.github.ethanj2k.pivot-reports",
+  "name": "Pivot Reports for Jira",
+  "vendor": "Two Little Moons Consulting",
+  "first": "2026-09-05",
+  "indep": true,
+  "installs_2026_10_21": 0
+ },
+ {
+  "key": "com.taskhooker.showdown",
+  "name": "Showdown - Planning Poker for Jira Sprint Estimation",
+  "vendor": "Taskhooker",
+  "first": "2026-09-04",
+  "indep": true,
+  "installs_2026_10_21": 0
+ },
+ {
+  "key": "com.neuralvoid.jira.sprint-scope-guard",
+  "name": "Sprint Scope Guard & Agile JQL Pro",
+  "vendor": "Neural Void Solutions",
+  "first": "2026-08-31",
+  "indep": true,
+  "installs_2026_10_21": 0
+ },
+ {
+  "key": "nl.berkly.jira.time-in-status",
+  "name": "Berkly Time in Status for Jira",
+  "vendor": "Berk Karabacak",
+  "first": "2026-08-30",
+  "indep": true,
+  "installs_2026_10_21": 0
+ },
+ {
+  "key": "d4f898b4-80ce-47c7-93de-e7c5d411be7f",
+  "name": "Document Exporter for Jira",
+  "vendor": "Berk Karabacak",
+  "first": "2026-08-29",
+  "indep": true,
+  "installs_2026_10_21": 0
+ },
+ {
+  "key": "com.offrou.exact-export",
+  "name": "Exact Export for Jira",
+  "vendor": "OFFrou",
+  "first": "2026-08-30",
+  "indep": true,
+  "installs_2026_10_21": 0
+ },
+ {
+  "key": "io.github.lichenapps.sojourn",
+  "name": "Sojourn: Time in Status & Cycle Time for Jira",
+  "vendor": "Lichen Apps",
+  "first": "2026-09-03",
+  "indep": true,
+  "installs_2026_10_21": 0
+ },
+ {
+  "key": "com.wrenline.jira.dashboard-notes",
+  "name": "Rich Text Gadget for Jira ( Notes, Images, Wallboard)",
+  "vendor": "Wrenline",
+  "first": "2026-08-21",
+  "indep": true,
+  "installs_2026_10_21": 0
+ },
+ {
+  "key": "app.7thcode.flowguard",
+  "name": "Flow Guard \u2013 Stuck Work & Delivery Risk for Jira",
+  "vendor": "7thcode-app",
+  "first": "2026-09-02",
+  "indep": true,
+  "installs_2026_10_21": 0
+ },
+ {
+  "key": "com.technofystore.objectguard-for-jira",
+  "name": "ObjectGuard - Filter & Dashboard Cleanup for Jira",
+  "vendor": "TechnofyStore",
+  "first": "2026-08-19",
+  "indep": true,
+  "installs_2026_10_21": 0
+ },
+ {
+  "key": "com.acefoundry.charts-for-jira",
+  "name": "Charts for Jira Dashboards",
+  "vendor": "Ace Foundry",
+  "first": "2026-08-18",
+  "indep": true,
+  "installs_2026_10_21": 0
+ },
+ {
+  "key": "com.alexanderlandaverde.clear-time-reports",
+  "name": "Clear Time Reports for Jira",
+  "vendor": "Alexander Landaverde",
+  "first": "2026-08-18",
+  "indep": true,
+  "installs_2026_10_21": 0
+ },
+ {
+  "key": "com.perlumetrics.tibu.standard_advanced",
+  "name": "Perlumetrics Time & Budget",
+  "vendor": "Perlumetrics UG (haftungsbeschr\u00e4nkt)",
+  "first": "2026-08-18",
+  "indep": true,
+  "installs_2026_10_21": 0
+ },
+ {
+  "key": "com.pulserook.slapulse",
+  "name": "SLA Pulse for Jira",
+  "vendor": "PulseRook ",
+  "first": "2026-08-13",
+  "indep": true,
+  "installs_2026_10_21": 0
+ },
+ {
+  "key": "com.licen.dashboard.announcements.jira",
+  "name": "Dashboard Announcements for Jira",
+  "vendor": "Li Cen",
+  "first": "2026-08-07",
+  "indep": true,
+  "installs_2026_10_21": 0
+ },
+ {
+  "key": "info.helpingbrains.sprint-reality",
+  "name": "Sprint Reality",
+  "vendor": "HelpingBrains",
+  "first": "2026-07-28",
+  "indep": true,
+  "installs_2026_10_21": 0
+ },
+ {
+  "key": "com.dagrato.plugins.costdashboard",
+  "name": "Cost Dashboard for Jira",
+  "vendor": "dagrato",
+  "first": "2026-07-27",
+  "indep": true,
+  "installs_2026_10_21": 0
+ },
+ {
+  "key": "uk.codylabs.jira.worklogexport",
+  "name": "Worklog Export for Jira",
+  "vendor": "Cody Labs",
+  "first": "2026-07-26",
+  "indep": true,
+  "installs_2026_10_21": 0
+ },
+ {
+  "key": "com.adminshastra.flowguard",
+  "name": "FlowGuard for Jira",
+  "vendor": "AdminShastra",
+  "first": "2026-07-23",
+  "indep": true,
+  "installs_2026_10_21": 0
+ },
+ {
+  "key": "beebee.plugins.dwell",
+  "name": "Dwell - Time in Status, Cycle & Lead Time for Jira",
+  "vendor": "Hullara",
+  "first": "2026-08-19",
+  "indep": true,
+  "installs_2026_10_21": 0
+ },
+ {
+  "key": "com.ravenshift.docdrop",
+  "name": "DocDrop - Drag & Drop PDF Exporter",
+  "vendor": "Ravenshift",
+  "first": "2026-08-16",
+  "indep": true,
+  "installs_2026_10_21": 0
+ },
+ {
+  "key": "com.sprintlytics.jira.sprintagilemetricscharts",
+  "name": "Sprint Agile Metrics Charts",
+  "vendor": "naeem",
+  "first": "2026-08-16",
+  "indep": true,
+  "installs_2026_10_21": 1
+ },
+ {
+  "key": "aneto-ai-daily-brief",
+  "name": "AI Daily Status Reports & Briefs for Jira by Aneto",
+  "vendor": "Aneto Software",
+  "first": "2026-09-26",
+  "indep": false,
+  "installs_2026_10_21": 0
+ },
+ {
+  "key": "com.clearlaneapps.forecast",
+  "name": "Clearlane Forecast \u2013 Monte Carlo Release Dates for Jira",
+  "vendor": "Clearlane Apps",
+  "first": "2026-09-28",
+  "indep": true,
+  "installs_2026_10_21": 0
+ },
+ {
+  "key": "com.simitechsoft.jira.plugins.cifjaudithistoryreporterforjira",
+  "name": "Audit History Reporter for Jira",
+  "vendor": "Simitech Ltd.",
+  "first": "2026-09-28",
+  "indep": true,
+  "installs_2026_10_21": 0
+ },
+ {
+  "key": "beebee.plugins.dwell-free",
+  "name": "Dwell Free - Time in Status for Jira",
+  "vendor": "Hullara",
+  "first": "2026-08-20",
+  "indep": true,
+  "installs_2026_10_21": 0
+ },
+ {
+  "key": "dev.sellerkit.jira.notes-gadget",
+  "name": "Notes for Jira Dashboards",
+  "vendor": "sellerkit",
+  "first": "2026-08-18",
+  "indep": true,
+  "installs_2026_10_21": 0
+ },
+ {
+  "key": "org.ursacorp.sprint-countdown",
+  "name": "Sprint Countdown",
+  "vendor": "URSACORP",
+  "first": "2026-08-12",
+  "indep": true,
+  "installs_2026_10_21": 0
+ },
+ {
+  "key": "org.ursacorp.issue-aging-chart",
+  "name": "Issue Aging Chart",
+  "vendor": "URSACORP",
+  "first": "2026-08-12",
+  "indep": true,
+  "installs_2026_10_21": 0
+ },
+ {
+  "key": "com.klaxoon.app.plugins.jira",
+  "name": "Klaxoon by Wrike",
+  "vendor": "Klaxoon by Wrike",
+  "first": "2026-08-28",
+  "indep": true,
+  "installs_2026_10_21": 0
+ },
+ {
+  "key": "com.helpdeskmigration.plugins.export.jira",
+  "name": "Export CSV Tool",
+  "vendor": "Help Desk Migration",
+  "first": "2026-09-09",
+  "indep": false,
+  "installs_2026_10_21": 0
+ }
+]

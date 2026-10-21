@@ -1,0 +1,41 @@
+# One Marketplace search term per line: 40 Jira Cloud report/dashboard use cases (search hypotheses)
+issue aging report
+stale issues
+cycle time
+lead time
+work in progress WIP
+sprint predictability
+blocked issues
+reopened issues
+SLA jira software
+release readiness
+cross project report
+management report
+engineering metrics DORA
+team capacity
+custom dashboard
+scheduled report email
+historical trend report
+time in status
+worklog report
+burnup burndown
+velocity chart
+cumulative flow diagram
+throughput
+monte carlo forecast
+sprint report
+epic progress report
+portfolio report
+created vs resolved
+resolution time
+workload assignee
+bug trend defect metrics
+story points report
+export excel report
+pivot table
+issue history status changes
+flow efficiency
+KPI dashboard
+sprint scope change
+overdue due date issues
+dependency report
