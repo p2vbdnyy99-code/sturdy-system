@@ -13,39 +13,49 @@ venturescout/
     ├── jira_niche_scan.py          top-N Marketplace results per search term: pricing, free tier, vendor age, bad reviews
     ├── jira_niche_report.py        per-term summary of the niche scan
     ├── jira_report_terms.txt       the 40 Jira report search terms
-    └── cohort_tracker.py           re-measures installs of a fixed cohort of new apps (validation experiment)
+    ├── cohort_tracker.py           re-measures installs of a fixed cohort of new Atlassian apps (validation experiment)
+    ├── wordpress_new_scan.py       every WordPress.org plugin added since a date, with active installs
+    ├── wordpress_author_age.py     author's first plugin date (separates new independents from established brands)
+    ├── apify_actor_age.py          adds creation dates to an Apify Store pull
+    ├── apify_newest_scan.py        newest-first Apify actors (unbiased newcomer base rate; API caps at ~15k)
+    └── apify_cohort_tracker.py     re-measures 30-day users for a sampled Apify cohort
 models/income_model.py              paying sites needed per price/tax scenario + Forge cost scenarios
 ```
 
-## Gates, in order (an idea that fails a gate stops there)
+## Global-first principle (from 2026-10-21, v2)
 
-1. **Paid demand.** Someone already pays for a comparable solution, shown by public pricing plus a usage signal
-   (installs, users, reviews). Search interest alone does not count.
-2. **New-entrant discovery.** In the target channel, apps or products launched in the last 12–18 months
-   have reached meaningful usage. If dozens of recent entrants sit near zero, the channel is closed to
-   newcomers no matter how good the product is. *This gate killed both Atlassian candidates in the first scan.*
-3. **Specific unmet need.** Recent (≤12 months) complaints about incumbents name a fixable gap.
-4. **Economics.** The number of paying customers needed for the take-home target is plausible relative to
-   the category leader's observable footprint.
-5. **No personal selling, no paid ads.** Customers find, try and buy the product without outreach.
+Customer geography and the founder's jurisdiction are **separate variables**. Opportunities are chosen by
+global evidence. Seller-side questions (eligibility, payouts, tax) are scored as **risks**, never used to narrow
+the market search, and they are checked against official sources before any integration is recommended.
+VentureScout never proposes forming a company abroad merely to bypass a restriction. It does so only after
+weighing legal requirements, setup cost, ongoing compliance, tax and genuine operational benefit.
 
-## Scoring (100 points)
+## Hard gates (fail any one → reject, whatever the score)
 
-| Category | Weight |
-|---|---|
-| Evidence of real customer demand | 20 |
-| Organic or marketplace distribution potential (scored on *new-entrant* evidence) | 20 |
-| Differentiation | 10 |
-| Revenue potential and unit economics | 15 |
-| Competition and defensibility | 10 |
-| Solo-founder feasibility | 10 |
-| Startup cost and operational simplicity | 5 |
-| Automation potential | 5 |
-| Recurring demand | 5 |
+1. **Acquisition fits the constraints:** no paid ads, cold outreach, personal selling or sales meetings.
+   Customers find, try and buy on their own.
+2. **Lawful and within platform terms:** no products whose core is scraping platforms that prohibit it,
+   bypassing access controls, or collecting personal data without a lawful basis.
+3. **Paid demand exists:** public pricing plus a usage signal. Search interest alone does not count.
 
-Change from the brief: the distribution score uses *new-entrant* traction rather than incumbent traction.
-AI-assisted coding has made building cheap, so marketplaces now flood within months, and an incumbent's
-installs show that demand exists, not that a newcomer can reach it.
+## Scoring v2 (100 points): eight dimensions, scored separately
+
+| # | Dimension | Weight | What earns points |
+|---|---|---|---|
+| 1 | Global demand | 15 | Paying usage across several regions; demand drivers (e.g. regulation) named |
+| 2 | Customer discoverability | 10 | A specific search, listing or in-product surface where buyers already look |
+| 3 | **New-entrant distribution evidence** | 20 | *Measured* traction of products launched in the last 12–18 months, by independent vendors, in this channel |
+| 4 | Seller eligibility | 10 | Official confirmation that the founder's jurisdiction and structure (individual, sole proprietor, company) can sell and be paid |
+| 5 | Payment infrastructure | 10 | Platform or merchant-of-record handles checkout, tax collection and payouts; availability verified for the seller's jurisdiction |
+| 6 | Business structure and tax complexity | 5 | Works as an individual; low filing and withholding burden |
+| 7 | Unit economics | 20 | Price × achievable customer count reaches the take-home target with costs, fees and tax modelled |
+| 8 | Solo-founder operating burden | 10 | Low support, maintenance and breakage risk; high automation |
+
+Scoring rules:
+- Missing evidence scores at most half of a dimension's weight. "Unmeasured" is not "good".
+- Every score cites the measurement or source behind it.
+- The first scan's weights (v1) are kept in git history. v2 replaces "differentiation/competition" with an
+  explicit newcomer-evidence dimension, because AI-assisted building floods every visible niche within months.
 
 ## Take-home formula
 
@@ -68,6 +78,9 @@ python3 scanners/jira_niche_scan.py data/2026-10-21/cloud_scan.json scanners/jir
 python3 scanners/jira_niche_report.py niches.json
 python3 scanners/cohort_tracker.py data/2026-10-21/jira_report_cohort.json data/cohort_snapshots.csv   # day 30/60/90
 python3 models/income_model.py
+python3 scanners/wordpress_new_scan.py 2025-04-21 wp_new.json && python3 scanners/wordpress_author_age.py wp_new.json 100 wp_new_100plus.json
+python3 scanners/apify_newest_scan.py 15000 apify_newest.json
+python3 scanners/apify_cohort_tracker.py data/2026-10-21/apify_newest.json data/apify_cohort_snapshots.csv 10   # day 30/60
 ```
 
 Both use public, unauthenticated, read-only endpoints. Keep the request rate modest.
