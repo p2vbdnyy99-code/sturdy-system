@@ -113,3 +113,15 @@ day-30 check on 2026-11-20.
 - **Done:** no key was requested, no data was collected and the threshold is unchanged. See `trustmrr-api-compliance.md`.
 - **Next:** with your approval, ask TrustMRR for written permission for the narrowly described internal use.
 - **Portfolio decision: unchanged, RESEARCH FURTHER.** The Jira cohort continues (day-30 re-measure on 2026-11-20).
+
+## Addendum 2026-10-22 (4): alternative-source investigation
+
+- **Result: INSUFFICIENT EVIDENCE.** No free, terms-compliant source shows all of the following for the same business:
+  - verified revenue above $3k a month;
+  - a 2025+ launch date;
+  - a channel we can check ourselves.
+- **The threshold is unchanged.** See `alternative-source-assessment.md`.
+- **Open decisions:**
+  1. Whether to accept one-off platform-counted sales (Option 2) for marketplaces such as Envato.
+  2. Whether to send the TrustMRR permission request, since the alternatives proved inadequate.
+- **Portfolio decision: unchanged, RESEARCH FURTHER.**

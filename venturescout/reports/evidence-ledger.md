@@ -132,3 +132,16 @@ Full report: [`trustmrr-api-compliance.md`](trustmrr-api-compliance.md)
 | G7 | `foundedDate` and `marketingChannels` are verified by TrustMRR | — | — | Undocumented; possibly founder-entered | U |
 | G8 | TrustMRR listings represent newcomer base rates | — | — | No; listing is opt-in, so counts are selection-biased | RI |
 
+
+## H. Alternative newcomer-revenue sources (added 2026-10-22)
+
+Full report: [`alternative-source-assessment.md`](alternative-source-assessment.md)
+
+| # | Claim | Source | Accessed | Establishes / does not establish | Class |
+|---|---|---|---|---|---|
+| H1 | Show HN launches in May 2026: 2,644 | HN Algolia API | 2026-10-22 | Full launch denominator; no revenue | VF |
+| H2 | Uneed lists 11,275 tools; launches in May–Sep 2026: 486, 578, 663, 676, 850 (sitemap lastmod) | uneed.best sitemap | 2026-10-22 | Denominator; lastmod = launch date confirmed in 1 sample only | VF (counts), RI (date meaning) |
+| H3 | JetBrains API lists paid plugins by publish date (newest 2026-10-18, 13 downloads) | plugins.jetbrains.com API | 2026-10-22 | Paid-plugin denominator; downloads ≠ sales | VF |
+| H4 | Envato item pages show lifetime platform-counted sales and "Created" age; API terms 11.2 ban data mining | Research pass; build.envato.com/terms | 2026-10-22 | Only free platform-verified sales + newcomer source; one-off sales, not MRR; item pages 403 on re-check | VF (research pass), U (Market terms) |
+| H5 | Flippa "Data Verified" revenue from connected providers; terms ban data mining and building a database | flippa.com search + terms | 2026-10-22 | Verified revenue for for-sale businesses only; dataset barred | VF (text) |
+| H6 | Any free, terms-compliant source joining verified >$3k MRR, a 2025+ launch date and a checkable channel | Four research passes | 2026-10-22 | None found → threshold untestable from free sources | VF (search result), not proof of absence |
