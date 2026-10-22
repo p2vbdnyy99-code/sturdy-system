@@ -345,3 +345,30 @@ class CliTests(Base):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class NextPostTests(Base):
+    def add(self, text, date, platform="x"):
+        return content.add_draft(platform=platform, text=text, topic=text[:20], audience="contractors",
+                                 purpose="educational", scheduled_for=date)
+
+    def test_hands_over_the_earliest_post_once(self):
+        later = self.add("Read the ATC on GeM before you decide to bid.", "2026-11-10")
+        first = self.add("Check the portal for corrigenda the day before you submit.", "2026-10-24")
+        self.add("A LinkedIn post for later in the plan.", "2026-10-20", platform="linkedin")
+        peek = content.next_post("x", mark=False)
+        self.assertEqual(peek["id"], first["id"])
+        self.assertEqual(content.next_post("x")["id"], first["id"], "peek did not use it up")
+        self.assertEqual(content.next_post("x")["id"], later["id"], "a second run gets the next post, not the same one")
+        self.assertIsNone(content.next_post("x"), "the plan is used up")
+
+    def test_published_or_rejected_posts_are_never_handed_over(self):
+        gone = self.add("Similar work is defined in the tender, not by you.", "2026-10-21")
+        content.reject(gone["id"], "not now")
+        self.assertIsNone(content.next_post("x"))
+
+    def test_kill_switch_stops_it(self):
+        self.add("Put every tender date in your calendar.", "2026-10-21")
+        self.set_config(kill_switch=True)
+        with self.assertRaises(KillSwitchOn):
+            content.next_post("x")

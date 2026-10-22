@@ -163,6 +163,30 @@ def queue(status: str = "", platform: str = "") -> list:
     return sorted(items, key=lambda i: (i.get("scheduled_for") or "9999", i["created_at"]))
 
 
+def next_post(platform: str = "x", mark: bool = True) -> dict | None:
+    """The earliest planned post for `platform` not yet handed to the founder
+    (draft or approved, no `delivered_at`), re-checked by lint. With mark=True
+    it is marked delivered in the same locked step, so a scheduled task that
+    runs twice never hands over the same post twice. None when the plan is used up."""
+    guard("next_post")
+    with store.locked("content"):
+        items = store.load("content")
+        due = sorted((i for i in items if i["platform"] == platform and i["status"] in ("draft", "approved")
+                      and not i.get("delivered_at")),
+                     key=lambda i: (i.get("scheduled_for") or "9999", i["created_at"]))
+        for item in due:
+            if lint(item["text"], item["platform"], item["sources"])["ok"]:
+                if mark:
+                    item["delivered_at"] = store.now_iso()
+                    store.save("content", items)
+                break
+        else:
+            return None
+    if mark:
+        store.log_event("content_delivered", content=item["id"], platform=platform)
+    return item
+
+
 def _update(cid: str, fn) -> dict:
     with store.locked("content"):
         items = store.load("content")

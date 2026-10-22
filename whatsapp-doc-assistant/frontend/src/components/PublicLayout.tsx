@@ -3,7 +3,7 @@ import { Link, NavLink } from 'react-router-dom';
 import { useSession } from '../auth/SessionProvider';
 import { Logo } from './Logo';
 import { PRODUCT_NAME } from '../config/product';
-import { CONTACT_EMAIL } from '../config/site';
+import { CONTACT_EMAIL, X_HANDLE } from '../config/site';
 
 // Header and footer for the public pages (home, tenders, features, pricing,
 // FAQ, about). The
@@ -71,6 +71,7 @@ export function PublicLayout({ children }: { children: ReactNode }) {
               <Link to="/about">About</Link>
               <Link to="/privacy-policy">Privacy policy</Link>
               {CONTACT_EMAIL && <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>}
+              <a href={`https://x.com/${X_HANDLE}`} target="_blank" rel="noopener noreferrer">X: @{X_HANDLE}</a>
             </div>
             <div>
               <p className="public-footer-heading">Account</p>

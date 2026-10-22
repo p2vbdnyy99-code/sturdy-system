@@ -4249,3 +4249,30 @@ from 2 of 30 home-entry journeys in the last 30 days.
 `linkedin.<campaign>` tags for posts from the 4-week plan.
 
 **Reverse:** `git revert`. There is no migration.
+
+# The X account in link previews, structured data and the footer (Oct 2026)
+
+## Why
+The founder opened the X account @TenderTez on 22 Oct 2026. Nothing on the
+site pointed to it.
+
+## What changed
+- **`backend/src/seo.js`:** `X_HANDLE`. Public pages now carry
+  `<meta name="twitter:site" content="@TenderTez">`, and the home page's
+  Organization JSON-LD has `sameAs: ["https://x.com/TenderTez"]`.
+- **`frontend/src/config/site.ts`:** the same `X_HANDLE`.
+  **`components/PublicLayout.tsx`:** the footer's Company column links
+  "X: @TenderTez", opening in a new tab with `rel="noopener noreferrer"`.
+- **`marketing/brand-guide.md`:** an "Accounts" section.
+
+## Verification
+- **Tests:** `test/seo.test.js` checks the `twitter:site` tag;
+  `test/landing-pages.test.js` checks `sameAs`. 14/14 pass (1 skipped
+  without a database).
+- **Frontend:** type check and build pass.
+- **Browser:** a local build at 390 px and 1366 px. The footer link
+  appears once, is visible, opens in a new tab and causes no sideways
+  scroll. The only console error is the expected 401 from the sign-in
+  check.
+
+**Reverse:** `git revert`. There is no migration.

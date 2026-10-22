@@ -5,6 +5,9 @@
 /** Shown on FAQ, About and the footer when set, e.g. 'hello@tendertez.in'. */
 export const CONTACT_EMAIL: string | null = 'advayaicopilot@gmail.com';
 
+/** The official X account (backend/src/seo.js has the same). */
+export const X_HANDLE = 'TenderTez';
+
 /** The founder's own note for the About page. */
 export const FOUNDER: { name: string; city: string; story: string[] } | null = {
   name: 'Sayali Londhe',

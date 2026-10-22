@@ -14,6 +14,7 @@ test('a public page gets its title, description, canonical URL and Open Graph ta
   assert.ok(html.includes('<link rel="canonical" href="https://tendertez.in/pricing" />'));
   assert.ok(html.includes('<meta property="og:image" content="https://tendertez.in/og-image.png" />'));
   assert.ok(html.includes('<meta name="twitter:card" content="summary_large_image" />'));
+  assert.ok(html.includes('<meta name="twitter:site" content="@TenderTez" />'));
   assert.ok(html.includes('<div id="root"></div>'));
 });
 

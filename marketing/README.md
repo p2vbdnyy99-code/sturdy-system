@@ -75,6 +75,7 @@ python3 -m ttm site-metrics --week-ending 2026-10-18 --source visits-report.mjs 
 python3 -m ttm report                          # weekly report (markdown); --json for data
 python3 -m ttm seo-audit > ../seo/technical-audit-live.md
 python3 -m ttm daily-post                      # today's tender post (JSON); posts nothing
+python3 -m ttm next-post --platform x          # next planned post not yet handed over (marks it); --peek to look only
 python3 -m ttm export ~/tendertez-marketing-backup.json   # back up data/
 python3 -m ttm import backup.json              # restore (refuses to overwrite without --force)
 ```

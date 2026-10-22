@@ -12,6 +12,8 @@ import { PLANS } from './bidpilot/plans.js';
 
 const SITE_NAME = 'TenderTez';
 const CONTACT_EMAIL = 'advayaicopilot@gmail.com';
+// The official X account (frontend/src/config/site.ts has the same).
+const X_HANDLE = 'TenderTez';
 
 export const PUBLIC_PAGES = {
   '/': {
@@ -84,6 +86,7 @@ export function structuredData(path, baseUrl) {
       email: CONTACT_EMAIL,
       founder: { '@type': 'Person', name: 'Sayali Londhe' },
       address: { '@type': 'PostalAddress', addressLocality: 'Mumbai', addressCountry: 'IN' },
+      sameAs: [`https://x.com/${X_HANDLE}`],
     }, {
       '@context': 'https://schema.org',
       '@type': 'WebSite',
@@ -130,6 +133,7 @@ export function publicPageHead(page, url, baseUrl, jsonLd = []) {
     `<meta property="og:image:height" content="630" />`,
     `<meta property="og:image:alt" content="TenderTez: read a government tender in minutes" />`,
     `<meta name="twitter:card" content="summary_large_image" />`,
+    `<meta name="twitter:site" content="@${X_HANDLE}" />`,
     // "<" is escaped so the JSON can never close the element early.
     ...jsonLd.map((d) => `<script type="application/ld+json">${JSON.stringify(d).replace(/</g, '\\u003c')}</script>`),
   ].join('\n    ');

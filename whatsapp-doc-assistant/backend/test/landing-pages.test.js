@@ -85,6 +85,7 @@ test('structured data states only published facts; llms.txt matches the plans', 
   const [org, site] = structuredData('/', BASE);
   assert.equal(org['@type'], 'Organization');
   assert.equal(org.founder.name, 'Sayali Londhe');
+  assert.deepEqual(org.sameAs, ['https://x.com/TenderTez']);
   assert.equal(site['@type'], 'WebSite');
   const [app] = structuredData('/pricing', BASE);
   assert.deepEqual(app.offers.map((o) => [o.name, o.price, o.priceCurrency]),

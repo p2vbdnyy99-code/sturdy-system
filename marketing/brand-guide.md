@@ -38,6 +38,11 @@ reads tenders for clients. Name them in the first line when you can
 
 The content queue refuses most of these automatically (`ttm lint`).
 
+## Accounts
+
+- X: [@TenderTez](https://x.com/TenderTez) (set up by the founder, 22 Oct 2026).
+  Posting is by hand from the approved Docs; there is no X API access.
+
 ## Links and tracking
 
 Link to the most relevant public page, not always the home page: a state or

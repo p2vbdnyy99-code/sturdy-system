@@ -67,6 +67,8 @@ def main(argv=None) -> int:
     s.add_argument("--out", default="")
     s = sub.add_parser("daily-post", help="today's tender post (JSON: label, linkedin, x, whatsapp); posts nothing")
     s.add_argument("--date", default=""); s.add_argument("--base", default="")
+    s = sub.add_parser("next-post", help="the next planned post not yet handed to the founder; marks it handed over (posts nothing)")
+    s.add_argument("--platform", default="x"); s.add_argument("--peek", action="store_true", help="show it without marking it")
     sub.add_parser("status", help="settings, kill switch and data counts")
     s = sub.add_parser("export", help="write a backup of all data to a JSON file"); s.add_argument("path")
     s = sub.add_parser("import", help="restore data from a backup (refuses to overwrite non-empty data without --force)")
@@ -137,6 +139,12 @@ def main(argv=None) -> int:
         elif a.cmd == "report":
             r = report.weekly(dt.date.fromisoformat(a.end) if a.end else None)
             _print(r if a.json else report.to_markdown(r))
+        elif a.cmd == "next-post":
+            item = content.next_post(a.platform, mark=not a.peek)
+            if item is None:
+                print(f"no planned {a.platform} post left to hand over; ask for the next batch", file=sys.stderr)
+                return 3
+            _print({k: item.get(k) for k in ("id", "platform", "scheduled_for", "topic", "text", "sources")})
         elif a.cmd == "seo-audit":
             r = seo_audit.run(a.base or cfg["site"])
             _print(r if a.json else seo_audit.to_markdown(r))
