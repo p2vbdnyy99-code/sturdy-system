@@ -348,6 +348,11 @@ export function buildBidpilotConfig(env = {}) {
       secretAccessKey: env.BIDPILOT_S3_SECRET_ACCESS_KEY || '',
     },
     maxUploadBytes: (Math.max(1, Number(env.BIDPILOT_MAX_UPLOAD_MB) || 50)) * 1024 * 1024,
+    // Who may open the founder's live dashboard (/insights). Email sign-up is
+    // not verified, so list only emails of accounts that already exist. The
+    // default is the founder's own (Skylark) account.
+    adminEmails: String(env.BIDPILOT_ADMIN_EMAILS ?? 'shubhamgaur164@gmail.com')
+      .split(',').map((e) => e.trim().toLowerCase()).filter(Boolean),
     csrfSecret: String(env.BIDPILOT_CSRF_SECRET || ''),
     sessionTtlMs: Math.max(1, Number(env.BIDPILOT_SESSION_TTL_DAYS) || 30) * 24 * 60 * 60 * 1000,
     sessionTouchThresholdMs: Math.max(1, Number(env.BIDPILOT_SESSION_TOUCH_MINUTES) || 10) * 60 * 1000,

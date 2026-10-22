@@ -4276,3 +4276,95 @@ site pointed to it.
   check.
 
 **Reverse:** `git revert`. There is no migration.
+
+# Founder's live insights dashboard (Oct 2026)
+
+## Why
+The founder asked for a live tracker of visits, sign-ups and analyses. It
+lives in the app so it reads the database directly, rather than a copy that
+goes out of date.
+
+## What changed
+- **`src/bidpilot/insights.js`:** one read-only set of queries. It returns:
+  - visitors in the last 5 minutes and today;
+  - one row per day of visitors, views, sign-ups, uploads and analyses;
+  - totals for the period and the period before it;
+  - uploads waiting for Analyze or failed;
+  - the funnel: visitor-days, opened sign-up, signed up, companies that
+    uploaded, companies that got an analysis;
+  - sources, campaigns, pages and devices;
+  - active paid plans and monthly list-price revenue;
+  - a 12-item activity feed (last 30 days);
+  - every company with its contact, owner's sign-up date, uploads, analysed,
+    not analysed, failed, plan or trial use (`getAllowance`), profile and
+    last activity.
+
+  The founder's own accounts are left out of every customer number: users
+  with an admin email, and companies on the UNLIMITED plan. They are listed
+  last, marked "yours". Page views carry no user, so visits may include the
+  founder's own.
+- **Access:**
+  - `config.bidpilot.adminEmails` (env `BIDPILOT_ADMIN_EMAILS`, comma
+    separated) defaults to the founder's existing Skylark email. Email
+    sign-up isn't verified, so list only emails of accounts that already
+    exist; an existing email can't be registered again.
+  - `GET /bidpilot/insights?days=7|30|90` answers 404 to anyone else and is
+    never cached.
+  - `/bidpilot/me` returns `isAdmin`.
+- **Frontend:**
+  - `pages/Insights.tsx` at `/insights`, inside the app shell. The rail
+    shows a pulse icon only when `isAdmin`.
+  - The page is a dark "mission control" layout. It refreshes every 30
+    seconds and holds the previous render (dimmed) while it does.
+  - Contents:
+    - hero figure: paying customers;
+    - four KPI tiles with change against the previous period and a
+      sparkline;
+    - an activation-gap alert;
+    - a visitors-per-day chart with a crosshair tooltip on hover, tap and
+      the arrow keys;
+    - the funnel;
+    - small multiples of sign-ups, uploads and analyses (each on its own
+      scale; no dual axis);
+    - source, campaign and page bars;
+    - the activity feed;
+    - the accounts table;
+    - the daily numbers as a table.
+  - Charts are inline SVG with presentation attributes, inside the strict
+    CSP. The series colours (saffron `#d96f0c`, blue `#1f8fd0` on
+    `#0b1a2e`) passed the palette validator's dark-band, contrast and
+    colour-blind checks. The live pulse stops under
+    `prefers-reduced-motion`.
+- **No privacy change:** nothing new is collected. The page only shows the
+  founder data the app already holds.
+
+## Verification
+- **Backend:** `test/bidpilot/insights.test.js` (10 tests):
+  - `isAdmin` cases;
+  - an empty database gives zeros;
+  - seeded counts per stage leave out the founder's and UNLIMITED
+    companies;
+  - the change against the previous period;
+  - paid plans and revenue;
+  - campaigns, the daily row, the accounts table (internal accounts last;
+    sign-up date is the owner's) and the feed (no founder activity, at
+    most 12);
+  - HTTP: 401 without a session, 404 and `isAdmin: false` for a customer,
+    200 with no-store and `isAdmin: true` for the founder.
+- **Frontend:** `src/insights/chart.test.ts` (5 tests) covers scales, paths,
+  number formats, deltas and "ago".
+- **Browser:** the real server on a seeded local database, at 390 px and
+  1366 px. 18/18 checks pass:
+  - hero, KPIs and live count;
+  - the rail link for the founder only;
+  - no sideways scroll;
+  - the tooltip on hover and on keyboard;
+  - no CSP errors;
+  - a customer sees "only for the TenderTez team" and no rail link.
+
+  The screenshots were also inspected by eye. They found missing KPI
+  numbers (the global `p` colour), overlapping end dates and company-row
+  sign-up dates; all three were fixed and checked again.
+- **verify.sh:** see `harness/runs/2026-10-22-live-insights/checks.md`.
+
+**Reverse:** `git revert`. There is no migration.

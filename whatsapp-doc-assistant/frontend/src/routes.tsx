@@ -20,6 +20,7 @@ import { PrivacyPage } from './pages/Privacy';
 import { GovernmentTendersPage } from './pages/GovernmentTenders';
 import { FeaturesPage } from './pages/Features';
 import { SampleAnalysisPage } from './pages/SampleAnalysis';
+import { InsightsPage } from './pages/Insights';
 
 // M5d added /tenders/:id. /company-profile added Beta Readiness — the
 // eligibility engine's other required input had a working API client
@@ -45,6 +46,7 @@ export function AppRoutes() {
           <Route path="/company-profile" element={<CompanyProfilePage />} />
           <Route path="/clients" element={<ClientsPage />} />
           <Route path="/feed" element={<FeedPage />} />
+          <Route path="/insights" element={<InsightsPage />} />
           <Route path="/clients/:clientId/profile" element={<CompanyProfilePage />} />
         </Route>
       </Route>

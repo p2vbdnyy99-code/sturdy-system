@@ -23,6 +23,7 @@ import { createTendersRouter } from './src/bidpilot/routes/tenders.js';
 import { createDownloadRouter } from './src/bidpilot/routes/download.js';
 import { createAuthRouter } from './src/bidpilot/routes/auth.js';
 import { createDashboardRouter } from './src/bidpilot/routes/dashboard.js';
+import { createInsightsRouter } from './src/bidpilot/routes/insights.js';
 import { createCompaniesRouter } from './src/bidpilot/routes/companies.js';
 import { createFeedRouter } from './src/bidpilot/routes/feed.js';
 import { createPublicTendersRouter } from './src/bidpilot/routes/publicTenders.js';
@@ -228,6 +229,7 @@ if (config.db.url) {
   app.use('/bidpilot', createAuthRouter());
   app.use('/bidpilot', createCompaniesRouter());
   app.use('/bidpilot', createDashboardRouter());
+  app.use('/bidpilot', createInsightsRouter());
   app.use('/bidpilot', createTendersRouter());
   app.use('/bidpilot', createFeedRouter());
   app.use('/bidpilot', createPublicTendersRouter());

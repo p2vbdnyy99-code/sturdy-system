@@ -21,6 +21,8 @@ export type Me = {
   status: UserStatus;
   emailVerified: boolean;
   companies: CompanyMembership[];
+  /** True only for the founder's accounts (backend config adminEmails): shows /insights. */
+  isAdmin?: boolean;
 };
 
 export type RegisterResult = {

@@ -51,6 +51,11 @@ export function AppShell() {
           <NavLink to="/clients" className="shell-rail-link" aria-label="Clients" title="Clients">
             <Icon name="users" />
           </NavLink>
+          {me?.isAdmin && (
+            <NavLink to="/insights" className="shell-rail-link" aria-label="Live insights" title="Live insights">
+              <Icon name="activity" />
+            </NavLink>
+          )}
           <button
             type="button"
             className="shell-rail-link shell-queue-toggle"

@@ -21,6 +21,7 @@ import { log } from '../../logger.js';
 import { config } from '../../config.js';
 import { companyMembers, companies, companyProfiles } from '../../db/schema/index.js';
 import { missingProfileFields } from '../profileCompleteness.js';
+import { isAdmin } from '../insights.js';
 import { registerUser, verifyEmail, findUserByEmail, findUserById, RegistrationError } from '../repo/users.js';
 import { verifyPassword } from '../auth/passwordHash.js';
 import { createSession, getSessionByToken, destroySessionByToken } from '../auth/sessionService.js';
@@ -343,6 +344,7 @@ export function createAuthRouter() {
         phone: req.bidpilotUser.phone ?? null,
         name: req.bidpilotUser.name ?? null,
         status: req.bidpilotUser.status,
+        isAdmin: isAdmin(req.bidpilotUser, config.bidpilot.adminEmails),
         emailVerified: Boolean(req.bidpilotUser.emailVerifiedAt),
         companies: withProfile,
       });
