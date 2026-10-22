@@ -90,3 +90,26 @@ day-30 check on 2026-11-20.
 - **Portfolio decision: unchanged, RESEARCH FURTHER.**
   - The Jira cohort continues (day-30 re-measure on 2026-11-20).
   - Jira is **not** promoted to winner because the other candidate failed.
+
+---
+
+## Addendum 2026-10-22 (2): document-to-spreadsheet investigation closed
+
+- **The generic converter remains REJECTED. The investigation is closed.**
+- Two independent top-tier model runs achieved 200/200 exact transactions on 5 synthetic statements, with no missing or
+  duplicated rows and all five reconciling.
+- Limits: synthetic documents and top-tier models only.
+- The free-tool experiment was **not run**. It is optional and does not block the next phase. A free-tool failure would not
+  establish demand, willingness to pay or distribution.
+- Do not reopen without genuinely new commercial evidence. See the Closure section of `document-saas-decision.md`.
+
+## Addendum 2026-10-22 (3): TrustMRR newcomer study stopped at the access gate
+
+- **Gate NOT CLEARED.** TrustMRR's API terms (updated 2026-10-09) prohibit, or are materially ambiguous about:
+  - workflows that identify successful startups so users can "imitate" their business (§9.3);
+  - populating a dataset with API data without prior written permission (§9.3);
+  - "systematically reconstruct[ing]" the database (§9.3). There is no founded-date filter, so the cohort needs a full-list page.
+- API pricing is not published.
+- **Done:** no key was requested, no data was collected and the threshold is unchanged. See `trustmrr-api-compliance.md`.
+- **Next:** with your approval, ask TrustMRR for written permission for the narrowly described internal use.
+- **Portfolio decision: unchanged, RESEARCH FURTHER.** The Jira cohort continues (day-30 re-measure on 2026-11-20).

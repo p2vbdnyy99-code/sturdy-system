@@ -106,3 +106,29 @@ Classification key:
 
 **Change in conclusions:** the previous report ranked document SaaS second (50/100) pending tests. After Tests A and B it is
 **rejected** (`document-saas-decision.md`). The earlier score is preserved in `global-opportunity-comparison.md` for history.
+
+### F (continued): closure, 2026-10-22
+
+| # | Claim | Source | Accessed | Establishes / does not establish | Class |
+|---|---|---|---|---|---|
+| F11 | Blind-agent re-run: 200/200 exact rows, 0 omitted, 0 extra, 5/5 reconciled on S05, S10, S14, S25, S29 | `testb/replication_blind_agent/` re-scored with `score.py` | 2026-10-22 | A second independent top-tier run matches the first (also 200/200 on these 5). Synthetic documents and top-tier models only | VF (this test) |
+| F12 | Free consumer AI tools match this performance | `testb/replication_free_tool/README.md` (pre-registered) | — | **Not run**; optional; would not establish demand, WTP or distribution either way | NT |
+
+**Closure:** the generic converter remains REJECTED and the investigation is closed. Reopen only on genuinely new commercial
+evidence (`document-saas-decision.md`, Closure).
+
+## G. TrustMRR access gate (added 2026-10-22)
+
+Full report: [`trustmrr-api-compliance.md`](trustmrr-api-compliance.md)
+
+| # | Claim | Source | Accessed | Establishes / does not establish | Class |
+|---|---|---|---|---|---|
+| G1 | API: 2 endpoints, Bearer `tmrr_` key, Standard 10 req/min, Premium 60 req/min, max 10 results/page | [docs/api](https://trustmrr.com/docs/api), [list-startups](https://trustmrr.com/docs/api/list-startups), [FAQ](https://trustmrr.com/faq) | 2026-10-22 | Access mechanics | VF |
+| G2 | API pricing for either tier | Same pages | 2026-10-22 | Not published | U |
+| G3 | No founded-date filter or sort; `marketingChannels` only in the per-startup detail endpoint | list-startups, get-startup | 2026-10-22 | A cohort study needs a full-list page plus a call per startup | VF |
+| G4 | §9.3 prohibits workflows that identify successful startups so users can "imitate … positioning, offering, or business" | [terms](https://trustmrr.com/terms) | 2026-10-22 | Conflicts with, or makes materially ambiguous, the study's purpose | VF (text) |
+| G5 | §9.3 requires prior written permission to "populate … a dataset" with API data | terms | 2026-10-22 | The planned clean dataset needs permission on a plain reading | VF (text) |
+| G6 | §9.1 permits "internal analysis" | terms | 2026-10-22 | General permission; does not override the specific prohibitions | VF (text) |
+| G7 | `foundedDate` and `marketingChannels` are verified by TrustMRR | — | — | Undocumented; possibly founder-entered | U |
+| G8 | TrustMRR listings represent newcomer base rates | — | — | No; listing is opt-in, so counts are selection-biased | RI |
+

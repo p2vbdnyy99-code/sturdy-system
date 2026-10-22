@@ -85,3 +85,24 @@ only cheap result that would change this.
 The VentureScout portfolio decision stays **RESEARCH FURTHER** (see `venture-decision.md`).
 - The Jira cohort continues; next re-measure is day 30 on 2026-11-20.
 - The Jira candidate is **not** declared a winner because this one failed.
+
+---
+
+## Closure (recorded 2026-10-22, after the blind-agent re-run)
+
+Sections above are kept unchanged as the record. Where they differ, this section supersedes §8 and the "only cheap result
+that would change this" line in §9.
+
+**Status: CLOSED. The generic document-to-spreadsheet converter remains REJECTED.**
+
+- **Result:** two independent top-tier model runs each achieved **200/200 exact transactions** on the five pre-registered
+  documents (S05, S10, S14, S25, S29).
+  - The runs were the original Test B run and a separately briefed blind agent with no access to the truth files.
+  - Both had **no missing or duplicated rows**, and **all five statements reconciled**.
+  - Both were re-scored with `score.py --only-present` on 2026-10-22.
+- **Limits:** synthetic documents only, top-tier models only. No free consumer tool and no real-world statement was tested.
+- **The free-tool experiment was not run.** It is optional and does not block the next phase.
+- **A free-tool failure would not establish demand, willingness to pay or distribution.** It would only show that one free tool
+  is weaker than top-tier models on these synthetic documents.
+- **Reopen only on genuinely new commercial evidence**, such as verified newcomer revenue with an attributable organic channel.
+  Further accuracy testing alone does not qualify.

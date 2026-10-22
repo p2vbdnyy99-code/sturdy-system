@@ -74,3 +74,9 @@ Scanned and non-scanned documents are reported separately.
 | **Inconclusive** | Anything between, or the tool could not be tested as specified | — |
 
 **Limit:** five synthetic documents and one tool are a screening result, not proof of general reliability.
+
+## Status (2026-10-22)
+
+**NOT RUN.** Optional; it does not block the next phase. The document-SaaS investigation is closed
+(see `reports/document-saas-decision.md`, Closure). A free-tool failure would not establish demand, willingness to pay or
+distribution.
