@@ -1,0 +1,57 @@
+{
+ "doc": "S01",
+ "family": 1,
+ "scanned": false,
+ "opening_balance": 7723.14,
+ "closing_balance": 10460.98,
+ "transactions": [
+  {
+   "date": "2026-03-01",
+   "description": "SUBSCRIPTION STREAMING SERVICE",
+   "amount": -257.13,
+   "balance": 7466.01
+  },
+  {
+   "date": "2026-03-04",
+   "description": "CARD PURCHASE GROCERY MART",
+   "amount": -62.71,
+   "balance": 7403.3
+  },
+  {
+   "date": "2026-03-07",
+   "description": "CARD PURCHASE HARDWARE DEPOT",
+   "amount": -60.0,
+   "balance": 7343.3
+  },
+  {
+   "date": "2026-03-10",
+   "description": "BANK FEE MONTHLY",
+   "amount": -74.18,
+   "balance": 7269.12
+  },
+  {
+   "date": "2026-03-13",
+   "description": "REFUND CARD PURCHASE",
+   "amount": 3451.44,
+   "balance": 10720.56
+  },
+  {
+   "date": "2026-03-13",
+   "description": "CARD PURCHASE FUEL STOP",
+   "amount": -152.12,
+   "balance": 10568.44
+  },
+  {
+   "date": "2026-03-13",
+   "description": "ONLINE TRANSFER TO SAVINGS",
+   "amount": -28.38,
+   "balance": 10540.06
+  },
+  {
+   "date": "2026-03-13",
+   "description": "CARD PURCHASE GROCERY MART",
+   "amount": -79.08,
+   "balance": 10460.98
+  }
+ ]
+}

@@ -74,3 +74,35 @@
 | Can the founder's jurisdiction receive Atlassian / Apify payouts? | Eligibility gate before publishing | Atlassian Marketplace support request; Apify payout page shows options after sign-up (approval needed) |
 | Do young sites win Google traffic for transactional document-conversion queries? | Organic-search newcomer gate | Expand SERP + RDAP study to 30–50 queries; check whether young domains have paid plans (free) |
 | Does an AI assistant already solve statement-to-CSV adequately for free? | Defensibility | Test 3–5 sample public statements in a general AI assistant; record accuracy (free, iPhone-feasible) |
+
+## F. Document-to-spreadsheet SaaS tests (added 2026-10-22)
+
+Full reports:
+- [`document-saas-search-discoverability.md`](document-saas-search-discoverability.md)
+- [`document-saas-ai-substitution-test.md`](document-saas-ai-substitution-test.md)
+- [`document-saas-unit-economics.md`](document-saas-unit-economics.md)
+- [`document-saas-decision.md`](document-saas-decision.md)
+
+Classification key:
+- **VF** — verified fact
+- **RI** — reasonable inference
+- **H** — hypothesis
+- **U** — unknown
+- **C** — contradicted
+- **NT** — not tested
+
+| # | Claim | Source | Accessed | Establishes / does not establish | Class |
+|---|---|---|---|---|---|
+| F1 | Bankstatemently: $1,420 all-time; best month $458; $375 MRR from 14 subscriptions; founded 2025-09-29 (SG) | [TrustMRR](https://trustmrr.com/startup/bankstatemently.md) | 2026-10-22 | Stripe-verified revenue exists for a 2025 newcomer. Does **not** establish its channel, and the data may be stale (key expired 2026-08-05) | VF |
+| F2 | BankConv: $29/$49/$79 a month ($19/$29/$49 on annual billing); $2.99 per document; deletes after 24h | [Pricing](https://bankconv.com/pricing) | 2026-10-22 | Asking prices only; no sales volume | VF (price) |
+| F3 | Invoice Data Extraction: 50 free pages/month; credits $0.12 → $0.055/page; operator DEH Technologies LLC; Paddle checkout | [Pricing](https://invoicedataextraction.com/pricing) | 2026-10-22 | Asking prices; no adoption data | VF (price) |
+| F4 | DocuClipper pricing $20.30–$279.30/mo on annual billing; 124 G2 reviews; claims 10,000+ teams | [Pricing](https://www.docuclipper.com/pricing/) | 2026-10-22 | Incumbent asking prices; the customer count is a vendor claim | VF (price), H (count) |
+| F5 | 15 of 40 purchase-intent queries show a 2024+ (RDAP) specialist domain | `data/2026-10-22/doc_saas/` | 2026-10-22 | Visibility on one non-Google engine only; **not** traffic | VF (observation) |
+| F6 | Domain registration ≠ launch date for every newcomer listed; launch dates unverified | RDAP | 2026-10-22 | — | U |
+| F7 | General-purpose model: 779/779 rows exact, 30/30 reconciled, on 30 synthetic statements | `testb/results.json` | 2026-10-22 | Strong substitution risk on clean synthetic documents. Does **not** establish free-tier or real-world performance | VF (this test) |
+| F8 | Free consumer AI tools match this performance | — | — | — | NT |
+| F9 | A newcomer can reach $8k–$10k/mo take-home here | `models/docsaas_economics.py` | 2026-10-22 | Needs ~27–34× the best verified newcomer month | H (unsupported) |
+| F10 | G2/Capterra review data for newcomers | 403 responses | 2026-10-22 | Inaccessible, **not** negative evidence | U |
+
+**Change in conclusions:** the previous report ranked document SaaS second (50/100) pending tests. After Tests A and B it is
+**rejected** (`document-saas-decision.md`). The earlier score is preserved in `global-opportunity-comparison.md` for history.

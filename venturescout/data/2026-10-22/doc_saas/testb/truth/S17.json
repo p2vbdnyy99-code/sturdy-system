@@ -1,0 +1,99 @@
+{
+ "doc": "S17",
+ "family": 4,
+ "scanned": false,
+ "opening_balance": 1474.23,
+ "closing_balance": 4700.12,
+ "transactions": [
+  {
+   "date": "2026-09-01",
+   "description": "BANK FEE MONTHLY",
+   "amount": -9.04,
+   "balance": 1465.19
+  },
+  {
+   "date": "2026-09-02",
+   "description": "SUBSCRIPTION STREAMING SERVICE",
+   "amount": -794.79,
+   "balance": 670.4
+  },
+  {
+   "date": "2026-09-03",
+   "description": "DIRECT DEBIT CITY WATER",
+   "amount": -1101.79,
+   "balance": -431.39
+  },
+  {
+   "date": "2026-09-04",
+   "description": "CARD PURCHASE HARDWARE DEPOT",
+   "amount": -51.36,
+   "balance": -482.75
+  },
+  {
+   "date": "2026-09-04",
+   "description": "CUSTOMER PAYMENT INVOICE",
+   "amount": 815.45,
+   "balance": 332.7
+  },
+  {
+   "date": "2026-09-04",
+   "description": "STANDING ORDER RENT",
+   "amount": -178.62,
+   "balance": 154.08
+  },
+  {
+   "date": "2026-09-07",
+   "description": "ATM WITHDRAWAL",
+   "amount": -4.4,
+   "balance": 149.68
+  },
+  {
+   "date": "2026-09-08",
+   "description": "DIRECT DEBIT MOBILE PHONE",
+   "amount": -74.24,
+   "balance": 75.44
+  },
+  {
+   "date": "2026-09-11",
+   "description": "CARD PURCHASE GROCERY MART",
+   "amount": -42.03,
+   "balance": 33.41
+  },
+  {
+   "date": "2026-09-14",
+   "description": "BANK FEE MONTHLY",
+   "amount": -63.23,
+   "balance": -29.82
+  },
+  {
+   "date": "2026-09-14",
+   "description": "INSURANCE PREMIUM HOME AND CONTENTS POLICY 88-2231",
+   "amount": -43.62,
+   "balance": -73.44
+  },
+  {
+   "date": "2026-09-14",
+   "description": "CARD PURCHASE COFFEE HOUSE",
+   "amount": -241.02,
+   "balance": -314.46
+  },
+  {
+   "date": "2026-09-16",
+   "description": "DIRECT DEBIT MOBILE PHONE",
+   "amount": -44.73,
+   "balance": -359.19
+  },
+  {
+   "date": "2026-09-18",
+   "description": "SALARY PAYROLL",
+   "amount": 3464.5,
+   "balance": 3105.31
+  },
+  {
+   "date": "2026-09-18",
+   "description": "SALARY PAYROLL",
+   "amount": 1594.81,
+   "balance": 4700.12
+  }
+ ]
+}

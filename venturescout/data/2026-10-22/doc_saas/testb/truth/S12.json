@@ -1,0 +1,87 @@
+{
+ "doc": "S12",
+ "family": 3,
+ "scanned": false,
+ "opening_balance": 1046.79,
+ "closing_balance": 3854.15,
+ "transactions": [
+  {
+   "date": "2025-12-01",
+   "description": "CARD PURCHASE HARDWARE DEPOT",
+   "amount": -983.16,
+   "balance": 63.63
+  },
+  {
+   "date": "2025-12-03",
+   "description": "INTEREST PAID",
+   "amount": 615.72,
+   "balance": 679.35
+  },
+  {
+   "date": "2025-12-03",
+   "description": "ATM WITHDRAWAL",
+   "amount": -73.69,
+   "balance": 605.66
+  },
+  {
+   "date": "2025-12-04",
+   "description": "INSURANCE PREMIUM HOME AND CONTENTS POLICY 88-2231",
+   "amount": -328.33,
+   "balance": 277.33
+  },
+  {
+   "date": "2025-12-04",
+   "description": "CARD PURCHASE PHARMACY",
+   "amount": -66.16,
+   "balance": 211.17
+  },
+  {
+   "date": "2025-12-04",
+   "description": "CARD PURCHASE PHARMACY",
+   "amount": -66.16,
+   "balance": 145.01
+  },
+  {
+   "date": "2025-12-06",
+   "description": "CUSTOMER PAYMENT INVOICE",
+   "amount": 3107.5,
+   "balance": 3252.51
+  },
+  {
+   "date": "2025-12-06",
+   "description": "CARD PURCHASE HARDWARE DEPOT",
+   "amount": -63.05,
+   "balance": 3189.46
+  },
+  {
+   "date": "2025-12-08",
+   "description": "BANK FEE MONTHLY",
+   "amount": -822.65,
+   "balance": 2366.81
+  },
+  {
+   "date": "2025-12-11",
+   "description": "CARD PURCHASE GROCERY MART",
+   "amount": -13.06,
+   "balance": 2353.75
+  },
+  {
+   "date": "2025-12-11",
+   "description": "STANDING ORDER RENT",
+   "amount": -19.04,
+   "balance": 2334.71
+  },
+  {
+   "date": "2025-12-13",
+   "description": "BANK FEE MONTHLY",
+   "amount": -27.71,
+   "balance": 2307.0
+  },
+  {
+   "date": "2025-12-13",
+   "description": "REFUND CARD PURCHASE",
+   "amount": 1547.15,
+   "balance": 3854.15
+  }
+ ]
+}

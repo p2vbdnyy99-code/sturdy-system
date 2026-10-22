@@ -1,0 +1,249 @@
+{
+ "doc": "S03",
+ "family": 1,
+ "scanned": false,
+ "opening_balance": 3047.91,
+ "closing_balance": 2912.61,
+ "transactions": [
+  {
+   "date": "2026-12-04",
+   "description": "DIRECT DEBIT CITY WATER",
+   "amount": -618.11,
+   "balance": 2429.8
+  },
+  {
+   "date": "2026-12-05",
+   "description": "SUBSCRIPTION STREAMING SERVICE",
+   "amount": -1346.95,
+   "balance": 1082.85
+  },
+  {
+   "date": "2026-12-07",
+   "description": "BANK FEE MONTHLY",
+   "amount": -71.99,
+   "balance": 1010.86
+  },
+  {
+   "date": "2026-12-09",
+   "description": "CARD PURCHASE FUEL STOP",
+   "amount": -26.25,
+   "balance": 984.61
+  },
+  {
+   "date": "2026-12-09",
+   "description": "STANDING ORDER RENT",
+   "amount": -56.23,
+   "balance": 928.38
+  },
+  {
+   "date": "2026-12-09",
+   "description": "ONLINE TRANSFER TO SAVINGS",
+   "amount": -21.13,
+   "balance": 907.25
+  },
+  {
+   "date": "2026-12-10",
+   "description": "SUBSCRIPTION STREAMING SERVICE",
+   "amount": -16.68,
+   "balance": 890.57
+  },
+  {
+   "date": "2026-12-11",
+   "description": "CUSTOMER PAYMENT INVOICE",
+   "amount": 3433.33,
+   "balance": 4323.9
+  },
+  {
+   "date": "2026-12-12",
+   "description": "ATM WITHDRAWAL",
+   "amount": -776.15,
+   "balance": 3547.75
+  },
+  {
+   "date": "2026-12-12",
+   "description": "DIRECT DEBIT CITY WATER",
+   "amount": -15.22,
+   "balance": 3532.53
+  },
+  {
+   "date": "2026-12-13",
+   "description": "SUBSCRIPTION STREAMING SERVICE",
+   "amount": -499.01,
+   "balance": 3033.52
+  },
+  {
+   "date": "2026-12-13",
+   "description": "CARD PURCHASE GROCERY MART",
+   "amount": -58.18,
+   "balance": 2975.34
+  },
+  {
+   "date": "2026-12-16",
+   "description": "INTEREST PAID",
+   "amount": 1539.24,
+   "balance": 4514.58
+  },
+  {
+   "date": "2026-12-17",
+   "description": "SUBSCRIPTION STREAMING SERVICE",
+   "amount": -326.74,
+   "balance": 4187.84
+  },
+  {
+   "date": "2026-12-20",
+   "description": "DIRECT DEBIT CITY WATER",
+   "amount": -1414.19,
+   "balance": 2773.65
+  },
+  {
+   "date": "2026-12-21",
+   "description": "DIRECT DEBIT MOBILE PHONE",
+   "amount": -25.98,
+   "balance": 2747.67
+  },
+  {
+   "date": "2026-12-21",
+   "description": "CARD PURCHASE FUEL STOP",
+   "amount": -60.96,
+   "balance": 2686.71
+  },
+  {
+   "date": "2026-12-21",
+   "description": "REFUND CARD PURCHASE",
+   "amount": 403.52,
+   "balance": 3090.23
+  },
+  {
+   "date": "2026-12-21",
+   "description": "CARD PURCHASE FUEL STOP",
+   "amount": -620.04,
+   "balance": 2470.19
+  },
+  {
+   "date": "2026-12-21",
+   "description": "DIRECT DEBIT MOBILE PHONE",
+   "amount": -25.56,
+   "balance": 2444.63
+  },
+  {
+   "date": "2026-12-21",
+   "description": "DIRECT DEBIT MOBILE PHONE",
+   "amount": -25.56,
+   "balance": 2419.07
+  },
+  {
+   "date": "2026-12-22",
+   "description": "BANK FEE MONTHLY",
+   "amount": -27.78,
+   "balance": 2391.29
+  },
+  {
+   "date": "2026-12-23",
+   "description": "CUSTOMER PAYMENT INVOICE",
+   "amount": 3139.02,
+   "balance": 5530.31
+  },
+  {
+   "date": "2026-12-25",
+   "description": "ATM WITHDRAWAL",
+   "amount": -3.41,
+   "balance": 5526.9
+  },
+  {
+   "date": "2026-12-25",
+   "description": "TRANSFER FROM SAVINGS",
+   "amount": 675.61,
+   "balance": 6202.51
+  },
+  {
+   "date": "2026-12-26",
+   "description": "ATM WITHDRAWAL",
+   "amount": -65.94,
+   "balance": 6136.57
+  },
+  {
+   "date": "2026-12-28",
+   "description": "SUBSCRIPTION STREAMING SERVICE",
+   "amount": -85.12,
+   "balance": 6051.45
+  },
+  {
+   "date": "2026-12-29",
+   "description": "ONLINE TRANSFER TO SAVINGS",
+   "amount": -481.45,
+   "balance": 5570.0
+  },
+  {
+   "date": "2027-01-01",
+   "description": "CUSTOMER PAYMENT INVOICE",
+   "amount": 539.57,
+   "balance": 6109.57
+  },
+  {
+   "date": "2027-01-03",
+   "description": "CARD PURCHASE FUEL STOP",
+   "amount": -640.75,
+   "balance": 5468.82
+  },
+  {
+   "date": "2027-01-04",
+   "description": "DIRECT DEBIT MOBILE PHONE",
+   "amount": -1176.02,
+   "balance": 4292.8
+  },
+  {
+   "date": "2027-01-05",
+   "description": "DIRECT DEBIT CITY WATER",
+   "amount": -861.13,
+   "balance": 3431.67
+  },
+  {
+   "date": "2027-01-07",
+   "description": "CARD PURCHASE COFFEE HOUSE",
+   "amount": -1320.98,
+   "balance": 2110.69
+  },
+  {
+   "date": "2027-01-08",
+   "description": "DIRECT DEBIT MOBILE PHONE",
+   "amount": -1300.42,
+   "balance": 810.27
+  },
+  {
+   "date": "2027-01-09",
+   "description": "CLIENT REMITTANCE CONSULTING SERVICES PROJECT ALPHA MILESTONE 2",
+   "amount": 1812.1,
+   "balance": 2622.37
+  },
+  {
+   "date": "2027-01-09",
+   "description": "CARD PURCHASE HARDWARE DEPOT",
+   "amount": -615.2,
+   "balance": 2007.17
+  },
+  {
+   "date": "2027-01-09",
+   "description": "CARD PURCHASE FUEL STOP",
+   "amount": -1377.11,
+   "balance": 630.06
+  },
+  {
+   "date": "2027-01-10",
+   "description": "STANDING ORDER RENT",
+   "amount": -51.6,
+   "balance": 578.46
+  },
+  {
+   "date": "2027-01-12",
+   "description": "CUSTOMER PAYMENT INVOICE",
+   "amount": 2339.88,
+   "balance": 2918.34
+  },
+  {
+   "date": "2027-01-13",
+   "description": "DIRECT DEBIT MOBILE PHONE",
+   "amount": -5.73,
+   "balance": 2912.61
+  }
+ ]
+}

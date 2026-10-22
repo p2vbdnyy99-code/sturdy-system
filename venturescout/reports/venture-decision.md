@@ -78,3 +78,15 @@ Nothing requires a computer yet:
 **Approve the two free document-SaaS desk tests (E3 search-newcomer study and E4 AI-substitution test with synthetic
 statements).** They can confirm or eliminate the second candidate within one session, while the Jira cohort ages to its
 day-30 check on 2026-11-20.
+
+---
+
+## Addendum 2026-10-22: document-to-spreadsheet SaaS tested
+
+- **Test A** (search discoverability): **inconclusive**.
+- **Test B** (AI substitution): **strong substitution warning, provisional** (the model tested was not a free consumer tier).
+- **Candidate decision: REJECT.** See `document-saas-decision.md`. The only cheap result that could reopen it is a free-tool
+  replication on 5 synthetic statements.
+- **Portfolio decision: unchanged, RESEARCH FURTHER.**
+  - The Jira cohort continues (day-30 re-measure on 2026-11-20).
+  - Jira is **not** promoted to winner because the other candidate failed.

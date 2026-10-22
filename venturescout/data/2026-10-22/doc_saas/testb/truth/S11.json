@@ -1,0 +1,87 @@
+{
+ "doc": "S11",
+ "family": 3,
+ "scanned": false,
+ "opening_balance": -13.86,
+ "closing_balance": 3556.11,
+ "transactions": [
+  {
+   "date": "2026-06-01",
+   "description": "CARD PURCHASE FUEL STOP",
+   "amount": -1030.0,
+   "balance": -1043.86
+  },
+  {
+   "date": "2026-06-01",
+   "description": "SUBSCRIPTION STREAMING SERVICE",
+   "amount": -1198.34,
+   "balance": -2242.2
+  },
+  {
+   "date": "2026-06-01",
+   "description": "DIRECT DEBIT MOBILE PHONE",
+   "amount": -1237.0,
+   "balance": -3479.2
+  },
+  {
+   "date": "2026-06-01",
+   "description": "BANK FEE MONTHLY",
+   "amount": -67.6,
+   "balance": -3546.8
+  },
+  {
+   "date": "2026-06-03",
+   "description": "SALARY PAYROLL",
+   "amount": 2867.66,
+   "balance": -679.14
+  },
+  {
+   "date": "2026-06-04",
+   "description": "CLIENT REMITTANCE CONSULTING SERVICES PROJECT ALPHA MILESTONE 2",
+   "amount": 3471.04,
+   "balance": 2791.9
+  },
+  {
+   "date": "2026-06-07",
+   "description": "CARD PURCHASE FUEL STOP",
+   "amount": -315.01,
+   "balance": 2476.89
+  },
+  {
+   "date": "2026-06-10",
+   "description": "CARD PURCHASE FUEL STOP",
+   "amount": -5.37,
+   "balance": 2471.52
+  },
+  {
+   "date": "2026-06-10",
+   "description": "REFUND CARD PURCHASE",
+   "amount": 1106.7,
+   "balance": 3578.22
+  },
+  {
+   "date": "2026-06-11",
+   "description": "ONLINE TRANSFER TO SAVINGS",
+   "amount": -3.94,
+   "balance": 3574.28
+  },
+  {
+   "date": "2026-06-12",
+   "description": "INTEREST PAID",
+   "amount": 714.35,
+   "balance": 4288.63
+  },
+  {
+   "date": "2026-06-13",
+   "description": "DIRECT DEBIT CITY WATER",
+   "amount": -681.78,
+   "balance": 3606.85
+  },
+  {
+   "date": "2026-06-13",
+   "description": "STANDING ORDER RENT",
+   "amount": -50.74,
+   "balance": 3556.11
+  }
+ ]
+}

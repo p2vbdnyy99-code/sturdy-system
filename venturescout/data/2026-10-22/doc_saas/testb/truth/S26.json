@@ -1,0 +1,57 @@
+{
+ "doc": "S26",
+ "family": 6,
+ "scanned": false,
+ "opening_balance": 2173.83,
+ "closing_balance": 727.14,
+ "transactions": [
+  {
+   "date": "2026-09-04",
+   "description": "INTEREST PAID",
+   "amount": 2306.95,
+   "balance": 4480.78
+  },
+  {
+   "date": "2026-09-05",
+   "description": "DIRECT DEBIT CITY WATER",
+   "amount": -26.29,
+   "balance": 4454.49
+  },
+  {
+   "date": "2026-09-06",
+   "description": "CARD PURCHASE PHARMACY",
+   "amount": -1358.1,
+   "balance": 3096.39
+  },
+  {
+   "date": "2026-09-07",
+   "description": "CASH DEPOSIT BRANCH",
+   "amount": 48.75,
+   "balance": 3145.14
+  },
+  {
+   "date": "2026-09-09",
+   "description": "CARD PURCHASE FUEL STOP",
+   "amount": -275.92,
+   "balance": 2869.22
+  },
+  {
+   "date": "2026-09-10",
+   "description": "ATM WITHDRAWAL",
+   "amount": -1436.56,
+   "balance": 1432.66
+  },
+  {
+   "date": "2026-09-10",
+   "description": "CARD PURCHASE COFFEE HOUSE",
+   "amount": -140.2,
+   "balance": 1292.46
+  },
+  {
+   "date": "2026-09-13",
+   "description": "CARD PURCHASE PHARMACY",
+   "amount": -565.32,
+   "balance": 727.14
+  }
+ ]
+}

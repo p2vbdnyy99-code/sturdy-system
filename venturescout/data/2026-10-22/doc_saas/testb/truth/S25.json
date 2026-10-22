@@ -1,0 +1,195 @@
+{
+ "doc": "S25",
+ "family": 5,
+ "scanned": true,
+ "opening_balance": 112.31,
+ "closing_balance": 9237.66,
+ "transactions": [
+  {
+   "date": "2026-01-02",
+   "description": "DIRECT DEBIT MOBILE PHONE",
+   "amount": -389.47,
+   "balance": null
+  },
+  {
+   "date": "2026-01-03",
+   "description": "SALARY PAYROLL",
+   "amount": 1179.1,
+   "balance": null
+  },
+  {
+   "date": "2026-01-06",
+   "description": "CUSTOMER PAYMENT INVOICE",
+   "amount": 2248.91,
+   "balance": null
+  },
+  {
+   "date": "2026-01-08",
+   "description": "SUBSCRIPTION STREAMING SERVICE",
+   "amount": -60.33,
+   "balance": null
+  },
+  {
+   "date": "2026-01-08",
+   "description": "CLIENT REMITTANCE CONSULTING SERVICES PROJECT ALPHA MILESTONE 2",
+   "amount": 720.63,
+   "balance": null
+  },
+  {
+   "date": "2026-01-09",
+   "description": "BANK FEE MONTHLY",
+   "amount": -968.82,
+   "balance": null
+  },
+  {
+   "date": "2026-01-09",
+   "description": "BANK FEE MONTHLY",
+   "amount": -968.82,
+   "balance": null
+  },
+  {
+   "date": "2026-01-12",
+   "description": "REFUND CARD PURCHASE",
+   "amount": 1457.99,
+   "balance": null
+  },
+  {
+   "date": "2026-01-13",
+   "description": "SUBSCRIPTION STREAMING SERVICE",
+   "amount": -1327.41,
+   "balance": null
+  },
+  {
+   "date": "2026-01-13",
+   "description": "CUSTOMER PAYMENT INVOICE",
+   "amount": 3832.25,
+   "balance": null
+  },
+  {
+   "date": "2026-01-13",
+   "description": "CARD PURCHASE PHARMACY",
+   "amount": -226.62,
+   "balance": null
+  },
+  {
+   "date": "2026-01-13",
+   "description": "CARD PURCHASE COFFEE HOUSE",
+   "amount": -71.01,
+   "balance": null
+  },
+  {
+   "date": "2026-01-15",
+   "description": "DIRECT DEBIT CITY WATER",
+   "amount": -1241.43,
+   "balance": null
+  },
+  {
+   "date": "2026-01-15",
+   "description": "DIRECT DEBIT CITY WATER",
+   "amount": -1241.43,
+   "balance": null
+  },
+  {
+   "date": "2026-01-18",
+   "description": "SALARY PAYROLL",
+   "amount": 124.76,
+   "balance": null
+  },
+  {
+   "date": "2026-01-19",
+   "description": "SALARY PAYROLL",
+   "amount": 2365.58,
+   "balance": null
+  },
+  {
+   "date": "2026-01-19",
+   "description": "SALARY PAYROLL",
+   "amount": 939.19,
+   "balance": null
+  },
+  {
+   "date": "2026-01-19",
+   "description": "SALARY PAYROLL",
+   "amount": 939.19,
+   "balance": null
+  },
+  {
+   "date": "2026-01-19",
+   "description": "DIRECT DEBIT CITY WATER",
+   "amount": -443.54,
+   "balance": null
+  },
+  {
+   "date": "2026-01-19",
+   "description": "CUSTOMER PAYMENT INVOICE",
+   "amount": 3923.26,
+   "balance": null
+  },
+  {
+   "date": "2026-01-20",
+   "description": "ATM WITHDRAWAL",
+   "amount": -1286.46,
+   "balance": null
+  },
+  {
+   "date": "2026-01-20",
+   "description": "DIRECT DEBIT CITY WATER",
+   "amount": -44.26,
+   "balance": null
+  },
+  {
+   "date": "2026-01-22",
+   "description": "SALARY PAYROLL",
+   "amount": 988.11,
+   "balance": null
+  },
+  {
+   "date": "2026-01-24",
+   "description": "INSURANCE PREMIUM HOME AND CONTENTS POLICY 88-2231",
+   "amount": -1079.53,
+   "balance": null
+  },
+  {
+   "date": "2026-01-24",
+   "description": "INSURANCE PREMIUM HOME AND CONTENTS POLICY 88-2231",
+   "amount": -1079.53,
+   "balance": null
+  },
+  {
+   "date": "2026-01-27",
+   "description": "CUSTOMER PAYMENT INVOICE",
+   "amount": 2941.2,
+   "balance": null
+  },
+  {
+   "date": "2026-01-28",
+   "description": "CARD PURCHASE GROCERY MART",
+   "amount": -1225.49,
+   "balance": null
+  },
+  {
+   "date": "2026-01-29",
+   "description": "CARD PURCHASE COFFEE HOUSE",
+   "amount": -27.63,
+   "balance": null
+  },
+  {
+   "date": "2026-01-29",
+   "description": "PAYMENT TO SUPPLIER ACME PARTS LTD INVOICE 4471 REF Q3 MATERIALS ORDER",
+   "amount": -211.79,
+   "balance": null
+  },
+  {
+   "date": "2026-02-01",
+   "description": "CARD PURCHASE COFFEE HOUSE",
+   "amount": -580.5,
+   "balance": null
+  },
+  {
+   "date": "2026-02-04",
+   "description": "DIRECT DEBIT MOBILE PHONE",
+   "amount": -60.75,
+   "balance": null
+  }
+ ]
+}

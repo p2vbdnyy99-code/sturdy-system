@@ -1,0 +1,243 @@
+{
+ "doc": "S28",
+ "family": 6,
+ "scanned": false,
+ "opening_balance": 3360.1,
+ "closing_balance": 15198.26,
+ "transactions": [
+  {
+   "date": "2026-12-04",
+   "description": "CARD PURCHASE HARDWARE DEPOT",
+   "amount": -310.72,
+   "balance": 3049.38
+  },
+  {
+   "date": "2026-12-05",
+   "description": "INSURANCE PREMIUM HOME AND CONTENTS POLICY 88-2231",
+   "amount": -2.95,
+   "balance": 3046.43
+  },
+  {
+   "date": "2026-12-05",
+   "description": "CARD PURCHASE GROCERY MART",
+   "amount": -177.03,
+   "balance": 2869.4
+  },
+  {
+   "date": "2026-12-05",
+   "description": "CARD PURCHASE PHARMACY",
+   "amount": -34.8,
+   "balance": 2834.6
+  },
+  {
+   "date": "2026-12-06",
+   "description": "TRANSFER FROM SAVINGS",
+   "amount": 1540.46,
+   "balance": 4375.06
+  },
+  {
+   "date": "2026-12-08",
+   "description": "REFUND CARD PURCHASE",
+   "amount": 1828.15,
+   "balance": 6203.21
+  },
+  {
+   "date": "2026-12-10",
+   "description": "CARD PURCHASE FUEL STOP",
+   "amount": -236.59,
+   "balance": 5966.62
+  },
+  {
+   "date": "2026-12-10",
+   "description": "CARD PURCHASE GROCERY MART",
+   "amount": -1146.81,
+   "balance": 4819.81
+  },
+  {
+   "date": "2026-12-13",
+   "description": "SUBSCRIPTION STREAMING SERVICE",
+   "amount": -765.28,
+   "balance": 4054.53
+  },
+  {
+   "date": "2026-12-13",
+   "description": "SALARY PAYROLL",
+   "amount": 3337.97,
+   "balance": 7392.5
+  },
+  {
+   "date": "2026-12-14",
+   "description": "CLIENT REMITTANCE CONSULTING SERVICES PROJECT ALPHA MILESTONE 2",
+   "amount": 510.05,
+   "balance": 7902.55
+  },
+  {
+   "date": "2026-12-17",
+   "description": "CARD PURCHASE GROCERY MART",
+   "amount": -6.09,
+   "balance": 7896.46
+  },
+  {
+   "date": "2026-12-17",
+   "description": "SUBSCRIPTION STREAMING SERVICE",
+   "amount": -856.17,
+   "balance": 7040.29
+  },
+  {
+   "date": "2026-12-17",
+   "description": "ATM WITHDRAWAL",
+   "amount": -76.01,
+   "balance": 6964.28
+  },
+  {
+   "date": "2026-12-19",
+   "description": "CARD PURCHASE HARDWARE DEPOT",
+   "amount": -12.23,
+   "balance": 6952.05
+  },
+  {
+   "date": "2026-12-20",
+   "description": "TRANSFER FROM SAVINGS",
+   "amount": 3326.94,
+   "balance": 10278.99
+  },
+  {
+   "date": "2026-12-20",
+   "description": "INSURANCE PREMIUM HOME AND CONTENTS POLICY 88-2231",
+   "amount": -1361.54,
+   "balance": 8917.45
+  },
+  {
+   "date": "2026-12-23",
+   "description": "PAYMENT TO SUPPLIER ACME PARTS LTD INVOICE 4471 REF Q3 MATERIALS ORDER",
+   "amount": -942.72,
+   "balance": 7974.73
+  },
+  {
+   "date": "2026-12-24",
+   "description": "CARD PURCHASE GROCERY MART",
+   "amount": -1436.62,
+   "balance": 6538.11
+  },
+  {
+   "date": "2026-12-24",
+   "description": "ATM WITHDRAWAL",
+   "amount": -2.65,
+   "balance": 6535.46
+  },
+  {
+   "date": "2026-12-25",
+   "description": "STANDING ORDER RENT",
+   "amount": -19.56,
+   "balance": 6515.9
+  },
+  {
+   "date": "2026-12-27",
+   "description": "CASH DEPOSIT BRANCH",
+   "amount": 1247.47,
+   "balance": 7763.37
+  },
+  {
+   "date": "2026-12-28",
+   "description": "PAYMENT TO SUPPLIER ACME PARTS LTD INVOICE 4471 REF Q3 MATERIALS ORDER",
+   "amount": -27.32,
+   "balance": 7736.05
+  },
+  {
+   "date": "2026-12-28",
+   "description": "SALARY PAYROLL",
+   "amount": 1296.49,
+   "balance": 9032.54
+  },
+  {
+   "date": "2026-12-28",
+   "description": "CASH DEPOSIT BRANCH",
+   "amount": 3930.67,
+   "balance": 12963.21
+  },
+  {
+   "date": "2026-12-30",
+   "description": "STANDING ORDER RENT",
+   "amount": -38.82,
+   "balance": 12924.39
+  },
+  {
+   "date": "2026-12-30",
+   "description": "CARD PURCHASE FUEL STOP",
+   "amount": -537.58,
+   "balance": 12386.81
+  },
+  {
+   "date": "2027-01-02",
+   "description": "PAYMENT TO SUPPLIER ACME PARTS LTD INVOICE 4471 REF Q3 MATERIALS ORDER",
+   "amount": -78.17,
+   "balance": 12308.64
+  },
+  {
+   "date": "2027-01-04",
+   "description": "REFUND CARD PURCHASE",
+   "amount": 650.49,
+   "balance": 12959.13
+  },
+  {
+   "date": "2027-01-06",
+   "description": "ATM WITHDRAWAL",
+   "amount": -728.91,
+   "balance": 12230.22
+  },
+  {
+   "date": "2027-01-07",
+   "description": "ONLINE TRANSFER TO SAVINGS",
+   "amount": -37.8,
+   "balance": 12192.42
+  },
+  {
+   "date": "2027-01-07",
+   "description": "ONLINE TRANSFER TO SAVINGS",
+   "amount": -37.8,
+   "balance": 12154.62
+  },
+  {
+   "date": "2027-01-10",
+   "description": "CARD PURCHASE FUEL STOP",
+   "amount": -10.4,
+   "balance": 12144.22
+  },
+  {
+   "date": "2027-01-10",
+   "description": "SALARY PAYROLL",
+   "amount": 3730.69,
+   "balance": 15874.91
+  },
+  {
+   "date": "2027-01-10",
+   "description": "DIRECT DEBIT MOBILE PHONE",
+   "amount": -21.31,
+   "balance": 15853.6
+  },
+  {
+   "date": "2027-01-10",
+   "description": "CARD PURCHASE FUEL STOP",
+   "amount": -731.33,
+   "balance": 15122.27
+  },
+  {
+   "date": "2027-01-11",
+   "description": "ONLINE TRANSFER TO SAVINGS",
+   "amount": -823.96,
+   "balance": 14298.31
+  },
+  {
+   "date": "2027-01-14",
+   "description": "STANDING ORDER RENT",
+   "amount": -944.46,
+   "balance": 13353.85
+  },
+  {
+   "date": "2027-01-16",
+   "description": "TRANSFER FROM SAVINGS",
+   "amount": 1844.41,
+   "balance": 15198.26
+  }
+ ]
+}

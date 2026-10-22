@@ -1,0 +1,105 @@
+{
+ "doc": "S21",
+ "family": 5,
+ "scanned": false,
+ "opening_balance": 1358.01,
+ "closing_balance": 7604.85,
+ "transactions": [
+  {
+   "date": "2026-12-01",
+   "description": "CARD PURCHASE COFFEE HOUSE",
+   "amount": -908.04,
+   "balance": null
+  },
+  {
+   "date": "2026-12-01",
+   "description": "CUSTOMER PAYMENT INVOICE",
+   "amount": 1830.43,
+   "balance": null
+  },
+  {
+   "date": "2026-12-02",
+   "description": "BANK FEE MONTHLY",
+   "amount": -887.81,
+   "balance": null
+  },
+  {
+   "date": "2026-12-02",
+   "description": "REFUND CARD PURCHASE",
+   "amount": 2391.38,
+   "balance": null
+  },
+  {
+   "date": "2026-12-02",
+   "description": "REFUND CARD PURCHASE",
+   "amount": 2391.38,
+   "balance": null
+  },
+  {
+   "date": "2026-12-02",
+   "description": "CARD PURCHASE GROCERY MART",
+   "amount": -43.32,
+   "balance": null
+  },
+  {
+   "date": "2026-12-03",
+   "description": "BANK FEE MONTHLY",
+   "amount": -26.92,
+   "balance": null
+  },
+  {
+   "date": "2026-12-04",
+   "description": "SALARY PAYROLL",
+   "amount": 1733.83,
+   "balance": null
+  },
+  {
+   "date": "2026-12-06",
+   "description": "CARD PURCHASE COFFEE HOUSE",
+   "amount": -26.9,
+   "balance": null
+  },
+  {
+   "date": "2026-12-06",
+   "description": "CARD PURCHASE COFFEE HOUSE",
+   "amount": -26.9,
+   "balance": null
+  },
+  {
+   "date": "2026-12-06",
+   "description": "ATM WITHDRAWAL",
+   "amount": -27.99,
+   "balance": null
+  },
+  {
+   "date": "2026-12-08",
+   "description": "DIRECT DEBIT MOBILE PHONE",
+   "amount": -51.13,
+   "balance": null
+  },
+  {
+   "date": "2026-12-10",
+   "description": "DIRECT DEBIT CITY WATER",
+   "amount": -30.04,
+   "balance": null
+  },
+  {
+   "date": "2026-12-11",
+   "description": "ONLINE TRANSFER TO SAVINGS",
+   "amount": -8.99,
+   "balance": null
+  },
+  {
+   "date": "2026-12-13",
+   "description": "DIRECT DEBIT CITY WATER",
+   "amount": -31.07,
+   "balance": null
+  },
+  {
+   "date": "2026-12-13",
+   "description": "DIRECT DEBIT CITY WATER",
+   "amount": -31.07,
+   "balance": null
+  }
+ ]
+}

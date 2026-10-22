@@ -1,0 +1,189 @@
+{
+ "doc": "S09",
+ "family": 2,
+ "scanned": false,
+ "opening_balance": 4232.47,
+ "closing_balance": 11858.99,
+ "transactions": [
+  {
+   "date": "2026-01-01",
+   "description": "CARD PURCHASE HARDWARE DEPOT",
+   "amount": -38.8,
+   "balance": 4193.67
+  },
+  {
+   "date": "2026-01-01",
+   "description": "CUSTOMER PAYMENT INVOICE",
+   "amount": 356.79,
+   "balance": 4550.46
+  },
+  {
+   "date": "2026-01-01",
+   "description": "SUBSCRIPTION STREAMING SERVICE",
+   "amount": -54.22,
+   "balance": 4496.24
+  },
+  {
+   "date": "2026-01-02",
+   "description": "BANK FEE MONTHLY",
+   "amount": -218.86,
+   "balance": 4277.38
+  },
+  {
+   "date": "2026-01-05",
+   "description": "PAYMENT TO SUPPLIER ACME PARTS LTD INVOICE 4471 REF Q3 MATERIALS ORDER",
+   "amount": -69.3,
+   "balance": 4208.08
+  },
+  {
+   "date": "2026-01-06",
+   "description": "INTEREST PAID",
+   "amount": 1075.1,
+   "balance": 5283.18
+  },
+  {
+   "date": "2026-01-07",
+   "description": "BANK FEE MONTHLY",
+   "amount": -36.07,
+   "balance": 5247.11
+  },
+  {
+   "date": "2026-01-07",
+   "description": "CARD PURCHASE GROCERY MART",
+   "amount": -27.97,
+   "balance": 5219.14
+  },
+  {
+   "date": "2026-01-07",
+   "description": "CARD PURCHASE HARDWARE DEPOT",
+   "amount": -34.58,
+   "balance": 5184.56
+  },
+  {
+   "date": "2026-01-08",
+   "description": "REFUND CARD PURCHASE",
+   "amount": 2102.3,
+   "balance": 7286.86
+  },
+  {
+   "date": "2026-01-09",
+   "description": "PAYMENT TO SUPPLIER ACME PARTS LTD INVOICE 4471 REF Q3 MATERIALS ORDER",
+   "amount": -642.18,
+   "balance": 6644.68
+  },
+  {
+   "date": "2026-01-09",
+   "description": "REFUND CARD PURCHASE",
+   "amount": 725.79,
+   "balance": 7370.47
+  },
+  {
+   "date": "2026-01-11",
+   "description": "STANDING ORDER RENT",
+   "amount": -357.33,
+   "balance": 7013.14
+  },
+  {
+   "date": "2026-01-13",
+   "description": "DIRECT DEBIT CITY WATER",
+   "amount": -1457.75,
+   "balance": 5555.39
+  },
+  {
+   "date": "2026-01-15",
+   "description": "BANK FEE MONTHLY",
+   "amount": -677.66,
+   "balance": 4877.73
+  },
+  {
+   "date": "2026-01-15",
+   "description": "CARD PURCHASE HARDWARE DEPOT",
+   "amount": -64.46,
+   "balance": 4813.27
+  },
+  {
+   "date": "2026-01-15",
+   "description": "ATM WITHDRAWAL",
+   "amount": -1046.7,
+   "balance": 3766.57
+  },
+  {
+   "date": "2026-01-16",
+   "description": "DIRECT DEBIT CITY WATER",
+   "amount": -18.18,
+   "balance": 3748.39
+  },
+  {
+   "date": "2026-01-18",
+   "description": "BANK FEE MONTHLY",
+   "amount": -8.24,
+   "balance": 3740.15
+  },
+  {
+   "date": "2026-01-18",
+   "description": "SUBSCRIPTION STREAMING SERVICE",
+   "amount": -34.69,
+   "balance": 3705.46
+  },
+  {
+   "date": "2026-01-19",
+   "description": "DIRECT DEBIT CITY WATER",
+   "amount": -834.79,
+   "balance": 2870.67
+  },
+  {
+   "date": "2026-01-19",
+   "description": "CASH DEPOSIT BRANCH",
+   "amount": 1127.04,
+   "balance": 3997.71
+  },
+  {
+   "date": "2026-01-21",
+   "description": "SUBSCRIPTION STREAMING SERVICE",
+   "amount": -181.65,
+   "balance": 3816.06
+  },
+  {
+   "date": "2026-01-21",
+   "description": "REFUND CARD PURCHASE",
+   "amount": 1765.63,
+   "balance": 5581.69
+  },
+  {
+   "date": "2026-01-24",
+   "description": "SALARY PAYROLL",
+   "amount": 646.26,
+   "balance": 6227.95
+  },
+  {
+   "date": "2026-01-24",
+   "description": "SUBSCRIPTION STREAMING SERVICE",
+   "amount": -333.08,
+   "balance": 5894.87
+  },
+  {
+   "date": "2026-01-24",
+   "description": "SUBSCRIPTION STREAMING SERVICE",
+   "amount": -333.08,
+   "balance": 5561.79
+  },
+  {
+   "date": "2026-01-25",
+   "description": "DIRECT DEBIT MOBILE PHONE",
+   "amount": -64.22,
+   "balance": 5497.57
+  },
+  {
+   "date": "2026-01-25",
+   "description": "REFUND CARD PURCHASE",
+   "amount": 3180.71,
+   "balance": 8678.28
+  },
+  {
+   "date": "2026-01-25",
+   "description": "REFUND CARD PURCHASE",
+   "amount": 3180.71,
+   "balance": 11858.99
+  }
+ ]
+}

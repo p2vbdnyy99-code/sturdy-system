@@ -1,0 +1,87 @@
+{
+ "doc": "S06",
+ "family": 2,
+ "scanned": false,
+ "opening_balance": 1826.36,
+ "closing_balance": 8962.19,
+ "transactions": [
+  {
+   "date": "2026-01-01",
+   "description": "CASH DEPOSIT BRANCH",
+   "amount": 2312.64,
+   "balance": 4139.0
+  },
+  {
+   "date": "2026-01-01",
+   "description": "BANK FEE MONTHLY",
+   "amount": -1342.91,
+   "balance": 2796.09
+  },
+  {
+   "date": "2026-01-01",
+   "description": "STANDING ORDER RENT",
+   "amount": -33.06,
+   "balance": 2763.03
+  },
+  {
+   "date": "2026-01-01",
+   "description": "CARD PURCHASE GROCERY MART",
+   "amount": -59.34,
+   "balance": 2703.69
+  },
+  {
+   "date": "2026-01-02",
+   "description": "CARD PURCHASE GROCERY MART",
+   "amount": -155.51,
+   "balance": 2548.18
+  },
+  {
+   "date": "2026-01-03",
+   "description": "BANK FEE MONTHLY",
+   "amount": -177.58,
+   "balance": 2370.6
+  },
+  {
+   "date": "2026-01-03",
+   "description": "DIRECT DEBIT CITY WATER",
+   "amount": -1421.92,
+   "balance": 948.68
+  },
+  {
+   "date": "2026-01-05",
+   "description": "CLIENT REMITTANCE CONSULTING SERVICES PROJECT ALPHA MILESTONE 2",
+   "amount": 3608.68,
+   "balance": 4557.36
+  },
+  {
+   "date": "2026-01-05",
+   "description": "CASH DEPOSIT BRANCH",
+   "amount": 3963.46,
+   "balance": 8520.82
+  },
+  {
+   "date": "2026-01-05",
+   "description": "INTEREST PAID",
+   "amount": 253.9,
+   "balance": 8774.72
+  },
+  {
+   "date": "2026-01-05",
+   "description": "INTEREST PAID",
+   "amount": 253.9,
+   "balance": 9028.62
+  },
+  {
+   "date": "2026-01-06",
+   "description": "ONLINE TRANSFER TO SAVINGS",
+   "amount": -65.32,
+   "balance": 8963.3
+  },
+  {
+   "date": "2026-01-07",
+   "description": "SUBSCRIPTION STREAMING SERVICE",
+   "amount": -1.11,
+   "balance": 8962.19
+  }
+ ]
+}
