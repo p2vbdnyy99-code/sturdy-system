@@ -125,3 +125,39 @@ day-30 check on 2026-11-20.
   1. Whether to accept one-off platform-counted sales (Option 2) for marketplaces such as Envato.
   2. Whether to send the TrustMRR permission request, since the alternatives proved inadequate.
 - **Portfolio decision: unchanged, RESEARCH FURTHER.**
+
+## Addendum 2026-10-22 (5): founder decisions after the source assessment
+
+**Interpretation:**
+- The result is an **evidence bottleneck, not proof that the business models are bad.**
+- The absence of five qualifying examples in the sources examined does not prove that no such path exists.
+- Five successes would show that a path is possible, not the founder's probability of success.
+
+**Decisions:**
+1. **Threshold: strict MRR, unchanged.**
+   - At least 5 qualifying newcomers per business-model/acquisition-channel combination.
+   - Each with independently verified MRR strictly above $3,000.
+   - Each launched between 2025-04-22 and 2026-10-22.
+   - Distribution evidence must be independently checkable; founder claims alone do not qualify.
+   - One-off sales are supplementary evidence only.
+2. **TrustMRR: request narrowly scoped written permission, but the research does not depend on it.**
+   - No API access or collection until a written reply explicitly covers the intended use, including dataset storage and
+     AI-assisted analysis.
+   - Draft: `trustmrr-permission-request.md`.
+3. **No Product Hunt account** for this study.
+4. **Jira cohort check on 2026-11-20 is kept** as a research milestone, not a commitment to build.
+
+**Two tests per business model.** A model advances only when both have credible evidence:
+
+| Test | Question |
+|---|---|
+| Market viability | Are customers paying for this kind of product? |
+| Acquisition viability | Can a new, independent seller reach those customers through a channel that fits the constraints? |
+
+**No product build.** The threshold is not lowered, founder claims are not accepted as proof, and a niche is not chosen because
+its marketplace is large.
+
+**Repository visibility (found 2026-10-22):**
+- `p2vbdnyy99-code/sturdy-system` is **public** (GitHub API `"visibility": "public"`), not private.
+- No TrustMRR API data may be committed to it while it is public.
+- The permission request therefore asks only for private storage outside any shared or public repository.
