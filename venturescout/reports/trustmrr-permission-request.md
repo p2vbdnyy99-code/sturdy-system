@@ -2,7 +2,7 @@
 
 **Status: DRAFT, NOT SENT.** The founder sends it from their own email. No TrustMRR API access or data collection happens
 until a written reply explicitly covers every numbered item below. Permission to access data is not treated as permission to
-build a dataset or to use AI-assisted analysis; each is asked separately.
+build a dataset, to use AI-assisted analysis, or to keep or publish derived findings; each is asked separately.
 
 **Recipient:** `hi@marclou.com`. This is the contact address published in the TrustMRR FAQ (https://trustmrr.com/faq,
 accessed 2026-10-22). It is the only email address on the TrustMRR pages read.
@@ -27,9 +27,10 @@ I'd be grateful for a yes or no on each point:
 
 1. **Access:** use a Standard API key, within the documented rate limits, for internal research into newcomer business models
    and acquisition channels.
-2. **Filtering by launch date:** the list endpoint has no founded-date filter. To find startups founded between 22 April 2025
-   and 22 October 2026, I would page through the startup list once, at or below the rate limit. I would call "Get startup"
-   only for startups in that date range. Is this one-time pass acceptable, or is there a preferred way?
+2. **Paging the full list to find the cohort:** the list endpoint has no founded-date filter. The only way I can see to find
+   startups founded between 22 April 2025 and 22 October 2026 is to page through the entire startup list once, at or below the
+   rate limit, keeping only startups in that date range. I would then call "Get startup" only for those. Do you permit this
+   specific method, a single full pass of the listing, or is there a method you prefer?
 3. **Analysis:** compare verified MRR with the listed marketing channels, and report only aggregate counts by category,
    business model and channel.
 4. **Temporary working copy:** keep the selected records privately, accessible only to me, outside any shared or public
@@ -38,8 +39,13 @@ I'd be grateful for a yes or no on each point:
    The data would not be used to train or fine-tune any model.
 6. **Findings:** keep the aggregate findings (counts and summaries, not startup-level records) in a private report that only
    I can access.
+7. **Keeping findings after deletion:** may I keep that private aggregate report after the working copy in point 4 is
+   deleted?
+8. **Publishing aggregates:** I don't plan to publish anything. If I ever wanted to share aggregate results (for example
+   "N startups in category X use channel Y"), would that need separate permission, and what conditions would apply?
 
-**Pricing:** is the Standard API tier free? If it is paid, I'll check the cost before going further.
+**Pricing and limits:** is the Standard API tier free? Do any usage limits apply beyond the documented 10 requests per minute
+(for example daily or monthly caps)? If it is paid, I'll check the cost before going further.
 
 If any part isn't acceptable, a narrower version would still be helpful. I'm happy to adjust.
 

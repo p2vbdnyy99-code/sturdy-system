@@ -161,3 +161,16 @@ its marketplace is large.
 - `p2vbdnyy99-code/sturdy-system` is **public** (GitHub API `"visibility": "public"`), not private.
 - No TrustMRR API data may be committed to it while it is public.
 - The permission request therefore asks only for private storage outside any shared or public repository.
+
+## Addendum 2026-10-22 (6): data-handling decisions for TrustMRR
+
+- **The repository stays public.** No TrustMRR data goes into it. Making it private is a separate strategic decision, not
+  required for this study.
+- **Any authorised working copy** is kept outside shared repositories and deleted within 90 days. The findings report is
+  kept private.
+- **The request now has 8 separate questions.** Added:
+  - explicit permission for the full-list paging method;
+  - keeping derived findings after deletion;
+  - conditions on publishing aggregates;
+  - Standard-tier price and any usage caps.
+- **Still unsent.** No API access until written permission covers each point.
