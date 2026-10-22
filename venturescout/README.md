@@ -18,7 +18,10 @@ venturescout/
     ├── wordpress_author_age.py     author's first plugin date (separates new independents from established brands)
     ├── apify_actor_age.py          adds creation dates to an Apify Store pull
     ├── apify_newest_scan.py        newest-first Apify actors (unbiased newcomer base rate; API caps at ~15k)
-    └── apify_cohort_tracker.py     re-measures 30-day users for a sampled Apify cohort
+    ├── apify_cohort_tracker.py     re-measures 30-day users for a sampled Apify cohort
+    ├── apify_category_scan.py      top-N actors per search term with users, creation date and per-event price
+    └── apify_lawful_terms.txt      36 lawful-utility search terms
+models/scenarios.py                 conservative/base/optimistic scenarios for the top-three candidates
 models/income_model.py              paying sites needed per price/tax scenario + Forge cost scenarios
 ```
 
@@ -38,24 +41,34 @@ weighing legal requirements, setup cost, ongoing compliance, tax and genuine ope
    bypassing access controls, or collecting personal data without a lawful basis.
 3. **Paid demand exists:** public pricing plus a usage signal. Search interest alone does not count.
 
-## Scoring v2 (100 points): eight dimensions, scored separately
+## Scoring v3 (100 points, from 2026-10-22): eight dimensions, scored separately
 
-| # | Dimension | Weight | What earns points |
-|---|---|---|---|
-| 1 | Global demand | 15 | Paying usage across several regions; demand drivers (e.g. regulation) named |
-| 2 | Customer discoverability | 10 | A specific search, listing or in-product surface where buyers already look |
-| 3 | **New-entrant distribution evidence** | 20 | *Measured* traction of products launched in the last 12–18 months, by independent vendors, in this channel |
-| 4 | Seller eligibility | 10 | Official confirmation that the founder's jurisdiction and structure (individual, sole proprietor, company) can sell and be paid |
-| 5 | Payment infrastructure | 10 | Platform or merchant-of-record handles checkout, tax collection and payouts; availability verified for the seller's jurisdiction |
-| 6 | Business structure and tax complexity | 5 | Works as an individual; low filing and withholding burden |
-| 7 | Unit economics | 20 | Price × achievable customer count reaches the take-home target with costs, fees and tax modelled |
-| 8 | Solo-founder operating burden | 10 | Low support, maintenance and breakage risk; high automation |
+| # | Dimension | Weight |
+|---|---|---|
+| 1 | Verified demand and evidence of spending | 15 |
+| 2 | Organic discoverability | 15 |
+| 3 | **Newcomer traction** (consistent cohorts, age-matched, explicit denominators) | 20 |
+| 4 | Seller eligibility and platform access | 10 |
+| 5 | Payment and payout feasibility | 10 |
+| 6 | Business structure and tax feasibility | 5 |
+| 7 | Unit economics and income potential | 15 |
+| 8 | Solo operating burden and durability | 10 |
 
-Scoring rules:
-- Missing evidence scores at most half of a dimension's weight. "Unmeasured" is not "good".
-- Every score cites the measurement or source behind it.
-- The first scan's weights (v1) are kept in git history. v2 replaces "differentiation/competition" with an
-  explicit newcomer-evidence dimension, because AI-assisted building floods every visible niche within months.
+Rules:
+- A dimension without adequate evidence gets **at most half** its points.
+- Differences of a few points are inconclusive when evidence is weak.
+- The gates override the score.
+- Newcomer rates must use a defined launch window, a full denominator and comparable product ages.
+  Survivor lists (e.g. "top N by popularity") never count as success rates.
+- History: v1 in scan #1; v2 on 2026-10-21 (weights 15/10/20/10/10/5/20/10).
+
+Current outputs:
+- `reports/venture-decision.md`
+- `reports/global-opportunity-comparison.md`
+- `reports/evidence-ledger.md`
+- `reports/top-three-opportunity-investigations.md`
+- `reports/prebuild-validation-plan.md`
+- `data/COHORTS.md`
 
 ## Take-home formula
 
@@ -81,6 +94,8 @@ python3 models/income_model.py
 python3 scanners/wordpress_new_scan.py 2025-04-21 wp_new.json && python3 scanners/wordpress_author_age.py wp_new.json 100 wp_new_100plus.json
 python3 scanners/apify_newest_scan.py 15000 apify_newest.json
 python3 scanners/apify_cohort_tracker.py data/2026-10-21/apify_newest.json data/apify_cohort_snapshots.csv 10   # day 30/60
+python3 scanners/apify_category_scan.py scanners/apify_lawful_terms.txt out.json 10
+python3 models/scenarios.py
 ```
 
 Both use public, unauthenticated, read-only endpoints. Keep the request rate modest.

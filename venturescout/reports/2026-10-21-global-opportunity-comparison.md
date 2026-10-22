@@ -1,3 +1,6 @@
+> **Superseded on 2026-10-22** by `global-opportunity-comparison.md`. Its Apify newcomer figures used a survivor sample
+> without a denominator. See the corrections table there.
+
 # VentureScout: Global Opportunity Comparison (v2 method, 2026-10-21)
 
 ## Answer first

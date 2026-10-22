@@ -16,8 +16,10 @@ today = datetime.date.today().isoformat()
 def installs(key):
     for i in range(4):
         try:
-            d = json.load(urllib.request.urlopen(f"https://marketplace.atlassian.com/rest/2/addons/{key}", timeout=30))
-            return key, d["_embedded"]["distribution"].get("totalInstalls", 0)  # key is absent at 0 installs
+            # Use the dedicated /distribution endpoint: on 2026-10-22 the app-detail embed started returning 0 for
+            # every app (see data/cohort_snapshots_INVALID_2026-10-22.csv), while /distribution matched the listing.
+            d = json.load(urllib.request.urlopen(f"https://marketplace.atlassian.com/rest/2/addons/{key}/distribution", timeout=30))
+            return key, d.get("totalInstalls", 0)  # key is absent at 0 installs
         except Exception:
             time.sleep(2 ** i)
     return key, None

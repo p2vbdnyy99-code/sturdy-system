@@ -151,3 +151,155 @@ date,key,vendor,first,indep,installs
 2026-10-21,org.ursacorp.issue-aging-chart,URSACORP,2026-08-12,True,0
 2026-10-21,com.klaxoon.app.plugins.jira,Klaxoon by Wrike,2026-08-28,True,0
 2026-10-21,com.helpdeskmigration.plugins.export.jira,Help Desk Migration,2026-09-09,False,0
+2026-10-22,vudia.planning.poker,Vudia,2026-08-05,True,64
+2026-10-22,com.axt.jira.plugins.sprintsuppermanager,AppX,2026-08-19,True,69
+2026-10-22,clockify-v2,CAKE.com Inc,2026-08-03,False,1136
+2026-10-22,com.stonikbyte.cumulative-flow-cfd-dashboard-report-agile-kanban,StonikByte,2026-09-21,False,26
+2026-10-22,aging-work-items,Vudia,2026-09-13,True,14
+2026-10-22,com.stonikbyte.velocity-throughput-report-agile-kanban-scrum,StonikByte,2026-09-24,False,24
+2026-10-22,com.circuitsql.pro.forge,Realigned Technologies,2026-08-25,False,6
+2026-10-22,com.stonikbyte.burndown-burnup-dashboard-report-agile-scrum,StonikByte,2026-09-30,False,21
+2026-10-22,com.eyzee.addons.ezee-worklog-plus,Eyzee,2026-10-21,False,26
+2026-10-22,com.plugthatapp.ganttry,Plug That App,2026-08-24,True,7
+2026-10-22,com.stonikbyte.wip-aging-run-chart-dashboard-report-agile-kanban,StonikByte,2026-09-16,False,19
+2026-10-22,com.aw.advancedfilters,Advanced Workspace,2026-09-17,True,11
+2026-10-22,com.stonikbyte.pivot-table-chart-dashboard-report-heatmap-agile,StonikByte,2026-10-14,False,5
+2026-10-22,com.stonikbyte.worklog-report-dashboard-timesheets-heatmap-pivot,StonikByte,2026-10-15,False,4
+2026-10-22,com.leanzero.jira.costslasher,LeanZero SRL,2026-10-04,True,7
+2026-10-22,pulsereports,ExportDataWiz,2026-09-23,True,2
+2026-10-22,io.github.leo-liu-522.steadygantt,SteadyGantt,2026-08-13,True,7
+2026-10-22,AAIA,Aneto Software,2026-09-26,False,8
+2026-10-22,io.plugio.jira.suite-free,Plugio,2026-09-19,True,10
+2026-10-22,com.stonikbyte.cycle-lead-time-in-status-agile-kanban-scrum,StonikByte,2026-10-01,False,4
+2026-10-22,com.leanzero.jira.leanzeromanagement,LeanZero SRL,2026-08-13,True,8
+2026-10-22,ac32f68c-7a05-483a-83bc-906cf05c0d53,"SG Development, Inc",2026-08-25,True,4
+2026-10-22,com.misheno.report-steward,Mikhail Eshchenko,2026-09-13,True,3
+2026-10-22,pt.luisivars.jira.dashboard-insights,Ivars Apps,2026-07-24,True,15
+2026-10-22,bfeaf78d-a27f-49ae-85b7-09da4e9994c3,Axeri Labs Bt.,2026-09-11,True,3
+2026-10-22,eu.yourpaths.flowpaths,Pathways Consulting Services P.C,2026-09-09,True,3
+2026-10-22,com.schematools.jsm-assets-exporter,Schema Tools,2026-07-23,True,3
+2026-10-22,com.dyordanov.sprint-ledger,Yord Soft,2026-09-24,True,2
+2026-10-22,SGC,Aneto Software,2026-09-26,False,3
+2026-10-22,com.athena.plugins.AutomatedActions.base,Athena IT Solutions,2026-09-15,False,2
+2026-10-22,com.ttpsc.apdc.attendance,Transition Technologies PSC,2026-09-10,False,2
+2026-10-22,com.arzenics.power-search,Arzenics  Tech,2026-09-07,True,2
+2026-10-22,com.bevelpine.exportpro,Bevelpine Apps,2026-09-01,True,2
+2026-10-22,com.niramasolutions.fastgantt,Nirama Solutions,2026-08-30,True,2
+2026-10-22,2552652e-8b57-4aaa-98da-8e1b1c359c47,keelapps,2026-08-31,True,2
+2026-10-22,sk.pro4it.jum,PRO4IT s.r.o.,2026-09-10,False,2
+2026-10-22,com.northbrace.sprint-history,Northbrace,2026-08-23,True,2
+2026-10-22,com.workflowlinter.jira,Workflow Linter,2026-08-19,True,2
+2026-10-22,io.nixarium.jira.time-in-status,Nixarium,2026-08-20,True,2
+2026-10-22,ro.probiusproiect.field-sum-gadgets,Probius Apps,2026-08-16,True,1
+2026-10-22,com.layercell.track-and-share-project-cost-against-budget,Layercell,2026-08-23,True,2
+2026-10-22,dc66d705-dfc3-45e9-84cf-8c53a79def12,PredictiveSpace,2026-08-04,True,2
+2026-10-22,com.avakode.jira.signoff,avakode,2026-07-30,True,2
+2026-10-22,com.celestisstudio.jira.issue-export,Celestis Studio,2026-10-02,True,1
+2026-10-22,io.selana.timebound,Selana Technologies,2026-10-02,True,1
+2026-10-22,org.ursacorp.worklog-pivot,URSACORP,2026-08-12,True,7
+2026-10-22,com.helzbrand.gantt,HelzBrand,2026-09-28,True,1
+2026-10-22,com.clovity.sprint-delivery-agent,Clovity,2026-09-22,True,1
+2026-10-22,br.com.digitalinf.jira.slacustomer,Digital I,2026-07-23,True,6
+2026-10-22,com.groundedwp.jira.bulkexporter,Grounded,2026-09-16,True,1
+2026-10-22,com.altimeterapps.flowdeck,Altimeter Apps,2026-09-16,True,1
+2026-10-22,com.seisukenagahara.jsm.participantflow,jsm-public-thread-space,2026-09-21,True,1
+2026-10-22,com.productlab.jira.dashboardnotes,Product Lab,2026-09-08,True,5
+2026-10-22,com.mikhaileshchenko.jira.historysteward,Mikhail Eshchenko,2026-09-11,True,1
+2026-10-22,com.helzbrand.dashboard-notes,HelzBrand,2026-09-12,True,1
+2026-10-22,ai.cloudbrief.jira.uxdesigninsights,CloudBrief,2026-09-07,True,1
+2026-10-22,dev.sellerkit.jira.rich-text-gadget,sellerkit,2026-09-04,True,1
+2026-10-22,nl.getcompliant.time-in-status,Ballon Apps,2026-09-02,True,1
+2026-10-22,com.technofystore.shiftrelay,TechnofyStore,2026-08-31,True,1
+2026-10-22,com.taskhooker.bespoke,Taskhooker,2026-08-31,True,1
+2026-10-22,com.acefoundry.capacity-trail-jira,Ace Foundry,2026-08-28,True,1
+2026-10-22,com.vortexlabsia.dossier,Vortex Labs,2026-09-16,True,1
+2026-10-22,com.saoirsesoftware.fairhours,Saoirse Software,2026-08-25,True,1
+2026-10-22,agile.metrics.analyzer,Thrivestack Labs,2026-07-23,True,5
+2026-10-22,beebee.plugins.pact,Hullara,2026-08-20,True,1
+2026-10-22,1e44cd3c-a137-490b-90c7-841e405e7e36,Better Integrations,2026-09-24,True,1
+2026-10-22,dev.katabarwalabs.jsm-assets-export,Katabarwa Labs,2026-08-12,True,1
+2026-10-22,dev.katabarwalabs.project-export-backup,Katabarwa Labs,2026-08-12,True,1
+2026-10-22,dev.katabarwalabs.access-governance-reporter,Katabarwa Labs,2026-08-11,True,1
+2026-10-22,agency.overheat.sprintestimate,SprintEstimate Space,2026-08-09,True,1
+2026-10-22,com.appsdynamic.sprint.organizer,Apps Dynamic,2026-08-04,True,1
+2026-10-22,tools.schema.sprint-scope-gadget,Schema Tools,2026-08-01,True,1
+2026-10-22,io.plugion.jira.panels,Plugio,2026-07-29,True,1
+2026-10-22,jira-status-duration-bottleneck-tracker,Codigital Solutions,2026-07-25,True,1
+2026-10-22,com.earlywick.queue-aging-heatmap,Earlywick,2026-07-26,True,1
+2026-10-22,love.berry.tablet-export,berry.love,2026-07-23,True,1
+2026-10-22,f6b99d71-629a-4b4d-bf3e-77ee1f99f64d,Codigital Solutions,2026-07-23,True,1
+2026-10-22,nl.berkly.easy-workflows-for-jira,Berk Karabacak,2026-08-29,True,1
+2026-10-22,aneto-reports-app,Aneto Software,2026-09-26,False,1
+2026-10-22,com.clearlaneapps.velocity,Clearlane Apps,2026-10-07,True,0
+2026-10-22,com.clearlaneapps.sprint-burndown,Clearlane Apps,2026-10-07,True,0
+2026-10-22,com.clearlaneapps.cumulative-flow,Clearlane Apps,2026-10-07,True,0
+2026-10-22,3c30901b-a444-4b9e-954c-dd5b0db2d4ae,Lognet time logger,2026-08-18,True,3
+2026-10-22,com.artuplabs.query,ArtUp Labs,2026-10-07,True,0
+2026-10-22,com.clearlaneapps.throughput,Clearlane Apps,2026-10-15,True,0
+2026-10-22,com.clearlaneapps.created-vs-resolved,Clearlane Apps,2026-10-15,True,0
+2026-10-22,com.renewalhub.workflow-guard-jira,NexaForge Labs,2026-10-05,True,0
+2026-10-22,053513c8-d15a-4b48-9cfd-c422727e0bcc,Bellowsware,2026-09-16,True,2
+2026-10-22,com.mahjoubijalel.export-without-limits,MahjoubiJalel,2026-10-03,True,0
+2026-10-22,com.frisforge.sprint-scope-guard,FrisForge LLC,2026-10-09,True,1
+2026-10-22,com.foooverse.jira.sprintverdict,foooverse,2026-09-06,True,2
+2026-10-22,com.artuplabs.reports,ArtUp Labs,2026-09-30,True,1
+2026-10-22,com.utilitystacklabs.jsm.approval-reports,UtilityStack Labs,2026-09-30,True,0
+2026-10-22,com.clearlaneapps.gantt,Clearlane Apps,2026-09-29,True,0
+2026-10-22,com.clearlaneapps.pulse,Clearlane Apps,2026-09-28,True,0
+2026-10-22,pt.luisivars.jira.capacity-planner,Ivars Apps,2026-10-07,True,1
+2026-10-22,io.selana.sheetout,Selana Technologies,2026-09-28,True,0
+2026-10-22,io.selana.stagetime,Selana Technologies,2026-09-28,True,0
+2026-10-22,pt.luisivars.jira.git-sync-branches-reports-automation,Ivars Apps,2026-10-07,True,1
+2026-10-22,ai.lunalink.timeinstatus,LunaLink AI,2026-08-14,True,2
+2026-10-22,c8c2416f-cf62-49c9-b4dc-a2265dcec8b6,ATLForge Factory,2026-09-24,True,0
+2026-10-22,0eaf2247-be76-4fca-a5bd-47d0e7341dda,Axeri Labs Bt.,2026-09-24,True,0
+2026-10-22,com.toine.cumulative-flow,Toine.com B.V.,2026-10-07,True,0
+2026-10-22,com.toine.work-item-aging,Toine.com B.V.,2026-10-06,True,0
+2026-10-22,com.toine.throughput-cycle-time,Toine.com B.V.,2026-10-06,True,0
+2026-10-22,com.toine.test-summary-report,Toine.com B.V.,2026-10-06,True,0
+2026-10-22,fr.gothtech.sprintscope,GOTH - Global Online Tech Hub,2026-09-22,True,0
+2026-10-22,com.icevid.dev.plugins.sprintdatefields,Ryan Vidal,2026-09-21,True,1
+2026-10-22,com.hosthob.finishline.forecast,FinishLine,2026-09-19,True,0
+2026-10-22,dev.katabarwalabs.jsm-portal-extension,Katabarwa Labs,2026-09-17,True,0
+2026-10-22,cyclepulse,NoxVoid Software,2026-09-18,True,0
+2026-10-22,co.datadir.dwell,Datum,2026-09-17,True,0
+2026-10-22,com.ngpilot.checklist.workflow.automation,NGPILOT,2026-09-15,True,0
+2026-10-22,com.gramshift.jira.issue-export,GRAMSHIFT,2026-09-13,True,0
+2026-10-22,com.fulstech.jira.time-in-status,Fulstech,2026-09-11,False,0
+2026-10-22,com.technichor.bulkattachmentexport,Technichor,2026-09-11,True,0
+2026-10-22,com.smartechor.capacity,Smartechor,2026-09-10,True,0
+2026-10-22,com.sovereignworldlabs.versionworkloadreports,Sovereign World Labs,2026-09-12,True,0
+2026-10-22,com.exportelier.jira,Exportelier,2026-09-06,True,0
+2026-10-22,io.github.ethanj2k.time-in-status,Two Little Moons Consulting,2026-09-18,True,0
+2026-10-22,io.github.ethanj2k.mailpost,Two Little Moons Consulting,2026-09-05,True,0
+2026-10-22,io.github.ethanj2k.pivot-reports,Two Little Moons Consulting,2026-09-05,True,0
+2026-10-22,com.taskhooker.showdown,Taskhooker,2026-09-04,True,0
+2026-10-22,com.neuralvoid.jira.sprint-scope-guard,Neural Void Solutions,2026-08-31,True,0
+2026-10-22,nl.berkly.jira.time-in-status,Berk Karabacak,2026-08-30,True,0
+2026-10-22,d4f898b4-80ce-47c7-93de-e7c5d411be7f,Berk Karabacak,2026-08-29,True,0
+2026-10-22,com.offrou.exact-export,OFFrou,2026-08-30,True,0
+2026-10-22,io.github.lichenapps.sojourn,Lichen Apps,2026-09-03,True,0
+2026-10-22,com.wrenline.jira.dashboard-notes,Wrenline,2026-08-21,True,0
+2026-10-22,app.7thcode.flowguard,7thcode-app,2026-09-02,True,0
+2026-10-22,com.technofystore.objectguard-for-jira,TechnofyStore,2026-08-19,True,0
+2026-10-22,com.acefoundry.charts-for-jira,Ace Foundry,2026-08-18,True,0
+2026-10-22,com.alexanderlandaverde.clear-time-reports,Alexander Landaverde,2026-08-18,True,0
+2026-10-22,com.perlumetrics.tibu.standard_advanced,Perlumetrics UG (haftungsbeschränkt),2026-08-18,True,0
+2026-10-22,com.pulserook.slapulse,PulseRook ,2026-08-13,True,0
+2026-10-22,com.licen.dashboard.announcements.jira,Li Cen,2026-08-07,True,0
+2026-10-22,info.helpingbrains.sprint-reality,HelpingBrains,2026-07-28,True,0
+2026-10-22,com.dagrato.plugins.costdashboard,dagrato,2026-07-27,True,0
+2026-10-22,uk.codylabs.jira.worklogexport,Cody Labs,2026-07-26,True,0
+2026-10-22,com.adminshastra.flowguard,AdminShastra,2026-07-23,True,0
+2026-10-22,beebee.plugins.dwell,Hullara,2026-08-19,True,0
+2026-10-22,com.ravenshift.docdrop,Ravenshift,2026-08-16,True,0
+2026-10-22,com.sprintlytics.jira.sprintagilemetricscharts,naeem,2026-08-16,True,1
+2026-10-22,aneto-ai-daily-brief,Aneto Software,2026-09-26,False,0
+2026-10-22,com.clearlaneapps.forecast,Clearlane Apps,2026-09-28,True,0
+2026-10-22,com.simitechsoft.jira.plugins.cifjaudithistoryreporterforjira,Simitech Ltd.,2026-09-28,True,0
+2026-10-22,beebee.plugins.dwell-free,Hullara,2026-08-20,True,0
+2026-10-22,dev.sellerkit.jira.notes-gadget,sellerkit,2026-08-18,True,0
+2026-10-22,org.ursacorp.sprint-countdown,URSACORP,2026-08-12,True,0
+2026-10-22,org.ursacorp.issue-aging-chart,URSACORP,2026-08-12,True,0
+2026-10-22,com.klaxoon.app.plugins.jira,Klaxoon by Wrike,2026-08-28,True,0
+2026-10-22,com.helpdeskmigration.plugins.export.jira,Help Desk Migration,2026-09-09,False,0

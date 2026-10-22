@@ -1,0 +1,2 @@
+These rows were collected on 2026-10-22 with the app-detail endpoint, which returned totalInstalls=0 for apps
+whose listing showed hundreds of installs. They are kept for audit but must not be used. Re-measured with /distribution.

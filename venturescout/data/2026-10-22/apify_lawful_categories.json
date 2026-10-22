@@ -1,0 +1,5002 @@
+[
+ {
+  "term": "email verification",
+  "actors": [
+   {
+    "id": "michael.g/email-verifier-validator",
+    "title": "Email Verifier & Validator | Bulk Email Verification",
+    "u30": 505,
+    "u7": 181,
+    "runs30": 132716,
+    "rating": 4.73359655757667,
+    "reviews": 37,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "result",
+     "free": 0.1,
+     "bronze": 0.001
+    },
+    "created": "2026-03-16"
+   },
+   {
+    "id": "scalelist/email-finder",
+    "title": "Bulk Email Finder with Email Verification",
+    "u30": 186,
+    "u7": 65,
+    "runs30": 1468,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Result",
+     "free": 0.03,
+     "bronze": 0.025
+    },
+    "created": "2026-08-03"
+   },
+   {
+    "id": "vulnv/email-validator",
+    "title": "Email Validator - Bulk Email Verification",
+    "u30": 24,
+    "u7": 13,
+    "runs30": 2240,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "result",
+     "free": 0.002,
+     "bronze": 0.002
+    },
+    "created": "2026-04-30"
+   },
+   {
+    "id": "apricot_blackberry/contact-email-finder",
+    "title": "Contact Email Finder \u2014 B2B Email Discovery & Verification",
+    "u30": 6,
+    "u7": 4,
+    "runs30": 271,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Email verified",
+     "free": 0.02,
+     "bronze": 0.02
+    },
+    "created": "2026-02-26"
+   },
+   {
+    "id": "snipercoder/email-validator",
+    "title": "Email Verification\ud83d\udce7 $1/1K Emails, Super Cheap.",
+    "u30": 20,
+    "u7": 9,
+    "runs30": 974,
+    "rating": 5,
+    "reviews": 1,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "result",
+     "free": 0.001,
+     "bronze": 0.0008
+    },
+    "created": "2026-02-07"
+   },
+   {
+    "id": "scrapepilot/email-validator----bulk-email-verification-checker",
+    "title": "Email Validator \u2014 Bulk Email Verification & Checker",
+    "u30": 0,
+    "u7": 0,
+    "runs30": 29,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Validated Email Result",
+     "free": 0.003,
+     "bronze": 0.003
+    },
+    "created": "2026-03-30"
+   },
+   {
+    "id": "nexgendata/email-verification-tool",
+    "title": "Email Verification API \u2014 Bulk Syntax, MX & Disposable Checks",
+    "u30": 1,
+    "u7": 0,
+    "runs30": 28,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Email verification",
+     "free": 0.05,
+     "bronze": 0.05
+    },
+    "created": "2026-04-11"
+   },
+   {
+    "id": "eliai/email-validator",
+    "title": "Email Verifier & Validator | Bulk Email List Verification",
+    "u30": 1,
+    "u7": 1,
+    "runs30": 3,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Validated emails",
+     "free": 0.001,
+     "bronze": 0.00093
+    },
+    "created": "2026-06-25"
+   }
+  ]
+ },
+ {
+  "term": "phone number validation",
+  "actors": [
+   {
+    "id": "pink_comic/phone-number-validation",
+    "title": "Phone Number Validation API - Bulk Validator & Carrier Lookup",
+    "u30": 15,
+    "u7": 2,
+    "runs30": 1177,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Result",
+     "free": 0.001,
+     "bronze": 0.001
+    },
+    "created": "2026-04-06"
+   },
+   {
+    "id": "easyapi/phone-number-validation",
+    "title": "Phone Number Validation",
+    "u30": 6,
+    "u7": 1,
+    "runs30": 120,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "result",
+     "free": 0.00499,
+     "bronze": 0.00499
+    },
+    "created": "2024-09-05"
+   },
+   {
+    "id": "benthepythondev/phone-number-validation",
+    "title": "Phone Number Validation - Normalize & Check Numbers",
+    "u30": 0,
+    "u7": 0,
+    "runs30": 29,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "result",
+     "free": 0.001,
+     "bronze": 0.0009
+    },
+    "created": "2026-07-06"
+   },
+   {
+    "id": "nexgendata/phone-number-validator",
+    "title": "Phone Number Validation API \u2014 Format, Carrier & Line Type",
+    "u30": 0,
+    "u7": 0,
+    "runs30": 27,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Phone number validated",
+     "free": 0.02,
+     "bronze": 0.02
+    },
+    "created": "2026-07-03"
+   },
+   {
+    "id": "maximedupre/phone-number-validation",
+    "title": "Phone Number Validation API",
+    "u30": 1,
+    "u7": 1,
+    "runs30": 26,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Phone number",
+     "free": 2.83e-05,
+     "bronze": 2.46e-05
+    },
+    "created": "2026-07-21"
+   },
+   {
+    "id": "lergassy/email-phone-verifier",
+    "title": "Email Verifier & Phone Validator \u2014 $0.70 / 1,000",
+    "u30": 23,
+    "u7": 10,
+    "runs30": 102,
+    "rating": 5,
+    "reviews": 5,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Contact checked",
+     "free": 0.0007,
+     "bronze": 0.00063
+    },
+    "created": "2026-09-03"
+   },
+   {
+    "id": "zhorex/phone-number-validator",
+    "title": "Phone Number Validator \u2014 Bulk Validation, Line Type & Carrier",
+    "u30": 5,
+    "u7": 1,
+    "runs30": 47,
+    "rating": 1,
+    "reviews": 1,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Phone number validated",
+     "free": 0.002,
+     "bronze": 0.002
+    },
+    "created": "2026-04-06"
+   },
+   {
+    "id": "alizarin_refrigerator-owner/twilio-api-actor",
+    "title": "Twilio API Actor",
+    "u30": 1,
+    "u7": 1,
+    "runs30": 28,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "result",
+     "free": 1e-05,
+     "bronze": 1e-05
+    },
+    "created": "2026-01-12"
+   },
+   {
+    "id": "flash_scraper/phone-number-validator",
+    "title": "Phone Number Validator",
+    "u30": 0,
+    "u7": 0,
+    "runs30": 30,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Apify default dataset item",
+     "free": 0.002,
+     "bronze": 0.0018
+    },
+    "created": "2026-06-30"
+   }
+  ]
+ },
+ {
+  "term": "VAT number validation",
+  "actors": [
+   {
+    "id": "scrapers_lat/eu-vat-vies-validation-scraper",
+    "title": "EU VAT Number Validation Scraper (VIES): Company Name & Address",
+    "u30": 1,
+    "u7": 1,
+    "runs30": 26,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Result",
+     "free": 0.015,
+     "bronze": 0.01425
+    },
+    "created": "2026-07-16"
+   },
+   {
+    "id": "groundtruth/eu-vat-validation",
+    "title": "EU VAT Number Validation & Checker (VIES, Bulk)",
+    "u30": 1,
+    "u7": 1,
+    "runs30": 1,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "VAT check",
+     "free": 0.005,
+     "bronze": 0.005
+    },
+    "created": "2026-08-24"
+   },
+   {
+    "id": "devilscrapes/vies-vat-number-validator",
+    "title": "VIES VAT Checker \u2014 Bulk VAT Number Validation",
+    "u30": 1,
+    "u7": 1,
+    "runs30": 26,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "VAT number checked",
+     "free": 0.001,
+     "bronze": 0.001
+    },
+    "created": "2026-09-06"
+   },
+   {
+    "id": "thriftykiwi/eu-vat-vies-validation-scraper",
+    "title": "EU VAT Number Validation (VIES) Scraper",
+    "u30": 1,
+    "u7": 1,
+    "runs30": 20,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Result item",
+     "free": 0.001,
+     "bronze": 0.001
+    },
+    "created": "2026-09-27"
+   },
+   {
+    "id": "kdhan/eu-vat-validation-vies",
+    "title": "EU VAT Number Validation (Official VIES)",
+    "u30": 1,
+    "u7": 1,
+    "runs30": 23,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "result",
+     "free": 0.003,
+     "bronze": 0.003
+    },
+    "created": "2026-09-27"
+   },
+   {
+    "id": "gubidonius/vat-validation",
+    "title": "EU VAT Number Validation and Trader Lookup",
+    "u30": 0,
+    "u7": 0,
+    "runs30": null,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Number checked",
+     "free": 1e-05,
+     "bronze": 1e-05
+    },
+    "created": "2026-08-30"
+   },
+   {
+    "id": "jyaussie/cyprus-company-vat-check",
+    "title": "Cyprus Company Search & EU VAT Validator (VIES)",
+    "u30": 1,
+    "u7": 1,
+    "runs30": 5,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Company record",
+     "free": 0.015,
+     "bronze": 0.015
+    },
+    "created": "2026-10-17"
+   },
+   {
+    "id": "brisaworks/eu-vat-validator",
+    "title": "EU VAT Number Validator (VIES) with Name Match",
+    "u30": 1,
+    "u7": 1,
+    "runs30": 1,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "VAT number checked",
+     "free": 0.002,
+     "bronze": 0.002
+    },
+    "created": "2026-10-19"
+   }
+  ]
+ },
+ {
+  "term": "IBAN validation",
+  "actors": [
+   {
+    "id": "devilscrapes/openiban-iban-validator-scraper",
+    "title": "OpenIBAN IBAN Validator \u2014 Bulk IBAN Checker",
+    "u30": 1,
+    "u7": 1,
+    "runs30": 26,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "IBAN checked",
+     "free": 0.001,
+     "bronze": 0.001
+    },
+    "created": "2026-09-09"
+   },
+   {
+    "id": "lwsdjfls/iban-validator-enricher",
+    "title": "IBAN Validator & Bank Enricher \u2013 Bulk IBAN API",
+    "u30": 1,
+    "u7": 1,
+    "runs30": 26,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "IBAN validated",
+     "free": 0.0005,
+     "bronze": 0.000475
+    },
+    "created": "2026-09-15"
+   },
+   {
+    "id": "tryva/iban-payment-routing-intelligence",
+    "title": "IBAN Payment Routing Intelligence",
+    "u30": 1,
+    "u7": 1,
+    "runs30": 27,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "IBAN analyzed",
+     "free": 0.008,
+     "bronze": 0.008
+    },
+    "created": "2026-09-07"
+   },
+   {
+    "id": "crimson_rock/iban-swift-validator-and-routing-number-lookup",
+    "title": "IBAN, SWIFT Validator and Routing Number Lookup",
+    "u30": 4,
+    "u7": 3,
+    "runs30": 793,
+    "rating": 0,
+    "reviews": 0,
+    "model": "FREE",
+    "price": null,
+    "created": "2024-03-09"
+   },
+   {
+    "id": "maximedupre/iban-validator",
+    "title": "IBAN Validator API",
+    "u30": 2,
+    "u7": 2,
+    "runs30": 27,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "IBAN check",
+     "free": 0.0009,
+     "bronze": 0.0009
+    },
+    "created": "2026-08-09"
+   },
+   {
+    "id": "n1ckyta/eu-invoice-vat-extractor",
+    "title": "EU Invoice Extractor with VIES VAT Validation",
+    "u30": 1,
+    "u7": 1,
+    "runs30": 10,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Invoice parsed",
+     "free": 0.04,
+     "bronze": 0.04
+    },
+    "created": "2026-07-24"
+   },
+   {
+    "id": "offerastudio/iban-bank-validator",
+    "title": "IBAN Validator: Bulk Check & Bank Lookup",
+    "u30": 1,
+    "u7": 1,
+    "runs30": 17,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "IBAN checked",
+     "free": 0.001,
+     "bronze": 0.001
+    },
+    "created": "2026-10-02"
+   },
+   {
+    "id": "cexxz34/tr-vkn-iban-checker",
+    "title": "Turkish Tax Number (VKN) and IBAN Validator",
+    "u30": 1,
+    "u7": 1,
+    "runs30": 7,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Value checked",
+     "free": 0.0005,
+     "bronze": 0.0005
+    },
+    "created": "2026-10-15"
+   }
+  ]
+ },
+ {
+  "term": "address validation",
+  "actors": [
+   {
+    "id": "najx/swiss-address-geocoder",
+    "title": "Swiss Address Validation & Geocoding (geo.admin.ch)",
+    "u30": 1,
+    "u7": 1,
+    "runs30": 26,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Address result",
+     "free": 0.002,
+     "bronze": 0.002
+    },
+    "created": "2026-09-07"
+   },
+   {
+    "id": "nabeelbaghoor/address-validation-api",
+    "title": "Address Validation API - USPS ZIP+4 and 240 Countries",
+    "u30": 1,
+    "u7": 1,
+    "runs30": 26,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Address checked",
+     "free": 0.008,
+     "bronze": 0.008
+    },
+    "created": "2026-08-31"
+   },
+   {
+    "id": "nibble/address-validation-normalizer",
+    "title": "Address Validation & Normalizer (Bulk, US/CA/UK)",
+    "u30": 1,
+    "u7": 0,
+    "runs30": 30,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Validated address",
+     "free": 0.002,
+     "bronze": 0.002
+    },
+    "created": "2026-07-15"
+   },
+   {
+    "id": "flash_scraper/email-verifier",
+    "title": "Bulk Email Verifier & Validator - MX, Disposable Email Checker",
+    "u30": 2,
+    "u7": 0,
+    "runs30": 27,
+    "rating": 5,
+    "reviews": 1,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Apify default dataset item",
+     "free": 0.001,
+     "bronze": 0.0009
+    },
+    "created": "2026-06-28"
+   },
+   {
+    "id": "smilemask/french-address-geocoding",
+    "title": "French Address Geocoding: Search & Validate Addresses in France",
+    "u30": 1,
+    "u7": 1,
+    "runs30": 17,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "result",
+     "free": 0.001,
+     "bronze": 0.001
+    },
+    "created": "2026-10-02"
+   },
+   {
+    "id": "scrapemint/us-address-checker",
+    "title": "US Address Checker & GPS Finder: Verify & Geocode",
+    "u30": 0,
+    "u7": 0,
+    "runs30": 27,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Address found",
+     "free": 0.001,
+     "bronze": 0.001
+    },
+    "created": "2026-07-13"
+   },
+   {
+    "id": "fetch_cat/email-verifier-free-to-use-scraper",
+    "title": "Email Verifier Free to Use",
+    "u30": 0,
+    "u7": 0,
+    "runs30": 30,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Email verified",
+     "free": 0.0009085,
+     "bronze": 0.00079
+    },
+    "created": "2026-09-06"
+   },
+   {
+    "id": "lyfe_tools/nl-address-postcode-lookup-pdok",
+    "title": "Dutch Address Lookup & Geocoding: Postcode, BAG, PDOK",
+    "u30": 0,
+    "u7": 0,
+    "runs30": null,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Address matched",
+     "free": 0.0005,
+     "bronze": 0.0005
+    },
+    "created": "2026-10-04"
+   },
+   {
+    "id": "xmiso_scrapers/easy-bulk-email-validator---verify-emails-from-1-7-1000-rows",
+    "title": "Easy Bulk Email Validator - Verify Emails From $1/1000 Rows",
+    "u30": 178,
+    "u7": 47,
+    "runs30": 5531,
+    "rating": 3.000021025604334,
+    "reviews": 14,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "result",
+     "free": 0.0025,
+     "bronze": 0.0015
+    },
+    "created": "2025-08-29"
+   }
+  ]
+ },
+ {
+  "term": "PDF to text",
+  "actors": [
+   {
+    "id": "nerolabs/bulk-ocr-image-pdf-to-text",
+    "title": "Bulk OCR: Image & Scanned PDF to Text from CSV or Google Sheet",
+    "u30": 46,
+    "u7": 16,
+    "runs30": 201,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "OCR page",
+     "free": 0.005,
+     "bronze": 0.0045
+    },
+    "created": "2026-09-14"
+   },
+   {
+    "id": "amanatools/pdf-ocr-extractor",
+    "title": "PDF OCR Extractor \u2014 scanned PDFs to text (Arabic + English)",
+    "u30": 22,
+    "u7": 6,
+    "runs30": 94,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Document processed",
+     "free": 0.005,
+     "bronze": 0.005
+    },
+    "created": "2026-08-01"
+   },
+   {
+    "id": "andok/pdf-text-converter",
+    "title": "PDF to Text API | Document Extraction for LLMs & RAG",
+    "u30": 0,
+    "u7": 0,
+    "runs30": 27,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Document Converted",
+     "free": 0.001,
+     "bronze": 0.000667
+    },
+    "created": "2026-03-04"
+   },
+   {
+    "id": "santamaria-automations/pdf-extractor",
+    "title": "PDF Text Extractor - Bulk PDF to Text & Metadata",
+    "u30": 1,
+    "u7": 1,
+    "runs30": 27,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "PDF extracted",
+     "free": 0.005,
+     "bronze": 0.005
+    },
+    "created": "2026-04-11"
+   },
+   {
+    "id": "eliai/pdf-text-extractor",
+    "title": "PDF Text & OCR Extractor \u2014 Scanned PDF to Text API",
+    "u30": 11,
+    "u7": 3,
+    "runs30": 49,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Processed PDFs",
+     "free": 0.003,
+     "bronze": 0.00279
+    },
+    "created": "2026-06-25"
+   },
+   {
+    "id": "lofomachines/ocr-document-extractor",
+    "title": "OCR & Document Extractor \u2013 PDF & Image to Text, JSON, Word",
+    "u30": 1,
+    "u7": 0,
+    "runs30": 29,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "File processed",
+     "free": 0.03,
+     "bronze": 0.03
+    },
+    "created": "2026-06-17"
+   },
+   {
+    "id": "scrapesage/ocr-text-extractor",
+    "title": "OCR Text Extractor - Images & Scanned PDFs to Text",
+    "u30": 5,
+    "u7": 2,
+    "runs30": 138,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "OCR page",
+     "free": 0.003,
+     "bronze": 0.00255
+    },
+    "created": "2026-09-02"
+   },
+   {
+    "id": "omao/pdf-text",
+    "title": "PDF to Text API \u2014 Extract PDF Text to Clean JSON for LLM & RAG",
+    "u30": 2,
+    "u7": 1,
+    "runs30": 28,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "PDF page extracted",
+     "free": 0.002,
+     "bronze": 0.0018
+    },
+    "created": "2026-07-12"
+   },
+   {
+    "id": "accountable_eel/pdf-text-extractor",
+    "title": "PDF to Text & Markdown: Extract PDF Content by URL",
+    "u30": 3,
+    "u7": 3,
+    "runs30": 24,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Document processed (up to 20 pages)",
+     "free": 0.002,
+     "bronze": 0.00184
+    },
+    "created": "2026-09-25"
+   }
+  ]
+ },
+ {
+  "term": "PDF to markdown",
+  "actors": [
+   {
+    "id": "gochujang/pdf-text-extractor",
+    "title": "PDF Text Extractor - PDF to Markdown, Tables and RAG Chunks",
+    "u30": 54,
+    "u7": 9,
+    "runs30": 439,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Pdf Extracted",
+     "free": 0.02,
+     "bronze": 0.02
+    },
+    "created": "2026-06-10"
+   },
+   {
+    "id": "clearpath/pdf-to-markdown-api",
+    "title": "PDF to Markdown Converter - AI-Powered with OCR & Tables",
+    "u30": 1,
+    "u7": 1,
+    "runs30": 34,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Base fee per PDF processed",
+     "free": 0.0099,
+     "bronze": 0.0099
+    },
+    "created": "2025-12-14"
+   },
+   {
+    "id": "actorzlab/docling-pdf-converter",
+    "title": "PDF to Markdown & JSON Converter (Docling)",
+    "u30": 1,
+    "u7": 0,
+    "runs30": 42,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Page processed",
+     "free": 0.005,
+     "bronze": 0.005
+    },
+    "created": "2026-05-24"
+   },
+   {
+    "id": "nidamindllc/doc-ocr",
+    "title": "Document OCR | PDF to Markdown | Invoice, Table & Image to Text",
+    "u30": 11,
+    "u7": 4,
+    "runs30": 40,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Page OCR'd",
+     "free": 0.004,
+     "bronze": 0.004
+    },
+    "created": "2026-08-19"
+   },
+   {
+    "id": "thescrapelab/Apify-PDF-url-scraper",
+    "title": "PDF URL to Markdown, Tables & RAG Extractor",
+    "u30": 0,
+    "u7": 0,
+    "runs30": 26,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "result",
+     "free": 0.00199,
+     "bronze": 0.001833
+    },
+    "created": "2026-05-02"
+   },
+   {
+    "id": "fetchbase/document-to-markdown",
+    "title": "PDF & DOCX to Markdown \u2014 Document Extractor for LLM/RAG",
+    "u30": 8,
+    "u7": 2,
+    "runs30": 37,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Document page processed",
+     "free": 0.003,
+     "bronze": 0.003
+    },
+    "created": "2026-07-11"
+   },
+   {
+    "id": "genuine_qa/document-parser",
+    "title": "Document Parser \u2014 PDF/DOCX to Markdown & JSON for RAG",
+    "u30": 1,
+    "u7": 0,
+    "runs30": 29,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Actor Start",
+     "free": 1e-05,
+     "bronze": 1e-05
+    },
+    "created": "2026-06-19"
+   },
+   {
+    "id": "parseforge/markdown-to-pdf-mcp",
+    "title": "Markdown to PDF MCP Server",
+    "u30": 0,
+    "u7": 0,
+    "runs30": 1,
+    "rating": 5,
+    "reviews": 2,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Markdown to PDF Conversion",
+     "free": 0.06,
+     "bronze": 0.05667
+    },
+    "created": "2025-11-05"
+   },
+   {
+    "id": "web.harvester/pdf-to-markdown-converter",
+    "title": "PDF to Markdown Converter",
+    "u30": 1,
+    "u7": 1,
+    "runs30": 27,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Result (converted document)",
+     "free": 0.005,
+     "bronze": 0.005
+    },
+    "created": "2026-02-01"
+   }
+  ]
+ },
+ {
+  "term": "OCR",
+  "actors": [
+   {
+    "id": "borderline/google-lens",
+    "title": "Google Lens | AI Mode | Reverse image search | Translation+OCR",
+    "u30": 236,
+    "u7": 66,
+    "runs30": 4343,
+    "rating": 3.911231109071274,
+    "reviews": 4,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "\ud83e\udd16 AI Analysis",
+     "free": 0.0065,
+     "bronze": 0.0065
+    },
+    "created": "2025-01-13"
+   },
+   {
+    "id": "rainminer/tiktok-video-text-extractor",
+    "title": "TikTok Video Text & Overlay Extractor (OCR)",
+    "u30": 20,
+    "u7": 6,
+    "runs30": 186,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Video",
+     "free": 0.001,
+     "bronze": 0.00099
+    },
+    "created": "2026-06-01"
+   },
+   {
+    "id": "zen-studio/google-lens-ocr",
+    "title": "Google Lens OCR API - Image to Text ~800ms REST API",
+    "u30": 59,
+    "u7": 23,
+    "runs30": 8806,
+    "rating": 5,
+    "reviews": 1,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Image OCR",
+     "free": 0.00499,
+     "bronze": 0.00449
+    },
+    "created": "2026-03-11"
+   },
+   {
+    "id": "rainminer/instagram-post-text-extractor",
+    "title": "Instagram Post & Carousel Text Extractor (OCR)",
+    "u30": 85,
+    "u7": 26,
+    "runs30": 406,
+    "rating": 5,
+    "reviews": 1,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Post",
+     "free": 0.005,
+     "bronze": 0.0049
+    },
+    "created": "2026-07-09"
+   },
+   {
+    "id": "s-r/google-lens-ocr",
+    "title": "Google Lens OCR API - Image to Text, Handwriting & Translation",
+    "u30": 59,
+    "u7": 20,
+    "runs30": 1231,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Image OCR",
+     "free": 0.006,
+     "bronze": 0.006
+    },
+    "created": "2026-07-13"
+   },
+   {
+    "id": "getascraper/google-lens-ocr",
+    "title": "Google Lens OCR API: Image to Text with Word Boxes and Standby",
+    "u30": 30,
+    "u7": 10,
+    "runs30": 2339,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Listing Scraped",
+     "free": 0.00399,
+     "bronze": 0.00366
+    },
+    "created": "2026-06-15"
+   },
+   {
+    "id": "memo23/pdf-text-extractor",
+    "title": "PDF Text Extractor \u2014 Markdown, OCR & Metadata",
+    "u30": 142,
+    "u7": 53,
+    "runs30": 1604,
+    "rating": 5.000000000000001,
+    "reviews": 2,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "PDF processed",
+     "free": 0.005,
+     "bronze": 0.005
+    },
+    "created": "2026-07-10"
+   },
+   {
+    "id": "nerolabs/bulk-ocr-image-pdf-to-text",
+    "title": "Bulk OCR: Image & Scanned PDF to Text from CSV or Google Sheet",
+    "u30": 46,
+    "u7": 16,
+    "runs30": 201,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "OCR page",
+     "free": 0.005,
+     "bronze": 0.0045
+    },
+    "created": "2026-09-14"
+   },
+   {
+    "id": "ely_source/pdf-ocr",
+    "title": "PDF OCR",
+    "u30": 11,
+    "u7": 3,
+    "runs30": 43,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Page read by OCR",
+     "free": 0.02,
+     "bronze": 0.02
+    },
+    "created": "2026-07-25"
+   },
+   {
+    "id": "zenomastro/image-ocr-text-extractor",
+    "title": "Image to Text OCR - Extract Text from Images & PDFs",
+    "u30": 91,
+    "u7": 7,
+    "runs30": 357,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "image ocr",
+     "free": 0.005,
+     "bronze": 0.005
+    },
+    "created": "2026-06-12"
+   }
+  ]
+ },
+ {
+  "term": "document parser",
+  "actors": [
+   {
+    "id": "yabanana99/pdf-word-excel-to-markdown",
+    "title": "PDF Text Extractor & Document Parser: DOCX, XLSX, OCR, Markdown",
+    "u30": 1,
+    "u7": 0,
+    "runs30": 29,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Document processed",
+     "free": 0.004,
+     "bronze": 0.004
+    },
+    "created": "2026-08-13"
+   },
+   {
+    "id": "genuine_qa/document-parser",
+    "title": "Document Parser \u2014 PDF/DOCX to Markdown & JSON for RAG",
+    "u30": 1,
+    "u7": 0,
+    "runs30": 29,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Actor Start",
+     "free": 1e-05,
+     "bronze": 1e-05
+    },
+    "created": "2026-06-19"
+   },
+   {
+    "id": "getdataforme/netdocuments-documents-info-parser-spider",
+    "title": "Netdocuments Documents Info Parser Spider",
+    "u30": 2,
+    "u7": 2,
+    "runs30": 27,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "result",
+     "free": 0.009,
+     "bronze": 0.009
+    },
+    "created": "2026-06-06"
+   },
+   {
+    "id": "crawloop/siemens-sieportal-product-document-pdf-crawler",
+    "title": "Siemens Document PDF Parser \u2014 Specs JSON",
+    "u30": 1,
+    "u7": 1,
+    "runs30": 26,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Parsed PDF document",
+     "free": 0.025,
+     "bronze": 0.025
+    },
+    "created": "2026-06-18"
+   },
+   {
+    "id": "lindenwerk/pdf-to-markdown-rag",
+    "title": "PDF to Markdown & RAG Chunks: Document Parser (DOCX/PPTX/XLSX)",
+    "u30": 1,
+    "u7": 1,
+    "runs30": 13,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Document converted",
+     "free": 0.002,
+     "bronze": 0.002
+    },
+    "created": "2026-10-06"
+   },
+   {
+    "id": "nebulacolors/document-to-markdown",
+    "title": "PDF to Markdown: Document Parser for Word, Excel, PPTX, EPUB",
+    "u30": 1,
+    "u7": 1,
+    "runs30": 5,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Document",
+     "free": 0.003,
+     "bronze": 0.0027
+    },
+    "created": "2026-10-16"
+   },
+   {
+    "id": "deepaksheoran172/scanned-document-ocr",
+    "title": "PDF Document OCR Parser",
+    "u30": 1,
+    "u7": 1,
+    "runs30": 1,
+    "rating": 0,
+    "reviews": 0,
+    "model": "FREE",
+    "price": null,
+    "created": "2026-10-20"
+   },
+   {
+    "id": "fguiraud/document-to-markdown-tables",
+    "title": "PDF to Markdown Extractor & Document Parser: Tables, JSON, OCR",
+    "u30": 1,
+    "u7": 1,
+    "runs30": 22,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Document",
+     "free": 0.003,
+     "bronze": 0.003
+    },
+    "created": "2026-09-23"
+   }
+  ]
+ },
+ {
+  "term": "invoice extraction",
+  "actors": [
+   {
+    "id": "halrohm/document-to-markdown-ocr",
+    "title": "Document to Markdown, OCR & Invoice Extraction",
+    "u30": 1,
+    "u7": 1,
+    "runs30": 12,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Page converted to Markdown",
+     "free": 0.003,
+     "bronze": 0.003
+    },
+    "created": "2026-10-09"
+   },
+   {
+    "id": "first_watch/pdf-invoice-table-extraction",
+    "title": "Pdf Invoice Table Extraction",
+    "u30": 1,
+    "u7": 1,
+    "runs30": 10,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Result returned",
+     "free": 0.03,
+     "bronze": 0.03
+    },
+    "created": "2026-09-25"
+   },
+   {
+    "id": "ntriqpro/invoice-extraction-mcp",
+    "title": "AI Invoice Parser - Extract Receipt & Bill Data",
+    "u30": 0,
+    "u7": 0,
+    "runs30": 2,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Receipt Extraction",
+     "free": 0.15,
+     "bronze": 0.12
+    },
+    "created": "2026-03-27"
+   },
+   {
+    "id": "fguiraud/document-to-markdown-tables",
+    "title": "PDF to Markdown Extractor & Document Parser: Tables, JSON, OCR",
+    "u30": 1,
+    "u7": 1,
+    "runs30": 22,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Document",
+     "free": 0.003,
+     "bronze": 0.003
+    },
+    "created": "2026-09-23"
+   },
+   {
+    "id": "welcoming_fireplace/image-to-text-ai",
+    "title": "Image To Text Ai",
+    "u30": 2,
+    "u7": 1,
+    "runs30": 29,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "AI Image Text Extraction",
+     "free": 0.01,
+     "bronze": 0.01
+    },
+    "created": "2025-12-26"
+   },
+   {
+    "id": "santamaria-automations/pdf-extractor",
+    "title": "PDF Text Extractor - Bulk PDF to Text & Metadata",
+    "u30": 1,
+    "u7": 1,
+    "runs30": 27,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "PDF extracted",
+     "free": 0.005,
+     "bronze": 0.005
+    },
+    "created": "2026-04-11"
+   },
+   {
+    "id": "tidytools/image-to-text-ocr",
+    "title": "Image to Text OCR API - Extract Text from Images with AI",
+    "u30": 2,
+    "u7": 0,
+    "runs30": 30,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Image transcribed",
+     "free": 0.003,
+     "bronze": 0.003
+    },
+    "created": "2026-09-29"
+   },
+   {
+    "id": "enezli/invoice-to-excel",
+    "title": "Invoice to Excel: Invoice & Receipt OCR with AI",
+    "u30": 1,
+    "u7": 1,
+    "runs30": 26,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Document processed",
+     "free": 0.1,
+     "bronze": 0.1
+    },
+    "created": "2026-06-29"
+   },
+   {
+    "id": "herakles-dev/invoice-extractor",
+    "title": "Invoice Extractor with Per-Field Agreement Check",
+    "u30": 1,
+    "u7": 1,
+    "runs30": 20,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Invoice page extracted",
+     "free": 0.12,
+     "bronze": 0.12
+    },
+    "created": "2026-09-29"
+   }
+  ]
+ },
+ {
+  "term": "HTML to markdown",
+  "actors": [
+   {
+    "id": "shelvick/smart-page-fetcher",
+    "title": "Fetch URL, Website & Web Page to HTML, Markdown, Text \u2014 Fetcher",
+    "u30": 20,
+    "u7": 8,
+    "runs30": 120,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Page fetched (basic tier)",
+     "free": 0.0005,
+     "bronze": 0.000475
+    },
+    "created": "2026-05-22"
+   },
+   {
+    "id": "powerful_bachelor/html-to-markdown-converter",
+    "title": "Html To Markdown Converter \ud83d\udcc4",
+    "u30": 0,
+    "u7": 0,
+    "runs30": 49,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "result",
+     "free": 0.001,
+     "bronze": 0.0009
+    },
+    "created": "2025-04-03"
+   },
+   {
+    "id": "shahidirfan/Markdown-Maker",
+    "title": "Markdown Maker: HTML to Markdown \ud83d\udcdd",
+    "u30": 2,
+    "u7": 1,
+    "runs30": 28,
+    "rating": 5,
+    "reviews": 1,
+    "model": "FREE",
+    "price": null,
+    "created": "2025-12-13"
+   },
+   {
+    "id": "santamaria-automations/html-to-markdown",
+    "title": "HTML to Markdown Converter - Bulk Web Content to MD",
+    "u30": 2,
+    "u7": 0,
+    "runs30": 32,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "URL converted",
+     "free": 0.003,
+     "bronze": 0.003
+    },
+    "created": "2026-04-11"
+   },
+   {
+    "id": "scrapeworks/pandoc-document-converter",
+    "title": "Pandoc Document Converter - HTML to Markdown, DOCX, EPUB, PPTX",
+    "u30": 0,
+    "u7": 0,
+    "runs30": 28,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Converted document",
+     "free": 0.005,
+     "bronze": 0.005
+    },
+    "created": "2026-06-12"
+   },
+   {
+    "id": "web.harvester/html-to-markdown",
+    "title": "HTML to Markdown",
+    "u30": 2,
+    "u7": 1,
+    "runs30": 27,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Result (converted page)",
+     "free": 0.002,
+     "bronze": 0.002
+    },
+    "created": "2026-02-12"
+   },
+   {
+    "id": "eliai/markdown-to-html",
+    "title": "Markdown to HTML Converter - GitHub-Flavored, Safe",
+    "u30": 2,
+    "u7": 2,
+    "runs30": 29,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Converted files",
+     "free": 0.0005,
+     "bronze": 0.00047
+    },
+    "created": "2026-06-25"
+   },
+   {
+    "id": "clearfetch/document-text-extractor",
+    "title": "Document Text Extractor - PDF, DOCX & HTML to Text/Markdown",
+    "u30": 2,
+    "u7": 1,
+    "runs30": 33,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Document processed",
+     "free": 0.005,
+     "bronze": 0.0045
+    },
+    "created": "2026-09-06"
+   },
+   {
+    "id": "shoebill-dev27/html-to-markdown",
+    "title": "HTML to Markdown \u2014 clean conversion, boilerplate stripping",
+    "u30": 1,
+    "u7": 1,
+    "runs30": 26,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "result",
+     "free": 0.002,
+     "bronze": 0.002
+    },
+    "created": "2026-06-12"
+   }
+  ]
+ },
+ {
+  "term": "JSON CSV converter",
+  "actors": [
+   {
+    "id": "eloquent_mountain/json-to-csv-converter",
+    "title": "JSON to CSV Converter",
+    "u30": 2,
+    "u7": 0,
+    "runs30": 27,
+    "rating": 0,
+    "reviews": 0,
+    "model": "FREE",
+    "price": null,
+    "created": "2024-11-20"
+   },
+   {
+    "id": "web.harvester/json-csv-converter",
+    "title": "JSON \u2194 CSV Converter",
+    "u30": 0,
+    "u7": 0,
+    "runs30": 29,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Result (conversion)",
+     "free": 0.002,
+     "bronze": 0.002
+    },
+    "created": "2026-01-25"
+   },
+   {
+    "id": "eliai/json-to-csv",
+    "title": "JSON to CSV Converter - Flatten JSON to CSV, URL or Bulk",
+    "u30": 1,
+    "u7": 1,
+    "runs30": 1,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Converted files",
+     "free": 0.02,
+     "bronze": 0.0186
+    },
+    "created": "2026-06-25"
+   },
+   {
+    "id": "geldzoeker/deterministic-json-csv-converter",
+    "title": "Deterministic JSON CSV Converter",
+    "u30": 1,
+    "u7": 1,
+    "runs30": 26,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Actor Start",
+     "free": 0.01,
+     "bronze": 0.01
+    },
+    "created": "2026-08-26"
+   },
+   {
+    "id": "dr.skywalker/json-csv-converter",
+    "title": "JSON <> CSV Converter",
+    "u30": 1,
+    "u7": 1,
+    "runs30": 26,
+    "rating": 0,
+    "reviews": 0,
+    "model": "FREE",
+    "price": null,
+    "created": "2026-09-15"
+   },
+   {
+    "id": "businessquik/bank-statement-extractor",
+    "title": "Bank Statement PDF to CSV/JSON Converter",
+    "u30": 1,
+    "u7": 1,
+    "runs30": 26,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Statement reconciled",
+     "free": 0.1,
+     "bronze": 0.1
+    },
+    "created": "2026-08-20"
+   },
+   {
+    "id": "trusted_tech_spot/table-data-extractor",
+    "title": "HTML Web Table to Structured JSON & CSV Converter",
+    "u30": 1,
+    "u7": 1,
+    "runs30": 7,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Extracted Web Table",
+     "free": 0.0018,
+     "bronze": 0.0016
+    },
+    "created": "2026-09-23"
+   },
+   {
+    "id": "ntriqpro/data-format-converter",
+    "title": "Data Format Converter - CSV, JSON, XML Transformation",
+    "u30": 0,
+    "u7": 0,
+    "runs30": 27,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Data Converted",
+     "free": 0.03,
+     "bronze": 0.024
+    },
+    "created": "2026-04-14"
+   },
+   {
+    "id": "maximedupre/json-to-csv-converter",
+    "title": "JSON to CSV Converter",
+    "u30": 0,
+    "u7": 0,
+    "runs30": 27,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Converted Row",
+     "free": 0.00175,
+     "bronze": 0.00175
+    },
+    "created": "2026-08-05"
+   }
+  ]
+ },
+ {
+  "term": "Excel converter",
+  "actors": [
+   {
+    "id": "hipersoft/excel-converter",
+    "title": "Excel Converter \u2014 XLSX to CSV & JSON (and back)",
+    "u30": 5,
+    "u7": 2,
+    "runs30": 37,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "File Converted",
+     "free": 0.005,
+     "bronze": 0.004
+    },
+    "created": "2026-08-20"
+   },
+   {
+    "id": "eliai/json-to-excel",
+    "title": "JSON to Excel Converter - JSON to XLSX, by URL or Bulk",
+    "u30": 0,
+    "u7": 0,
+    "runs30": 3,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Converted files",
+     "free": 0.03,
+     "bronze": 0.0279
+    },
+    "created": "2026-08-14"
+   },
+   {
+    "id": "perceptr0n/pdf-to-markdown-converter",
+    "title": "PDF & DOCX to Markdown Converter \u2013 Excel, PowerPoint, OCR",
+    "u30": 1,
+    "u7": 1,
+    "runs30": 15,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "page",
+     "free": 0.0005,
+     "bronze": 0.00045
+    },
+    "created": "2026-10-05"
+   },
+   {
+    "id": "brasildados/xml-nfe-para-excel",
+    "title": "XML ou Chave NF-e para Excel: Converter NFe em Planilha",
+    "u30": 1,
+    "u7": 1,
+    "runs30": 8,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "notas fiscais convertidas para excel",
+     "free": 0.055,
+     "bronze": 0.055
+    },
+    "created": "2026-10-13"
+   },
+   {
+    "id": "dtkfoundry/bank-statement-converter",
+    "title": "Bank Statement to CSV/Excel Converter",
+    "u30": 1,
+    "u7": 1,
+    "runs30": 4,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Statement processed (per document)",
+     "free": 0.04,
+     "bronze": 0.04
+    },
+    "created": "2026-10-17"
+   },
+   {
+    "id": "eliai/csv-to-excel",
+    "title": "CSV to Excel Converter - CSV to XLSX, by URL or Bulk",
+    "u30": 0,
+    "u7": 0,
+    "runs30": 1,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Converted files",
+     "free": 0.03,
+     "bronze": 0.0279
+    },
+    "created": "2026-08-14"
+   },
+   {
+    "id": "northbound_works/bank-statement-to-csv",
+    "title": "Bank Statement PDF to Excel & CSV - Balance Reconciled",
+    "u30": 2,
+    "u7": 2,
+    "runs30": 27,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Statement parsed and reconciled",
+     "free": 0.02,
+     "bronze": 0.02
+    },
+    "created": "2026-08-07"
+   },
+   {
+    "id": "landlordtools/dataset-format-converter",
+    "title": "Dataset Format Converter",
+    "u30": 1,
+    "u7": 1,
+    "runs30": 11,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Converted output",
+     "free": 0.005,
+     "bronze": 0.005
+    },
+    "created": "2026-10-03"
+   }
+  ]
+ },
+ {
+  "term": "image resize compress",
+  "actors": [
+   {
+    "id": "tanod/image-toolkit",
+    "title": "Image Toolkit: Resize, Convert, Compress, Crop, Watermark",
+    "u30": 1,
+    "u7": 1,
+    "runs30": 31,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Image processed",
+     "free": 0.005,
+     "bronze": 0.0045
+    },
+    "created": "2026-10-12"
+   },
+   {
+    "id": "ntriqpro/image-batch-optimizer",
+    "title": "Image Batch Processor - Resize, Convert & Compress",
+    "u30": 3,
+    "u7": 1,
+    "runs30": 36,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Image Optimized",
+     "free": 0.01,
+     "bronze": 0.008
+    },
+    "created": "2026-04-14"
+   },
+   {
+    "id": "gazidev/image-converter",
+    "title": "Bulk Image Converter & Compressor \u2013 WebP, AVIF, JPG, Resize",
+    "u30": 4,
+    "u7": 2,
+    "runs30": 58,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Image converted",
+     "free": 0.0008,
+     "bronze": 0.0008
+    },
+    "created": "2026-10-07"
+   },
+   {
+    "id": "hipersoft/image-optimizer",
+    "title": "Image Optimizer \u2014 WebP / AVIF / JPEG / PNG Bulk Compress",
+    "u30": 4,
+    "u7": 0,
+    "runs30": 43,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Image Optimized",
+     "free": 0.002,
+     "bronze": 0.0016
+    },
+    "created": "2026-08-22"
+   },
+   {
+    "id": "eunit/sqoosh-image-compressor",
+    "title": "Sqoosh Image Compressor",
+    "u30": 3,
+    "u7": 2,
+    "runs30": 2477,
+    "rating": 5,
+    "reviews": 2,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Processed image",
+     "free": 0.015,
+     "bronze": 0.015
+    },
+    "created": "2026-01-22"
+   },
+   {
+    "id": "bigaceboy/image-optimizer-converter",
+    "title": "Image Optimizer & Converter: WebP, AVIF, JPG",
+    "u30": 1,
+    "u7": 1,
+    "runs30": null,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Image optimized",
+     "free": 0.002,
+     "bronze": 0.002
+    },
+    "created": "2026-10-21"
+   },
+   {
+    "id": "maximedupre/image-resizer-api",
+    "title": "Image Resizer API",
+    "u30": 3,
+    "u7": 0,
+    "runs30": 37,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Processed image",
+     "free": 0.0045,
+     "bronze": 0.0045
+    },
+    "created": "2026-06-27"
+   },
+   {
+    "id": "nexgenwatch/image-normalization-api",
+    "title": "Image Resize & Image Converter API \u2014 Normalize Images",
+    "u30": 1,
+    "u7": 1,
+    "runs30": 27,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Image Normalization API verdict",
+     "free": 0.05,
+     "bronze": 0.045
+    },
+    "created": "2026-08-06"
+   },
+   {
+    "id": "tidydata/bulk-image-downloader-converter",
+    "title": "Bulk Image Downloader & Converter \u2014 Resize, WebP, ZIP",
+    "u30": 1,
+    "u7": 1,
+    "runs30": 11,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Image saved",
+     "free": 0.002,
+     "bronze": 0.0018
+    },
+    "created": "2026-10-09"
+   }
+  ]
+ },
+ {
+  "term": "website screenshot",
+  "actors": [
+   {
+    "id": "apify/screenshot-url",
+    "title": "Website Screenshot Generator",
+    "u30": 1563,
+    "u7": 688,
+    "runs30": 136134,
+    "rating": 3.902732630971479,
+    "reviews": 21,
+    "model": "FREE",
+    "price": null,
+    "created": "2018-11-01"
+   },
+   {
+    "id": "i-scraper/website-screenshot",
+    "title": "Website Screenshot",
+    "u30": 62,
+    "u7": 27,
+    "runs30": 8574,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "result",
+     "free": 0.006,
+     "bronze": 0.006
+    },
+    "created": "2025-10-03"
+   },
+   {
+    "id": "cheapapi/website-screenshot-api",
+    "title": "Website Screenshot API \u2014 Full-Page, Element & Device Capture",
+    "u30": 175,
+    "u7": 64,
+    "runs30": 5850,
+    "rating": 5,
+    "reviews": 1,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Screenshot",
+     "free": 0.00089,
+     "bronze": 0.00083
+    },
+    "created": "2026-06-14"
+   },
+   {
+    "id": "fetchbase/web-screenshot-pro",
+    "title": "Website Screenshot API \u2014 Full-Page PNG, JPEG, PDF, WebP",
+    "u30": 13,
+    "u7": 7,
+    "runs30": 402,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Screenshot captured",
+     "free": 0.02,
+     "bronze": 0.02
+    },
+    "created": "2026-07-11"
+   },
+   {
+    "id": "moonweil/url-screenshot-api",
+    "title": "Website Screenshot API \u2014 URL & HTML to PNG, JPEG, WebP, PDF",
+    "u30": 124,
+    "u7": 39,
+    "runs30": 3539,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "result",
+     "free": 0.004,
+     "bronze": 0.004
+    },
+    "created": "2026-07-13"
+   },
+   {
+    "id": "parseforge/screenshot-url",
+    "title": "Website Screenshot Generator",
+    "u30": 9,
+    "u7": 3,
+    "runs30": 203,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "result",
+     "free": 0.016,
+     "bronze": 0.01533
+    },
+    "created": "2026-04-21"
+   },
+   {
+    "id": "spectre_scrape/website-screenshot-api",
+    "title": "Website Screenshot API",
+    "u30": 5,
+    "u7": 3,
+    "runs30": 26,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "result",
+     "free": 0.009,
+     "bronze": 0.009
+    },
+    "created": "2026-05-14"
+   },
+   {
+    "id": "onescales/website-screenshot-pro",
+    "title": "Website Screenshot Pro",
+    "u30": 3,
+    "u7": 2,
+    "runs30": 29,
+    "rating": 5,
+    "reviews": 4,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "result",
+     "free": 0.5,
+     "bronze": 0.05
+    },
+    "created": "2025-10-31"
+   }
+  ]
+ },
+ {
+  "term": "sitemap generator",
+  "actors": [
+   {
+    "id": "datawinder/sitemap-generator",
+    "title": "Sitemap Generator",
+    "u30": 0,
+    "u7": 0,
+    "runs30": 26,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "result",
+     "free": 0.0001,
+     "bronze": 0.0001
+    },
+    "created": "2025-12-29"
+   },
+   {
+    "id": "eunit/sitemap-generator",
+    "title": "Fast Sitemap Generator",
+    "u30": 2,
+    "u7": 0,
+    "runs30": 26,
+    "rating": 5,
+    "reviews": 1,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Successful crawling of a page",
+     "free": 0.099,
+     "bronze": 0.097
+    },
+    "created": "2025-12-27"
+   },
+   {
+    "id": "igview-owner/sitemap-generator",
+    "title": "Sitemap Generator",
+    "u30": 2,
+    "u7": 2,
+    "runs30": 26,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "result",
+     "free": 0.02,
+     "bronze": 0.009
+    },
+    "created": "2025-11-05"
+   },
+   {
+    "id": "alizarin_refrigerator-owner/sitemap-generator",
+    "title": "Sitemap Generator",
+    "u30": 1,
+    "u7": 0,
+    "runs30": 27,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "result",
+     "free": 1e-05,
+     "bronze": 1e-05
+    },
+    "created": "2025-12-21"
+   },
+   {
+    "id": "wisteria_banjo/sitemap-generator---creates-sitemap-xml-for-any-domain",
+    "title": "Sitemap Generator - Creates sitemap.xml for any domain",
+    "u30": 0,
+    "u7": 0,
+    "runs30": 28,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "result",
+     "free": 0.005,
+     "bronze": 0.005
+    },
+    "created": "2025-12-16"
+   },
+   {
+    "id": "gentle_cloud/sitemap-generator",
+    "title": "Sitemap Generator",
+    "u30": 0,
+    "u7": 0,
+    "runs30": 27,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Actor Start",
+     "free": 0.01,
+     "bronze": 0.01
+    },
+    "created": "2026-03-18"
+   }
+  ]
+ },
+ {
+  "term": "broken link checker",
+  "actors": [
+   {
+    "id": "parseforge/broken-link-checker",
+    "title": "Broken Link Checker",
+    "u30": 7,
+    "u7": 3,
+    "runs30": 589,
+    "rating": 2.747926359640775,
+    "reviews": 3,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "result",
+     "free": 0.0012,
+     "bronze": 0.001
+    },
+    "created": "2025-11-21"
+   },
+   {
+    "id": "khadinakbar/broken-link-checker",
+    "title": "Broken Link Checker \u2014 404s, Redirects & SEO Audit",
+    "u30": 37,
+    "u7": 14,
+    "runs30": 153,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Link checked",
+     "free": 0.001,
+     "bronze": 0.001
+    },
+    "created": "2026-05-03"
+   },
+   {
+    "id": "logiover/broken-link-checker",
+    "title": "Broken Link Checker - Find Dead 404 Links",
+    "u30": 2,
+    "u7": 0,
+    "runs30": 31,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "result",
+     "free": 0.005,
+     "bronze": 0.0045
+    },
+    "created": "2026-05-25"
+   },
+   {
+    "id": "smart-digital/website-broken-links-redirects-checker",
+    "title": "Broken Link Checker - Find 404 Errors & Redirects on a Website",
+    "u30": 0,
+    "u7": 0,
+    "runs30": 26,
+    "rating": 5,
+    "reviews": 2,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Page Analyzed",
+     "free": 0.02,
+     "bronze": 0.02
+    },
+    "created": "2025-11-11"
+   },
+   {
+    "id": "santamaria-automations/broken-link-checker",
+    "title": "Broken Link Checker - Find 404s and Dead Links",
+    "u30": 2,
+    "u7": 0,
+    "runs30": 40,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Website checked",
+     "free": 0.003,
+     "bronze": 0.003
+    },
+    "created": "2026-04-11"
+   },
+   {
+    "id": "pink_comic/broken-link-checker",
+    "title": "Broken Link Checker & Scraper - 404 Audit API",
+    "u30": 1,
+    "u7": 0,
+    "runs30": 27,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "result",
+     "free": 0.002,
+     "bronze": 0.002
+    },
+    "created": "2026-04-07"
+   }
+  ]
+ },
+ {
+  "term": "SSL certificate checker",
+  "actors": [
+   {
+    "id": "automation-lab/ssl-certificate-checker",
+    "title": "SSL Certificate Checker",
+    "u30": 2,
+    "u7": 1,
+    "runs30": 32,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Domain checked",
+     "free": 0.00115,
+     "bronze": 0.001
+    },
+    "created": "2026-03-01"
+   },
+   {
+    "id": "nexgendata/ssl-certificate-checker",
+    "title": "SSL Certificate Checker \u2014 Bulk Expiry & Chain Monitor",
+    "u30": 0,
+    "u7": 0,
+    "runs30": 27,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Certificate check",
+     "free": 0.01,
+     "bronze": 0.01
+    },
+    "created": "2026-02-17"
+   },
+   {
+    "id": "pink_comic/ssl-certificate-checker",
+    "title": "SSL Certificate Checker - Domain TLS Expiry & KYB API",
+    "u30": 2,
+    "u7": 1,
+    "runs30": 34,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "SSL check",
+     "free": 0.0001,
+     "bronze": 0.0001
+    },
+    "created": "2026-04-07"
+   },
+   {
+    "id": "bgfc97/ssl-certificate-checker",
+    "title": "SSL Certificate Checker",
+    "u30": 2,
+    "u7": 2,
+    "runs30": 27,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Host checked",
+     "free": 0.003,
+     "bronze": 0.003
+    },
+    "created": "2026-07-16"
+   },
+   {
+    "id": "rationalistic_counsel/ssl-certificate-checker",
+    "title": "SSL Certificate Checker",
+    "u30": 2,
+    "u7": 2,
+    "runs30": 27,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "result",
+     "free": 0.01,
+     "bronze": 0.01
+    },
+    "created": "2026-03-10"
+   },
+   {
+    "id": "m_ctim/ssl-certificate-expiry-checker",
+    "title": "SSL Certificate Expiry Checker for Any Host",
+    "u30": 1,
+    "u7": 1,
+    "runs30": 26,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Certificate checked",
+     "free": 0.007,
+     "bronze": 0.0065
+    },
+    "created": "2026-08-13"
+   },
+   {
+    "id": "eliai/ssl-certificate-checker",
+    "title": "SSL Certificate Checker - Issuer, SANs, Expiry, Chain JSON",
+    "u30": 1,
+    "u7": 1,
+    "runs30": 26,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Certificate-checked hosts",
+     "free": 0.0008,
+     "bronze": 0.00074
+    },
+    "created": "2026-06-25"
+   },
+   {
+    "id": "technicaldost/ssl-certificate-checker",
+    "title": "SSL Certificate Checker \u2014 Expiry, Issuer & SAN by Domain",
+    "u30": 1,
+    "u7": 1,
+    "runs30": 26,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Result",
+     "free": 0.002,
+     "bronze": 0.002
+    },
+    "created": "2026-06-23"
+   }
+  ]
+ },
+ {
+  "term": "DNS lookup",
+  "actors": [
+   {
+    "id": "santamaria-automations/domain-whois-dns",
+    "title": "Domain WHOIS & DNS Lookup - Bulk Domain Intelligence",
+    "u30": 27,
+    "u7": 9,
+    "runs30": 5147,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Domain lookup completed",
+     "free": 0.003,
+     "bronze": 0.003
+    },
+    "created": "2026-04-10"
+   },
+   {
+    "id": "automation-lab/domain-availability-checker",
+    "title": "Domain Availability Checker \u2014 Bulk DNS & WHOIS Lookup",
+    "u30": 17,
+    "u7": 4,
+    "runs30": 152,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Domain checked",
+     "free": 0.0023,
+     "bronze": 0.002
+    },
+    "created": "2026-03-01"
+   },
+   {
+    "id": "gazidev/bulk-dns-lookup",
+    "title": "DNS Lookup \u2013 Bulk DNS Records, MX, SPF & DMARC Checker",
+    "u30": 2,
+    "u7": 2,
+    "runs30": 31,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Domain checked",
+     "free": 0.001,
+     "bronze": 0.001
+    },
+    "created": "2026-10-12"
+   },
+   {
+    "id": "superlativetech/dns-lookup",
+    "title": "DNS Lookup",
+    "u30": 4,
+    "u7": 0,
+    "runs30": 24,
+    "rating": 0,
+    "reviews": 0,
+    "model": "FREE",
+    "price": null,
+    "created": "2024-04-01"
+   },
+   {
+    "id": "njoylab/apify-dns",
+    "title": "DNS lookup API:  Intelligence & Security Analyzer",
+    "u30": 6,
+    "u7": 2,
+    "runs30": 150,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "result",
+     "free": 0.001,
+     "bronze": 0.001
+    },
+    "created": "2025-11-09"
+   },
+   {
+    "id": "datascoutapi/dns-lookup",
+    "title": "DNS Lookup | Scrape Domain Records & Security Intelligence",
+    "u30": 0,
+    "u7": 0,
+    "runs30": 1,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "result",
+     "free": 0.00049,
+     "bronze": 0.00049
+    },
+    "created": "2025-12-15"
+   },
+   {
+    "id": "logiover/bulk-dns-records-lookup",
+    "title": "Bulk DNS Records Lookup - A, MX, TXT, NS, CNAME",
+    "u30": 2,
+    "u7": 1,
+    "runs30": 31,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "result",
+     "free": 0.005,
+     "bronze": 0.0045
+    },
+    "created": "2026-06-15"
+   },
+   {
+    "id": "apivault_labs/domain-intelligence-scraper",
+    "title": "WHOIS & DNS Lookup $1.5/1K | Domain Registration & DNS Records",
+    "u30": 1,
+    "u7": 1,
+    "runs30": 28,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Domain Analyzed",
+     "free": 0.0015,
+     "bronze": 0.0015
+    },
+    "created": "2026-05-11"
+   },
+   {
+    "id": "blazing_stake/dns-records-lookup",
+    "title": "DNS Records Lookup",
+    "u30": 0,
+    "u7": 0,
+    "runs30": 27,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Record resolved",
+     "free": 0.002,
+     "bronze": 0.002
+    },
+    "created": "2026-07-17"
+   }
+  ]
+ },
+ {
+  "term": "accessibility checker",
+  "actors": [
+   {
+    "id": "louisdeconinck/web-accessibility-checker",
+    "title": "Web Accessibility Checker",
+    "u30": 3,
+    "u7": 0,
+    "runs30": 49,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "result",
+     "free": 0.05,
+     "bronze": 0.03
+    },
+    "created": "2025-12-18"
+   },
+   {
+    "id": "katzino/actor-web-a11y-audit",
+    "title": "Free web accessibility checker (EAA and WCAG compliance)",
+    "u30": 1,
+    "u7": 1,
+    "runs30": 36,
+    "rating": 0,
+    "reviews": 0,
+    "model": "FREE",
+    "price": null,
+    "created": "2025-01-09"
+   },
+   {
+    "id": "andok/alt-text-auditor",
+    "title": "Image Alt Text Checker | Accessibility & SEO Auditor",
+    "u30": 0,
+    "u7": 0,
+    "runs30": 27,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Page Audited",
+     "free": 0.001,
+     "bronze": 0.000667
+    },
+    "created": "2026-03-04"
+   },
+   {
+    "id": "siftwright_data/website-accessibility-checker",
+    "title": "Website Accessibility Checker (WCAG 2.1 AA, ADA, AODA, EAA)",
+    "u30": 2,
+    "u7": 2,
+    "runs30": 3,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Page checked",
+     "free": 0.01,
+     "bronze": 0.01
+    },
+    "created": "2026-10-20"
+   },
+   {
+    "id": "offerastudio/website-accessibility-audit",
+    "title": "Website Accessibility Checker: WCAG 2.2 & EAA",
+    "u30": 1,
+    "u7": 1,
+    "runs30": 18,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Page audited",
+     "free": 0.005,
+     "bronze": 0.005
+    },
+    "created": "2026-09-30"
+   },
+   {
+    "id": "psx/accessibility-eaa-audit",
+    "title": "Website Accessibility Checker - WCAG 2.2 & EAA",
+    "u30": 1,
+    "u7": 1,
+    "runs30": 15,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": null,
+    "created": "2026-10-06"
+   },
+   {
+    "id": "psx/eaa-statement-detector",
+    "title": "EAA Accessibility Statement Checker (EN 301 549)",
+    "u30": 1,
+    "u7": 1,
+    "runs30": 11,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": null,
+    "created": "2026-10-06"
+   }
+  ]
+ },
+ {
+  "term": "lighthouse pagespeed",
+  "actors": [
+   {
+    "id": "perryay/website-performance-auditor",
+    "title": "Website Performance Auditor \u2014 Lighthouse & PageSpeed",
+    "u30": 14,
+    "u7": 1,
+    "runs30": 44,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Actor Start",
+     "free": 0.01,
+     "bronze": 0.01
+    },
+    "created": "2026-07-27"
+   },
+   {
+    "id": "neverempty/pagespeed-lighthouse-audit",
+    "title": "PageSpeed Lighthouse Audit - Bulk Core Web Vitals & SEO Score",
+    "u30": 36,
+    "u7": 12,
+    "runs30": 99,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Lighthouse audit returned",
+     "free": 0.03,
+     "bronze": 0.0282
+    },
+    "created": "2026-09-24"
+   },
+   {
+    "id": "nerolabs/bulk-pagespeed-checker",
+    "title": "Bulk PageSpeed & Lighthouse Checker: Core Web Vitals from CSV",
+    "u30": 21,
+    "u7": 11,
+    "runs30": 103,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Page test",
+     "free": 0.005,
+     "bronze": 0.0045
+    },
+    "created": "2026-09-24"
+   },
+   {
+    "id": "nexgensignal/website-performance-audit-api",
+    "title": "Bulk Lighthouse Audit \u2014 PageSpeed Scores Without an API Key",
+    "u30": 2,
+    "u7": 2,
+    "runs30": 18,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Website audit record",
+     "free": 0.05,
+     "bronze": 0.045
+    },
+    "created": "2026-10-03"
+   },
+   {
+    "id": "poised_beardlichen/pagespeed-lighthouse-checker",
+    "title": "Bulk PageSpeed & Lighthouse Checker \u2014 Core Web Vitals",
+    "u30": 2,
+    "u7": 2,
+    "runs30": 4,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": null,
+    "created": "2026-10-19"
+   },
+   {
+    "id": "aiden_boudreau/slow-website-leads-pagespeed-audit",
+    "title": "Slow Website Leads: PageSpeed & Lighthouse Audit, No API Key",
+    "u30": 1,
+    "u7": 1,
+    "runs30": 9,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Website speed-audited (no key needed)",
+     "free": 0.02,
+     "bronze": 0.02
+    },
+    "created": "2026-10-06"
+   },
+   {
+    "id": "manageable_gully/lighthouse-bulk-audit",
+    "title": "Lighthouse & PageSpeed Bulk Audit: Core Web Vitals, SEO",
+    "u30": 1,
+    "u7": 1,
+    "runs30": 5,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Lighthouse audit",
+     "free": 0.008,
+     "bronze": 0.008
+    },
+    "created": "2026-10-17"
+   },
+   {
+    "id": "kilndata/pagespeed-lighthouse-batch",
+    "title": "PageSpeed & Lighthouse Batch: Core Web Vitals Checker",
+    "u30": 1,
+    "u7": 1,
+    "runs30": 6,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "URL analyzed",
+     "free": 0.004,
+     "bronze": 0.0035
+    },
+    "created": "2026-10-15"
+   },
+   {
+    "id": "charlesmarkette/pagespeed-lighthouse-audit-core-web-vitals",
+    "title": "PageSpeed & Lighthouse Audit: Bulk Core Web Vitals, No API Key",
+    "u30": 1,
+    "u7": 1,
+    "runs30": 2,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Audited URL",
+     "free": 0.02,
+     "bronze": 0.018
+    },
+    "created": "2026-10-19"
+   },
+   {
+    "id": "gazidev/lighthouse-audit",
+    "title": "Lighthouse Audit \u2013 PageSpeed & Core Web Vitals, No API Key",
+    "u30": 1,
+    "u7": 1,
+    "runs30": 10,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Page audited",
+     "free": 0.02,
+     "bronze": 0.02
+    },
+    "created": "2026-10-11"
+   }
+  ]
+ },
+ {
+  "term": "SEO audit",
+  "actors": [
+   {
+    "id": "smart-digital/complete-seo-audit-tool",
+    "title": "Complete SEO Audit Tool - Website Crawler with 0-100 Scores",
+    "u30": 91,
+    "u7": 30,
+    "runs30": 598,
+    "rating": 5,
+    "reviews": 3,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Page",
+     "free": 0.04,
+     "bronze": 0.04
+    },
+    "created": "2025-11-11"
+   },
+   {
+    "id": "logiover/website-seo-audit-crawler",
+    "title": "Website SEO Audit Crawler \u2014 On-Page Analyzer",
+    "u30": 25,
+    "u7": 6,
+    "runs30": 158,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "result",
+     "free": 0.01,
+     "bronze": 0.008
+    },
+    "created": "2026-05-25"
+   },
+   {
+    "id": "khadinakbar/broken-link-checker",
+    "title": "Broken Link Checker \u2014 404s, Redirects & SEO Audit",
+    "u30": 37,
+    "u7": 14,
+    "runs30": 153,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Link checked",
+     "free": 0.001,
+     "bronze": 0.001
+    },
+    "created": "2026-05-03"
+   },
+   {
+    "id": "datascoutapi/website-traffic-analysis",
+    "title": "Website Traffic Analysis SEO Audit & Domain Stats",
+    "u30": 1,
+    "u7": 1,
+    "runs30": 1223,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "result",
+     "free": 0.005,
+     "bronze": 0.005
+    },
+    "created": "2026-03-16"
+   },
+   {
+    "id": "alizarin_refrigerator-owner/technical-seo-auditor",
+    "title": "Technical SEO Auditor - AI-Powered On-Page Analysis",
+    "u30": 1,
+    "u7": 0,
+    "runs30": 26,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "result",
+     "free": 1e-05,
+     "bronze": 1e-05
+    },
+    "created": "2025-12-25"
+   },
+   {
+    "id": "maged120/seobility-seo-checker",
+    "title": "SEO Checker \u2014 Website SEO Audit & Score in Bulk",
+    "u30": 3,
+    "u7": 0,
+    "runs30": 489,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "result",
+     "free": 0.015,
+     "bronze": 0.01333
+    },
+    "created": "2025-09-24"
+   },
+   {
+    "id": "autofacts/metadata-scraper",
+    "title": "Schema Markup Scraper & SEO Auditor",
+    "u30": 23,
+    "u7": 6,
+    "runs30": 73,
+    "rating": 5,
+    "reviews": 2,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "result",
+     "free": 0.005,
+     "bronze": 0.004
+    },
+    "created": "2025-02-28"
+   },
+   {
+    "id": "zhorex/domain-authority-checker",
+    "title": "Domain Authority, SEO & Website Audit Checker",
+    "u30": 9,
+    "u7": 2,
+    "runs30": 879,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Domain analyzed",
+     "free": 0.005,
+     "bronze": 0.005
+    },
+    "created": "2026-04-06"
+   }
+  ]
+ },
+ {
+  "term": "RSS feed",
+  "actors": [
+   {
+    "id": "technicaldost/rss-feed-scraper",
+    "title": "RSS Feed Scraper - RSS & Atom to JSON",
+    "u30": 15,
+    "u7": 8,
+    "runs30": 208,
+    "rating": 5,
+    "reviews": 1,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "item",
+     "free": 0.008,
+     "bronze": 0.008
+    },
+    "created": "2025-12-28"
+   },
+   {
+    "id": "automation-lab/rss-feed-reader",
+    "title": "RSS Feed Reader",
+    "u30": 41,
+    "u7": 24,
+    "runs30": 776,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Item parsed",
+     "free": 0.00115,
+     "bronze": 0.001
+    },
+    "created": "2026-03-01"
+   },
+   {
+    "id": "devilscrapes/rss-feed-scraper",
+    "title": "RSS Feed Scraper \u2014 Atom, Podcast & Multi-Feed Aggregator",
+    "u30": 4,
+    "u7": 1,
+    "runs30": 1680,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Result emitted",
+     "free": 0.001,
+     "bronze": 0.001
+    },
+    "created": "2026-05-15"
+   },
+   {
+    "id": "santamaria-automations/rss-feed-reader",
+    "title": "RSS & Atom Feed Reader - Monitor Any Feed at Scale",
+    "u30": 38,
+    "u7": 14,
+    "runs30": 11455,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Feed parsed",
+     "free": 0.002,
+     "bronze": 0.002
+    },
+    "created": "2026-04-11"
+   },
+   {
+    "id": "eloquent_mountain/rss-feed-aggregator",
+    "title": "RSS Feed Aggregator",
+    "u30": 8,
+    "u7": 8,
+    "runs30": 260,
+    "rating": 0,
+    "reviews": 0,
+    "model": "FREE",
+    "price": null,
+    "created": "2024-11-20"
+   },
+   {
+    "id": "scrapersdelight/podcast-transcript-scraper",
+    "title": "Podcast Transcript Scraper \u2014 Any RSS Feed to Text & SRT",
+    "u30": 7,
+    "u7": 0,
+    "runs30": 41,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Per record returned",
+     "free": 0.001,
+     "bronze": 0.001
+    },
+    "created": "2026-06-03"
+   },
+   {
+    "id": "amanatools/podcast-transcription-api",
+    "title": "Podcast Transcription API \u2014 RSS feeds to episode transcripts",
+    "u30": 5,
+    "u7": 2,
+    "runs30": 34,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Episode transcribed",
+     "free": 0.005,
+     "bronze": 0.005
+    },
+    "created": "2026-08-18"
+   },
+   {
+    "id": "scrapepilot/rss-feed-scraper----news-scraper-article-extractor",
+    "title": "RSS Feed Scraper \u2014 News Scraper & Article Extractor",
+    "u30": 1,
+    "u7": 0,
+    "runs30": 34,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Scraped RSS News Article",
+     "free": 0.0035,
+     "bronze": 0.0035
+    },
+    "created": "2026-03-14"
+   },
+   {
+    "id": "ef12/rss-scraper",
+    "title": "RSS Feed Scraper",
+    "u30": 2,
+    "u7": 0,
+    "runs30": 27,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "result",
+     "free": 0.01,
+     "bronze": 0.01
+    },
+    "created": "2026-07-10"
+   }
+  ]
+ },
+ {
+  "term": "text to speech",
+  "actors": [
+   {
+    "id": "hgservices/speech-to-text",
+    "title": "Speech-to-Text Transcription",
+    "u30": 56,
+    "u7": 20,
+    "runs30": 1613,
+    "rating": 5.000000000000001,
+    "reviews": 4,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Minute of audio transcribed",
+     "free": 0.042,
+     "bronze": 0.028
+    },
+    "created": "2026-05-11"
+   },
+   {
+    "id": "steadyfetch/media-transcriber",
+    "title": "Podcast Transcription Scraper \u2014 Speech to Text, Audio & Video",
+    "u30": 135,
+    "u7": 35,
+    "runs30": 1456,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Audio minute",
+     "free": 0.006,
+     "bronze": 0.006
+    },
+    "created": "2026-08-27"
+   },
+   {
+    "id": "kaz_kakyo/audio-transcriber",
+    "title": "Audio Transcription - Speech to Text, SRT, Diarization",
+    "u30": 88,
+    "u7": 29,
+    "runs30": 1139,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Audio minute (zero setup)",
+     "free": 0.01,
+     "bronze": 0.01
+    },
+    "created": "2026-07-06"
+   },
+   {
+    "id": "sauliusautomatesit/media-transcriber",
+    "title": "Speech to Text API: Audio to Text & Video to Text, Whisper",
+    "u30": 14,
+    "u7": 8,
+    "runs30": 48,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Basic audio minute",
+     "free": 0.01,
+     "bronze": 0.0095
+    },
+    "created": "2026-08-13"
+   },
+   {
+    "id": "viralanalyzer/audio-transcriber",
+    "title": "Audio Transcriber \u2014 Speech to Text (Whisper)",
+    "u30": 13,
+    "u7": 4,
+    "runs30": 67,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Minute of audio transcribed",
+     "free": 0.015,
+     "bronze": 0.015
+    },
+    "created": "2026-07-09"
+   },
+   {
+    "id": "andronixmd/speech-to-text-transcriber",
+    "title": "Speech to Text \u2014 YouTube, TikTok, Instagram, 99+ Languages",
+    "u30": 10,
+    "u7": 4,
+    "runs30": 54,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Minute of audio transcribed",
+     "free": 0.03,
+     "bronze": 0.03
+    },
+    "created": "2026-07-18"
+   },
+   {
+    "id": "fguiraud/audio-video-transcriber",
+    "title": "Audio & Video to Text Transcription (Whisper): Speech to Text",
+    "u30": 51,
+    "u7": 26,
+    "runs30": 330,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Audio minute",
+     "free": 0.006,
+     "bronze": 0.006
+    },
+    "created": "2026-09-23"
+   },
+   {
+    "id": "parseforge/audio-transcriber",
+    "title": "Audio Transcriber - Speech to Text",
+    "u30": 4,
+    "u7": 1,
+    "runs30": 97,
+    "rating": 5,
+    "reviews": 1,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "result",
+     "free": 0.44,
+     "bronze": 0.34
+    },
+    "created": "2025-11-21"
+   },
+   {
+    "id": "amanatools/whisper-transcriber",
+    "title": "Whisper Transcriber \u2014 audio transcription & speech to text API",
+    "u30": 71,
+    "u7": 19,
+    "runs30": 384,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "File transcribed",
+     "free": 0.005,
+     "bronze": 0.005
+    },
+    "created": "2026-08-11"
+   },
+   {
+    "id": "stanvanrooy6/audio-video-transcriber",
+    "title": "Audio & Video Transcription: Video to Text, Speech to Text",
+    "u30": 32,
+    "u7": 21,
+    "runs30": 190,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Transcript",
+     "free": 0.002,
+     "bronze": 0.002
+    },
+    "created": "2025-05-17"
+   }
+  ]
+ },
+ {
+  "term": "audio transcription",
+  "actors": [
+   {
+    "id": "kaz_kakyo/audio-transcriber",
+    "title": "Audio Transcription - Speech to Text, SRT, Diarization",
+    "u30": 88,
+    "u7": 29,
+    "runs30": 1139,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Audio minute (zero setup)",
+     "free": 0.01,
+     "bronze": 0.01
+    },
+    "created": "2026-07-06"
+   },
+   {
+    "id": "amanatools/whisper-transcriber",
+    "title": "Whisper Transcriber \u2014 audio transcription & speech to text API",
+    "u30": 71,
+    "u7": 19,
+    "runs30": 384,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "File transcribed",
+     "free": 0.005,
+     "bronze": 0.005
+    },
+    "created": "2026-08-11"
+   },
+   {
+    "id": "stanvanrooy6/audio-video-transcriber",
+    "title": "Audio & Video Transcription: Video to Text, Speech to Text",
+    "u30": 32,
+    "u7": 21,
+    "runs30": 190,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Transcript",
+     "free": 0.002,
+     "bronze": 0.002
+    },
+    "created": "2025-05-17"
+   },
+   {
+    "id": "tidytools/audio-transcriber",
+    "title": "Audio Transcription - Speech to Text, Audio to Text, Whisper",
+    "u30": 68,
+    "u7": 34,
+    "runs30": 416,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Audio minute",
+     "free": 0.006,
+     "bronze": 0.006
+    },
+    "created": "2026-09-28"
+   },
+   {
+    "id": "tinplatelabs/transcriber",
+    "title": "Audio & Video Transcription (Whisper) for AI Agents",
+    "u30": 22,
+    "u7": 21,
+    "runs30": 70,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": null,
+    "created": "2026-10-11"
+   },
+   {
+    "id": "conserving_celerytop/audio-podcast-transcription",
+    "title": "Audio Transcription & Speech to Text: MP3, Podcasts, SRT",
+    "u30": 4,
+    "u7": 2,
+    "runs30": 38,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Audio minute (English, standard)",
+     "free": 0.0035,
+     "bronze": 0.00315
+    },
+    "created": "2026-09-27"
+   },
+   {
+    "id": "gazidev/media-transcriber",
+    "title": "Audio & Video Transcription \u2013 Speech to Text, Podcast to SRT",
+    "u30": 2,
+    "u7": 2,
+    "runs30": 18,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Minute transcribed",
+     "free": 0.009,
+     "bronze": 0.009
+    },
+    "created": "2026-10-04"
+   },
+   {
+    "id": "nerolabs/bulk-transcription",
+    "title": "Bulk Transcription: Audio & Video to Text from CSV or Sheet",
+    "u30": 2,
+    "u7": 2,
+    "runs30": 18,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Audio minute, plain text",
+     "free": 0.01,
+     "bronze": 0.009
+    },
+    "created": "2026-10-02"
+   }
+  ]
+ },
+ {
+  "term": "translation",
+  "actors": [
+   {
+    "id": "borderline/google-lens",
+    "title": "Google Lens | AI Mode | Reverse image search | Translation+OCR",
+    "u30": 236,
+    "u7": 66,
+    "runs30": 4343,
+    "rating": 3.911231109071274,
+    "reviews": 4,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "\ud83e\udd16 AI Analysis",
+     "free": 0.0065,
+     "bronze": 0.0065
+    },
+    "created": "2025-01-13"
+   },
+   {
+    "id": "s-r/google-lens-ocr",
+    "title": "Google Lens OCR API - Image to Text, Handwriting & Translation",
+    "u30": 59,
+    "u7": 20,
+    "runs30": 1231,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Image OCR",
+     "free": 0.006,
+     "bronze": 0.006
+    },
+    "created": "2026-07-13"
+   },
+   {
+    "id": "maged120/google-translate-scraper",
+    "title": "Google Translate API \u2014 Bulk Text Translation",
+    "u30": 16,
+    "u7": 5,
+    "runs30": 681,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "result",
+     "free": 0.02,
+     "bronze": 0.011
+    },
+    "created": "2025-03-14"
+   },
+   {
+    "id": "fatihtahta/app-store-global-reviews-scraper",
+    "title": "App Store Reviews Scraper | Translation & All Countries",
+    "u30": 3,
+    "u7": 0,
+    "runs30": 32,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Results",
+     "free": 0.0004,
+     "bronze": 0.0004
+    },
+    "created": "2025-12-27"
+   },
+   {
+    "id": "mof1re/youtube-transcript-scraper-ai-translatiton",
+    "title": "YouTube Transcript Scraper - Captions + AI + Translation",
+    "u30": 4,
+    "u7": 2,
+    "runs30": 35,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "result",
+     "free": 0.001,
+     "bronze": 0.0008
+    },
+    "created": "2026-07-30"
+   },
+   {
+    "id": "fatihtahta/play-store-global-reviews-scraper",
+    "title": "Play Store Reviews Scraper | Translation & All Countries",
+    "u30": 0,
+    "u7": 0,
+    "runs30": 27,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Results",
+     "free": 0.001,
+     "bronze": 0.001
+    },
+    "created": "2025-12-28"
+   },
+   {
+    "id": "seemuapps/google-cloud-translation",
+    "title": "Google Cloud Translation",
+    "u30": 1,
+    "u7": 0,
+    "runs30": 26,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Characters translated (per 100)",
+     "free": 0.005,
+     "bronze": 0.005
+    },
+    "created": "2026-05-13"
+   },
+   {
+    "id": "dev00/google-translator-ai-api",
+    "title": "Google Translation AI API",
+    "u30": 2,
+    "u7": 2,
+    "runs30": 2242,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Google Translate Query",
+     "free": 0.1,
+     "bronze": 0.001
+    },
+    "created": "2026-05-18"
+   }
+  ]
+ },
+ {
+  "term": "deduplication",
+  "actors": [
+   {
+    "id": "taroyamada/csv-data-cleaner",
+    "title": "CSV Cleaner & Deduplication Tool",
+    "u30": 0,
+    "u7": 0,
+    "runs30": 26,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Cleaned CSV row",
+     "free": 0.001,
+     "bronze": 0.001
+    },
+    "created": "2026-04-04"
+   },
+   {
+    "id": "moving_beacon-owner1/data-cleaning-deduplication",
+    "title": "Data Cleaning & Deduplication",
+    "u30": 1,
+    "u7": 1,
+    "runs30": 26,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "result",
+     "free": 0.00999,
+     "bronze": 0.00999
+    },
+    "created": "2026-08-12"
+   },
+   {
+    "id": "8tp/email-lead-list-quality-audit",
+    "title": "Email Lead List Quality & Deduplication Audit",
+    "u30": 1,
+    "u7": 1,
+    "runs30": 26,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Lead row cleaned",
+     "free": 0.00025,
+     "bronze": 0.00025
+    },
+    "created": "2026-08-08"
+   },
+   {
+    "id": "confidential_gnat/tokopedia-products-scraper",
+    "title": "Tokopedia Product Scraper - Deduplication Ability",
+    "u30": 1,
+    "u7": 1,
+    "runs30": 26,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "result",
+     "free": 0.0011,
+     "bronze": 0.0011
+    },
+    "created": "2026-09-11"
+   },
+   {
+    "id": "kinaesthetic_millionaire/autoscout24-car-listings-scraper",
+    "title": "AutoScout24 Car Listings Scraper - Deduplication Ability",
+    "u30": 1,
+    "u7": 1,
+    "runs30": 26,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "result",
+     "free": 0.001,
+     "bronze": 0.001
+    },
+    "created": "2026-09-14"
+   },
+   {
+    "id": "quanmatrix/dataset-deduplication-merge-planner",
+    "title": "Dataset Deduplication & Merge Planner",
+    "u30": 1,
+    "u7": 1,
+    "runs30": 26,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Result",
+     "free": 0.004,
+     "bronze": 0.0036
+    },
+    "created": "2026-09-05"
+   }
+  ]
+ },
+ {
+  "term": "companies house",
+  "actors": [
+   {
+    "id": "scrapesage/companies-house-scraper",
+    "title": "Companies House Scraper \u2014 UK Companies, Directors & PSCs",
+    "u30": 58,
+    "u7": 18,
+    "runs30": 18571,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Company Scraped",
+     "free": 0.004,
+     "bronze": 0.004
+    },
+    "created": "2026-06-14"
+   },
+   {
+    "id": "jungle_synthesizer/companies-house-uk-financials-scraper",
+    "title": "Companies House UK Financials & Beneficial Owners Scraper",
+    "u30": 6,
+    "u7": 3,
+    "runs30": 104,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Record scraped",
+     "free": 0.05,
+     "bronze": 0.05
+    },
+    "created": "2026-07-05"
+   },
+   {
+    "id": "logiover/uk-companies-house-bulk-scraper",
+    "title": "UK Companies House Bulk Scraper",
+    "u30": 16,
+    "u7": 2,
+    "runs30": 134,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "result",
+     "free": 0.0015,
+     "bronze": 0.00135
+    },
+    "created": "2026-05-11"
+   },
+   {
+    "id": "parseforge/uk-companies-house-scraper",
+    "title": "UK Companies House Scraper",
+    "u30": 0,
+    "u7": 0,
+    "runs30": 123,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "result",
+     "free": 0.0075,
+     "bronze": 0.00733
+    },
+    "created": "2026-04-09"
+   },
+   {
+    "id": "nexgendata/business-registration-lookup",
+    "title": "Business Registration Lookup \u2014 SEC EDGAR & UK Companies House",
+    "u30": 0,
+    "u7": 0,
+    "runs30": 28,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Business registration record",
+     "free": 0.05,
+     "bronze": 0.05
+    },
+    "created": "2026-03-31"
+   },
+   {
+    "id": "pradio/companies-house",
+    "title": "UK Companies House Scraper: Officers, PSC, Charges",
+    "u30": 15,
+    "u7": 8,
+    "runs30": 138,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Company profile",
+     "free": 0.0032,
+     "bronze": 0.0025
+    },
+    "created": "2026-09-20"
+   },
+   {
+    "id": "parsebird/uk-companies-house-scraper",
+    "title": "UK Companies House Scraper",
+    "u30": 2,
+    "u7": 1,
+    "runs30": 34,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Company",
+     "free": 0.0014,
+     "bronze": 0.0012
+    },
+    "created": "2026-08-25"
+   },
+   {
+    "id": "alkausari_mujahid/ofsted-providers-companies-house-enrichment",
+    "title": "Ofsted Providers Companies House Enrichment",
+    "u30": 2,
+    "u7": 2,
+    "runs30": 8,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "result",
+     "free": 0.005,
+     "bronze": 0.005
+    },
+    "created": "2026-04-24"
+   },
+   {
+    "id": "lexis-solutions/companies-house-uk-scraper",
+    "title": "Companies House UK Scraper",
+    "u30": 3,
+    "u7": 1,
+    "runs30": 35,
+    "rating": 4.637292135486278,
+    "reviews": 8,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "result",
+     "free": 0.011,
+     "bronze": 0.01
+    },
+    "created": "2024-12-09"
+   }
+  ]
+ },
+ {
+  "term": "SEC EDGAR",
+  "actors": [
+   {
+    "id": "logiover/sec-edgar-form-d-scraper",
+    "title": "SEC EDGAR Form D Scraper \u2014 Funding Leads",
+    "u30": 11,
+    "u7": 3,
+    "runs30": 137,
+    "rating": 1,
+    "reviews": 1,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "result",
+     "free": 0.0035,
+     "bronze": 0.003
+    },
+    "created": "2026-04-20"
+   },
+   {
+    "id": "constructive_calm/sec-edgar-scraper",
+    "title": "SEC EDGAR Scraper",
+    "u30": 9,
+    "u7": 2,
+    "runs30": 251,
+    "rating": 5,
+    "reviews": 1,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Filing fetched",
+     "free": 0.0004,
+     "bronze": 0.0004
+    },
+    "created": "2026-04-19"
+   },
+   {
+    "id": "nexgendata/business-registration-lookup",
+    "title": "Business Registration Lookup \u2014 SEC EDGAR & UK Companies House",
+    "u30": 0,
+    "u7": 0,
+    "runs30": 28,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Business registration record",
+     "free": 0.05,
+     "bronze": 0.05
+    },
+    "created": "2026-03-31"
+   },
+   {
+    "id": "benthepythondev/sec-edgar-filings-intelligence",
+    "title": "\ud83c\udfdb\ufe0f SEC EDGAR Filings - 10-K, 10-Q, 8-K & More",
+    "u30": 2,
+    "u7": 0,
+    "runs30": 26,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "result",
+     "free": 0.029,
+     "bronze": 0.0261
+    },
+    "created": "2025-11-15"
+   },
+   {
+    "id": "constant_quadruped/sec-edgar-filings-scraper",
+    "title": "SEC Edgar Filings Scraper",
+    "u30": 18,
+    "u7": 9,
+    "runs30": 582,
+    "rating": 0,
+    "reviews": 0,
+    "model": "FREE",
+    "price": null,
+    "created": "2026-01-02"
+   },
+   {
+    "id": "ryanclinton/edgar-filing-search",
+    "title": "SEC EDGAR Filing Search & Signal Engine \u2014 Risk, Events & Alerts",
+    "u30": 5,
+    "u7": 1,
+    "runs30": 60,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Filing fetched",
+     "free": 0.002,
+     "bronze": 0.002
+    },
+    "created": "2026-02-08"
+   },
+   {
+    "id": "nexgendata/sec-edgar-filings-api",
+    "title": "SEC EDGAR Filings API \u2014 Official Source, No API Key",
+    "u30": 1,
+    "u7": 1,
+    "runs30": 35,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Form D filing",
+     "free": 0.05,
+     "bronze": 0.05
+    },
+    "created": "2026-04-05"
+   },
+   {
+    "id": "ryanclinton/sec-edgar-filing-analyzer",
+    "title": "SEC EDGAR Analyzer \u2014 10-K, 10-Q & 8-K Data",
+    "u30": 1,
+    "u7": 0,
+    "runs30": 26,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Company analyzed",
+     "free": 0.3,
+     "bronze": 0.3
+    },
+    "created": "2026-02-07"
+   }
+  ]
+ },
+ {
+  "term": "GLEIF LEI",
+  "actors": [
+   {
+    "id": "ryanclinton/gleif-lei-lookup",
+    "title": "GLEIF LEI Lookup \u2014 Counterparty Decision Engine",
+    "u30": 3,
+    "u7": 1,
+    "runs30": 57,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "LEI fetched",
+     "free": 0.002,
+     "bronze": 0.002
+    },
+    "created": "2026-02-08"
+   },
+   {
+    "id": "opendata-labs/gleif-lei-scraper",
+    "title": "GLEIF LEI Scraper (Legal Entity Data)",
+    "u30": 2,
+    "u7": 2,
+    "runs30": 27,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "result",
+     "free": 0.001,
+     "bronze": 0.001
+    },
+    "created": "2026-07-06"
+   },
+   {
+    "id": "gio21/gleif-lei-lookup",
+    "title": "GLEIF LEI Lookup",
+    "u30": 2,
+    "u7": 2,
+    "runs30": 27,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Record scraped",
+     "free": 0.003,
+     "bronze": 0.003
+    },
+    "created": "2026-07-25"
+   },
+   {
+    "id": "rtworule/gleif-lei-batch-validator",
+    "title": "GLEIF LEI Batch Validator - Official API Lookup",
+    "u30": 2,
+    "u7": 2,
+    "runs30": 26,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "LEI record",
+     "free": 0.001,
+     "bronze": 0.001
+    },
+    "created": "2026-07-16"
+   },
+   {
+    "id": "ponderable_hydrometer/global-company-lookup",
+    "title": "Global Company Lookup \u2014 GLEIF LEI Data",
+    "u30": 2,
+    "u7": 2,
+    "runs30": 27,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "result",
+     "free": 0.002,
+     "bronze": 0.002
+    },
+    "created": "2026-07-12"
+   },
+   {
+    "id": "neuton/gleif-lei-records-scraper",
+    "title": "GLEIF LEI Records Scraper",
+    "u30": 2,
+    "u7": 2,
+    "runs30": 27,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "result",
+     "free": 0.003,
+     "bronze": 0.003
+    },
+    "created": "2026-07-20"
+   },
+   {
+    "id": "maximedupre/gleif-lei-lookup",
+    "title": "GLEIF LEI Lookup",
+    "u30": 2,
+    "u7": 2,
+    "runs30": 27,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "LEI entity",
+     "free": 1e-05,
+     "bronze": 1e-05
+    },
+    "created": "2026-06-22"
+   },
+   {
+    "id": "pappy-dev/gleif-isin-mapping",
+    "title": "GLEIF ISIN \u2194 LEI Mapping \u2014 securities by issuer, no login",
+    "u30": 2,
+    "u7": 2,
+    "runs30": 26,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "ISIN mapping scraped",
+     "free": 0.002,
+     "bronze": 0.002
+    },
+    "created": "2026-09-02"
+   },
+   {
+    "id": "pappy-dev/gleif-lei-registry",
+    "title": "GLEIF LEI Company Registry Lookup \u2014 official Access Service, no",
+    "u30": 2,
+    "u7": 2,
+    "runs30": 28,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "LEI record scraped",
+     "free": 0.002,
+     "bronze": 0.002
+    },
+    "created": "2026-09-02"
+   },
+   {
+    "id": "frenchdatalab/lei-lookup-corporate-ownership",
+    "title": "GLEIF LEI Lookup: Company Ownership, Parents & Subsidiaries",
+    "u30": 2,
+    "u7": 2,
+    "runs30": 18,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Entity",
+     "free": 0.002,
+     "bronze": 0.002
+    },
+    "created": "2026-10-02"
+   }
+  ]
+ },
+ {
+  "term": "sanctions screening",
+  "actors": [
+   {
+    "id": "ryanclinton/opensanctions-search",
+    "title": "Sanctions & Watchlist Screening \u2014 Risk-Scored Decisions",
+    "u30": 3,
+    "u7": 1,
+    "runs30": 54,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Entity fetched",
+     "free": 0.003,
+     "bronze": 0.003
+    },
+    "created": "2026-02-08"
+   },
+   {
+    "id": "zinin/sanctions-screening",
+    "title": "Sanctions Screening API",
+    "u30": 0,
+    "u7": 0,
+    "runs30": 33,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Delivered sanctions screening row",
+     "free": 0.005,
+     "bronze": 0.00475
+    },
+    "created": "2026-07-23"
+   },
+   {
+    "id": "pink_comic/ofac-sanctions-screening",
+    "title": "OFAC Sanctions Screening API - KYC AML Compliance",
+    "u30": 2,
+    "u7": 0,
+    "runs30": 29,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "result",
+     "free": 0.002,
+     "bronze": 0.002
+    },
+    "created": "2026-03-28"
+   },
+   {
+    "id": "inexhaustible_glass/sanctions-screener",
+    "title": "Sanctions & PEP Screening \u2014 OFAC, UN, EU, UK (KYC/AML)",
+    "u30": 0,
+    "u7": 0,
+    "runs30": 27,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Name screened",
+     "free": 0.005,
+     "bronze": 0.005
+    },
+    "created": "2026-06-22"
+   },
+   {
+    "id": "haketa/sanctions-screening",
+    "title": "AML & Sanctions Screening for AI Agents (OFAC, EU, UN, UK)",
+    "u30": 2,
+    "u7": 1,
+    "runs30": 35,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "result",
+     "free": 0.003,
+     "bronze": 0.003
+    },
+    "created": "2026-07-06"
+   },
+   {
+    "id": "scrapemint/sanctions-watchlist-scraper",
+    "title": "Sanctions & Watchlist Screening Scraper: OFAC + UK",
+    "u30": 2,
+    "u7": 2,
+    "runs30": 27,
+    "rating": 5,
+    "reviews": 1,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Sanctions record",
+     "free": 0.01,
+     "bronze": 0.01
+    },
+    "created": "2026-07-12"
+   },
+   {
+    "id": "george.the.developer/full-sanctions-screener",
+    "title": "Sanctions Screening API for OFAC EU UN and UK",
+    "u30": 1,
+    "u7": 1,
+    "runs30": 1,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Entity screened",
+     "free": 0.015,
+     "bronze": 0.015
+    },
+    "created": "2026-03-27"
+   },
+   {
+    "id": "frenchdatalab/sanctions-screening-eu-uk-ofac",
+    "title": "Sanctions Screening: EU, UK & US OFAC Lists (Official)",
+    "u30": 2,
+    "u7": 2,
+    "runs30": 26,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Name screened",
+     "free": 0.005,
+     "bronze": 0.005
+    },
+    "created": "2026-10-02"
+   },
+   {
+    "id": "scrapesage/ofac-sanctions-scraper",
+    "title": "OFAC Sanctions Screening - SDN & Consolidated Lists",
+    "u30": 1,
+    "u7": 1,
+    "runs30": 26,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Name screened",
+     "free": 0.002,
+     "bronze": 0.0017
+    },
+    "created": "2026-08-15"
+   }
+  ]
+ },
+ {
+  "term": "OpenAlex",
+  "actors": [
+   {
+    "id": "nexgendata/google-scholar-scraper",
+    "title": "Academic Paper Search \u2014 Scholar Alternative (OpenAlex)",
+    "u30": 0,
+    "u7": 0,
+    "runs30": 34,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Academic paper",
+     "free": 0.04,
+     "bronze": 0.04
+    },
+    "created": "2026-02-17"
+   },
+   {
+    "id": "themineworks/academic-research-mcp",
+    "title": "Academic Research MCP | 6 Tools: OpenAlex, PubMed, arXiv",
+    "u30": 26,
+    "u7": 20,
+    "runs30": 1677,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "search_papers",
+     "free": 0.0625,
+     "bronze": 0.0625
+    },
+    "created": "2026-07-30"
+   },
+   {
+    "id": "shahidirfan/OpenAlex-Scraper",
+    "title": "OpenAlex Scraper",
+    "u30": 4,
+    "u7": 0,
+    "runs30": 36,
+    "rating": 5.000000000000001,
+    "reviews": 1,
+    "model": "FREE",
+    "price": null,
+    "created": "2025-11-14"
+   },
+   {
+    "id": "themineworks/openalex-scholarly-works",
+    "title": "OpenAlex Scraper | 20 Fields, Citations & OA, No API Key",
+    "u30": 8,
+    "u7": 0,
+    "runs30": 186,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Work scraped",
+     "free": 0.001,
+     "bronze": 0.0009
+    },
+    "created": "2026-06-10"
+   },
+   {
+    "id": "rupom888/academic-research-scraper",
+    "title": "Academic Research & Papers Scraper (OpenAlex)",
+    "u30": 3,
+    "u7": 1,
+    "runs30": 54,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "result",
+     "free": 0.001,
+     "bronze": 0.001
+    },
+    "created": "2026-05-24"
+   },
+   {
+    "id": "gentle_cloud/openalex-research-scraper",
+    "title": "OpenAlex Academic Research Scraper",
+    "u30": 1,
+    "u7": 1,
+    "runs30": 26,
+    "rating": 0,
+    "reviews": 0,
+    "model": "FREE",
+    "price": null,
+    "created": "2026-03-28"
+   },
+   {
+    "id": "dami_studio/openalex-scraper",
+    "title": "OpenAlex Scraper - 250M+ Papers, Abstracts & Citations",
+    "u30": 1,
+    "u7": 0,
+    "runs30": 32,
+    "rating": 5,
+    "reviews": 1,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Work",
+     "free": 0.002,
+     "bronze": 0.00198
+    },
+    "created": "2026-06-12"
+   },
+   {
+    "id": "taroyamada/openalex-research-intelligence",
+    "title": "OpenAlex Scholarly Works Scraper \u2014 Authors, Citations & DOI",
+    "u30": 1,
+    "u7": 0,
+    "runs30": 26,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "OpenAlex research row",
+     "free": 0.004,
+     "bronze": 0.004
+    },
+    "created": "2026-05-02"
+   },
+   {
+    "id": "cloud9_ai/openalex-scraper",
+    "title": "OpenAlex Academic Research Scraper - Scholarly Papers",
+    "u30": 1,
+    "u7": 0,
+    "runs30": 27,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "result",
+     "free": 0.002,
+     "bronze": 0.002
+    },
+    "created": "2026-02-14"
+   },
+   {
+    "id": "dltik/mcp-server-openalex",
+    "title": "OpenAlex MCP Server: 200M Papers & Authors for AI Agents",
+    "u30": 2,
+    "u7": 2,
+    "runs30": 27,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Actor Start",
+     "free": 5e-05,
+     "bronze": 5e-05
+    },
+    "created": "2026-06-12"
+   }
+  ]
+ },
+ {
+  "term": "patent search",
+  "actors": [
+   {
+    "id": "khadinakbar/google-patents-scraper",
+    "title": "Google Patents Scraper \u2014 Search, Citations, Family Graph",
+    "u30": 50,
+    "u7": 20,
+    "runs30": 1696,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Patent record (basic)",
+     "free": 0.002,
+     "bronze": 0.002
+    },
+    "created": "2026-05-03"
+   },
+   {
+    "id": "nexgendata/uspto-patent-search",
+    "title": "USPTO Patent Search \u2014 US Prior Art via Google Patents Index",
+    "u30": 3,
+    "u7": 0,
+    "runs30": 32,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Patent record",
+     "free": 0.1,
+     "bronze": 0.1
+    },
+    "created": "2026-02-17"
+   },
+   {
+    "id": "nexgendata/cnipa-china-patent-search",
+    "title": "China (CN) Patent Search \u2014 via Google Patents Index",
+    "u30": 1,
+    "u7": 0,
+    "runs30": 32,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Patent",
+     "free": 0.05,
+     "bronze": 0.05
+    },
+    "created": "2026-05-20"
+   },
+   {
+    "id": "s-r/google-patents",
+    "title": "Google Patents Scraper & API - Patent Search and Full Records",
+    "u30": 4,
+    "u7": 2,
+    "runs30": 265,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Run start",
+     "free": 0.002,
+     "bronze": 0.002
+    },
+    "created": "2026-09-09"
+   },
+   {
+    "id": "hanamira/patent-trademark-search",
+    "title": "Patent Trademark Search",
+    "u30": 3,
+    "u7": 2,
+    "runs30": 73,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "result",
+     "free": 0.004,
+     "bronze": 0.004
+    },
+    "created": "2025-12-08"
+   },
+   {
+    "id": "ryanclinton/patent-search",
+    "title": "Patent Search - USPTO Patent & Invention Database",
+    "u30": 1,
+    "u7": 1,
+    "runs30": 28,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Patent fetched",
+     "free": 0.002,
+     "bronze": 0.002
+    },
+    "created": "2026-02-08"
+   },
+   {
+    "id": "memo23/google-patents-scraper",
+    "title": "Google Patents Scraper \u2014 Search, Citations, Family Graph",
+    "u30": 21,
+    "u7": 0,
+    "runs30": 44,
+    "rating": 5,
+    "reviews": 1,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Patent record (basic)",
+     "free": 0.002,
+     "bronze": 0.002
+    },
+    "created": "2026-09-19"
+   },
+   {
+    "id": "scrape.badger/google-patents-scraper",
+    "title": "Google Patents Scraper \u2014 Search, Detail, Citations",
+    "u30": 3,
+    "u7": 1,
+    "runs30": 371,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Patent page",
+     "free": 0.003,
+     "bronze": 0.003
+    },
+    "created": "2026-04-26"
+   },
+   {
+    "id": "nexgendata/wipo-patentscope-search",
+    "title": "PCT / WO Patent Search \u2014 via Google Patents Index",
+    "u30": 0,
+    "u7": 0,
+    "runs30": 27,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Patent",
+     "free": 0.15,
+     "bronze": 0.15
+    },
+    "created": "2026-05-28"
+   },
+   {
+    "id": "ryanclinton/epo-patent-search",
+    "title": "EPO European Patent Search",
+    "u30": 0,
+    "u7": 0,
+    "runs30": 3,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Patent fetched",
+     "free": 0.002,
+     "bronze": 0.002
+    },
+    "created": "2026-02-08"
+   }
+  ]
+ },
+ {
+  "term": "barcode GTIN",
+  "actors": [
+   {
+    "id": "scrapersdelight/shopify-products-scraper",
+    "title": "Shopify Products Scraper \u2014 Barcode GTIN, Variants & Prices",
+    "u30": 1,
+    "u7": 1,
+    "runs30": 26,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Per product returned",
+     "free": 0.001,
+     "bronze": 0.001
+    },
+    "created": "2026-08-15"
+   },
+   {
+    "id": "technicaldost/ean-gtin-barcode-product-lookup",
+    "title": "EAN GTIN Barcode Product Lookup - Open Food Facts",
+    "u30": 1,
+    "u7": 1,
+    "runs30": 27,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Successful watchlist result",
+     "free": 0.002,
+     "bronze": 0.002
+    },
+    "created": "2026-09-14"
+   },
+   {
+    "id": "caulleonard/gtin-api",
+    "title": "GTIN / Barcode API",
+    "u30": 0,
+    "u7": 0,
+    "runs30": 2,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "API CALL",
+     "free": 0.001,
+     "bronze": 0.001
+    },
+    "created": "2026-07-18"
+   },
+   {
+    "id": "bgfc97/gtin-barcode-validator",
+    "title": "GTIN / Barcode Validator (EAN, UPC, ISBN)",
+    "u30": 1,
+    "u7": 1,
+    "runs30": 27,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Code validated",
+     "free": 0.001,
+     "bronze": 0.001
+    },
+    "created": "2026-07-16"
+   },
+   {
+    "id": "accountable_eel/gtin-barcode-lookup",
+    "title": "GTIN & Barcode Lookup: Product Data by EAN/UPC",
+    "u30": 0,
+    "u7": 0,
+    "runs30": 26,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Successful lookup",
+     "free": 0.004,
+     "bronze": 0.0034
+    },
+    "created": "2026-08-20"
+   },
+   {
+    "id": "caulleonard/gtin-barcode-validator",
+    "title": "GTIN / EAN / UPC Barcode Validator \u2014 Check Digit + GS1 Prefix",
+    "u30": 1,
+    "u7": 1,
+    "runs30": 2,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "API Call",
+     "free": 0.001,
+     "bronze": 0.001
+    },
+    "created": "2026-07-05"
+   },
+   {
+    "id": "trovevault/shopify-products-scraper",
+    "title": "Shopify Products Scraper",
+    "u30": 102,
+    "u7": 34,
+    "runs30": 1208,
+    "rating": 5.000000000000001,
+    "reviews": 8,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Product",
+     "free": 0.001,
+     "bronze": 0.00095
+    },
+    "created": "2026-02-26"
+   },
+   {
+    "id": "sian.agency/bershka-product-scraper",
+    "title": "Bershka Product Scraper \u2014 Prices, Sizes & Stock",
+    "u30": 1,
+    "u7": 1,
+    "runs30": 93,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Scraped product",
+     "free": 0.009,
+     "bronze": 0.003
+    },
+    "created": "2026-08-12"
+   },
+   {
+    "id": "blackfalcondata/lidl-scraper",
+    "title": "Lidl Scraper [Just \ud83d\udcb0$2] \u2014 European Grocery Prices",
+    "u30": 13,
+    "u7": 5,
+    "runs30": 1495,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Result",
+     "free": 0.002,
+     "bronze": 0.002
+    },
+    "created": "2026-06-10"
+   },
+   {
+    "id": "s-r/free-ean-to-bol-com-product-id-converter",
+    "title": "EAN to bol.com Product ID Converter - BPID & Barcode Lookup",
+    "u30": 1,
+    "u7": 0,
+    "runs30": 26,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "bolcom-pid",
+     "free": 0.004,
+     "bronze": 0.004
+    },
+    "created": "2025-06-21"
+   }
+  ]
+ },
+ {
+  "term": "JSON schema validation",
+  "actors": [
+   {
+    "id": "broomwagon/llm-output-guard",
+    "title": "LLM Output Guard | JSON Schema Validation for Agent Output",
+    "u30": 1,
+    "u7": 1,
+    "runs30": 26,
+    "rating": 0,
+    "reviews": 0,
+    "model": "FREE",
+    "price": null,
+    "created": "2026-08-10"
+   },
+   {
+    "id": "ar27111994/webhook-debugger-logger",
+    "title": "Webhook Debugger, Logger & API Mocking Suite",
+    "u30": 0,
+    "u7": 0,
+    "runs30": 3,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Captured Webhook",
+     "free": 0.01,
+     "bronze": 0.01
+    },
+    "created": "2025-12-20"
+   },
+   {
+    "id": "q_services/data-format-mcp",
+    "title": "Data Format MCP \u2014 JSON, CSV, YAML Convert & Validate",
+    "u30": 1,
+    "u7": 1,
+    "runs30": 2,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Tool call",
+     "free": 0.001,
+     "bronze": 0.001
+    },
+    "created": "2026-07-11"
+   },
+   {
+    "id": "nibble/csv-json-schema-converter",
+    "title": "CSV to JSON Converter with Schema Inference & Validation",
+    "u30": 0,
+    "u7": 0,
+    "runs30": 27,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Converted file",
+     "free": 0.002,
+     "bronze": 0.002
+    },
+    "created": "2026-07-15"
+   },
+   {
+    "id": "scrapeai/housing-property-scraper",
+    "title": "Housing Property Scraper",
+    "u30": 0,
+    "u7": 0,
+    "runs30": 27,
+    "rating": 5.000000000000001,
+    "reviews": 3,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Result",
+     "free": 0.00249,
+     "bronze": 0.00249
+    },
+    "created": "2026-03-03"
+   }
+  ]
+ },
+ {
+  "term": "MCP server",
+  "actors": [
+   {
+    "id": "clearpath/resy-booker",
+    "title": "Resy Booker - MCP Server for AI Restaurant Reservations",
+    "u30": 11,
+    "u7": 8,
+    "runs30": 1725,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Reservation booking",
+     "free": 3.99,
+     "bronze": 3.99
+    },
+    "created": "2026-03-09"
+   },
+   {
+    "id": "clearpath/opentable-booker",
+    "title": "OpenTable Booker: AI Restaurant Reservations (MCP Server)",
+    "u30": 20,
+    "u7": 10,
+    "runs30": 1316,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Booking",
+     "free": 3.99,
+     "bronze": 3.99
+    },
+    "created": "2026-03-15"
+   },
+   {
+    "id": "datascoutapi/google-search-mcp-server",
+    "title": "Google Search MCP Server",
+    "u30": 1,
+    "u7": 0,
+    "runs30": 1,
+    "rating": 0,
+    "reviews": 0,
+    "model": "FREE",
+    "price": null,
+    "created": "2025-09-07"
+   },
+   {
+    "id": "clearpath/reddit-mcp",
+    "title": "Reddit MCP Server | Instant Post & Comment Search",
+    "u30": 14,
+    "u7": 8,
+    "runs30": 2700,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Search",
+     "free": 0.00499,
+     "bronze": 0.00499
+    },
+    "created": "2026-03-10"
+   },
+   {
+    "id": "makework36/reddit-mcp-server",
+    "title": "Reddit MCP Server \u2014 Claude, ChatGPT, Cursor, Codex",
+    "u30": 28,
+    "u7": 19,
+    "runs30": 2022,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "MCP tool call",
+     "free": 0.02,
+     "bronze": 0.02
+    },
+    "created": "2026-04-21"
+   },
+   {
+    "id": "afanasenko/zillow-mcp-server",
+    "title": "Zillow MCP Server",
+    "u30": 12,
+    "u7": 8,
+    "runs30": 907,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Property",
+     "free": 0.08,
+     "bronze": 0.07
+    },
+    "created": "2026-05-07"
+   },
+   {
+    "id": "mrbridge/espn-mcp-server",
+    "title": "ESPN MCP Server: live scores and sports API",
+    "u30": 78,
+    "u7": 60,
+    "runs30": 7183,
+    "rating": 5,
+    "reviews": 1,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Read Operation",
+     "free": 0.005,
+     "bronze": 0.00433
+    },
+    "created": "2026-02-24"
+   },
+   {
+    "id": "onetapstudio/price-intelligence-mcp",
+    "title": "E-Commerce Price Intelligence MCP Server",
+    "u30": 6,
+    "u7": 6,
+    "runs30": 883,
+    "rating": 0,
+    "reviews": 0,
+    "model": "FREE",
+    "price": null,
+    "created": "2026-03-23"
+   },
+   {
+    "id": "makework36/flight-mcp-server",
+    "title": "Flight Price MCP Server \u2014 Claude, Cursor & AI Agents",
+    "u30": 10,
+    "u7": 8,
+    "runs30": 754,
+    "rating": 0,
+    "reviews": 0,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Tool call",
+     "free": 0.03,
+     "bronze": 0.03
+    },
+    "created": "2026-04-23"
+   },
+   {
+    "id": "mrbridge/seo-geo-mcp",
+    "title": "AI SEO & GEO MCP Server: SERP API and keywords",
+    "u30": 2,
+    "u7": 1,
+    "runs30": 267,
+    "rating": 5,
+    "reviews": 1,
+    "model": "PAY_PER_EVENT",
+    "price": {
+     "event": "Tool Read",
+     "free": 0.0006,
+     "bronze": 0.00054
+    },
+    "created": "2026-08-07"
+   }
+  ]
+ }
+]
