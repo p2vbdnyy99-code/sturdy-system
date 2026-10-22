@@ -1,0 +1,1008 @@
+{
+ "about": {
+  "tender": "AIIMS Bhubaneswar, NIT No. AIIMS/BBSR/ENGG./ELECT./11/2026: supply, installation, testing and commissioning of pump motor sets for pump houses and STPs",
+  "publishedBy": "All India Institute of Medical Sciences, Bhubaneswar",
+  "note": "Output of TenderTez's standard analysis (same extraction, chunking, AI call, validation and aggregation as every account), run once on 16 Oct 2026 in production without saving anything. Stored exactly as produced."
+ },
+ "source": "https://aiimsbhubaneswar.nic.in/wp-content/uploads/2026/05/NIT11.pdf",
+ "sha256": "37610702beedddbac0d1d6bb4c18dda9541e28147040e4bfcac7c13ca964c91e",
+ "pageCount": 35,
+ "ocrUsed": false,
+ "chunks": 3,
+ "failedChunks": 0,
+ "ms": 71982,
+ "analysedAt": "2026-10-16T03:24:53.960Z",
+ "aggregated": {
+  "overview": {
+   "organization": {
+    "value": "All India Institute of Medical Sciences, Bhubaneswar",
+    "sourcePage": 1,
+    "evidenceText": "“All India Institute of Medical Sciences Engineering Department, Bhubaneswar (Odisha)-751019”"
+   },
+   "tenderNumber": {
+    "value": "AIIMS/BBSR/ENGG./ELECT./11/2026",
+    "sourcePage": 3,
+    "evidenceText": "“Tender No. AIIMS/BBSR/ENGG./ELECT./ 11/2026”"
+   },
+   "location": {
+    "value": "AIIMS Bhubaneswar, Odisha",
+    "sourcePage": 1,
+    "evidenceText": "“Engineering Department, Bhubaneswar (Odisha)-751019” and the work is for “Pump Houses and STPs at AIIMS Bhubaneswar.”"
+   },
+   "estimatedValue": {
+    "value": "Rs. 40,35,586.00",
+    "sourcePage": 3,
+    "evidenceText": "“Estimated Cost put to Tender Rs. 40,35,586.00 /-”"
+   },
+   "emd": {
+    "value": "2% of the estimated value",
+    "sourcePage": 4,
+    "evidenceText": "“Earnest Money 2% of the Estimated Value.”"
+   },
+   "contractDuration": {
+    "value": "60 days",
+    "sourcePage": 4,
+    "evidenceText": "“Period of Completion 60 days”"
+   },
+   "submissionDeadline": {
+    "value": "30/05/2026 at 18:00 Hours",
+    "sourcePage": 4,
+    "evidenceText": "“Last date and time of online submission of tender By 30/05/2026 at 18:00 Hours through online.”",
+    "parsedDate": "2026-05-30T12:30:00.000Z"
+   },
+   "openingDate": {
+    "value": "01/06/2026 at 12:00 Hours",
+    "sourcePage": 4,
+    "evidenceText": "“Time and date of online opening of Tender (Technical Bid) On 01/06/2026 at 12:00 Hours.”",
+    "parsedDate": "2026-06-01T06:30:00.000Z"
+   }
+  },
+  "requirements": [
+   {
+    "category": "LICENSE",
+    "title": "Valid electrical licence",
+    "description": "Bidder must be a valid Electrical licence holder (MV or Above); copies of the valid Electrical License issued or endorsed by ELBO, Odisha must be uploaded.",
+    "mandatory": true,
+    "sourcePage": 5,
+    "evidenceText": "“Copies of valid Electrical License (MV or Above) issued or endorsed by ELBO,Odisha” are listed among eligibility documents to be scanned and uploaded.",
+    "extractedValue": "Electrical License (MV or Above), issued or endorsed by ELBO, Odisha",
+    "confidence": 0.99
+   },
+   {
+    "category": "EXPERIENCE",
+    "title": "Similar-work experience threshold",
+    "description": "Bidder must have completed, in the last seven years ending on the tender-submission deadline, either three similar works of at least 40% of estimated cost each, two similar works of at least 60% each, or one similar work of at least 80%. Similar work means supply and installation of various types of pump motor sets.",
+    "mandatory": true,
+    "sourcePage": 11,
+    "evidenceText": "“Three (03) similar works each of value not less than 40% (i.e. for Rs. 16,14,234.00/-) ... or Two (02) similar works each of value not less than 60% (i.e. for Rs. 24,21,352.00/-) ... or one (01) similar work of value not less than 80% (i.e. for Rs 32,28,469.00/-) ... in last 07 (Seven) Years ending last date of tender submission.” “The similar work means, ‘Supply and Installation of various types of Pump Motor Sets’”",
+    "extractedValue": "3 works ≥ Rs. 16,14,234 each; or 2 works ≥ Rs. 24,21,352 each; or 1 work ≥ Rs. 32,28,469",
+    "confidence": 0.99
+   },
+   {
+    "category": "EXPERIENCE",
+    "title": "Eligible experience sources",
+    "description": "Similar-work experience must be from Central Government, State Government, PSU, or Autonomous Body.",
+    "mandatory": true,
+    "sourcePage": 11,
+    "evidenceText": "“The experience of similar work should be from Central Govt., State Govt., PSU and Autonomous Body.”",
+    "extractedValue": null,
+    "confidence": 0.98
+   },
+   {
+    "category": "FINANCIAL",
+    "title": "Average annual turnover",
+    "description": "Average annual financial turnover for the last three years ending 31 March 2025 must exceed 50% of the estimated cost.",
+    "mandatory": true,
+    "sourcePage": 11,
+    "evidenceText": "“Average Annual Financial, the turnover during the last 3 years, ending 31st March 2025 should be more than 50% of the estimated cost.”",
+    "extractedValue": "More than 50% of estimated cost",
+    "confidence": 0.98
+   },
+   {
+    "category": "DOCUMENT",
+    "title": "CA-certified turnover certificate",
+    "description": "Upload an affidavit or certificate from a Chartered Accountant stating financial turnover for the specified period; further details may be requested after technical-bid opening.",
+    "mandatory": true,
+    "sourcePage": 6,
+    "evidenceText": "“Certificate of financial turn over of last 3 years duly certified from CA: At the time of submission of bid, bidder may upload affidavit/ certificate from CA mentioning finance turn over for the period specified in the bid document.”",
+    "extractedValue": "Financial turnover certificate/affidavit certified by CA for last 3 years",
+    "confidence": 0.96
+   },
+   {
+    "category": "FINANCIAL",
+    "title": "EMD submission",
+    "description": "Submit EMD equal to 2% of estimated value by DD, PBG, or FDR; upload the scanned copy and submit original DD with technical-bid documents. Bids without EMD demand drafts will be rejected. EMD exemption is not allowed.",
+    "mandatory": true,
+    "sourcePage": 11,
+    "evidenceText": "“The bidder shall be required to submit the Earnest Money Deposit (EMD) for an amount of 2% of Estimate value by way of DD/PBG/FDR. Scanned Copy of the Demand Drafts must be uploaded and the original DD must be submitted with the Technical Bid documents. Bid(s) received in tender without Demand Drafts of EMD will be rejected.”",
+    "extractedValue": "2% of estimated value; DD/PBG/FDR",
+    "confidence": 0.99
+   },
+   {
+    "category": "FINANCIAL",
+    "title": "No EMD exemption",
+    "description": "EMD exemption is not permitted for this work.",
+    "mandatory": true,
+    "sourcePage": 12,
+    "evidenceText": "“EMD Exemption is not allowed for this work.”",
+    "extractedValue": null,
+    "confidence": 0.99
+   },
+   {
+    "category": "FINANCIAL",
+    "title": "Performance guarantee",
+    "description": "Successful contractor must furnish performance guarantee equal to 5% of contract value, as FDR or bank guarantee from a scheduled bank, valid for six months beyond completion of all contractual obligations. Failure to deposit it can result in EMD forfeiture.",
+    "mandatory": true,
+    "sourcePage": 12,
+    "evidenceText": "“The successful contractor will be required to furnish a Performance guarantee of 05% (Five Percent) of Contract Value ... in the form of Fixed Deposit Receipt or Bank Guarantee from any Scheduled Bank ... valid for a period of 6 months beyond completion of all the contractual obligations. In case the contractor fails to deposit the said performance guarantee ... the EMD will be forfeited.”",
+    "extractedValue": "5% of contract value; valid 6 months beyond contractual obligations",
+    "confidence": 0.99
+   },
+   {
+    "category": "DOCUMENT",
+    "title": "Upload eligibility documents",
+    "description": "Upload scanned eligibility documents and EMD within the tender-submission period, including Appendix A to C, similar-work experience and completion certificates, GST registration, PAN card, undertakings, electrical licence, tender-specific OEM authorization, declarations, and signed/sealed tender pages.",
+    "mandatory": true,
+    "sourcePage": 5,
+    "evidenceText": "“List of Eligibility Documents to be scanned and uploaded within the period of bid submission” includes “Appendix `A to C’,” “Certificates of Work Experience & Completion Certificate,” “Certificate of Registration for GST,” “Copy of PAN Card,” “Copies of undertaking,” electrical licence, “Tender specific OEM Authorization Certificate,” declarations, and “Each page of the e-tender documents should be duly signed with seal otherwise the bid shall become invalid.”",
+    "extractedValue": null,
+    "confidence": 0.99
+   },
+   {
+    "category": "OEM",
+    "title": "Tender-specific OEM authorization",
+    "description": "Tender-specific OEM Authorization Certificate (Appendix D) must be uploaded; failure results in summary rejection. The OEM authorization must be on OEM letterhead and signed by an authorized person from the OEM of approved make.",
+    "mandatory": true,
+    "sourcePage": 5,
+    "evidenceText": "“Submission/Upload of Tender specific OEM Authorization Certificate (Appendix- D.) is mandatory,if the bidder will fail to upload the Tender specific manufacturing authorization certificate the bidshall be summarily rejected.”",
+    "extractedValue": "Tender-specific OEM Authorization Certificate (Appendix D)",
+    "confidence": 0.99
+   },
+   {
+    "category": "CERTIFICATION",
+    "title": "Valid Class-III digital signature",
+    "description": "Intending bidder must have a valid Class-III digital signature to submit the bid.",
+    "mandatory": true,
+    "sourcePage": 4,
+    "evidenceText": "“The intending bidders must have valid class‐III digital signature to submit the bid.”",
+    "extractedValue": "Valid Class-III digital signature",
+    "confidence": 0.99
+   },
+   {
+    "category": "DOCUMENT",
+    "title": "Original EMD hard copy deadline",
+    "description": "Original EMD hard copy must be submitted to the Executive Engineer (Electrical), Room No. 336, Academic Building, AIIMS Bhubaneswar by 31 May 2026 at 16:00 hours; eligibility is considered based on uploaded documents.",
+    "mandatory": true,
+    "sourcePage": 4,
+    "evidenceText": "“Period during which hard copies of Earnest Money Deposit(original) to be submitted ... To be submitted by 31/05/2026 by 16.00 hours.”",
+    "extractedValue": "31/05/2026 by 16:00 hours",
+    "confidence": 0.98
+   },
+   {
+    "category": "SPECIAL_CONDITION",
+    "title": "Two-bid online tender submission",
+    "description": "Tender must be submitted online in two parts: Technical Bid and Financial Bid.",
+    "mandatory": true,
+    "sourcePage": 11,
+    "evidenceText": "“The Tender should be submitted in 02 (Two) parts i.e. Technical Bid and Financial Bid respectively.”",
+    "extractedValue": "Two-part online submission: Technical Bid and Financial Bid",
+    "confidence": 0.98
+   },
+   {
+    "category": "SPECIAL_CONDITION",
+    "title": "Conditional bids rejected",
+    "description": "Conditional bids will not be considered and will be rejected; conditional bids are treated as unresponsive.",
+    "mandatory": true,
+    "sourcePage": 6,
+    "evidenceText": "“Conditional Bid(s) will be treated as unresponsive and will be rejected.”",
+    "extractedValue": null,
+    "confidence": 0.99
+   },
+   {
+    "category": "FINANCIAL",
+    "title": "Quoted rates inclusive of taxes and charges",
+    "description": "Quoted percentage rates must include GST, other applicable taxes and levies, labour welfare cess, and applicable water and electricity charges; no reimbursement claim will be entertained.",
+    "mandatory": true,
+    "sourcePage": 5,
+    "evidenceText": "“GST on all materials as well as GST on Work Contract etc., or any other taxes applicable ... shall be payable by the Contractor. Percentage rate quoted by him shall be inclusive of such taxes, levies etc and Government will not entertain any claim for reimbursement whatsoever.”",
+    "extractedValue": null,
+    "confidence": 0.98
+   },
+   {
+    "category": "LEGAL",
+    "title": "No canvassing or fraudulent practices",
+    "description": "Canvassing is prohibited and may lead to rejection. The contractor may be debarred for false experience/completion certificates, failure to commence work by scheduled work-order date, or violation of important contract conditions.",
+    "mandatory": true,
+    "sourcePage": 6,
+    "evidenceText": "“Canvassing whether directly or indirectly, in connection with tenders is strictly prohibited & the tenders submitted by the contractors who resort to canvassing will be liable for rejection.” The contractor “shall be debarred” for false certificates, failure to commence, or violation of important conditions.",
+    "extractedValue": null,
+    "confidence": 0.97
+   },
+   {
+    "category": "DOCUMENT",
+    "title": "Post-execution billing documents",
+    "description": "After execution, vendor must submit work-completion declaration, testing and commissioning certificate, material test certificate, warranty/guarantee certificate, colour photos of executed work, NOC regarding work, up-to-date GST-return voucher, and bank-account details with the bill.",
+    "mandatory": true,
+    "sourcePage": 14,
+    "evidenceText": "“Vendor shall submit following documents along with the bill after execution of given work:” followed by Work Completion declaration, Testing & Commissioning Certificate, Material Test Certificate, Warranty/Guarantee Certificate, Colour Photos, NOC, GST return voucher, and Bank Account Details.",
+    "extractedValue": null,
+    "confidence": 0.98
+   },
+   {
+    "category": "LEGAL",
+    "title": "Labour-law and worker compliance",
+    "description": "Agency is solely responsible for compliance with labour and industrial laws, wages, EPF, bonus, gratuity, ESI, worker insurance, and timely wage payment irrespective of delay in bill settlement.",
+    "mandatory": true,
+    "sourcePage": 13,
+    "evidenceText": "“The Agency shall be solely responsible for compliance to the provisions of various Labour and industrial laws, such as, wages, allowances, compensations, EPF, Bonus. Gratuity, ESI etc.” and “shall make payment of wages to workers engaged by it by the stipulated date irrespective of any delay in settlement of its bill.”",
+    "extractedValue": null,
+    "confidence": 0.98
+   },
+   {
+    "category": "CERTIFICATION",
+    "title": "EPF and ESI registrations",
+    "description": "Contractor must hold registration with the Employees’ Provident Fund Commissioner and Employees’ State Insurance Corporation and obtain other legally required statutory approvals.",
+    "mandatory": true,
+    "sourcePage": 15,
+    "evidenceText": "“The contractor shall have registration with Employee’s Provident Fund commissioner and Employee’s state Insurance Corporation ... He shall obtain all other necessary approvals from statutory bodies as per law in vogue.”",
+    "extractedValue": null,
+    "confidence": 0.98
+   },
+   {
+    "category": "EQUIPMENT",
+    "title": "Contractor-provided tools and equipment",
+    "description": "Contractor must arrange all T&P, ladders/Hydra, electrical instruments, consumables, and contingent articles required for execution of internal electrification work.",
+    "mandatory": true,
+    "sourcePage": 15,
+    "evidenceText": "“All T&P, ladders/Hydra etc, Electrical instruments for execution of internal electrification work, consumable and Contingent Articles required for execution of the work shall be arranged by the contractor.”",
+    "extractedValue": null,
+    "confidence": 0.96
+   },
+   {
+    "category": "SPECIAL_CONDITION",
+    "title": "Site restrictions without extra payment",
+    "description": "Contractor must follow security-related restrictions on working hours and vehicle movement, adjust execution programme accordingly, and no extra payment will be made for this.",
+    "mandatory": true,
+    "sourcePage": 15,
+    "evidenceText": "“On account of security consideration, there could be some restrictions on the working hours, movement of vehicles for transportation of materials. The contactor shall be bound to follow all such restrictions and adjust the program for execution accordingly, for which nothing extra shall be paid.”",
+    "extractedValue": null,
+    "confidence": 0.98
+   },
+   {
+    "category": "FINANCIAL",
+    "title": "Earnest Money Deposit",
+    "description": "Earnest Money is stated as 2% of the estimated cost.",
+    "mandatory": true,
+    "sourcePage": 27,
+    "evidenceText": "“Earnest Money = 02% of Estimated Cost.”",
+    "extractedValue": "02% of Estimated Cost",
+    "confidence": 0.99
+   },
+   {
+    "category": "FINANCIAL",
+    "title": "Performance Guarantee",
+    "description": "Performance Guarantee is stated as 5% of the tendered value.",
+    "mandatory": true,
+    "sourcePage": 27,
+    "evidenceText": "“Performance Guarantee = 05% of Tendered Value”",
+    "extractedValue": "05% of Tendered Value",
+    "confidence": 0.99
+   },
+   {
+    "category": "FINANCIAL",
+    "title": "Security Deposit",
+    "description": "Security Deposit is stated as 2.5% of the tendered value; it is deducted from running bills and released after successful completion of the DLP without interest.",
+    "mandatory": true,
+    "sourcePage": 25,
+    "evidenceText": "“The Security Deposit @ 2.5% of the gross amount of the bill shall be deducted from the running bills, which shall be released after the successful completion of the DLP period from the date of completion of work, without any interest thereupon.”",
+    "extractedValue": "2.5% of gross amount of each running bill",
+    "confidence": 0.98
+   },
+   {
+    "category": "FINANCIAL",
+    "title": "Labour cess deduction",
+    "description": "Labour cess of 1% will be deducted from bills.",
+    "mandatory": true,
+    "sourcePage": 25,
+    "evidenceText": "“1% of labour cess will be deducted from bills.”",
+    "extractedValue": "1%",
+    "confidence": 0.99
+   },
+   {
+    "category": "FINANCIAL",
+    "title": "Income tax deduction",
+    "description": "Applicable income tax will be deducted from bills unless exempted by the Income Tax Department.",
+    "mandatory": true,
+    "sourcePage": 25,
+    "evidenceText": "“The income tax as applicable shall be deducted from the bills unless exempted by the Income Tax Department.”",
+    "extractedValue": null,
+    "confidence": 0.98
+   },
+   {
+    "category": "FINANCIAL",
+    "title": "Water charge deduction",
+    "description": "If water is used from AIIMS Bhubaneswar, water charges will be deducted at 1% of the gross bill amount.",
+    "mandatory": true,
+    "sourcePage": 25,
+    "evidenceText": "“If water is used from the AIIMS, Bhubaneswar, then water charges will be deducted @1% of the Gross Bill Amount.”",
+    "extractedValue": "1% of Gross Bill Amount",
+    "confidence": 0.98
+   },
+   {
+    "category": "FINANCIAL",
+    "title": "Delay penalty",
+    "description": "Failure to complete work by the stipulated date attracts a penalty of 2% per month of delay, computed on a per-day basis, subject to a maximum of 10% of accepted tendered value.",
+    "mandatory": true,
+    "sourcePage": 25,
+    "evidenceText": "“a penalty at the rate of 02% per month of delay to be computed per day basis... shall be levied subject to maximum of 10 % of the accepted tendered value of the work.”",
+    "extractedValue": "2% per month of delay; maximum 10% of accepted tendered value",
+    "confidence": 0.97
+   },
+   {
+    "category": "TECHNICAL",
+    "title": "Material approval before procurement",
+    "description": "The contractor must obtain Engineer-in-Charge approval for materials before procurement and actual use at site.",
+    "mandatory": true,
+    "sourcePage": 16,
+    "evidenceText": "“Before starting the work, the contractor has to get the material approved from the Engineer-in-Charge before its procurement and actual use at site of work.”",
+    "extractedValue": null,
+    "confidence": 0.99
+   },
+   {
+    "category": "DOCUMENT",
+    "title": "OEM and test reports",
+    "description": "After material supply, the contractor must submit the company/OEM test report, IR test, and dry-run test.",
+    "mandatory": true,
+    "sourcePage": 16,
+    "evidenceText": "“After Material supplied, the contractor shall submit the company (OEM) test report, IR test and dry run test.”",
+    "extractedValue": null,
+    "confidence": 0.99
+   },
+   {
+    "category": "TECHNICAL",
+    "title": "Replacement of defective supplied material",
+    "description": "Material with a defect or damage observed at the time of supply must be replaced with new material.",
+    "mandatory": true,
+    "sourcePage": 16,
+    "evidenceText": "“Any defect/ damage observe at the time of material supply, the material will be replaced by new one.”",
+    "extractedValue": null,
+    "confidence": 0.97
+   },
+   {
+    "category": "TECHNICAL",
+    "title": "Applicable technical standards",
+    "description": "Work must be executed strictly according to attached technical specifications, relevant IS specifications, Indian Electricity Rules, and National Electrical Code.",
+    "mandatory": true,
+    "sourcePage": 17,
+    "evidenceText": "“The work shall be carried out strictly as per the attached technical specifications, relevant IS specifications, Indian Electricity Rules & National Electrical Code.”",
+    "extractedValue": null,
+    "confidence": 0.99
+   },
+   {
+    "category": "TECHNICAL",
+    "title": "Minor building works included",
+    "description": "Scope includes minor building works necessary for execution, including wall cutting and making good; no extra payment is payable.",
+    "mandatory": true,
+    "sourcePage": 17,
+    "evidenceText": "“The scope of work includes all minor building works required for execution work such as cutting of wall etc. and making good the same. Nothing extra will be paid to contractor for the same.”",
+    "extractedValue": null,
+    "confidence": 0.98
+   },
+   {
+    "category": "SPECIAL_CONDITION",
+    "title": "Unspecified vital facilities included",
+    "description": "Any facility not stated in the scope but vital to the stated supply, installation, testing, and commissioning work is deemed included in scope.",
+    "mandatory": true,
+    "sourcePage": 16,
+    "evidenceText": "“Any facility not mentioned in this scope, but which is vital to ‘Supply, Installation, Testing and Commissioning of Pump Motor sets Required for Pump Houses and STPs at AIIMS Bhubaneswar.’ Are assumed to be included in the scope of work.”",
+    "extractedValue": null,
+    "confidence": 0.98
+   },
+   {
+    "category": "SPECIAL_CONDITION",
+    "title": "Firm rates",
+    "description": "Tenderers must quote their own rates for each scheduled item, and rates remain firm for the contract.",
+    "mandatory": true,
+    "sourcePage": 16,
+    "evidenceText": "“tenderers are required to quote their own rates against each item in schedule of quantities” and “All rates shall remain firm for the contract.”",
+    "extractedValue": null,
+    "confidence": 0.98
+   },
+   {
+    "category": "OEM",
+    "title": "Approved makes and model approval",
+    "description": "Pump makes are restricted to Kirloskar Brothers Limited for monobloc/submersible pumps and KSB Amarex for sludge pumps with cutter, stated for compatibility with existing pumps. Makes and models must be approved before ordering, with relevant test certificates/documents and samples submitted; the Engineer-in-Charge's decision is binding and no variation is acceptable.",
+    "mandatory": true,
+    "sourcePage": 17,
+    "evidenceText": "“Monobloc Pump, Submersible Pump — Kirloskar Brothers Limited only for compatability with existing pump.” “Sludge Pump with Cutter — KSB Amarex only for compatability with existing pump.” “Make and models of all materials should get approved from the engineer in charge well before placing order... The decision of Engineer-in-Charge is binding in this regard and no variation is acceptable.”",
+    "extractedValue": null,
+    "confidence": 0.99
+   },
+   {
+    "category": "DOCUMENT",
+    "title": "Payment supporting documents",
+    "description": "The vendor must submit work-completion declaration, testing and commissioning certificate, material test certificate, warranty/guarantee certificate, colour photos on glossary paper, NOC regarding work, up-to-date GST return voucher, and bank account details with the bill.",
+    "mandatory": true,
+    "sourcePage": 25,
+    "evidenceText": "“The vendor shall submit the documents along with the bill for payment” followed by “Work Completion declaration”, “Testing & Commissioning Certificate”, “Material Test Certificate”, “Warranty/Guarantee Certificate”, “Colour Photos of Executed work at different stages on glossary paper”, “No-Objection Certificate (NOC) regarding work”, “GST return up-to-date Voucher”, and “Bank Account Details”.",
+    "extractedValue": null,
+    "confidence": 0.99
+   },
+   {
+    "category": "DOCUMENT",
+    "title": "Notarized tender form",
+    "description": "The tender form is to be submitted on notarized non-judicial stamp paper of Rs. 10 or above.",
+    "mandatory": true,
+    "sourcePage": 18,
+    "evidenceText": "“Percentage Rate Tender / Item Rate Tender & Contract for Works (To be Submitted on Notarized Non-Judicial Stamp Paper of Rs 10/- or above)”",
+    "extractedValue": "Notarized non-judicial stamp paper of Rs. 10/- or above",
+    "confidence": 0.99
+   },
+   {
+    "category": "DOCUMENT",
+    "title": "Affidavit of non-blacklisting and bid correctness",
+    "description": "The bidder must certify that the firm has never been blacklisted, will supply to the institution's specifications and comply with tender terms, and that bid information is true and correct.",
+    "mandatory": true,
+    "sourcePage": 20,
+    "evidenceText": "“I/We hereby certify that, the above firm has not been ever blacklisted by any Central/State Government/Public Undertaking/Institute on any account.” “Firm will supply the item(s) as per the specification given by Institution and also abide all the Terms & Conditions stipulated in Tender.” “the information given in Bid is true and correct in all aspects”",
+    "extractedValue": null,
+    "confidence": 0.99
+   },
+   {
+    "category": "DOCUMENT",
+    "title": "Signed Integrity Pact",
+    "description": "A duly signed Integrity Pact must be submitted with the tender; bidders that do not submit it are disqualified from the tender process.",
+    "mandatory": true,
+    "sourcePage": 25,
+    "evidenceText": "“The Principal/Owner will disqualify Bidders, who do not submit, the duly signed Pact between the Principal/Owner and the bidder, along with the Tender... from the Tender process.”",
+    "extractedValue": null,
+    "confidence": 0.99
+   },
+   {
+    "category": "LEGAL",
+    "title": "No back-to-back execution of eligible similar work",
+    "description": "The bidder undertakes that eligible similar works have not been executed through another contractor or on a back-to-back basis.",
+    "mandatory": true,
+    "sourcePage": 20,
+    "evidenceText": "“eligible similar works(s) has/have not been got executed through another contractor on back to back basis.”",
+    "extractedValue": null,
+    "confidence": 0.99
+   },
+   {
+    "category": "LEGAL",
+    "title": "Confidentiality of tender documents",
+    "description": "Tender documents, drawings, and records connected with the work must be treated as secret/confidential and not communicated or used in a manner prejudicial to State safety.",
+    "mandatory": true,
+    "sourcePage": 18,
+    "evidenceText": "“I/We shall treat the tender documents drawings and other records connected with the work as secret/confidential documents and shall not communicate information... or use the information in any manner prejudicial to the safety of the State.”",
+    "extractedValue": null,
+    "confidence": 0.98
+   },
+   {
+    "category": "MANPOWER",
+    "title": "Technical representatives",
+    "description": "For agreement amount up to Rs. 150 lakhs, provide two Principal Technical Representatives: Graduate Electrical Engineer with 2 years' experience or Diploma Engineer with 5 years' experience. Recovery for non-compliance is Rs. 30,000.00.",
+    "mandatory": true,
+    "sourcePage": 29,
+    "evidenceText": "“For Agreement amount upto Rs150 Lakhs” “Graduate Elect. Engineer OR Diploma Engineer” “Principal Technical representative” “02 years for Graduate Engineer/ 05 years for Diploma Engineer” “Minimum Number 2” and “Rs. Thirty Thousand only”.",
+    "extractedValue": "2 technical representatives; Rs. 30,000.00 recovery for non-compliance",
+    "confidence": 0.95
+   },
+   {
+    "category": "LICENSE",
+    "title": "Labour licences and statutory registrations",
+    "description": "Submit applicable labour licences and registration with EPFO, ESIC, and BOCW Welfare Board, or proof of applying for them, within 7 days of issue of the letter of acceptance.",
+    "mandatory": true,
+    "sourcePage": 28,
+    "evidenceText": "“Time allowed for submission of Performance guarantee, Program Chart (Time & Progress) and applicable Labor Licenses, Registration with EPFO, ESIC & BOCW Welfare Board or proof of applying thereof from the date of issue of letter of acceptance : 07 Days”",
+    "extractedValue": "07 Days from issue of letter of acceptance",
+    "confidence": 0.99
+   },
+   {
+    "category": "DOCUMENT",
+    "title": "Performance guarantee and programme chart submission",
+    "description": "Submit performance guarantee and Programme Chart (Time & Progress) within 7 days from issue of letter of acceptance.",
+    "mandatory": true,
+    "sourcePage": 28,
+    "evidenceText": "“Time allowed for submission of Performance guarantee, Program Chart (Time & Progress)... from the date of issue of letter of acceptance : 07 Days”",
+    "extractedValue": "07 Days from issue of letter of acceptance",
+    "confidence": 0.99
+   },
+   {
+    "category": "TECHNICAL",
+    "title": "Work commencement",
+    "description": "Start work within seven days after issue of work order.",
+    "mandatory": true,
+    "sourcePage": 28,
+    "evidenceText": "“Time of start of work: Within Seven days after issue of workorder.”",
+    "extractedValue": "Within 7 days after issue of work order",
+    "confidence": 0.99
+   },
+   {
+    "category": "FINANCIAL",
+    "title": "Online financial bid submission",
+    "description": "The bidder must submit the financial bid in online mode.",
+    "mandatory": true,
+    "sourcePage": 32,
+    "evidenceText": "\"The Bidder must submit Financial Bid in On-Line Mode.\"",
+    "extractedValue": null,
+    "confidence": 0.99
+   },
+   {
+    "category": "LEGAL",
+    "title": "Acceptance of tender terms",
+    "description": "Bidder confirms acceptance of and agreement to abide by the tender terms and conditions.",
+    "mandatory": true,
+    "sourcePage": 32,
+    "evidenceText": "\"I/We have gone through the terms & conditions as stipulated in the tender and confirm to accept and abide the same.\"",
+    "extractedValue": null,
+    "confidence": 0.98
+   },
+   {
+    "category": "FINANCIAL",
+    "title": "No additional charges payable",
+    "description": "No charges other than those specified are payable by the Institute.",
+    "mandatory": true,
+    "sourcePage": 32,
+    "evidenceText": "\"No other charges would be payable by the Institute\"",
+    "extractedValue": null,
+    "confidence": 0.97
+   },
+   {
+    "category": "SPECIAL_CONDITION",
+    "title": "Tentative quantities",
+    "description": "The stated quantities may increase or decrease according to site requirements.",
+    "mandatory": true,
+    "sourcePage": 32,
+    "evidenceText": "\"Quantity mentioned above is tentative, it may increase or decrease as per site requirement.\"",
+    "extractedValue": null,
+    "confidence": 0.99
+   },
+   {
+    "category": "OEM",
+    "title": "Material samples and approval",
+    "description": "Contractor must bring samples of the specified preferred brands. Engineer-In-Charge will approve one sample, and the contractor must use only material matching that approved sample.",
+    "mandatory": true,
+    "sourcePage": 32,
+    "evidenceText": "\"Contractor has to bring samples as per above preferred brands only and Engineer-In-Charge shall approve one sample out of the samples brought by the contractor. The contractor has to use material of that approved sample only.\"",
+    "extractedValue": null,
+    "confidence": 0.98
+   },
+   {
+    "category": "SPECIAL_CONDITION",
+    "title": "No claim regarding sample approval",
+    "description": "No claim regarding the approved material sample will be entertained.",
+    "mandatory": true,
+    "sourcePage": 32,
+    "evidenceText": "\"No claim in this regard shall be entertained.\"",
+    "extractedValue": null,
+    "confidence": 0.97
+   },
+   {
+    "category": "OEM",
+    "title": "Approval for alternate make",
+    "description": "If material of the approved make is unavailable, prior approval of the Engineer-In-Charge is required before using another make.",
+    "mandatory": true,
+    "sourcePage": 32,
+    "evidenceText": "\"In case of non-availability of material of approved make, prior approval from Engineer-In-Charge shall be obtained for other make.\"",
+    "extractedValue": null,
+    "confidence": 0.98
+   },
+   {
+    "category": "FINANCIAL",
+    "title": "GST-inclusive rates",
+    "description": "Quoted rates must include applicable GST.",
+    "mandatory": true,
+    "sourcePage": 32,
+    "evidenceText": "\"The rates should be inclusive of GST as applicable.\"",
+    "extractedValue": null,
+    "confidence": 0.99
+   },
+   {
+    "category": "CERTIFICATION",
+    "title": "Valid digital signature certificate",
+    "description": "For CPP Portal enrolment, bidders must register a valid Class II or Class III Digital Signature Certificate with signing-key usage, issued by a Certifying Authority recognized by CCA India.",
+    "mandatory": true,
+    "sourcePage": 33,
+    "evidenceText": "\"Upon enrolment, the bidders will be required to register their valid Digital Signature Certificate (Class II or Class III Certificates with signing key usage) issued by any Certifying Authority recognized by CCA India\"",
+    "extractedValue": null,
+    "confidence": 0.99
+   },
+   {
+    "category": "CERTIFICATION",
+    "title": "One DSC per bidder",
+    "description": "Only one valid DSC may be registered by a bidder; bidders are responsible for ensuring their DSC is not lent to others.",
+    "mandatory": true,
+    "sourcePage": 33,
+    "evidenceText": "\"Only one valid DSC should be registered by a bidder. Please note that the bidders are responsible to ensure that they do not lend their DSC‟s to others\"",
+    "extractedValue": null,
+    "confidence": 0.96
+   },
+   {
+    "category": "DOCUMENT",
+    "title": "Required bid documents and covers",
+    "description": "Bidder must follow the tender advertisement and Tender Enquiry Document regarding required documents, number of covers, and the names and contents of documents to be submitted. Deviations may result in rejection.",
+    "mandatory": true,
+    "sourcePage": 34,
+    "evidenceText": "\"Please go through the tender advertisement and the Tender Enquiry Document carefully to understand the documents required to be submitted as part of the bid... Any deviations from these may lead to rejection of the bid.\"",
+    "extractedValue": null,
+    "confidence": 0.97
+   },
+   {
+    "category": "DOCUMENT",
+    "title": "Legible uploaded scans",
+    "description": "The bidder is responsible for ensuring that uploaded scanned documents are legible.",
+    "mandatory": true,
+    "sourcePage": 34,
+    "evidenceText": "\"It is the responsibility of the bidder to ensure that uploaded scanned documents are legible.\"",
+    "extractedValue": null,
+    "confidence": 0.99
+   },
+   {
+    "category": "FINANCIAL",
+    "title": "EMD payment and original instrument submission",
+    "description": "Bidder must select offline payment for Bid Security/EMD, enter instrument details, prepare EMD as instructed, and send the original instrument to the concerned official by the last bid-submission date or as otherwise specified in the Tender Enquiry Document.",
+    "mandatory": true,
+    "sourcePage": 34,
+    "evidenceText": "\"Bidder has to select the payment option as ‘offline’ to pay the Bid Security/ EMD as applicable and enter details of the instrument.\"; \"The original should be posted/couriered/given in person to the concerned official, latest by the last date of bid submission or as specified in the Tender Enquiry Document.\"",
+    "extractedValue": null,
+    "confidence": 0.98
+   },
+   {
+    "category": "FINANCIAL",
+    "title": "EMD details must match",
+    "description": "Details of the physically sent DD or other accepted instrument must match the scanned-copy details and the data entered at bid submission; otherwise the uploaded bid will be rejected.",
+    "mandatory": true,
+    "sourcePage": 34,
+    "evidenceText": "\"The details of the DD/any other accepted instrument, physically sent, should tally with the details available in the scanned copy and the data entered during bid submission time. Otherwise the uploaded bid will be rejected.\"",
+    "extractedValue": null,
+    "confidence": 0.99
+   },
+   {
+    "category": "DOCUMENT",
+    "title": "Use prescribed financial bid and BoQ format",
+    "description": "Financial bids must be submitted in the provided format only. Where a standard BoQ is provided, bidders must download it, fill only white unprotected cells with financial quotes and bidder details, save it, and submit it online without changing the filename.",
+    "mandatory": true,
+    "sourcePage": 34,
+    "evidenceText": "\"Bidders are requested to note that they should necessarily submit their financial bids in the format provided and no other format is acceptable.\"; \"No other cells should be changed... submit it online, without changing the filename.\"",
+    "extractedValue": null,
+    "confidence": 0.99
+   },
+   {
+    "category": "DOCUMENT",
+    "title": "No BoQ file modification",
+    "description": "The bid will be rejected if the BoQ file is found modified by the bidder.",
+    "mandatory": true,
+    "sourcePage": 34,
+    "evidenceText": "\"If the BoQ file is found to be modified by the bidder, the bid will be rejected.\"",
+    "extractedValue": null,
+    "confidence": 0.99
+   },
+   {
+    "category": "SPECIAL_CONDITION",
+    "title": "Server time governs deadlines",
+    "description": "The server time displayed on the bidder dashboard is the standard time for bid-submission and bid-opening deadlines, and bidders must follow it.",
+    "mandatory": true,
+    "sourcePage": 34,
+    "evidenceText": "\"The server time (which is displayed on the bidders‟ dashboard) will be considered as the standard time for referencing the deadlines for submission of the bids by the bidders, opening of bids etc. The bidders should follow this time during bid submission.\"",
+    "extractedValue": null,
+    "confidence": 0.98
+   },
+   {
+    "category": "DOCUMENT",
+    "title": "Print bid submission acknowledgement",
+    "description": "After successful and timely bid submission, the bid summary must be printed and retained as acknowledgement; it may be used as an entry pass for bid-opening meetings.",
+    "mandatory": true,
+    "sourcePage": 35,
+    "evidenceText": "\"The bid summary has to be printed and kept as an acknowledgement of the submission of the bid. This acknowledgement may be used as an entry pass for any bid opening meetings.\"",
+    "extractedValue": null,
+    "confidence": 0.97
+   }
+  ],
+  "boq": [
+   {
+    "itemNumber": "1",
+    "description": "Supplying, Installation, Testing and commissioning of 30 HP Monobloc Pump.",
+    "quantity": "1",
+    "unit": "Nos",
+    "technicalSpecification": "Suction 100 mm; delivery 80 mm; head range 48–68 m; discharge range 10–28 lps; Three Phase, 415 V; Make: Kirloskar KDS-3068+.",
+    "remarks": "Rate: ₹1,92,877.44; Amount: ₹1,92,877.44",
+    "sourcePage": 30
+   },
+   {
+    "itemNumber": "2",
+    "description": "Supplying, Installation, Testing and commissioning of 20 HP Monobloc Pump.",
+    "quantity": "1",
+    "unit": "Nos",
+    "technicalSpecification": "Suction 100 mm; delivery 80 mm; head range 28–52 m; discharge range 2–30.4 lps; Three Phase, 415 V; Make: Kirloskar KDS-2050+.",
+    "remarks": "Rate: ₹1,25,800.00; Amount: ₹1,25,800.00",
+    "sourcePage": 30
+   },
+   {
+    "itemNumber": "3",
+    "description": "Supplying, Installation, Testing and commissioning of 20 HP Two-Stage Monobloc Pump.",
+    "quantity": "4",
+    "unit": "Nos",
+    "technicalSpecification": "Suction 80 mm; delivery 65 mm; head range 40–72 m; discharge range 8–20 lps; Three Phase, 415 V; Make: Kirloskar KDT-2070+.",
+    "remarks": "Rate: ₹1,45,200.00; Amount: ₹5,80,800.00",
+    "sourcePage": 30
+   },
+   {
+    "itemNumber": "4",
+    "description": "Supplying, Installation, Testing and commissioning of 15 HP Monobloc Pump.",
+    "quantity": "1",
+    "unit": "Nos",
+    "technicalSpecification": "Suction 100 mm; delivery 100 mm; head up to 30 m; discharge up to 18 lps; Three Phase, 415 V; Make: Kirloskar KDS-1537+.",
+    "remarks": "Rate: ₹94,028.34; Amount: ₹94,028.34",
+    "sourcePage": 30
+   },
+   {
+    "itemNumber": "5",
+    "description": "Supplying, Installation, Testing and commissioning of 7.5 HP Monobloc Pump.",
+    "quantity": "2",
+    "unit": "Nos",
+    "technicalSpecification": "Suction 80 mm; delivery 65 mm; head range 24–48 m; discharge range 5.2–12.6 lps; Three Phase, 400 V; Make: Kirloskar KDS-830++.",
+    "remarks": "Rate: ₹61,186.08; Amount: ₹1,22,372.16",
+    "sourcePage": 30
+   },
+   {
+    "itemNumber": "6",
+    "description": "Supplying, Installation, Testing and commissioning of 7.5 HP Monobloc Pump.",
+    "quantity": "2",
+    "unit": "Nos",
+    "technicalSpecification": "Suction 65 mm; delivery 65 mm; head range 32–64 m; discharge range 2.8–7.6 lps; Three Phase, 400 V; Make: Kirloskar KDS-837+.",
+    "remarks": "Rate: ₹60,000.00; Amount: ₹1,20,000.00",
+    "sourcePage": 30
+   },
+   {
+    "itemNumber": "7",
+    "description": "Supplying, Installation, Testing and commissioning of 7.5 HP Monobloc Pump.",
+    "quantity": "1",
+    "unit": "Nos",
+    "technicalSpecification": "Suction 65 mm; delivery 50 mm; Three Phase, 400 V; Make: Kirloskar KDT-864+.",
+    "remarks": "Rate: ₹75,684.60; Amount: ₹75,684.60",
+    "sourcePage": 30
+   },
+   {
+    "itemNumber": "8",
+    "description": "Supplying, Installation, Testing and commissioning of 5 HP Monobloc Pump.",
+    "quantity": "1",
+    "unit": "Nos",
+    "technicalSpecification": "Suction 65 mm; delivery 50 mm; head range 6–40 m; discharge range 4–9 lps; Three Phase, 415 V; Make: Kirloskar KDI-538+.",
+    "remarks": "Rate: ₹45,144.96; Amount: ₹45,144.96",
+    "sourcePage": 30
+   },
+   {
+    "itemNumber": "9",
+    "description": "Supplying, Installation, Testing and commissioning of 5 HP Monobloc Pump.",
+    "quantity": "2",
+    "unit": "Nos",
+    "technicalSpecification": "Suction 50 mm; delivery 40 mm; head range 36–52 m; discharge range 2–4.1 lps; Three Phase, 400 V; Make: Kirloskar KDS-550++.",
+    "remarks": "Rate: ₹46,000.00; Amount: ₹92,000.00",
+    "sourcePage": 30
+   },
+   {
+    "itemNumber": "10",
+    "description": "Supplying, Installation, Testing and commissioning of 5 HP Monobloc Pump.",
+    "quantity": "2",
+    "unit": "Nos",
+    "technicalSpecification": "Suction 50 mm; delivery 40 mm; Three Phase, 400 V; Make: Kirloskar KDT-568+.",
+    "remarks": "Rate: ₹47,342.26; Amount: ₹94,684.52",
+    "sourcePage": 30
+   },
+   {
+    "itemNumber": "11",
+    "description": "Supplying, Installation, Testing and commissioning of 3 HP Dewatering Pump.",
+    "quantity": "1",
+    "unit": "Nos",
+    "technicalSpecification": "Suction 50 mm; delivery 50 mm; head range 9–23 m; discharge range 2–9 lps; Three Phase, 415 V; Make: Kirloskar SP-2HM.",
+    "remarks": "Rate: ₹46,900.00; Amount: ₹46,900.00",
+    "sourcePage": 30
+   },
+   {
+    "itemNumber": "12",
+    "description": "Supplying, Installation, Testing and commissioning of 3 HP Monobloc Pump.",
+    "quantity": "1",
+    "unit": "Nos",
+    "technicalSpecification": "Suction 50 mm; delivery 40 mm; head range 12–36 m; discharge range 2–5 lps; Three Phase, 415 V; Make: Kirloskar KDS-335++.",
+    "remarks": "Unit rate ₹36,514.20; amount ₹36,514.20.",
+    "sourcePage": 31
+   },
+   {
+    "itemNumber": "13",
+    "description": "Supplying, Installation, Testing and commissioning of 5 HP Sludge Pump with Cutter.",
+    "quantity": "6",
+    "unit": "Nos",
+    "technicalSpecification": "Suction 50 mm; delivery 50 mm; Three Phase, 415 V; head up to 49 m; discharge up to 21.9 m³/hr; IP68 protection; cast iron body; stainless steel shaft; double mechanical seal; suitable for handling sewage/sludge containing solids up to 10 mm; Model: Amarex IN S50-222/042.",
+    "remarks": "Unit rate ₹1,37,297.00; amount ₹8,23,782.00.",
+    "sourcePage": 31
+   },
+   {
+    "itemNumber": "14",
+    "description": "Supplying, Installation, testing and commissioning of 3 HP Sludge Pump with Cutter.",
+    "quantity": "4",
+    "unit": "Nos",
+    "technicalSpecification": "Suction 50 mm; delivery 50 mm; Three Phase, 415 V; head up to 39 m; discharge up to 21.3 m³/hr; IP68 protection; cast iron body; stainless steel shaft; double mechanical seal; suitable for handling sewage/sludge containing solids up to 10 mm; Model: Amarex IN S50-222/032.",
+    "remarks": "Unit rate ₹1,30,737.00; amount ₹5,22,948.00.",
+    "sourcePage": 31
+   },
+   {
+    "itemNumber": "15",
+    "description": "Supplying, Installation, Testing and commissioning of 2 HP Sludge Pump with Cutter.",
+    "quantity": "4",
+    "unit": "Nos",
+    "technicalSpecification": "Suction 50 mm; delivery 50 mm; Three Phase, 415 V; head up to 33 m; discharge up to 21.2 m³/hr; IP68 protection; cast iron body; stainless steel shaft; double mechanical seal; suitable for handling sewage/sludge containing solids up to 10 mm; Model: Amarex IN S50-172/012.",
+    "remarks": "Unit rate ₹1,29,550.00; amount ₹5,18,200.00.",
+    "sourcePage": 31
+   },
+   {
+    "itemNumber": "16",
+    "description": "Supplying, Installation, Testing and commissioning of 3 HP Borewell Submersible Pump.",
+    "quantity": "1",
+    "unit": "Nos",
+    "technicalSpecification": "Suction suitable for borewell application; head range 28–140 m; discharge range 0.33–1.75 lps; Three Phase, 415 V; Make: Kirloskar KS4D-3017T.",
+    "remarks": "Unit rate ₹35,800.00; amount ₹35,800.00.",
+    "sourcePage": 31
+   },
+   {
+    "itemNumber": "17",
+    "description": "Supply of 4C X 10 SQ.MM. 1.1 KV Copper conductor, PVC round sheathed cable.",
+    "quantity": "300",
+    "unit": "Mtr",
+    "technicalSpecification": "In conformity to the technical specification and as per IS 694:2010.",
+    "remarks": "Unit rate ₹1,610.00; amount ₹4,83,000.00.",
+    "sourcePage": 31
+   },
+   {
+    "itemNumber": "18",
+    "description": "Laying and fixing of one number PVC insulated and PVC sheathed / XLPE power cable of 1.1 KV grade on wall surface.",
+    "quantity": "300",
+    "unit": "Mtr",
+    "technicalSpecification": "Up to 35 sq. mm; clamped with 1 mm thick saddle.",
+    "remarks": "Unit rate ₹64.00; amount ₹19,200.00.",
+    "sourcePage": 31
+   },
+   {
+    "itemNumber": "19",
+    "description": "Supplying and making end termination with brass compression gland and aluminium lugs for PVC insulated and PVC sheathed / XLPE aluminium conductor cable of 1.1 KV grade.",
+    "quantity": "18",
+    "unit": "Each",
+    "technicalSpecification": "Cable size: 4 X 10 sqmm (25 mm).",
+    "remarks": "Unit rate ₹325.00; amount ₹5,850.00.",
+    "sourcePage": 31
+   }
+  ],
+  "dates": [
+   {
+    "label": "Online tender submission deadline",
+    "rawText": "“By 30/05/2026 at 18:00 Hours”",
+    "parsedDate": "2026-05-30T12:30:00.000Z",
+    "sourcePage": 4,
+    "evidenceText": "“Last date and time of online submission of tender By 30/05/2026 at 18:00 Hours through online.”"
+   },
+   {
+    "label": "Original EMD hard-copy submission deadline",
+    "rawText": "“To be submitted by 31/05/2026 by 16.00 hours.”",
+    "parsedDate": "2026-05-31T10:30:00.000Z",
+    "sourcePage": 4,
+    "evidenceText": "“Period during which hard copies of Earnest Money Deposit(original) ... To be submitted by 31/05/2026 by 16.00 hours.”"
+   },
+   {
+    "label": "Technical bid opening",
+    "rawText": "“On 01/06/2026 at 12:00 Hours.”",
+    "parsedDate": "2026-06-01T06:30:00.000Z",
+    "sourcePage": 4,
+    "evidenceText": "“Time and date of online opening of Tender (Technical Bid) On 01/06/2026 at 12:00 Hours.”"
+   },
+   {
+    "label": "Financial bid opening",
+    "rawText": "“To be informed later through website”",
+    "parsedDate": null,
+    "sourcePage": 4,
+    "evidenceText": "“Time and date of opening of Online Financial Bids To be informed later through website”"
+   },
+   {
+    "label": "Turnover assessment period end",
+    "rawText": "“ending 31st March 2025”",
+    "parsedDate": "2025-03-30T18:30:00.000Z",
+    "sourcePage": 11,
+    "evidenceText": "“Average Annual Financial, the turnover during the last 3 years, ending 31st March 2025 should be more than 50% of the estimated cost.”"
+   },
+   {
+    "label": "Online opening of Technical Bids",
+    "rawText": "“On 01/06/2026 at 12:00 Hours.”",
+    "parsedDate": "2026-06-01T06:30:00.000Z",
+    "sourcePage": 18,
+    "evidenceText": "“Time and date of online Opening of Technical Bids. : On 01/06/2026 at 12:00 Hours.”"
+   }
+  ],
+  "redFlags": [
+   {
+    "description": "The stated completion period is inconsistent: the tender overview states 60 days, while the penalty clause states all work must be completed within one month from issue of the work order.",
+    "sourcePage": 14,
+    "evidenceText": "“All the work shall be completed within One Month from the date of issue of work Order by the Institute.”"
+   },
+   {
+    "description": "Original EMD must be physically delivered by 31 May 2026 at 16:00, after the online submission deadline of 30 May 2026 at 18:00; a bidder should ensure compliance with both deadlines.",
+    "sourcePage": 4,
+    "evidenceText": "Online submission is due “By 30/05/2026 at 18:00 Hours,” while original EMD is “To be submitted by 31/05/2026 by 16.00 hours.”"
+   },
+   {
+    "description": "EMD exemption is expressly disallowed, and failure to provide the required EMD can lead to rejection.",
+    "sourcePage": 12,
+    "evidenceText": "“EMD Exemption is not allowed for this work.”"
+   },
+   {
+    "description": "Delay penalty is 2% per month, computed on a per-day basis, capped at 10% of total tender value.",
+    "sourcePage": 14,
+    "evidenceText": "“a penalty at the Rate of 2% per month of delay to be computed on per day basis shall be levied subject to maximum of 10% of the total tender value.”"
+   },
+   {
+    "description": "AIIMS reserves the right to reject any or all bids without assigning reasons, including the lowest bid.",
+    "sourcePage": 12,
+    "evidenceText": "“The Executive Director, AIIMS, Bhubaneswar does not bind itself to accept the lowest or any other bid and reserves to itself the authority to reject any or all the bids received without the assignment of any reason.”"
+   },
+   {
+    "description": "Non-compliance with contract terms may result in bid rejection at any stage and suspension of the firm for one year, with nothing payable by AIIMS.",
+    "sourcePage": 14,
+    "evidenceText": "“the Competent Authority, will have the right to reject the bid at any stage without assigning any reason thereof and nothing will be payable by AIIMS, Bhubaneswar in that event the firm shall be suspended for One Year.”"
+   },
+   {
+    "description": "The scope deems any facility not mentioned but considered vital to the work as included, creating potential scope ambiguity without extra payment.",
+    "sourcePage": 16,
+    "evidenceText": "“Any facility not mentioned in this scope, but which is vital... Are assumed to be included in the scope of work.”"
+   },
+   {
+    "description": "No compensation is payable for damage caused by listed natural calamities; the contractor must make good damage at its own cost.",
+    "sourcePage": 16,
+    "evidenceText": "“No compensation shall be payable to the contractor for any damage caused by rains lightening, wind, storm, floods Tornado, earth quakes or other natural calamities... He shall make good all such damages at his own cost.”"
+   },
+   {
+    "description": "Engineer-in-Charge/security/local-authority restrictions must be followed, with no extra payment and no delay claim.",
+    "sourcePage": 16,
+    "evidenceText": "“the contractor shall be bound to follow all such restrictions/instruction & nothing extra shall be payable on this account & no claim for delay on this account shall be entertained.”"
+   },
+   {
+    "description": "Failure to furnish the prescribed performance guarantee may result in debarment from AIIMS tenders for one year; failure to commence work can result in absolute forfeiture of performance guarantee.",
+    "sourcePage": 18,
+    "evidenceText": "“If I/We, fail to furnish the prescribed Performance Guarantee... be at liberty to debarred my firm from AIIMS tender for one year.” “if I/We fail to commence work... be at liberty to forfeit the said performance guarantee absolutely.”"
+   },
+   {
+    "description": "Back-to-back execution of eligible similar work can lead to perpetual debarment, and before start of work can lead to forfeiture of the entire performance guarantee.",
+    "sourcePage": 20,
+    "evidenceText": "“if such a violation comes to the notice of Department, then I/we shall be debarred for bidding in future forever... before date of start of work, the Engineer-in-Charge shall be free to forfeit the entire amount of Performance Guarantee”"
+   },
+   {
+    "description": "The Integrity Pact permits forfeiture of the entire Performance Guarantee and Security Deposit following specified disqualification or termination circumstances.",
+    "sourcePage": 24,
+    "evidenceText": "“may in its considered opinion forfeit the entire amount of Performance Guarantee and Security Deposit of the Bidder/Contractor.”"
+   },
+   {
+    "description": "Disputes or differences under the Integrity Pact are expressly excluded from arbitration.",
+    "sourcePage": 25,
+    "evidenceText": "“any dispute or difference arising between the parties with regard to the terms of this Agreement/Pact... shall not be subject to arbitration.”"
+   },
+   {
+    "description": "BOQ quantities are expressly tentative and may increase or decrease according to site requirements.",
+    "sourcePage": 32,
+    "evidenceText": "\"Quantity mentioned above is tentative, it may increase or decrease as per site requirement.\""
+   },
+   {
+    "description": "The contractor has no claim if required to use only the Engineer-In-Charge-approved material sample.",
+    "sourcePage": 32,
+    "evidenceText": "\"The contractor has to use material of that approved sample only. No claim in this regard shall be entertained.\""
+   },
+   {
+    "description": "Mismatch between physical EMD instrument details, scanned copy, and online-entered data will cause rejection of the uploaded bid.",
+    "sourcePage": 34,
+    "evidenceText": "\"Otherwise the uploaded bid will be rejected.\""
+   },
+   {
+    "description": "Modification of the provided BoQ file by the bidder will cause bid rejection.",
+    "sourcePage": 34,
+    "evidenceText": "\"If the BoQ file is found to be modified by the bidder, the bid will be rejected.\""
+   }
+  ],
+  "droppedCount": 0
+ }
+}

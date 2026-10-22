@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "tendertez-marketing": {
+      "command": "python3",
+      "args": ["marketing/automation/mcp_server.py"]
+    }
+  }
+}
