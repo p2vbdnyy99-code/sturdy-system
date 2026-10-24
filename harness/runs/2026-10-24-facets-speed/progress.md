@@ -18,3 +18,14 @@
   the old queries; check /bidpilot/public/tenders/facets live.
 - Crawler baseline: the 13 GPTBot rows of 24 Oct are kept and recorded here
   and in OPERATIONS.md as the deploy check's own traffic.
+- 24 Oct, deployed (founder: "Deploy"): commit 7a3633e; no tender was
+  ANALYZING. Migration 0013 applied (14 migrations). VACUUM (ANALYZE)
+  public_tenders: 22 s; all-visible pages 1,647 → 10,127 of 10,127; index
+  3.5 MB; autovacuum 2% set. "tender counts loaded" logged 3 s after start.
+- Production, uncached function calls: 170, 76, 95 ms. Plan: Index Only
+  Scan, 0 heap fetches, 277 index pages (all of them, so even fully cold at
+  the slowest measured 1.26 ms per read: about 0.35 s). Counts identical to
+  the old queries at the same instant (lists, states with Kerala merged,
+  every listed organisation). Live /bidpilot/public/tenders/facets: 0.69,
+  0.69, 0.92 s (network included). The daily-post generator, which timed
+  out this morning, ran cleanly.
