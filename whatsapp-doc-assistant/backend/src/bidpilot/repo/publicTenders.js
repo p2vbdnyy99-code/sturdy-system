@@ -3,7 +3,7 @@
 // search (routes/publicTenders.js, no sign-in) and the in-app feed
 // (routes/feed.js). Public notices only; nothing here is company data.
 
-import { and, asc, desc, eq, gte, ilike, isNotNull, lt, or, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, gte, ilike, inArray, isNotNull, lt, or, sql } from 'drizzle-orm';
 import { publicTenders, discoveryState } from '../../db/schema/index.js';
 import { findOnPortal } from '../discovery/portals.js';
 
@@ -12,6 +12,16 @@ export const STATUSES = ['open', 'closing', 'closed', 'all'];
 export const SORTS = ['newest', 'closing'];
 export const CLOSING_SOON_DAYS = 7;
 const MAX_FILTER = 200;
+
+// CPPP lists some states under two spellings (Kerala's state portal appears
+// as both "Kerala" and "Keralam"). Search, counts and landing pages treat
+// them as one state under the first name; stored rows keep CPPP's spelling.
+export const STATE_ALIASES = { Keralam: 'Kerala' };
+export const canonicalState = (name) => STATE_ALIASES[name] ?? name;
+export function stateNames(state) {
+  const main = canonicalState(state);
+  return [main, ...Object.keys(STATE_ALIASES).filter((a) => STATE_ALIASES[a] === main)];
+}
 
 /**
  * Checks and tidies query parameters.
@@ -45,7 +55,7 @@ export function parseFeedQuery(q) {
 export function feedWhere({ kind, status, search, state, organisation }, now) {
   const c = [];
   if (kind !== 'all') c.push(eq(publicTenders.kind, kind));
-  if (state) c.push(eq(publicTenders.state, state));
+  if (state) c.push(inArray(publicTenders.state, stateNames(state)));
   if (organisation) c.push(eq(publicTenders.organisation, organisation));
   if (search) {
     const p = `%${search.replace(/[\\%_]/g, (ch) => `\\${ch}`)}%`;
@@ -114,13 +124,23 @@ export async function feedFacets(db, now = new Date()) {
   const count = (kind) => kinds.find((k) => k.kind === kind)?.n ?? 0;
   return {
     open: { central: count('central'), state: count('state'), gem: count('gem') },
-    states: states.map((s) => ({ name: s.name, count: s.n })),
+    states: mergeStates(states),
     organisations: { central: top('central'), gem: top('gem') },
     lists: Object.fromEntries(lists.map((l) => [l.list, {
       lastSuccessAt: l.lastSuccessAt, lastSweepFinishedAt: l.lastSweepFinishedAt,
       totalPages: l.totalPages, nextPage: l.nextPage,
     }])),
   };
+}
+
+/** State counts with alias spellings added to their main name. */
+function mergeStates(rows) {
+  const counts = new Map();
+  for (const r of rows) {
+    const name = canonicalState(r.name);
+    counts.set(name, (counts.get(name) ?? 0) + r.n);
+  }
+  return [...counts].map(([name, count]) => ({ name, count })).sort((a, b) => a.name.localeCompare(b.name));
 }
 
 /** A small in-memory cache for the facet counts (they change slowly). */

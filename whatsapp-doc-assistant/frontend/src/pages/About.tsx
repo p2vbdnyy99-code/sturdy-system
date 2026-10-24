@@ -17,6 +17,10 @@ export function AboutPage() {
     <PublicLayout>
       <PageIntro kicker="About" title={`Why ${PRODUCT_NAME} exists`}>
         <p>
+          {`${PRODUCT_NAME} is an AI tool that reads Indian government tender documents for contractors, suppliers `
+            + 'and tender consultants, built in Mumbai.'}
+        </p>
+        <p>
           A government tender is often 50 to 200 pages. The deadline is on one page, the EMD on another, and
           the eligibility conditions are spread across sections, annexures and corrigenda.
         </p>

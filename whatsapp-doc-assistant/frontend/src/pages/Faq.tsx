@@ -75,7 +75,8 @@ const GROUPS: Array<{ title: string; items: Array<{ q: string; a: ReactNode }> }
         a: <>Fill in your company profile once: turnover, experience, registrations and so on. On a tender, press
           &ldquo;Check eligibility&rdquo; and each requirement is marked as one you appear to meet, one you
           don&rsquo;t appear to meet, or one that couldn&rsquo;t be checked. It only uses what you saved in your
-          profile.</>,
+          profile. To check a tender by hand, see <Link to="/guides/tender-eligibility-check">how to check eligibility
+          in a government tender</Link>.</>,
       },
     ],
   },

@@ -16,6 +16,7 @@
 // (GovernmentTendersPage reads the filter from GET /public/tenders/landing).
 
 import { publicPageHead } from './seo.js';
+import { STATE_ALIASES } from './bidpilot/repo/publicTenders.js';
 
 export const MIN_OPEN = 20;
 export const MAX_ORGANISATIONS = 20;
@@ -56,6 +57,14 @@ export function landingPagesFrom(facets) {
   // Two names can slug alike; keep the first.
   const seen = new Set();
   return pages.filter((p) => (seen.has(p.path) ? false : seen.add(p.path)));
+}
+
+/** Where an old state spelling's page now lives (a 301), or null. */
+export function landingRedirect(path) {
+  for (const [alias, main] of Object.entries(STATE_ALIASES)) {
+    if (path === `/government-tenders/state/${landingSlug(alias)}`) return `/government-tenders/state/${landingSlug(main)}`;
+  }
+  return null;
 }
 
 export function isLandingPath(path) {

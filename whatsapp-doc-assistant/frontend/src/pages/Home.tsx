@@ -46,7 +46,8 @@ export function HomePage() {
             <span className="home-eyebrow">Early access &middot; first {FREE_TRIAL_TENDERS} tenders free</span>
             <h1>Understand a 150-page tender in minutes, not days</h1>
             <p className="home-hero-lead">
-              Upload a government tender PDF. {PRODUCT_NAME} pulls out the deadline, EMD, eligibility
+              {`${PRODUCT_NAME} is an AI tool that reads Indian government tenders for contractors, suppliers and `
+                + 'tender consultants.'} Upload a tender PDF and it pulls out the deadline, EMD, eligibility
               conditions, BOQ and risky clauses, each linked to the page it came from.
             </p>
             <div className="home-hero-actions">

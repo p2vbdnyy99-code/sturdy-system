@@ -35,6 +35,8 @@ const ROUTES = [
   [/^\/about$/, '/about'],
   [/^\/privacy-policy$/, '/privacy-policy'],
   [/^\/register$/, '/register'],
+  [/^\/guides$/, '/guides'],
+  [/^\/guides\/(tender-eligibility-check|emd-exemption|tender-corrigendum)$/, null],
   [/^\/login$/, '/login'],
   [/^\/verify-email$/, '/verify-email'],
   [/^\/onboarding\/create-company$/, '/onboarding/create-company'],
@@ -51,7 +53,8 @@ export function normalizePath(raw) {
   const path = raw.split(/[?#]/)[0].replace(/\/+$/, '') || '/';
   // Tender-search landing pages are public lists, counted by their own path.
   if (isLandingPath(path)) return path;
-  for (const [re, name] of ROUTES) if (re.test(path)) return name;
+  // A null name keeps the path itself (the guides).
+  for (const [re, name] of ROUTES) if (re.test(path)) return name ?? path;
   return '(other)';
 }
 

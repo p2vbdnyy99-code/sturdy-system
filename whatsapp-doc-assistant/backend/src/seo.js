@@ -17,14 +17,14 @@ const X_HANDLE = 'TenderTez';
 
 export const PUBLIC_PAGES = {
   '/': {
-    title: 'TenderTez: read a government tender in minutes',
-    description: 'Upload a tender PDF from CPPP, GeM or a state portal. TenderTez finds the deadline, EMD, '
-      + 'eligibility conditions, BOQ and risky clauses, each with its page number. Your first 5 tenders are free.',
+    title: 'AI tender analysis for Indian government tenders | TenderTez',
+    description: 'TenderTez reads a government tender PDF and lists the deadline, EMD, eligibility, BOQ and risky '
+      + 'clauses, each with its page number. First 5 tenders free.',
   },
   '/government-tenders': {
     title: 'Find government tenders across India | TenderTez',
-    description: 'Search central, state and GeM tenders in one place, by state or organisation. Free, no sign-in '
-      + 'needed. Tender notices from the Central Public Procurement Portal\'s public lists.',
+    description: 'Search central, state and GeM tenders in one place, by state or organisation. Free, no sign-in. '
+      + 'From the Central Public Procurement Portal\u2019s public lists.',
   },
   '/sample-analysis': {
     title: 'Sample tender analysis: AIIMS Bhubaneswar | TenderTez',
@@ -32,35 +32,81 @@ export const PUBLIC_PAGES = {
       + 'eligibility, documents and risky clauses, each with its page number.',
   },
   '/features': {
-    title: 'Features | TenderTez',
-    description: 'Find government tenders, read a tender PDF with every point linked to its page, check '
-      + 'eligibility, and track bids with a submission checklist, corrigendum check and client workspaces.',
+    title: 'Tender analysis features: eligibility, checklist | TenderTez',
+    description: 'Read a tender PDF with every point linked to its page, check eligibility against your company, '
+      + 'get a submission checklist, check corrigenda and track bids.',
   },
   '/pricing': {
-    title: 'Pricing | TenderTez',
-    description: 'Your first 5 tenders are free, with no card needed. Then monthly plans: ₹3,999 for 10 tenders, '
-      + '₹5,999 for 15 or ₹8,999 for 30.',
+    title: 'Pricing: 5 tenders free, then ₹3,999 a month | TenderTez',
+    description: 'Your first 5 tenders are free, no card needed. Then ₹3,999 a month for 10 tenders, ₹5,999 for 15 '
+      + 'or ₹8,999 for 30. Nothing is charged automatically.',
   },
   '/faq': {
-    title: 'Questions and answers | TenderTez',
-    description: 'Which tenders TenderTez can read, how long an analysis takes, how accurate it is, scanned PDFs, '
-      + 'eligibility checks, and who can see your documents.',
+    title: 'Tender analysis FAQ: accuracy, scans, privacy | TenderTez',
+    description: 'How accurate TenderTez is, how long an analysis takes, scanned and Hindi PDFs, the eligibility '
+      + 'check, and who can see your tender documents.',
   },
   '/about': {
-    title: 'About | TenderTez',
-    description: 'TenderTez is built in Mumbai by founder Sayali Londhe, so deciding whether to bid on a '
-      + 'government tender no longer means a full day of reading first.',
+    title: 'About TenderTez: AI tender reading, built in Mumbai',
+    description: 'TenderTez is an AI tender-reading tool built in Mumbai by Sayali Londhe for Indian contractors, '
+      + 'suppliers and tender consultants.',
   },
   '/privacy-policy': {
     title: 'Privacy policy | TenderTez',
-    description: 'What TenderTez collects, why, who it is shared with, and how to have it deleted. Your tenders '
-      + 'are used only to analyse them for you, and visits are counted without cookies.',
+    description: 'What TenderTez collects, why, who it is shared with and how to delete it. Tenders are used only '
+      + 'to analyse them for you; visits are counted without cookies.',
   },
   '/register': {
     title: 'Start your free trial | TenderTez',
     description: 'Create a TenderTez account and analyse your first 5 tenders free. No card needed.',
   },
+  '/guides': {
+    title: 'Guides to reading Indian government tenders | TenderTez',
+    description: 'Guides to reading Indian government tenders: checking eligibility, claiming EMD exemption and '
+      + 'finding what a corrigendum changed, with the sources quoted.',
+  },
 };
+
+/**
+ * The guides (frontend/src/guides/guides.ts has the same slugs, headlines and
+ * date; tested). Each quotes only its sources, read in full on GUIDES_CHECKED.
+ */
+export const GUIDES_CHECKED = '2026-10-24';
+export const GUIDES = [
+  {
+    path: '/guides/tender-eligibility-check',
+    headline: 'How to check eligibility in a government tender',
+    title: 'How to check eligibility in a government tender',
+    description: 'Check turnover, similar-work experience, registrations and exemptions in a government tender, '
+      + 'clause by clause, before you spend on a bid.',
+    citations: [
+      'https://prasarbharati.gov.in/wp-content/uploads/2024/04/Engineering_673527.pdf',
+      'https://www.rri.res.in/sites/default/files/2024-08/GeM-Bidding-5263261.pdf',
+      'https://www.iitk.ac.in/iwd/file/2026/06-Civil-D2-2026-27/Corrigendum.pdf',
+    ],
+  },
+  {
+    path: '/guides/emd-exemption',
+    headline: 'EMD exemption for MSEs and startups: who qualifies and how to claim it',
+    title: 'EMD exemption for MSEs and startups: who qualifies',
+    description: 'GFR Rule 170 exempts MSEs and DPIIT-recognised startups from EMD. On GeM, traders are excluded '
+      + 'and proof must be uploaded with the bid.',
+    citations: [
+      'https://dgll.nic.in/sites/default/files/2023-06/GFR%20amendment2.pdf',
+      'https://www.rri.res.in/sites/default/files/2024-08/GeM-Bidding-5263261.pdf',
+      'https://doe.gov.in/files/circulars_document/Bid_Security_Earnest_Money_Deposit.pdf',
+    ],
+  },
+  {
+    path: '/guides/tender-corrigendum',
+    headline: 'What a tender corrigendum can change, and how to check it',
+    title: 'Tender corrigendum: what it changes and how to check',
+    description: 'A corrigendum can change the deadline, EMD, eligibility or scope after you have read a tender. '
+      + 'How to find every corrigendum and check what changed.',
+    citations: ['https://www.iitk.ac.in/iwd/file/2026/06-Civil-D2-2026-27/Corrigendum.pdf'],
+  },
+];
+for (const g of GUIDES) PUBLIC_PAGES[g.path] = { title: g.title, description: g.description };
 
 const escapeHtml = (s) => String(s)
   .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -76,6 +122,29 @@ function normalizePath(path) {
  * Content-Security-Policy doesn't block it.
  */
 export function structuredData(path, baseUrl) {
+  const guide = GUIDES.find((g) => g.path === path);
+  if (guide) {
+    const publisher = { '@type': 'Organization', name: SITE_NAME, url: `${baseUrl}/` };
+    return [{
+      '@context': 'https://schema.org',
+      '@type': 'Article',
+      headline: guide.headline,
+      description: guide.description,
+      dateModified: GUIDES_CHECKED,
+      author: publisher,
+      publisher,
+      mainEntityOfPage: `${baseUrl}${guide.path}`,
+      citation: guide.citations,
+    }, {
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Home', item: `${baseUrl}/` },
+        { '@type': 'ListItem', position: 2, name: 'Guides', item: `${baseUrl}/guides` },
+        { '@type': 'ListItem', position: 3, name: guide.headline, item: `${baseUrl}${guide.path}` },
+      ],
+    }];
+  }
   if (path === '/') {
     return [{
       '@context': 'https://schema.org',
@@ -139,15 +208,22 @@ export function publicPageHead(page, url, baseUrl, jsonLd = []) {
   ].join('\n    ');
 }
 
-/** index.html with this path's head tags in place of the plain <title>. */
-export function renderIndexHtml(indexHtml, path, baseUrl) {
-  const page = PUBLIC_PAGES[normalizePath(path)];
+/**
+ * index.html with this path's head tags in place of the plain <title>, and
+ * for a public page its server-rendered body (src/prerender.js) inside #root,
+ * when `bodyFor` has one.
+ */
+export function renderIndexHtml(indexHtml, path, baseUrl, bodyFor = () => null) {
+  const p = normalizePath(path);
+  const page = PUBLIC_PAGES[p];
   if (!page) {
     return indexHtml.replace('</title>', '</title>\n    <meta name="robots" content="noindex" />');
   }
-  const url = `${baseUrl}${normalizePath(path) === '/' ? '/' : normalizePath(path)}`;
-  const tags = publicPageHead(page, url, baseUrl, structuredData(normalizePath(path), baseUrl));
-  return indexHtml.replace(/<title>[^<]*<\/title>/, tags);
+  const url = `${baseUrl}${p === '/' ? '/' : p}`;
+  const tags = publicPageHead(page, url, baseUrl, structuredData(p, baseUrl));
+  const body = bodyFor(p);
+  const html = indexHtml.replace(/<title>[^<]*<\/title>/, tags);
+  return body ? html.replace('<div id="root"></div>', `<div id="root">${body}</div>`) : html;
 }
 
 /**
@@ -200,10 +276,19 @@ export function robotsTxt(baseUrl) {
   ].join('\n');
 }
 
-export function sitemapXml(baseUrl, extraPaths = []) {
-  const urls = [...Object.keys(PUBLIC_PAGES), ...extraPaths]
-    .map((p) => `  <url><loc>${escapeHtml(`${baseUrl}${p}`)}</loc></url>`)
-    .join('\n');
+/**
+ * The sitemap. `<lastmod>` only where it is true: the guides carry the date
+ * their sources were checked, and the tender lists (`extraPaths`) change
+ * every day, so they carry today's date in India. Other pages have none.
+ */
+export function sitemapXml(baseUrl, extraPaths = [], now = new Date()) {
+  const today = now.toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
+  const guidePaths = new Set(GUIDES.map((g) => g.path));
+  const entry = (p, lastmod) => `  <url><loc>${escapeHtml(`${baseUrl}${p}`)}</loc>${lastmod ? `<lastmod>${lastmod}</lastmod>` : ''}</url>`;
+  const urls = [
+    ...Object.keys(PUBLIC_PAGES).map((p) => entry(p, guidePaths.has(p) ? GUIDES_CHECKED : null)),
+    ...extraPaths.map((p) => entry(p, today)),
+  ].join('\n');
   return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls}\n</urlset>\n`;
 }
 

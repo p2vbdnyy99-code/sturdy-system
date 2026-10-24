@@ -35,7 +35,7 @@ export async function truncateAll() {
     TRUNCATE TABLE
       saved_search_matches, saved_searches, tender_securities, tender_annexure_drafts,
       public_tenders, discovery_state, checklist_items, tender_corrigenda, client_profiles, clients,
-      phone_otps, auth_identities, page_views, audit_logs, notifications, telegram_users, usage_records, subscriptions,
+      phone_otps, auth_identities, page_views, crawler_hits, audit_logs, notifications, telegram_users, usage_records, subscriptions,
       tender_events, tender_questions, compliance_items, tender_boq_items,
       tender_requirement_evidence, tender_requirements, tender_pages,
       tender_documents, tenders, company_profiles, company_members,

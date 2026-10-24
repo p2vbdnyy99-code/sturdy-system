@@ -164,6 +164,17 @@ sibling of `backend/`/`frontend/`, since the Docker build needs both).
     `usage_records`.
   - Alerts are only shown in the app. An email digest needs an email
     service first (none is connected).
+- **Server HTML, guides and crawler counts (Oct 2026):**
+  - The frontend build also makes `frontend/dist-ssr/prerender.js`; the server
+    renders the public pages from it (cached 6 hours). If it is missing, the
+    log says `prerender: public pages served without server HTML` and the
+    pages work as before. Check with
+    `curl -s https://tendertez.in/pricing | grep -c '<h1>'` (should be 1).
+  - The crawler counter needs migration 0012 (one additive table,
+    `crawler_hits`). Until it is applied, crawler counts are not saved (a
+    warning in the log) and /insights answers 500. Apply it right after the
+    deploy.
+  - `/government-tenders/state/keralam` now 301s to `/state/kerala`.
 - **Applying a migration from inside the app server** (works with the app's
   own deploy token): after deploying the code that contains it, run in
   `fly ssh console`, from `/app/backend`, drizzle-orm's migrator

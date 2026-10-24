@@ -41,6 +41,7 @@ const FEATURE_GROUPS: Array<{ id: string; icon: IconName; title: string; lead: s
     title: 'Check eligibility against your company',
     lead: 'Save your company profile once and see which conditions you appear to meet and which you don\'t, each with the reason.',
     points: ['Turnover, experience, certificates, licences and more', 'Answers "None" where something doesn\'t apply, so nothing is invented'],
+    link: { to: '/guides/tender-eligibility-check', label: 'How to check a tender\'s eligibility yourself' },
   },
   {
     id: 'tracker',
@@ -80,6 +81,7 @@ const FEATURE_GROUPS: Array<{ id: string; icon: IconName; title: string; lead: s
     title: 'Corrigendum check',
     lead: 'Upload an amendment and see what changed: deadline, EMD, value, dates, each quoted from the corrigendum with its page.',
     points: ['Apply the changes you accept to the tender in one click', 'A record of what changed and when'],
+    link: { to: '/guides/tender-corrigendum', label: 'What a corrigendum can change' },
   },
   {
     id: 'clients',

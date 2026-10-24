@@ -43,7 +43,7 @@ test('a public page view: the page, its title, the referring site, the campaign 
       name: 'page_view',
       params: {
         page_location: 'https://tendertez.in/pricing?utm_source=linkedin',
-        page_title: 'Pricing | TenderTez',
+        page_title: 'Pricing: 5 tenders free, then ₹3,999 a month | TenderTez',
         session_id: String(dayStart),
         engagement_time_msec: 100,
         visit_source: 'linkedin.com',

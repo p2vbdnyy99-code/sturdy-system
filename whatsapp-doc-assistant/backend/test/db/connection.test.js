@@ -11,13 +11,13 @@ test('DB foundation: connection + schema', { skip: !dbAvailable() && 'DATABASE_U
   t.after(closeTestDb);
   await truncateAll();
 
-  await t.test('the migration created all 35 BidPilot tables', async () => {
+  await t.test('the migration created all 36 BidPilot tables', async () => {
     const rows = await db.execute(`
       select table_name from information_schema.tables
       where table_schema = 'public' order by table_name
     `);
     const names = rows.rows.map((r) => r.table_name).sort();
-    assert.equal(names.length, 35, `expected 35 tables, found: ${names.join(', ')}`);
+    assert.equal(names.length, 36, `expected 36 tables, found: ${names.join(', ')}`);
     for (const expected of [
       'users', 'companies', 'company_members', 'company_profiles',
       'tenders', 'tender_pages', 'tender_documents', 'tender_requirements',

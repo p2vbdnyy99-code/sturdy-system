@@ -35,9 +35,11 @@ import { startDiscovery } from './src/bidpilot/discovery/collector.js';
 import { startAlertMatcher } from './src/bidpilot/repo/savedSearches.js';
 import { getDb } from './src/db/client.js';
 import { canonicalHostRedirect, renderIndexHtml, robotsTxt, sitemapXml, llmsTxt, PUBLIC_PAGES } from './src/seo.js';
-import { landingPagesFrom, isLandingPath, renderLandingHtml, createLandingCache, LIST_SIZE } from './src/landingPages.js';
+import { createPrerender } from './src/prerender.js';
+import { landingPagesFrom, isLandingPath, landingRedirect, renderLandingHtml, createLandingCache, LIST_SIZE } from './src/landingPages.js';
 import { cachedFacets, searchFeed } from './src/bidpilot/repo/publicTenders.js';
 import { createVisitsRouter } from './src/bidpilot/visits.js';
+import { createCrawlerCounter } from './src/bidpilot/crawlers.js';
 import { createGa4Forwarder } from './src/bidpilot/ga4.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -87,6 +89,11 @@ app.use((_req, res, next) => {
 // previews, the sitemap, and where www/.com page loads are redirected.
 const SITE_BASE_URL = config.bidpilot.localStorage.publicBaseUrl.replace(/\/+$/, '');
 app.use(canonicalHostRedirect(config.bidpilot.redirectHosts, SITE_BASE_URL));
+// Search and AI crawler requests, counted for /insights (src/bidpilot/crawlers.js).
+export const crawlerCounter = config.db.url ? createCrawlerCounter() : null;
+// Resolves once the public pages' server bundle has loaded (or failed to); tests wait on it.
+export let prerenderReady = Promise.resolve();
+if (crawlerCounter) app.use(crawlerCounter.middleware);
 
 // Capture the raw body so we can verify the X-Hub-Signature-256 HMAC. Express
 // still parses JSON into req.body as usual.
@@ -272,6 +279,10 @@ if (frontendDistExists) {
     res.type('application/xml').send(sitemapXml(SITE_BASE_URL, extra));
   });
   const indexHtml = fs.readFileSync(path.join(FRONTEND_DIST, 'index.html'), 'utf8');
+  // The public pages' text in the HTML (src/prerender.js).
+  const prerender = createPrerender(path.join(FRONTEND_DIST, '../dist-ssr/prerender.js'), { log });
+  prerenderReady = prerender.ready;
+  const publicPage = (p) => renderIndexHtml(indexHtml, p, SITE_BASE_URL, prerender.html);
   let sampleHtml = null; // the sample analysis never changes while running
 
   async function sendLanding(req, res) {
@@ -307,13 +318,15 @@ if (frontendDistExists) {
       sampleHtml ??= renderSampleHtml(indexHtml, SITE_BASE_URL, PUBLIC_PAGES[SAMPLE_PATH]);
       return res.type('html').send(sampleHtml);
     }
+    const moved = landingRedirect(req.path);
+    if (moved) return res.redirect(301, moved);
     if (isLandingPath(req.path)) {
       return sendLanding(req, res).catch((err) => {
         log.error('landing page error:', err);
         res.type('html').send(renderIndexHtml(indexHtml, req.path, SITE_BASE_URL));
       });
     }
-    res.type('html').send(renderIndexHtml(indexHtml, req.path, SITE_BASE_URL));
+    res.type('html').send(publicPage(req.path));
   });
 }
 

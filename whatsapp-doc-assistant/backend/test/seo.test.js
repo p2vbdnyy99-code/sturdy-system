@@ -43,7 +43,7 @@ test('the tender search and the features page can be found in search', () => {
 
 test('every description is a sensible length for search results', () => {
   for (const [path, page] of Object.entries(PUBLIC_PAGES)) {
-    assert.ok(page.description.length >= 70 && page.description.length <= 200, `${path}: ${page.description.length}`);
+    assert.ok(page.description.length >= 70 && page.description.length <= 160, `${path}: ${page.description.length}`);
     assert.ok(page.title.length <= 60, `${path} title`);
   }
 });

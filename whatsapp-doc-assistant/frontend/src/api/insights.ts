@@ -19,6 +19,8 @@ export type Insights = {
   campaigns: Array<{ label: string; visitors: number }>;
   pages: Array<{ label: string; visitors: number }>;
   devices: Array<{ label: string; visitors: number }>;
+  /** Requests from search and AI crawlers (by user agent), per crawler and per page. */
+  crawlers: { bots: Array<{ label: string; hits: number; last_day: string }>; pages: Array<{ label: string; hits: number }> };
   activity: Array<{ kind: 'signup' | 'upload' | 'analysed' | 'failed'; at: string; company: string }>;
   accounts: Array<{
     id: string; name: string; signedUpAt: string; contact: string | null; internal: boolean;

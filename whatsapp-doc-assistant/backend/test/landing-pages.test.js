@@ -117,13 +117,18 @@ test('served by the real app: landing page, unknown slug, sitemap, llms.txt, lan
   await db.insert(publicTenders).values(Array.from({ length: 25 }, (_, i) => ({
     source: 'cppp', sourceKey: `lp-${i}`, kind: 'state', state: 'Goa', title: `Goa works ${i}`, tenderId: `2026_GOA_${i}_1`, closingAt: soon(2 + i),
   })));
-  const { app } = await import('../server.js');
+  // CPPP's two spellings of Kerala: one list of 25, not 10 and 15.
+  await db.insert(publicTenders).values(Array.from({ length: 25 }, (_, i) => ({
+    source: 'cppp', sourceKey: `kl-${i}`, kind: 'state', state: i < 10 ? 'Kerala' : 'Keralam', title: `Kerala works ${i}`, closingAt: soon(2 + i),
+  })));
+  const { app, crawlerCounter, prerenderReady } = await import('../server.js');
+  await prerenderReady;
   const server = http.createServer(app);
   await new Promise((r) => server.listen(0, r));
   t.after(async () => { await new Promise((r) => server.close(r)); await truncateAll(); await closeTestDb(); });
   const base = `http://127.0.0.1:${server.address().port}`;
-  const get = (p) => new Promise((resolve, reject) => {
-    http.get(`${base}${p}`, (res) => { let b = ''; res.on('data', (c) => { b += c; }); res.on('end', () => resolve({ status: res.statusCode, body: b, type: res.headers['content-type'] })); }).on('error', reject);
+  const get = (p, headers = {}) => new Promise((resolve, reject) => {
+    http.get(`${base}${p}`, { headers }, (res) => { let b = ''; res.on('data', (c) => { b += c; }); res.on('end', () => resolve({ status: res.statusCode, body: b, type: res.headers['content-type'], location: res.headers.location })); }).on('error', reject);
   });
 
   const page = await get('/government-tenders/state/goa');
@@ -141,4 +146,29 @@ test('served by the real app: landing page, unknown slug, sitemap, llms.txt, lan
   assert.match(llms.body, /^# TenderTez/);
   const api = JSON.parse((await get('/bidpilot/public/tenders/landing')).body);
   assert.ok(api.pages.some((p) => p.path === '/government-tenders/state/goa' && p.state === 'Goa' && p.count === 25));
+
+  const kerala = await get('/government-tenders/state/kerala');
+  assert.match(kerala.body, /<title>Kerala government tenders: 25 open \| TenderTez<\/title>/);
+  const keralam = await get('/government-tenders/state/keralam');
+  assert.equal(keralam.status, 301);
+  assert.equal(keralam.location, '/government-tenders/state/kerala');
+  assert.doesNotMatch(sitemap.body, /keralam/);
+
+  // Public pages carry their own text in the HTML when the frontend's server bundle is built.
+  if (fs.existsSync(new URL('../../frontend/dist-ssr/prerender.js', import.meta.url))) {
+    const guide = await get('/guides/emd-exemption');
+    assert.match(guide.body, /<div id="root"><div class="home">/);
+    assert.match(guide.body, /<h1>EMD exemption for MSEs and startups/);
+    assert.match(guide.body, /"@type":"Article"/);
+    assert.match((await get('/pricing')).body, /<div id="root"><div class="home">/);
+    assert.match((await get('/dashboard')).body, /<div id="root"><\/div>/, 'app pages stay empty');
+  }
+
+  // Crawler requests are counted; a browser's are not.
+  await get('/llms.txt', { 'user-agent': 'Mozilla/5.0 (compatible; GPTBot/1.1)' });
+  await get('/pricing', { 'user-agent': 'Mozilla/5.0 (compatible; GPTBot/1.1)' });
+  await get('/pricing', { 'user-agent': 'Mozilla/5.0 Chrome/126 Safari/537.36' });
+  await crawlerCounter.flush();
+  const hits = (await db.execute('select bot, path, hits from crawler_hits order by path')).rows;
+  assert.deepEqual(hits, [{ bot: 'GPTBot (OpenAI)', path: '/llms.txt', hits: 1 }, { bot: 'GPTBot (OpenAI)', path: '/pricing', hits: 1 }]);
 });

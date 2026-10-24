@@ -4368,3 +4368,97 @@ goes out of date.
 - **verify.sh:** see `harness/runs/2026-10-22-live-insights/checks.md`.
 
 **Reverse:** `git revert`. There is no migration.
+
+# Search and AI-answer readiness (24 Oct 2026)
+
+Approved by the founder from `marketing/seo/geo-plan-2026-10-24.md`. The
+crawl that started it: home, features, pricing, FAQ, about, privacy and the
+tender search sent one word of body text to anything that doesn't run
+JavaScript, which includes several AI crawlers.
+
+## What changed
+- **Server HTML for the public pages.**
+  - `frontend/src/prerender.tsx` renders the real React pages
+    (`StaticRouter` + `SessionProvider` + `AppRoutes`, signed out) and is
+    built by `vite build --ssr` into `frontend/dist-ssr/prerender.js`
+    (`ssr.noExternal`, so the server needs no frontend packages).
+  - `frontend/scripts/check-prerender.mjs` fails the build if a page has no
+    H1 or under 150 words.
+  - `backend/src/prerender.js` imports the bundle and renders on request,
+    cached 6 hours (the home example's deadline is "two weeks from now").
+  - `renderIndexHtml` puts the HTML inside `#root`. The app replaces it on
+    load, as with the landing pages and `/sample-analysis`.
+  - App pages, login, register and unknown paths stay empty and noindex.
+- **Titles and descriptions** (`seo.js` `PUBLIC_PAGES`) now name what the
+  page answers. Every description is ≤160 characters (tested). Home and
+  About open with one quotable sentence: "TenderTez is an AI tool that reads
+  Indian government tenders for contractors, suppliers and tender
+  consultants."
+- **Guides** at `/guides`:
+  - Three guides, on eligibility, EMD exemption and corrigenda
+    (`frontend/src/pages/guides/`), plus a footer link and links from
+    features and the FAQ.
+  - Every rule they state is quoted from a listed source, read in full on 24
+    Oct 2026:
+    - the DoE OM of 25.07.2017 (GFR Rule 170(i));
+    - GeM bid GEM/2024/B/5263261;
+    - a CPWD-format All India Radio NIT;
+    - an IIT Kanpur corrigendum of 05.05.2026.
+  - The authorship is TenderTez, not a person.
+  - `seo.js` `GUIDES` gives each guide Article (with `citation`) and
+    BreadcrumbList JSON-LD. `frontend/src/guides/guides.ts` must match it
+    (tested).
+  - The visit counter and GA4 count each guide by its path.
+- **One Kerala list.** CPPP lists Kerala's portal as both "Kerala" and
+  "Keralam".
+  - `STATE_ALIASES` (`repo/publicTenders.js`) makes the state filter match
+    both spellings and adds the counts together under "Kerala".
+  - There is now one landing page, and `/state/keralam` 301s to
+    `/state/kerala`.
+  - Stored rows keep CPPP's spelling, so no data was changed.
+- **Sitemap `<lastmod>`.** Guides carry their checked date, and tender lists
+  carry today (India). Other pages carry none, rather than a date that isn't
+  true.
+- **Crawler counter.**
+  - `bidpilot/crawlers.js` counts GET/HEAD page requests whose user agent
+    names a known crawler (GPTBot, OAI-SearchBot, ChatGPT-User, ClaudeBot,
+    Claude-User, PerplexityBot, Googlebot, Bingbot and others).
+  - Counts are kept per India day, crawler and page in `crawler_hits`
+    (migration 0012), added up in memory and written once a minute.
+  - Unknown paths pool as `(other)`. No IP address or user agent is stored.
+  - `/insights` shows "Search and AI crawlers" and "Pages crawlers read".
+  - **No privacy change:** it concerns automated crawlers, not visitors, and
+    stores nothing about a person.
+
+## Verification
+- **Backend tests:**
+  - `test/geo.test.js` (11): guide sync, JSON-LD, server HTML only for
+    public pages, the loader's cache and fallbacks, the real bundle (one H1,
+    no inline styles, ≥150 words on all 11 pages), sitemap dates, crawler
+    naming and paths, and the Kerala merge in search, facets and landing
+    pages. A database test checks crawler counting (nothing for the API,
+    assets, POST or browsers) and the dashboard numbers.
+  - `landing-pages.test.js` (full app): the Kerala page shows 25 and
+    keralam answers 301; a guide and /pricing are served with their text;
+    /dashboard stays empty; a GPTBot request is counted and a browser's
+    isn't.
+  - `seo`, `spa-fallback`, `ga4` and `feed` tests were updated for the new
+    titles, the server HTML and the Kerala count.
+- **Browser:** the real server on a seeded local database, at 390 px and
+  1366 px. 43/43 checks pass:
+  - the server HTML has its H1;
+  - keralam 301s;
+  - the sitemap has its dates;
+  - each public page and guide has one H1 after the app loads, and no
+    sideways scroll;
+  - the footer link opens /guides in the app;
+  - no CSP errors;
+  - the founder's /insights shows the crawler cards.
+
+  The screenshots were inspected; the guide tables scroll inside their own
+  box on phones.
+- **verify.sh:** `harness/runs/2026-10-24-geo-build/`.
+
+**Deploy:** deploy, then apply migration 0012 (`OPERATIONS.md`).
+**Reverse:** `git revert`. The table can stay; nothing reads it after a
+revert.

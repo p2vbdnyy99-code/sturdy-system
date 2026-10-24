@@ -2460,6 +2460,99 @@ a:hover {
   padding-top: 1rem;
 }
 
+/* Guides (/guides): long-form text on the legal-page layout */
+
+.guide-byline {
+  font-size: 0.92rem;
+}
+
+.guide-answer p {
+  font-size: 1.1rem;
+  line-height: 1.7;
+  color: var(--color-text);
+  border-left: 4px solid var(--saffron-500);
+  background: var(--saffron-50);
+  padding: 1rem 1.1rem;
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+  margin: 0 0 2rem;
+}
+
+.guide h3 {
+  font-size: 1.05rem;
+  color: var(--navy-900);
+  margin: 1.1rem 0 0.4rem;
+}
+
+.guide ol {
+  padding-left: 1.4rem;
+  margin: 0 0 0.8rem;
+}
+
+.guide ol li {
+  font-size: 1rem;
+  line-height: 1.7;
+  margin-bottom: 0.45rem;
+}
+
+.guide-table {
+  overflow-x: auto;
+  margin: 0 0 1rem;
+}
+
+.guide-table table {
+  width: 100%;
+  min-width: 34rem;
+  border-collapse: collapse;
+  background: var(--color-surface);
+  font-size: 0.92rem;
+}
+
+.guide-table th,
+.guide-table td {
+  text-align: left;
+  vertical-align: top;
+  padding: 0.55rem 0.6rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.guide-table th {
+  color: var(--navy-900);
+  background: var(--navy-50);
+}
+
+.guide-quote {
+  margin: 0 0 1rem;
+  padding: 0.8rem 1rem;
+  border-left: 4px solid var(--color-border);
+  color: var(--color-text);
+  font-size: 0.98rem;
+  line-height: 1.7;
+}
+
+.guide-question h3 {
+  margin-top: 1rem;
+}
+
+.guide-cta {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 1.1rem 1.2rem;
+  background: var(--navy-50);
+}
+
+.guide-cta-links {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.8rem 1.2rem;
+}
+
+.guide-teaser-title {
+  font-size: 1.15rem;
+  margin: 0.2rem 0 0.5rem;
+  color: var(--navy-900);
+}
+
 /* FAQ */
 
 .faq-section {

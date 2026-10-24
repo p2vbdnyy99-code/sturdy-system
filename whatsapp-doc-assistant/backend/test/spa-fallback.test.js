@@ -13,10 +13,11 @@ import assert from 'node:assert/strict';
 import http from 'node:http';
 import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { app } from '../server.js';
+import { app, prerenderReady } from '../server.js';
 import { config } from '../src/config.js';
 
 const FRONTEND_DIST_INDEX = fileURLToPath(new URL('../../frontend/dist/index.html', import.meta.url));
+const prerendered = fs.existsSync(new URL('../../frontend/dist-ssr/prerender.js', import.meta.url));
 const SKIP_REASON = fs.existsSync(FRONTEND_DIST_INDEX)
   ? false
   : 'frontend/dist is not built — run `npm run build` first (see backend/package.json)';
@@ -26,6 +27,7 @@ test('same-origin static serving + SPA fallback (server.js)', { skip: SKIP_REASO
   let baseUrl;
 
   t.before(async () => {
+    await prerenderReady;
     server = http.createServer(app);
     await new Promise((resolve) => server.listen(0, resolve));
     baseUrl = `http://127.0.0.1:${server.address().port}`;
@@ -60,14 +62,17 @@ test('same-origin static serving + SPA fallback (server.js)', { skip: SKIP_REASO
   });
 
   await t.test('public pages get their own title, description and link-preview tags', async () => {
-    for (const [path, title] of [['/', 'TenderTez: read a government tender in minutes'], ['/pricing', 'Pricing | TenderTez'], ['/faq/', 'Questions and answers | TenderTez']]) {
+    for (const [path, title] of [['/', 'AI tender analysis for Indian government tenders | TenderTez'], ['/pricing', 'Pricing: 5 tenders free, then ₹3,999 a month | TenderTez'], ['/faq/', 'Tender analysis FAQ: accuracy, scans, privacy | TenderTez']]) {
       const res = await req(path);
       assert.equal(res.status, 200, path);
       assert.ok(res.body.includes(`<title>${title}</title>`), path);
       assert.match(res.body, /<meta name="description" content="[^"]{40,}" \/>/, path);
       assert.match(res.body, /<meta property="og:image" content="[^"]+\/og-image\.png" \/>/, path);
       assert.doesNotMatch(res.body, /noindex/, path);
-      assert.match(res.body, /<div id="root"><\/div>/, `${path} is still the SPA shell`);
+      // The app still loads and takes over; the page's own text is in #root
+      // when the frontend's server bundle is built (src/prerender.js).
+      assert.match(res.body, /<script type="module"[^>]+src="\/assets\//, `${path} is still the SPA`);
+      if (prerendered) assert.match(res.body, /<div id="root"><div class="home">/, `${path} has its text in the HTML`);
     }
   });
 

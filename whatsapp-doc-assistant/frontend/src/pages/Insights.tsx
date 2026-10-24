@@ -142,6 +142,12 @@ export function InsightsPage() {
             <Card title="Where visitors came from"><BarList rows={data.sources} /></Card>
             <Card title="Campaigns" note="From post links (source.campaign)"><BarList rows={data.campaigns} empty="No campaign visits yet." /></Card>
             <Card title="Top pages"><BarList rows={data.pages} /></Card>
+            <Card title="Search and AI crawlers" note="Requests by crawler name (a user agent can be faked)">
+              <BarList rows={data.crawlers.bots.map((b) => ({ label: `${b.label} · last ${b.last_day}`, visitors: b.hits }))} empty="No crawler requests counted yet." />
+            </Card>
+            <Card title="Pages crawlers read">
+              <BarList rows={data.crawlers.pages.map((p) => ({ label: p.label, visitors: p.hits }))} empty="No crawler requests counted yet." />
+            </Card>
             <Card title="Latest activity" note="Last 30 days">
               <Activity items={data.activity} now={now} />
             </Card>

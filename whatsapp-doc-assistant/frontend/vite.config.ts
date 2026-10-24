@@ -7,8 +7,12 @@ import { defineConfig } from 'vite'
 // on API calls during local development — see backend/src/bidpilot/auth/cookies.js.
 // Production never uses this file's dev server at all (see backend/server.js's
 // express.static + SPA fallback), so this has no effect on the deployed app.
+// `vite build --ssr src/prerender.tsx` (package.json "build") bundles React
+// and the router into dist-ssr/prerender.js, so the server can render the
+// public pages without the frontend's node_modules (see src/prerender.tsx).
 export default defineConfig({
   plugins: [react()],
+  ssr: { noExternal: true },
   server: {
     proxy: {
       '/bidpilot': {

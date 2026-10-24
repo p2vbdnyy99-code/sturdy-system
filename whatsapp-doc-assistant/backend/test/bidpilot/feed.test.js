@@ -330,7 +330,7 @@ test('public tender search and the in-app feed with Track (HTTP)', { skip: SKIP_
     const f = await send('GET', '/bidpilot/public/tenders/facets', { signedOut: true });
     assert.equal(f.status, 200);
     assert.deepEqual(f.json.open, { central: 2, state: 2, gem: 1 });
-    assert.deepEqual(f.json.states, [{ name: 'Keralam', count: 1 }, { name: 'Maharashtra', count: 1 }]);
+    assert.deepEqual(f.json.states, [{ name: 'Kerala', count: 1 }, { name: 'Maharashtra', count: 1 }], 'CPPP\'s "Keralam" is counted as Kerala');
     assert.deepEqual(f.json.organisations.central.map((o) => o.name).sort(), ['CPWD', 'NTPC Limited'], 'closed IIT tender not counted');
     assert.deepEqual(f.json.organisations.gem, [{ name: 'Indian Railways', count: 1 }]);
     assert.equal(f.json.lists.central.totalPages, 2889);

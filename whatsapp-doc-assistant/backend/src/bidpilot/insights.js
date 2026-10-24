@@ -134,6 +134,14 @@ export async function insights(db, { days = 30, adminEmails = [] } = {}) {
   const pages = await top('path', 10);
   const devices = await top('device', 3);
 
+  // Search and AI crawler requests (crawlers.js): per crawler, and the pages they read.
+  const crawlerBots = await rows(client, `
+    select bot label, sum(hits)::int hits, to_char(max(day), 'YYYY-MM-DD') last_day
+    from crawler_hits where day >= ${SINCE} group by bot order by hits desc, bot limit 20`, [d]);
+  const crawlerPages = await rows(client, `
+    select path label, sum(hits)::int hits
+    from crawler_hits where day >= ${SINCE} group by path order by hits desc, path limit 10`, [d]);
+
   // Latest subscription per company; a sold plan whose period includes now.
   const paidRows = await rows(client, `
     with ${internalCte(1)},
@@ -196,6 +204,7 @@ export async function insights(db, { days = 30, adminEmails = [] } = {}) {
     funnel,
     paid,
     sources, campaigns, pages, devices,
+    crawlers: { bots: crawlerBots, pages: crawlerPages },
     activity,
     accounts: companies.map((c) => ({
       id: c.id, name: c.name, signedUpAt: c.signed_up, contact: c.email ?? c.phone ?? null, internal: c.internal,
