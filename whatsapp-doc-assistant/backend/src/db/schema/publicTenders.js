@@ -27,6 +27,7 @@ export const publicTenders = pgTable('public_tenders', {
   openingAt: timestamp('opening_at', { withTimezone: true }),
   url: text('url'), // a link that works for anyone, or null
   firstSeenAt: timestamp('first_seen_at', { withTimezone: true }).notNull().defaultNow(),
+  // When the row's details last changed (unchanged sightings don't rewrite the row; see storeRows).
   lastSeenAt: timestamp('last_seen_at', { withTimezone: true }).notNull().defaultNow(),
 }, (t) => [
   unique('public_tenders_source_key_unique').on(t.source, t.sourceKey),
@@ -35,6 +36,9 @@ export const publicTenders = pgTable('public_tenders', {
   index('public_tenders_kind_closing_idx').on(t.kind, t.closingAt),
   index('public_tenders_state_idx').on(t.state, t.closingAt),
   index('public_tenders_org_idx').on(t.organisation),
+  // The search counts (feedFacets) read only these columns of open tenders,
+  // so Postgres answers them from this small index instead of the table.
+  index('public_tenders_facets_idx').on(t.closingAt, t.kind, t.state, t.organisation),
 ]);
 
 // Where the collector is in each list, so a full pass survives restarts and

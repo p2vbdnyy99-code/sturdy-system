@@ -45,7 +45,12 @@ export async function fetchListPage(list, page) {
   return { rows, lastPage: parseLastPage(html) };
 }
 
-/** Insert new rows and refresh known ones. */
+/**
+ * Insert new rows and update known ones whose details changed. A row seen
+ * again unchanged is left alone: rewriting every row on every pass (50,000 a
+ * day, Oct 2026) bloated the table and kept Postgres from answering the
+ * search counts from the index (see feedFacets).
+ */
 export async function storeRows(db, rows) {
   if (rows.length === 0) return 0;
   // A page can repeat a row when the list shifts while it is read.
@@ -68,6 +73,11 @@ export async function storeRows(db, rows) {
         url: sql`excluded.url`,
         lastSeenAt: sql`now()`,
       },
+      setWhere: sql`(${publicTenders.kind}, ${publicTenders.title}, ${publicTenders.reference}, ${publicTenders.tenderId},
+        ${publicTenders.organisation}, ${publicTenders.department}, ${publicTenders.state}, ${publicTenders.category},
+        ${publicTenders.closingAt}, ${publicTenders.openingAt}, ${publicTenders.url})
+        is distinct from (excluded.kind, excluded.title, excluded.reference, excluded.tender_id, excluded.organisation,
+        excluded.department, excluded.state, excluded.category, excluded.closing_at, excluded.opening_at, excluded.url)`,
     });
   return unique.length;
 }

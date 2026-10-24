@@ -4462,3 +4462,85 @@ JavaScript, which includes several AI crawlers.
 **Deploy:** deploy, then apply migration 0012 (`OPERATIONS.md`).
 **Reverse:** `git revert`. The table can stay; nothing reads it after a
 revert.
+
+# Fast tender-search counts (24 Oct 2026)
+
+**Why:** the counts behind the tender search's filters, the landing pages
+and the sitemap (`feedFacets`) took about 35 s in production when not
+cached. Read-only EXPLAIN ANALYZE showed why:
+- the per-list count was an index-only scan with 94,723 heap fetches, 28 s
+  of mostly disk reads;
+- per state took 4.7 s and per organisation 3.7 s;
+- the table is 108 MB, but Postgres `shared_buffers` is 25 MB, so the data
+  is rarely in memory.
+
+Two separate 5-minute caches (search API and landing pages) each re-ran the
+counts, and the request that found a cache expired waited for them. The daily
+post task timed out on it (30 s) on 24 Oct.
+
+## What changed
+- `feedFacets` makes one sequential pass with
+  `GROUPING SETS ((kind), (kind, state), (kind, organisation))`.
+  - It returns the same shape. Organisations with equal counts are now
+    ordered by name, so the order is stable.
+  - In production, the old and new queries gave identical lists, states and
+    organisations at the same instant (3 / 33 / 2,068 rows). The old way
+    took 35–52 s and the new 2–9 s, depending on database load.
+- `cachedFacets` keeps one copy for the whole process, shared by every
+  caller.
+  - Once loaded, a request never waits: an old copy is served at once while
+    a single refresh runs in the background.
+  - A failed refresh keeps the last good copy and logs a warning.
+  - Only the very first load is awaited, and the server starts that load
+    itself (`tender counts loaded` in the log).
+
+- **Under 2 seconds uncached (the founder's bar).** The one pass still read
+  the whole 79 MB table: 2–4 s quiet, 9 s under load. The root cause was
+  churn:
+  - the collector rewrote every row it saw again, unchanged, with 731,697
+    updates for 171,888 rows and about 50,000 rewrites a day against 3,855
+    new tenders;
+  - so only 36% of the pages were marked all-visible, and index scans had to
+    visit the table.
+
+  Three changes:
+  - `storeRows` updates a row only when its details changed
+    (`setWhere ... is distinct from excluded`). Nothing read `last_seen_at`;
+    it now means "details last changed".
+  - Migration 0013 adds `public_tenders_facets_idx (closing_at, kind, state,
+    organisation)`, 2.8 MB on a production-sized copy, and vacuums the table
+    after 2% of rows change instead of 20%.
+  - After the deploy, a one-off `VACUUM (ANALYZE) public_tenders` marks the
+    pages all-visible (`OPERATIONS.md`).
+- **Measured locally, before deploying:** a bench table shaped like
+  production (171,888 rows, 105,607 open, about 375-byte rows), with
+  Postgres's memory set to production's 25 MB and restarted before each run,
+  counting pages read cold:
+
+  | State | Plan | Cold page reads |
+  |---|---|---|
+  | One pass, no index | Seq Scan | 12,317 |
+  | Index, after a realistic day (3,855 new, 500 changed rows, before autovacuum) | Index Only Scan | 1,316 |
+  | Index, just vacuumed | Index Only Scan | about 210 |
+  | Index, 64% of pages stale (no vacuum for long) | Seq Scan (planner's choice) | 12,317, no worse than without the index |
+
+  Production's slowest measured cost was 1.26 ms per page read, under load,
+  so 1,316 reads is about 1.7 s. Quiet periods (0.25 ms per read) give about
+  0.3 s.
+
+## Verification
+- `test/bidpilot/collector-store.test.js`: unchanged rows keep their row
+  version (`xmin`), a changed closing date is saved, and new rows are added.
+- `test/bidpilot/facets-cache.test.js`:
+  - one load for many callers;
+  - a stale copy is served without waiting;
+  - only one refresh at a time;
+  - a failed refresh keeps the old copy;
+  - the new copy is used once it arrives.
+- Existing facets tests (feed, geo, landing pages) pass unchanged.
+- verify.sh: `harness/runs/2026-10-24-facets-speed/`.
+
+**Deploy:** deploy, apply migration 0013, run `VACUUM (ANALYZE)
+public_tenders` once, then time the counts uncached in production.
+**Reverse:** `git revert`. The index and table setting can stay; they're
+harmless.

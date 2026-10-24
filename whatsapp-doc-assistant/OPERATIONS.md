@@ -175,6 +175,20 @@ sibling of `backend/`/`frontend/`, since the Docker build needs both).
     warning in the log) and /insights answers 500. Apply it right after the
     deploy.
   - `/government-tenders/state/keralam` now 301s to `/state/kerala`.
+  - Crawler counts on /insights: the 13 GPTBot requests on 24 Oct 2026 were
+    the deploy check's own (pages, llms.txt, robots), not OpenAI. Live checks
+    since then use a plain user agent such as `TenderTezCheck/1.0`, which
+    isn't counted, because server HTML is the same for every visitor. A
+    crawler request shows a page was fetched, not that it was indexed.
+- **Fast tender counts (Oct 2026):**
+  - Migration 0013 adds `public_tenders_facets_idx` and vacuums
+    `public_tenders` after 2% of rows change.
+  - After applying it, run `VACUUM (ANALYZE) public_tenders` once (read-mostly
+    maintenance; it doesn't block reads or writes).
+  - If the counts slow down again, check
+    `select relallvisible, relpages from pg_class where relname = 'public_tenders'`.
+    Below about 90% visible, the planner leaves the index; a manual VACUUM
+    restores it.
 - **Applying a migration from inside the app server** (works with the app's
   own deploy token): after deploying the code that contains it, run in
   `fly ssh console`, from `/app/backend`, drizzle-orm's migrator

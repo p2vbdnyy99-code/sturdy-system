@@ -381,6 +381,10 @@ async function start() {
   if (config.db.url) {
     startDiscovery(getDb());
     startAlertMatcher(getDb());
+    // Load the tender counts once now, so no visitor waits for the first load.
+    cachedFacets()(getDb())
+      .then(() => log.info('tender counts loaded'))
+      .catch((err) => log.warn(`tender counts: first load failed (${err.message})`));
   }
 }
 

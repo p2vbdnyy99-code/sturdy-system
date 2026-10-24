@@ -3,9 +3,10 @@
 // search (routes/publicTenders.js, no sign-in) and the in-app feed
 // (routes/feed.js). Public notices only; nothing here is company data.
 
-import { and, asc, desc, eq, gte, ilike, inArray, isNotNull, lt, or, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, gte, ilike, inArray, lt, or, sql } from 'drizzle-orm';
 import { publicTenders, discoveryState } from '../../db/schema/index.js';
 import { findOnPortal } from '../discovery/portals.js';
+import { log } from '../../logger.js';
 
 export const KINDS = ['central', 'state', 'gem'];
 export const STATUSES = ['open', 'closing', 'closed', 'all'];
@@ -106,21 +107,26 @@ export async function searchFeed(db, filters, now = new Date()) {
   return { tenders: rows.map(toFeedRow), total: count, page: filters.page, limit: filters.limit };
 }
 
-/** Open tenders per list, per state and per organisation, for the filter menus. */
+/**
+ * Open tenders per list, per state and per organisation, for the filter menus.
+ * One pass over the table (GROUPING SETS): three separate counts took about
+ * 35 s in production (Oct 2026), mostly random disk reads; one pass takes 2–4 s.
+ */
 export async function feedFacets(db, now = new Date()) {
-  const open = gte(publicTenders.closingAt, now);
-  const [kinds, states, orgs, lists] = await Promise.all([
-    db.select({ kind: publicTenders.kind, n: sql`count(*)::int` }).from(publicTenders).where(open).groupBy(publicTenders.kind),
-    db.select({ name: publicTenders.state, n: sql`count(*)::int` }).from(publicTenders)
-      .where(and(open, eq(publicTenders.kind, 'state'), isNotNull(publicTenders.state)))
-      .groupBy(publicTenders.state).orderBy(asc(publicTenders.state)),
-    db.select({ kind: publicTenders.kind, name: publicTenders.organisation, n: sql`count(*)::int` }).from(publicTenders)
-      .where(and(open, isNotNull(publicTenders.organisation)))
-      .groupBy(publicTenders.kind, publicTenders.organisation)
-      .orderBy(desc(sql`count(*)`)),
+  const [{ rows }, lists] = await Promise.all([
+    db.execute(sql`
+      select kind, state, organisation, count(*)::int as n,
+        grouping(state)::int as no_state, grouping(organisation)::int as no_org
+      from ${publicTenders}
+      where ${publicTenders.closingAt} >= ${now}
+      group by grouping sets ((kind), (kind, state), (kind, organisation))`),
     db.select().from(discoveryState),
   ]);
-  const top = (kind) => orgs.filter((o) => o.kind === kind).slice(0, 80).map((o) => ({ name: o.name, count: o.n }));
+  const kinds = rows.filter((r) => r.no_state && r.no_org);
+  const states = rows.filter((r) => !r.no_state && r.kind === 'state' && r.state !== null).map((r) => ({ name: r.state, n: r.n }));
+  const orgs = rows.filter((r) => !r.no_org && r.organisation !== null)
+    .sort((a, b) => b.n - a.n || a.organisation.localeCompare(b.organisation));
+  const top = (kind) => orgs.filter((o) => o.kind === kind).slice(0, 80).map((o) => ({ name: o.organisation, count: o.n }));
   const count = (kind) => kinds.find((k) => k.kind === kind)?.n ?? 0;
   return {
     open: { central: count('central'), state: count('state'), gem: count('gem') },
@@ -143,16 +149,27 @@ function mergeStates(rows) {
   return [...counts].map(([name, count]) => ({ name, count })).sort((a, b) => a.name.localeCompare(b.name));
 }
 
-/** A small in-memory cache for the facet counts (they change slowly). */
-export function cachedFacets(ttlMs = 5 * 60 * 1000) {
-  let value = null;
-  let at = 0;
-  let pending = null;
+/**
+ * The facet counts, cached for every caller in this process (the search API,
+ * the landing pages and the sitemap share one copy). Once loaded, a request
+ * never waits: an old copy is served at once while one refresh runs in the
+ * background, and a failed refresh keeps the old copy. Only the very first
+ * load is waited for.
+ */
+const facetsCache = { value: null, at: 0, pending: null };
+
+export function cachedFacets(ttlMs = 5 * 60 * 1000, load = feedFacets, cache = facetsCache) {
+  const refresh = (db) => {
+    cache.pending ??= load(db)
+      .then((v) => { cache.value = v; cache.at = Date.now(); return v; })
+      .finally(() => { cache.pending = null; });
+    return cache.pending;
+  };
   return async (db) => {
-    if (value && Date.now() - at < ttlMs) return value;
-    if (!pending) {
-      pending = feedFacets(db).then((v) => { value = v; at = Date.now(); return v; }).finally(() => { pending = null; });
+    if (!cache.value) return refresh(db);
+    if (Date.now() - cache.at >= ttlMs) {
+      refresh(db).catch((err) => log.warn(`tender counts: refresh failed, serving the last counts (${err.message})`));
     }
-    return pending;
+    return cache.value;
   };
 }
