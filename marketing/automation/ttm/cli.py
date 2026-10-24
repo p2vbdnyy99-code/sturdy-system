@@ -9,7 +9,7 @@ import datetime as dt
 import json
 import sys
 
-from . import content, daily_post, dashboard, prospects, report, seo_audit, store
+from . import content, daily_post, dashboard, nightly, prospects, report, seo_audit, store
 from .config import load_config, data_dir
 from .safety import KillSwitchOn, guard
 
@@ -67,6 +67,8 @@ def main(argv=None) -> int:
     s.add_argument("--out", default="")
     s = sub.add_parser("daily-post", help="today's tender post (JSON: label, linkedin, x, whatsapp); posts nothing")
     s.add_argument("--date", default=""); s.add_argument("--base", default="")
+    s = sub.add_parser("nightly-email", help="build the founder's nightly email from insights-summary.mjs JSON (sends nothing)")
+    s.add_argument("--data", required=True); s.add_argument("--out", required=True)
     s = sub.add_parser("next-post", help="the next planned post not yet handed to the founder; marks it handed over (posts nothing)")
     s.add_argument("--platform", default="x"); s.add_argument("--peek", action="store_true", help="show it without marking it")
     sub.add_parser("status", help="settings, kill switch and data counts")
@@ -139,6 +141,12 @@ def main(argv=None) -> int:
         elif a.cmd == "report":
             r = report.weekly(dt.date.fromisoformat(a.end) if a.end else None)
             _print(r if a.json else report.to_markdown(r))
+        elif a.cmd == "nightly-email":
+            with open(a.data, encoding="utf-8") as f:
+                mail = nightly.render(json.load(f))
+            with open(a.out, "w", encoding="utf-8") as f:
+                f.write(mail["html"])
+            _print({"subject": mail["subject"], "text": mail["text"], "html_file": a.out, "html_chars": len(mail["html"])})
         elif a.cmd == "next-post":
             item = content.next_post(a.platform, mark=not a.peek)
             if item is None:

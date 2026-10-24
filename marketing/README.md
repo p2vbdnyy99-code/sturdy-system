@@ -76,6 +76,7 @@ python3 -m ttm report                          # weekly report (markdown); --jso
 python3 -m ttm seo-audit > ../seo/technical-audit-live.md
 python3 -m ttm daily-post                      # today's tender post (JSON); posts nothing
 python3 -m ttm next-post --platform x          # next planned post not yet handed over (marks it); --peek to look only
+python3 -m ttm nightly-email --data d.json --out e.html  # the founder's nightly email from insights-summary.mjs JSON (sends nothing)
 python3 -m ttm export ~/tendertez-marketing-backup.json   # back up data/
 python3 -m ttm import backup.json              # restore (refuses to overwrite without --force)
 ```
