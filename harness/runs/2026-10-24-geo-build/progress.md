@@ -11,3 +11,13 @@
   for their H1, check /sitemap.xml and /llms.txt, apply 0012, open /insights.
 - Not in this change: P1–P3 pages, FAQPage and Organization data on
   /faq and /about.
+- 24 Oct, deployed (founder: "Deploy"): commit 87d63e7; no tender was
+  ANALYZING before; migration 0012 applied in the machine (13 migrations,
+  crawler_hits exists). Live, as GPTBot: all 11 public pages + guides 200,
+  one H1, 241–1,648 words, indexable; /dashboard noindex and empty;
+  keralam 301 → kerala (3,585 open); sitemap 59 URLs with guide dates;
+  llms.txt lists the guides. insights() in production returns crawler
+  counts; the 13 GPTBot hits on 24 Oct are this check's own requests.
+- Found, not caused by this change: the uncached facets query takes about
+  35 s in production (3 runs), so one request every 5 minutes (search
+  counts, landing pages, sitemap) waits that long. To fix separately.
