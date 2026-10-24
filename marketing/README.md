@@ -18,7 +18,7 @@ access except the SEO audit (which reads the public website).
 | `research/` | Connector matrix (X, LinkedIn, Google, email, others), channels, competitors, personas, objections, keywords | yes |
 | `leads/` | Lead CSV template, scoring rules, outreach templates | yes (no contact data) |
 | `content/content-calendar.csv` | 30-day calendar of draft posts with sources | yes |
-| `seo/` | Live technical audit, keyword map, internal links, structured data plan | yes |
+| `seo/` | Live technical audit, keyword map, internal links, structured data plan; `geo-plan-2026-10-24.md` (search and AI-answer plan) and `pages/` (publish-ready page copy awaiting approval) | yes |
 | `analytics/` | KPI definitions, weekly report template, UTM convention | yes |
 | `automation/ttm/` | The CLI and library (CRM, content queue, report, SEO audit, dashboard) | yes |
 | `automation/mcp_server.py` | The Tendertez Marketing MCP server (registered in `/.mcp.json`) | yes |
