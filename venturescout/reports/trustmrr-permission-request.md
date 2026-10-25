@@ -1,6 +1,6 @@
 # TrustMRR permission request: draft (2026-10-22)
 
-**Status: DRAFT, NOT SENT.** The founder sends it from their own email. No TrustMRR API access or data collection happens
+**Status: DRAFT, NOT SENT.** Gmail draft created 2026-10-25 in the connected account; the founder reviews and sends it. No TrustMRR API access or data collection happens
 until a written reply explicitly covers every numbered item below. Permission to access data is not treated as permission to
 build a dataset, to use AI-assisted analysis, or to keep or publish derived findings; each is asked separately.
 
