@@ -9,7 +9,7 @@ import { tenders, tenderDocuments } from '../db/schema/index.js';
 import { getCompanyProfile } from './repo/companies.js';
 import { missingProfileFields } from './profileCompleteness.js';
 
-export const FREE_TENDERS_WITHOUT_PROFILE = 2;
+export const FREE_TENDERS_WITHOUT_PROFILE = 3;
 
 export const PROFILE_REQUIRED_MESSAGE =
   `You've added ${FREE_TENDERS_WITHOUT_PROFILE} tenders without a company profile. ` +

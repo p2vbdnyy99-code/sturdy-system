@@ -6,9 +6,10 @@
 // visits.js), so a visit on Monday and a sign-up on Tuesday can't be linked.
 // Every view in a journey carries the referrer and utm_source of the page the
 // visitor landed on (frontend api/visits.ts), and the journey's first view is
-// its entry page. A journey that reaches /onboarding/create-company is a new
-// account: CompanyGate sends a signed-in user without a company there, which
-// in practice means someone who has just registered.
+// its entry page. A journey that reaches /signed-up is a new account: the app
+// records it once when it creates a new user's company (frontend CompanyGate).
+// Until 26 Oct 2026 new users passed /onboarding/create-company instead, so
+// both count.
 
 // $1 is the number of days, counting today (India dates), as in visits-report.
 const SINCE_DAY = "(now() at time zone 'Asia/Kolkata')::date - ($1::int - 1)";
@@ -26,7 +27,7 @@ export async function entryFunnel(client, days) {
         (array_agg(coalesce(campaign, '') order by created_at))[1] campaign,
         (array_agg(path order by created_at))[1] entry,
         bool_or(path = '/register') saw_register,
-        bool_or(path = '/onboarding/create-company') new_account,
+        bool_or(path in ('/signed-up', '/onboarding/create-company')) new_account,
         bool_or(path in ('/dashboard', '/tenders/:id')) in_app
       from v group by day, visitor_id
     )

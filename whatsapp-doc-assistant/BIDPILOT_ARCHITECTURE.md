@@ -4651,3 +4651,53 @@ pages built from data render from that data.
   unit tests, secret scan clean.
 
 **Reverse:** `git revert`. There is no migration.
+
+# Sign-up straight to the dashboard; profile after 3 tenders (26 Oct 2026)
+
+**What changed**
+- No "Set up your company" form after sign-up. `CompanyGate` calls
+  `POST /bidpilot/companies/ensure` for a signed-in user with no company
+  ("Setting up your workspace…", with a retry on error), then refreshes the
+  session, so email, Google and phone sign-ups all land on the dashboard.
+- `ensureCompanyForUser` (`repo/companies.js`) returns the user's first
+  company or creates one with an owner membership, in one transaction under
+  `pg_advisory_xact_lock(hashtext('bidpilot-company:<userId>'))`, so a
+  reload or a second tab never makes a second company. The name is the
+  user's name (spaces tidied, at most 120 characters) or "My company".
+- `PATCH /bidpilot/companies/:id {name}` renames your own company (company
+  access required; 1–120 characters). The company profile page has a
+  "Company name" field, saved with the profile.
+- `/onboarding/create-company` redirects to `/dashboard`; the page and its
+  form are gone. `POST /companies` (create by name) stays.
+- `FREE_TENDERS_WITHOUT_PROFILE` 2 → 3 on both sides; the FAQ, the privacy
+  policy (also: the company is first named after the user; `LAST_UPDATED`
+  27 October 2026, the deploy day) and comments say 3.
+- Funnel: the app records a `/signed-up` visit once, when ensure answers
+  `created: true`. `funnelReport.js` counts a journey reaching `/signed-up`
+  or (older data) `/onboarding/create-company` as a new account.
+
+**Why**
+The founder asked for new users to see the product before any form, and for
+the profile only after a few tries. Three tenders leaves tenders 4 and 5 of
+the free trial to show the eligibility check, which needs the profile.
+
+**Verification**
+- `companies.test.js`: two concurrent ensures make one company and one
+  membership; an existing company is returned unchanged; the HTTP route
+  answers 201 then 200 with the same company, names it after the user or
+  "My company", needs a session and CSRF; rename works for a member, refuses
+  blank, over-long, a non-UUID id (404) and another company (403).
+- `profile-gate.test.js` and `feed.test.js`: 3 uploads or documents without
+  a profile, the 4th answers 409 `profile_incomplete`.
+- `funnel-report.test.js`: `/signed-up` and the old path both count;
+  `visits.test.js` keeps `/signed-up` as a route name.
+- verify.sh: backend 682/429/348 pass, frontend build, lint 0 errors, 57 unit
+  tests, secret scan clean (`harness/runs/2026-10-26-skip-company-step/checks.md`).
+- Browser, local server, 390 and 1366 px: 25/25 (email sign-up lands on
+  /dashboard with no form; one company named after the user, still one after
+  reloads and the old onboarding link; rename saved and shown after reload; a
+  blank name refused; no sideways scroll; no page errors; two `/signed-up`
+  visits recorded).
+
+**Reverse:** `git revert`. There is no migration; companies created
+automatically keep working like any other.

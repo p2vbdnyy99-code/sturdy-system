@@ -40,6 +40,8 @@ const ROUTES = [
   [/^\/login$/, '/login'],
   [/^\/verify-email$/, '/verify-email'],
   [/^\/onboarding\/create-company$/, '/onboarding/create-company'],
+  // Not a page: the app records it once when sign-up creates the account's company.
+  [/^\/signed-up$/, '/signed-up'],
   [/^\/dashboard$/, '/dashboard'],
   [/^\/tenders\/[^/]+$/, '/tenders/:id'],
   [/^\/company-profile$/, '/company-profile'],

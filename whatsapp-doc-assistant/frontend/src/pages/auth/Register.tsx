@@ -32,8 +32,8 @@ export function RegisterPage() {
     }
     // No email provider is connected and login doesn't require a verified
     // address, so sign the new user straight in rather than promising an
-    // email that never arrives. CompanyGate sends a new user on to set up
-    // their company.
+    // email that never arrives. CompanyGate creates the new user's company,
+    // so they land on the dashboard.
     try {
       await login({ email, password });
       await refresh();
@@ -47,8 +47,8 @@ export function RegisterPage() {
   if (createdEmail) {
     return (
       <AuthLayout title="Your account is ready">
-        <p>Your account for <strong>{createdEmail}</strong> has been created. Log in to set up your company and
-          upload your first tender.</p>
+        <p>Your account for <strong>{createdEmail}</strong> has been created. Log in to upload your first
+          tender.</p>
         <Link to="/login" className="btn-link btn-primary">Log in</Link>
       </AuthLayout>
     );

@@ -11,6 +11,18 @@ export function createCompany(input: { name: string; industry?: string; business
   return request<CreateCompanyResult>('/bidpilot/companies', { method: 'POST', body: input });
 }
 
+/** The signed-in user's company, created (named after the user) when they
+ *  have none yet. `created` is true only for the call that made it. */
+export function ensureCompany() {
+  return request<{ companyId: string; name: string; role: string; created: boolean }>(
+    '/bidpilot/companies/ensure', { method: 'POST' },
+  );
+}
+
+export function renameCompany(companyId: string, name: string) {
+  return request<{ companyId: string; name: string }>(`/bidpilot/companies/${companyId}`, { method: 'PATCH', body: { name } });
+}
+
 // Matches src/db/schema/companyProfile.js's columns. All fields optional —
 // the row is created lazily and filled in progressively (see routes/companies.js).
 export type CompanyProfile = {

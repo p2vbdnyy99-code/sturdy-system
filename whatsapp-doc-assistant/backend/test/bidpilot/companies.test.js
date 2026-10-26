@@ -10,7 +10,7 @@ import express from 'express';
 import pg from 'pg';
 import { dbAvailable, DB_URL, testDb, closeTestDb, truncateAll } from '../db/helpers.js';
 import { registerUser } from '../../src/bidpilot/repo/users.js';
-import { createCompanyForUser, getCompanyProfile } from '../../src/bidpilot/repo/companies.js';
+import { createCompanyForUser, ensureCompanyForUser, getCompanyProfile } from '../../src/bidpilot/repo/companies.js';
 import { requireCompanyAccess } from '../../src/bidpilot/repo/tenants.js';
 import { setDb, closeDb } from '../../src/db/client.js';
 import { createSession } from '../../src/bidpilot/auth/sessionService.js';
@@ -60,6 +60,37 @@ test('createCompanyForUser (repo-level)', { skip: SKIP_REASON }, async (t) => {
     const { company } = await createCompanyForUser(db, user.id, { name: 'Gamma Co' });
     const profile = await getCompanyProfile(db, company.id);
     assert.equal(profile, undefined);
+  });
+});
+
+// ── Repo-level: ensureCompanyForUser() ──────────────────────────────────────
+
+test('ensureCompanyForUser (repo-level)', { skip: SKIP_REASON }, async (t) => {
+  const db = testDb();
+  t.after(closeTestDb);
+  t.beforeEach(truncateAll);
+  const memberships = async (userId) => (await db.execute(
+    `select count(*)::int n from company_members where user_id = '${userId}'`)).rows[0].n;
+
+  await t.test('two calls at once for a new user create one company, owned by the user', async () => {
+    const { user } = await registerUser(db, { email: 'race@example.com', password: 'a-real-password-123' });
+    const [a, b] = await Promise.all([
+      ensureCompanyForUser(db, user.id, { name: 'Race' }), ensureCompanyForUser(db, user.id, { name: 'Race' }),
+    ]);
+    assert.equal(a.company.id, b.company.id);
+    assert.deepEqual([a.created, b.created].sort(), [false, true]);
+    assert.equal(await memberships(user.id), 1);
+    assert.equal(a.membership.role, 'owner');
+  });
+
+  await t.test('a user who already has a company gets it back and nothing is created', async () => {
+    const { user } = await registerUser(db, { email: 'has@example.com', password: 'a-real-password-123' });
+    const { company } = await createCompanyForUser(db, user.id, { name: 'Existing Co' });
+    const again = await ensureCompanyForUser(db, user.id, { name: 'Ignored' });
+    assert.equal(again.created, false);
+    assert.equal(again.company.id, company.id);
+    assert.equal(again.company.name, 'Existing Co');
+    assert.equal(await memberships(user.id), 1);
   });
 });
 
@@ -151,6 +182,51 @@ test('POST /companies, GET/PATCH /companies/:id/profile (HTTP integration)', { s
     assert.equal(missing.status, 400);
     const blank = await req('POST', '/bidpilot/companies', { auth: authA, body: { name: '   ' } });
     assert.equal(blank.status, 400);
+  });
+
+  await t.test('ensure: the first call creates a company named after the user, later calls return it', async () => {
+    const { user } = await registerUser(db, { email: 'named@example.com', password: 'a-real-password-123', name: '  Sayali   Londhe ' });
+    const auth = await mintAuth(user.id);
+    const first = await req('POST', '/bidpilot/companies/ensure', { auth });
+    assert.equal(first.status, 201);
+    assert.equal(first.json.created, true);
+    assert.equal(first.json.name, 'Sayali Londhe');
+    assert.equal(first.json.role, 'owner');
+    const second = await req('POST', '/bidpilot/companies/ensure', { auth });
+    assert.equal(second.status, 200);
+    assert.equal(second.json.created, false);
+    assert.equal(second.json.companyId, first.json.companyId);
+    const me = await req('GET', '/bidpilot/me', { auth });
+    assert.equal(me.json.companies.length, 1);
+  });
+
+  await t.test('ensure: a user without a name gets "My company"', async () => {
+    const res = await req('POST', '/bidpilot/companies/ensure', { auth: authA });
+    assert.equal(res.status, 201);
+    assert.equal(res.json.name, 'My company');
+  });
+
+  await t.test('ensure: needs a session and the CSRF token', async () => {
+    assert.equal((await req('POST', '/bidpilot/companies/ensure')).status, 401);
+    assert.equal((await req('POST', '/bidpilot/companies/ensure', { auth: { cookie: authA.cookie } })).status, 403);
+  });
+
+  await t.test('rename: a member renames their company; blank, too long and another company are refused', async () => {
+    const { json: { companyId } } = await req('POST', '/bidpilot/companies/ensure', { auth: authA });
+    const ok = await req('PATCH', `/bidpilot/companies/${companyId}`, { auth: authA, body: { name: '  Shree   Infra Pvt Ltd ' } });
+    assert.equal(ok.status, 200);
+    assert.equal(ok.json.name, 'Shree Infra Pvt Ltd');
+    const me = await req('GET', '/bidpilot/me', { auth: authA });
+    assert.equal(me.json.companies[0].name, 'Shree Infra Pvt Ltd');
+    assert.equal((await req('PATCH', `/bidpilot/companies/${companyId}`, { auth: authA, body: { name: '  ' } })).status, 400);
+    assert.equal((await req('PATCH', `/bidpilot/companies/${companyId}`, { auth: authA, body: { name: 'x'.repeat(121) } })).status, 400);
+    assert.equal((await req('PATCH', '/bidpilot/companies/not-a-uuid', { auth: authA, body: { name: 'X' } })).status, 404);
+    const { user: userB } = await registerUser(db, { email: 'renamer@example.com', password: 'a-real-password-123' });
+    const authB = await mintAuth(userB.id);
+    const denied = await req('PATCH', `/bidpilot/companies/${companyId}`, { auth: authB, body: { name: 'Hijacked' } });
+    assert.equal(denied.status, 403);
+    const after = await req('GET', '/bidpilot/me', { auth: authA });
+    assert.equal(after.json.companies[0].name, 'Shree Infra Pvt Ltd');
   });
 
   await t.test('profile: reading before any profile exists returns null, not 404 or an error', async () => {

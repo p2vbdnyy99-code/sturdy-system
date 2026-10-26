@@ -4,7 +4,7 @@
 // signup flow) have one correct way to stand up a tenant, rather than each
 // caller hand-rolling three inserts and risking skipping the membership row.
 
-import { eq } from 'drizzle-orm';
+import { asc, eq, sql } from 'drizzle-orm';
 import { users, companies, companyMembers, companyProfiles } from '../../db/schema/index.js';
 
 export async function createUser(db, { email, name }) {
@@ -61,6 +61,39 @@ export async function createCompanyForUser(db, userId, { name, industry, busines
     }
     return { company, membership };
   });
+}
+
+/**
+ * Sign-up without an onboarding form (Oct 2026): a signed-in user with no
+ * company gets one, named `name`, as its owner. Returns the user's first
+ * company instead when there already is one, so calling it again (a reload,
+ * a second tab) never creates a second company: the advisory lock on the
+ * user makes concurrent calls wait for each other.
+ */
+export async function ensureCompanyForUser(db, userId, { name }) {
+  return db.transaction(async (tx) => {
+    await tx.execute(sql`select pg_advisory_xact_lock(hashtext(${`bidpilot-company:${userId}`}))`);
+    const [existing] = await tx
+      .select({ company: companies, membership: companyMembers })
+      .from(companyMembers)
+      .innerJoin(companies, eq(companies.id, companyMembers.companyId))
+      .where(eq(companyMembers.userId, userId))
+      .orderBy(asc(companyMembers.createdAt))
+      .limit(1);
+    if (existing) return { ...existing, created: false };
+    const company = await createCompany(tx, { name });
+    const membership = await addCompanyMember(tx, { userId, companyId: company.id, role: 'owner' });
+    return { company, membership, created: true };
+  });
+}
+
+export async function renameCompany(db, companyId, name) {
+  const [row] = await db
+    .update(companies)
+    .set({ name, updatedAt: new Date() })
+    .where(eq(companies.id, companyId))
+    .returning();
+  return row;
 }
 
 export async function getCompanyProfile(db, companyId) {

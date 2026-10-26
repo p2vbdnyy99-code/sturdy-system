@@ -38,7 +38,7 @@ const SKIP_REASON = !dbAvailable()
     ? 'BIDPILOT_CSRF_SECRET not set — required for HTTP tests'
     : false;
 
-test('company profile: optional for the first 2 tenders, then required (HTTP)', { skip: SKIP_REASON }, async (t) => {
+test('company profile: optional for the first 3 tenders, then required (HTTP)', { skip: SKIP_REASON }, async (t) => {
   const db = testDb();
   let server; let baseUrl; let company; let auth;
 
@@ -116,29 +116,31 @@ test('company profile: optional for the first 2 tenders, then required (HTTP)', 
   const analyse = (id) => req('POST', `/bidpilot/tenders/${id}/analyze`, { body: { companyId: company.id } });
   const analysisStatus = async (id) => (await db.execute(`select analysis_status from tenders where id = '${id}'`)).rows[0].analysis_status;
 
-  await t.test('the first 2 uploads need no profile; the 3rd is refused with 409 and the missing fields', async () => {
+  await t.test('the first 3 uploads need no profile; the 4th is refused with 409 and the missing fields', async () => {
     assert.equal((await upload('a.pdf', '%PDF-1.4\n% a\n%%EOF\n')).status, 201);
     assert.equal((await upload('b.pdf', '%PDF-1.4\n% b\n%%EOF\n')).status, 201);
-    const third = await upload('c.pdf', '%PDF-1.4\n% c\n%%EOF\n');
-    assert.equal(third.status, 409);
-    assert.equal(third.json.code, 'profile_incomplete');
-    assert.equal(third.json.freeTenders, 2);
-    assert.ok(third.json.missing.includes('annualTurnover'));
-    assert.match(third.json.error, /added 2 tenders without a company profile/);
+    assert.equal((await upload('c.pdf', '%PDF-1.4\n% c\n%%EOF\n')).status, 201);
+    const fourth = await upload('d.pdf', '%PDF-1.4\n% d\n%%EOF\n');
+    assert.equal(fourth.status, 409);
+    assert.equal(fourth.json.code, 'profile_incomplete');
+    assert.equal(fourth.json.freeTenders, 3);
+    assert.ok(fourth.json.missing.includes('annualTurnover'));
+    assert.match(fourth.json.error, /added 3 tenders without a company profile/);
     const count = (await db.execute(`select count(*)::int n from tenders where company_id = '${company.id}'`)).rows[0].n;
-    assert.equal(count, 2, 'the refused upload stored nothing');
+    assert.equal(count, 3, 'the refused upload stored nothing');
   });
 
-  await t.test('analysing one of the first 2 tenders needs no profile; a 3rd tender is refused and nothing starts', async () => {
+  await t.test('analysing one of the first 3 tenders needs no profile; a 4th tender is refused and nothing starts', async () => {
     const first = await processedTender('one.pdf');
     await processedTender('two.pdf');
-    const third = await processedTender('three.pdf');
+    await processedTender('three.pdf');
+    const fourth = await processedTender('four.pdf');
     const ok = await analyse(first.id);
     assert.notEqual(ok.status, 409, 'not refused by the profile gate');
-    const refused = await analyse(third.id);
+    const refused = await analyse(fourth.id);
     assert.equal(refused.status, 409);
     assert.equal(refused.json.code, 'profile_incomplete');
-    assert.equal(await analysisStatus(third.id), 'NOT_STARTED');
+    assert.equal(await analysisStatus(fourth.id), 'NOT_STARTED');
   });
 
   await t.test("another company's tenders don't use up this company's free tenders", async () => {
@@ -146,6 +148,7 @@ test('company profile: optional for the first 2 tenders, then required (HTTP)', 
     const otherScope = await requireCompanyAccess(db, { userId: other.user.id, companyId: other.company.id });
     await createTender(otherScope, { title: 'x.pdf' });
     await createTender(otherScope, { title: 'y.pdf' });
+    await createTender(otherScope, { title: 'z.pdf' });
     assert.equal((await upload('mine.pdf')).status, 201);
   });
 
@@ -174,13 +177,14 @@ test('company profile: optional for the first 2 tenders, then required (HTTP)', 
     assert.ok(!res.json.noneFields.includes('industry') && !res.json.noneFields.includes('bogus'), 'only allowed keys are stored');
   });
 
-  await t.test('once the profile is complete, a 3rd upload and a 3rd analysis are accepted', async () => {
+  await t.test('once the profile is complete, a 4th upload and a 4th analysis are accepted', async () => {
     await processedTender('one.pdf');
     await processedTender('two.pdf');
-    const third = await processedTender('three.pdf');
-    assert.equal((await upload('c.pdf')).status, 409);
+    await processedTender('three.pdf');
+    const fourth = await processedTender('four.pdf');
+    assert.equal((await upload('d.pdf')).status, 409);
     await completeProfile(company.id);
-    assert.equal((await upload('c.pdf')).status, 201);
-    assert.notEqual((await analyse(third.id)).status, 409);
+    assert.equal((await upload('d.pdf')).status, 201);
+    assert.notEqual((await analyse(fourth.id)).status, 409);
   });
 });

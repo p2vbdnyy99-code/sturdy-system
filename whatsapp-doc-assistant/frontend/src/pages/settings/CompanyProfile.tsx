@@ -4,7 +4,7 @@ import { Breadcrumb, Panel } from '../../components/AppShell';
 import { useSession } from '../../auth/SessionProvider';
 import { ApiError } from '../../api/client';
 import {
-  getCompanyProfile, updateCompanyProfile,
+  getCompanyProfile, updateCompanyProfile, renameCompany,
   type CompanyProfile, type CompanyProfilePatch,
 } from '../../api/companies';
 import { LETTERHEAD_FIELDS, PROFILE_FIELDS, describeMissing, type LetterheadKey, type ProfileField, type ProfileFieldKey } from '../../profileFields';
@@ -15,7 +15,7 @@ import { FREE_TENDERS_WITHOUT_PROFILE } from '../../shell/profileGate';
 // The eligibility check's other input (see eligibilityPipeline.js): every
 // field here is something the AI can cite as a reason against a tender
 // requirement. A profile counts as complete when every field is answered.
-// It is optional for the company's first two tenders; after that the server
+// It is optional for the company's first three tenders; after that the server
 // refuses uploads and analysis and the app asks for it in a dialog
 // (shell/profileGate.ts). List-type fields can be answered "None" rather
 // than invented.
@@ -120,6 +120,12 @@ export function CompanyProfilePage() {
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
+  // The company's own name (not a profile field): sign-up names the company
+  // after the user, so this is where it gets its real name.
+  const currentName = me?.companies.find((c) => c.companyId === companyId)?.name ?? '';
+  // null until the user edits the field, so it follows the session's name.
+  const [nameEdit, setNameEdit] = useState<string | null>(null);
+  const companyName = nameEdit ?? currentName;
 
   const fetchProfile = useCallback(async () => {
     setLoading(true);
@@ -164,7 +170,15 @@ export function CompanyProfilePage() {
     setSaveError(null);
     setSaving(true);
     setSaved(false);
+    const newName = companyName.trim().replace(/\s+/g, ' ');
+    if (!clientId && !newName) {
+      setSaveError('Write your company\u2019s name.');
+      setSaving(false);
+      return;
+    }
     try {
+      const renamed = !clientId && newName !== currentName;
+      if (renamed) await renameCompany(companyId, newName);
       const patch = { ...formToPatch(form, none), ...letterheadPatch(letterhead) };
       const updated = clientId ? await updateClientProfile(companyId, clientId, patch) : await updateCompanyProfile(companyId, patch);
       setForm(profileToForm(updated));
@@ -176,7 +190,10 @@ export function CompanyProfilePage() {
       if (updated.missing.length === 0 && !clientId) {
         await refresh(); // the company is now marked complete, so CompanyGate lets the app open
         if (incomplete && from && from !== '/company-profile') navigate(from, { replace: true });
+      } else if (renamed) {
+        await refresh(); // the new name shows in the page head and the rail
       }
+      if (renamed) setNameEdit(null);
     } catch (err) {
       setSaveError(err instanceof ApiError ? err.message : 'Could not save your company profile.');
     } finally {
@@ -298,6 +315,16 @@ export function CompanyProfilePage() {
         {!loading && !loadError && (
           <Panel id="profile-form" title={clientId ? 'Client details' : 'Your company'} aside={<span className="muted">Tick &ldquo;None&rdquo; where a field doesn&rsquo;t apply</span>}>
           <form onSubmit={onSubmit} className="card profile-form" noValidate>
+            {!clientId && (
+              <div className={`field${saveError && !companyName.trim() ? ' field-missing' : ''}`}>
+                <label htmlFor="profile-company-name">
+                  Company name <span className="field-required" aria-hidden="true">*</span>
+                  <span className="field-hint"> (as your tenders should show it)</span>
+                </label>
+                <input id="profile-company-name" type="text" maxLength={120} autoComplete="organization" value={companyName}
+                  onChange={(e) => { setNameEdit(e.target.value); setSaved(false); }} />
+              </div>
+            )}
             <div className="profile-grid">
               {PROFILE_FIELDS.filter((f) => f.kind !== 'list' && f.kind !== 'experience' && f.key !== 'otherQualifications').map(renderField)}
             </div>

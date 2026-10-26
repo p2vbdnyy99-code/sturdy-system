@@ -91,7 +91,9 @@ Follow `harness/README.md`. In short:
 - The privacy policy (`frontend/src/pages/Privacy.tsx`) must match the code.
   Update it, and its `LAST_UPDATED` date, whenever data collected, service
   providers, cookies or retention change. The date is the day it goes live.
-- The company profile is optional for a company's first 2 tenders, then
+- Sign-up has no company form: the app creates a new user's company, named
+  after them (`POST /bidpilot/companies/ensure`), and the profile page renames
+  it. The company profile is optional for a company's first 3 tenders, then
   required (the founder found it annoying up front). A profile is complete
   when every field is answered; the fields are listed in
   `backend/src/bidpilot/profileCompleteness.js` and

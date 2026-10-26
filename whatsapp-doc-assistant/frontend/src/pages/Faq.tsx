@@ -115,7 +115,7 @@ const GROUPS: Array<{ title: string; items: Array<{ q: string; a: ReactNode }> }
       },
       {
         q: 'Do I have to fill in the company profile?',
-        a: <>Not for your first 2 tenders: you can upload and analyse them without it. From the 3rd tender on, it
+        a: <>Not for your first 3 tenders: you can upload and analyse them without it. From the 4th tender on, it
           is needed, because the eligibility check compares each tender&rsquo;s conditions, such as turnover,
           experience and certificates, with your company profile. With every field filled in, it can say clearly
           which conditions you meet. Where something doesn&rsquo;t apply, such as manufacturer tie-ups, you simply

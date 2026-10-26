@@ -378,14 +378,15 @@ test('public tender search and the in-app feed with Track (HTTP)', { skip: SKIP_
 
   await t.test('tracked tenders without a document do not use up the free tenders without a profile', async () => {
     const tracked = [];
-    for (const title of ['Road repair Pune', 'Supply of cables', 'Old hostel work']) {
+    for (const title of ['Road repair Pune', 'Supply of cables', 'Old hostel work', 'Office chairs']) {
       tracked.push((await send('POST', `/bidpilot/feed/${await feedId(title)}/track`, { body: { companyId: company.id } })).json.tenderId);
     }
     assert.equal((await attach(tracked[0], 'a.pdf')).status, 201, '1st document');
     assert.equal((await attach(tracked[1], 'b.pdf')).status, 201, '2nd document');
-    const third = await attach(tracked[2], 'c.pdf');
-    assert.equal(third.status, 409, '3rd needs the profile');
-    assert.equal(third.json.code, 'profile_incomplete');
+    assert.equal((await attach(tracked[2], 'c.pdf')).status, 201, '3rd document');
+    const fourth = await attach(tracked[3], 'd.pdf');
+    assert.equal(fourth.status, 409, '4th needs the profile');
+    assert.equal(fourth.json.code, 'profile_incomplete');
     assert.equal((await attach(tracked[0], 'again.pdf')).status, 409, 'a tender gets only one document');
   });
 

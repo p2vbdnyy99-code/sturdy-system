@@ -23,6 +23,7 @@ test('pages are stored as known routes, never with ids or query strings', () => 
   assert.equal(normalizePath('/register?utm_source=linkedin'), '/register');
   assert.equal(normalizePath('/tenders/9f1c2a3b-0000-4000-8000-000000000000'), '/tenders/:id');
   assert.equal(normalizePath('/privacy-policy#cookies'), '/privacy-policy');
+  assert.equal(normalizePath('/signed-up'), '/signed-up');
   assert.equal(normalizePath('/wp-admin/setup.php'), '(other)');
   assert.equal(normalizePath('https://evil.example/'), null);
   assert.equal(normalizePath(42), null);

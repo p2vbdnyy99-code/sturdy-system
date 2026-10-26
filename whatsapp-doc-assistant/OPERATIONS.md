@@ -232,8 +232,14 @@ sibling of `backend/`/`frontend/`, since the Docker build needs both).
        (and `BIDPILOT_WHATSAPP_OTP_TEMPLATE` if the template has another
        name). A failed send is logged as `whatsapp otp: send to … failed`
        with Meta's reason.
-- **Company profile, optional for the first 2 tenders:** a company can
-  upload and analyse its first 2 tenders (by upload time) without a profile.
+- **No company form at sign-up (since 26 Oct 2026):** a new user lands on
+  the dashboard; the app creates their company, named after them (or "My
+  company" with no name), and they rename it on the company profile page.
+  The funnel in `visits-report.mjs` counts a new account by the `/signed-up`
+  visit the app records then (before 26 Oct: `/onboarding/create-company`,
+  which now redirects to the dashboard).
+- **Company profile, optional for the first 3 tenders:** a company can
+  upload and analyse its first 3 tenders (by upload time) without a profile.
   After that, uploads and analyses of later tenders are refused (409
   `profile_incomplete`) until every profile field is answered, and the app
   shows a "Complete your company profile" dialog. The number is

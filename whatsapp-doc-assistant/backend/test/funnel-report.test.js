@@ -32,7 +32,7 @@ test('funnel report', { skip: SKIP }, async (t) => {
       // A LinkedIn post visitor who registers and creates a company.
       view('v1', '/government-tenders/state/goa', 0, 'linkedin.com', 'linkedin.emd_exemption'),
       view('v1', '/register', 10, 'linkedin.com', 'linkedin.emd_exemption'),
-      view('v1', '/onboarding/create-company', 20, 'linkedin.com', 'linkedin.emd_exemption'),
+      view('v1', '/signed-up', 20, 'linkedin.com', 'linkedin.emd_exemption'),
       view('v1', '/dashboard', 30, 'linkedin.com', 'linkedin.emd_exemption'),
       // Another visitor from the same post who only looks.
       view('v2', '/government-tenders/state/goa', 5, 'linkedin.com', 'linkedin.emd_exemption'),
@@ -52,6 +52,14 @@ test('funnel report', { skip: SKIP }, async (t) => {
     assert.equal(by('/login', 'direct').reached_app, 1);
     assert.equal(by('/', 'google.com').saw_register, 1);
     assert.equal(rows[0].new_accounts, 1, 'entries that produced accounts come first');
+  });
+
+  await t.test('a journey through the old onboarding page still counts as a new account', async () => {
+    await db.insert(pageViews).values([
+      view('v5', '/register', 0, 'google.com'), view('v5', '/onboarding/create-company', 10, 'google.com'),
+    ]);
+    const [row] = await entryFunnel(client, 7);
+    assert.equal(row.new_accounts, 1);
   });
 
   await t.test('older days are outside the window', async () => {

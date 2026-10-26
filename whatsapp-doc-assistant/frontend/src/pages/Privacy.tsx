@@ -8,7 +8,7 @@ import { CONTACT_EMAIL, FOUNDER } from '../config/site';
 // (see BIDPILOT_ARCHITECTURE.md, "Privacy policy page"). Change this page
 // whenever that changes: a new service provider, analytics, payments, or
 // email sending.
-const LAST_UPDATED = '16 October 2026';
+const LAST_UPDATED = '27 October 2026';
 
 const OPENAI_DATA_POLICY = 'https://developers.openai.com/api/docs/guides/your-data';
 
@@ -35,8 +35,8 @@ const SECTIONS: Array<{ title: string; body: ReactNode }> = [
           your email address and password; the password is stored only in scrambled (hashed) form, so nobody,
           including us, can read it. With Google, it is your Google account&rsquo;s email, name and account ID (we
           never see your Google password). With your mobile number, it is that number.</li>
-        <li><strong>Your company:</strong> the company name and its company profile (optional for your first 2
-          tenders, then required): industry, business type, GSTIN, registration details, years in business, turnover,
+        <li><strong>Your company:</strong> the company name (at first your own name, which you can change on
+          the profile page) and its company profile (optional for your first 3 tenders, then required): industry, business type, GSTIN, registration details, years in business, turnover,
           net worth, number of employees, the states you work in, certifications, licences, equipment,
           manufacturer tie-ups, past projects and other qualifications. Where something doesn&rsquo;t apply, you
           answer &ldquo;None&rdquo; and we store that answer. If you add them, also letterhead details: the

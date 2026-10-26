@@ -1,4 +1,4 @@
-import { Link, Route, Routes } from 'react-router-dom';
+import { Link, Navigate, Route, Routes } from 'react-router-dom';
 import { RequireSession } from './auth/RequireSession';
 import { RedirectIfAuthenticated } from './auth/RedirectIfAuthenticated';
 import { CompanyGate } from './auth/CompanyGate';
@@ -6,7 +6,6 @@ import { AppShell } from './components/AppShell';
 import { LoginPage } from './pages/auth/Login';
 import { RegisterPage } from './pages/auth/Register';
 import { VerifyEmailPage } from './pages/auth/VerifyEmail';
-import { CreateCompanyPage } from './pages/onboarding/CreateCompany';
 import { DashboardPage } from './pages/Dashboard';
 import { TenderDetailPage } from './pages/TenderDetail';
 import { CompanyProfilePage } from './pages/settings/CompanyProfile';
@@ -41,7 +40,9 @@ export function AppRoutes() {
       <Route path="/verify-email" element={<VerifyEmailPage />} />
 
       <Route element={<RequireSession />}>
-        <Route path="/onboarding/create-company" element={<CreateCompanyPage />} />
+        {/* Sign-up no longer stops at a "set up your company" form
+            (CompanyGate creates the company); old links land on the dashboard. */}
+        <Route path="/onboarding/create-company" element={<Navigate to="/dashboard" replace />} />
         {/* One shared frame (rail + tender queue) for every page that needs
             a company; see components/AppShell.tsx. */}
         <Route element={<CompanyGate><AppShell /></CompanyGate>}>

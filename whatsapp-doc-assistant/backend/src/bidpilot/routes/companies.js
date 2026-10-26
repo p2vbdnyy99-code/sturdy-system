@@ -1,5 +1,9 @@
-// Company creation (onboarding) and company profile read/write.
+// Company creation, renaming and company profile read/write.
 // -----------------------------------------------------------------------------
+// Since Oct 2026 sign-up has no "set up your company" form: the app calls
+// POST /companies/ensure for a user with no company, which creates one named
+// after the user (renamed later on the profile page). POST /companies stays
+// for creating a company by name.
 // Company creation is deliberately NOT behind requireCompanyAccess — a user
 // creating their first company doesn't have access to it yet (that's the
 // whole point). Profile read/write IS company-scoped, same pattern as every
@@ -11,7 +15,11 @@ import { log } from '../../logger.js';
 import { requireSession } from './auth.js';
 import { requireCsrf } from '../auth/csrf.js';
 import { requireCompanyAccess, TenantAccessError } from '../repo/tenants.js';
-import { createCompanyForUser, getCompanyProfile, upsertCompanyProfile } from '../repo/companies.js';
+import { eq } from 'drizzle-orm';
+import { users } from '../../db/schema/index.js';
+import {
+  createCompanyForUser, ensureCompanyForUser, renameCompany, getCompanyProfile, upsertCompanyProfile,
+} from '../repo/companies.js';
 import { cleanNoneFields, missingProfileFields } from '../profileCompleteness.js';
 import { LETTERHEAD_FIELDS, checkLetterhead } from '../letterhead.js';
 import {
@@ -28,6 +36,11 @@ const PROFILE_FIELDS = [
   'oemRelationships', 'experience', 'otherQualifications', 'noneFields',
   ...LETTERHEAD_FIELDS,
 ];
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const cleanName = (v) => (typeof v === 'string' ? v.trim().replace(/\s+/g, ' ') : '');
+export const COMPANY_NAME_MAX = 120;
+export const DEFAULT_COMPANY_NAME = 'My company';
 
 function pickProfileFields(body) {
   const fields = {};
@@ -65,6 +78,36 @@ export function createCompaniesRouter() {
     }
   });
 
+  router.post('/companies/ensure', async (req, res) => {
+    try {
+      const db = getDb();
+      const [user] = await db.select({ name: users.name }).from(users).where(eq(users.id, req.bidpilotUserId)).limit(1);
+      const name = cleanName(user?.name).slice(0, COMPANY_NAME_MAX) || DEFAULT_COMPANY_NAME;
+      const { company, membership, created } = await ensureCompanyForUser(db, req.bidpilotUserId, { name });
+      if (created) log.info('metric bidpilot_company_created auto=true');
+      return res.status(created ? 201 : 200)
+        .json({ companyId: company.id, name: company.name, role: membership.role, created });
+    } catch (err) {
+      log.error('bidpilot company ensure error:', err);
+      return res.status(500).json({ error: 'Internal server error.' });
+    }
+  });
+
+  router.patch('/companies/:id', async (req, res) => {
+    try {
+      if (!UUID_RE.test(req.params.id)) return res.status(404).json({ error: 'Not found.' });
+      const name = cleanName(req.body?.name);
+      if (!name) return res.status(400).json({ error: 'Write your company\'s name.' });
+      if (name.length > COMPANY_NAME_MAX) return res.status(400).json({ error: `Keep the name under ${COMPANY_NAME_MAX} characters.` });
+      const db = getDb();
+      await requireCompanyAccess(db, { userId: req.bidpilotUserId, companyId: req.params.id });
+      const company = await renameCompany(db, req.params.id, name);
+      return res.json({ companyId: company.id, name: company.name });
+    } catch (err) {
+      handleError(res, err);
+    }
+  });
+
   router.get('/companies/:id/profile', async (req, res) => {
     try {
       const db = getDb();
@@ -96,8 +139,6 @@ export function createCompaniesRouter() {
   // Each client has its own profile; tenders can be marked as being for a
   // client (PATCH /tenders/:id clientId) and are then checked against that
   // client's profile. All clients share the company's one plan.
-  const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-  const cleanName = (v) => (typeof v === 'string' ? v.trim().replace(/\s+/g, ' ') : '');
 
   async function clientScope(req, res) {
     const scope = await requireCompanyAccess(getDb(), { userId: req.bidpilotUserId, companyId: req.params.id });

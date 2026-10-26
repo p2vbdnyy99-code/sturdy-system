@@ -4,7 +4,7 @@
 // uses this to open the "complete your profile" dialog before an upload
 // rather than after it fails, and to word the reminder. Pure, so it runs
 // under `node --test` (profileGate.test.ts).
-export const FREE_TENDERS_WITHOUT_PROFILE = 2;
+export const FREE_TENDERS_WITHOUT_PROFILE = 3;
 
 /** Tenders the company can still add without a profile; null once complete. */
 export function freeTendersLeft(profileComplete: boolean, tenderCount: number): number | null {
