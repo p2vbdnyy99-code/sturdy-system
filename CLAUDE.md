@@ -49,8 +49,11 @@ Follow `harness/README.md`. In short:
 - For email, create a draft first and send only after approval.
 - Never change or delete real users' data without asking. As of Oct 2026 the
   outside users are gem tender (santosh.probid@gmail.com, ProBid
-  Consultants) and TenderJunction. Skylark (shubhamgaur164@gmail.com) is the
-  founder's own account: leave it out of customer and sign-up counts.
+  Consultants) and TenderJunction. The founder's own accounts are Skylark
+  (shubhamgaur164@gmail.com), advayaicopilot@gmail.com ("Advay Ai") and
+  shubhamgaur154@gmail.com ("tester"): leave them out of customer and sign-up
+  counts. They are the Fly secret `BIDPILOT_ADMIN_EMAILS` (set 27 Oct 2026),
+  which also excludes them from /insights and the nightly numbers.
 
 ## Product and security rules
 
