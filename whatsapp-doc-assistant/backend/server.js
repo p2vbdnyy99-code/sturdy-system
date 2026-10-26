@@ -34,10 +34,11 @@ import { recoverInterruptedWork } from './src/bidpilot/recovery.js';
 import { startDiscovery } from './src/bidpilot/discovery/collector.js';
 import { startAlertMatcher } from './src/bidpilot/repo/savedSearches.js';
 import { getDb } from './src/db/client.js';
-import { canonicalHostRedirect, renderIndexHtml, robotsTxt, sitemapXml, llmsTxt, PUBLIC_PAGES } from './src/seo.js';
+import { canonicalHostRedirect, renderIndexHtml, robotsTxt, sitemapXml, PUBLIC_PAGES } from './src/seo.js';
+import { createMarkdownRouter } from './src/md/router.js';
 import { createPrerender } from './src/prerender.js';
-import { landingPagesFrom, isLandingPath, landingRedirect, renderLandingHtml, createLandingCache, LIST_SIZE } from './src/landingPages.js';
-import { cachedFacets, searchFeed } from './src/bidpilot/repo/publicTenders.js';
+import { landingPagesFrom, isLandingPath, landingRedirect, renderLandingHtml, createLandingCache, loadLandingPage } from './src/landingPages.js';
+import { cachedFacets } from './src/bidpilot/repo/publicTenders.js';
 import { createVisitsRouter } from './src/bidpilot/visits.js';
 import { createCrawlerCounter } from './src/bidpilot/crawlers.js';
 import { createGa4Forwarder } from './src/bidpilot/ga4.js';
@@ -89,6 +90,12 @@ app.use((_req, res, next) => {
 // previews, the sitemap, and where www/.com page loads are redirected.
 const SITE_BASE_URL = config.bidpilot.localStorage.publicBaseUrl.replace(/\/+$/, '');
 app.use(canonicalHostRedirect(config.bidpilot.redirectHosts, SITE_BASE_URL));
+// Where AI agents can read about the site (src/md/router.js serves these).
+const DESCRIBED_BY = ['llms.txt', 'llms-full.txt', 'ai.txt'].map((f) => `<${SITE_BASE_URL}/${f}>; rel="describedby"; type="text/plain"`).join(', ');
+app.use((req, res, next) => {
+  if ((req.method === 'GET' || req.method === 'HEAD') && !req.path.startsWith('/bidpilot')) res.set('Link', DESCRIBED_BY);
+  next();
+});
 // Search and AI crawler requests, counted for /insights (src/bidpilot/crawlers.js).
 export const crawlerCounter = config.db.url ? createCrawlerCounter() : null;
 // Resolves once the public pages' server bundle has loaded (or failed to); tests wait on it.
@@ -272,7 +279,6 @@ if (frontendDistExists) {
   const landingPages = async () => (config.db.url ? landingPagesFrom(await landingFacets(getDb())) : []);
 
   app.get('/robots.txt', (_req, res) => res.type('text/plain').send(robotsTxt(SITE_BASE_URL)));
-  app.get('/llms.txt', (_req, res) => res.type('text/plain').send(llmsTxt(SITE_BASE_URL)));
   app.get('/sitemap.xml', async (_req, res) => {
     let extra = [];
     try { extra = (await landingPages()).map((p) => p.path); } catch (err) { log.warn(`sitemap: landing pages unavailable (${err.message})`); }
@@ -283,19 +289,20 @@ if (frontendDistExists) {
   const prerender = createPrerender(path.join(FRONTEND_DIST, '../dist-ssr/prerender.js'), { log });
   prerenderReady = prerender.ready;
   const publicPage = (p) => renderIndexHtml(indexHtml, p, SITE_BASE_URL, prerender.html);
+  // Markdown versions of the public pages, llms.txt, llms-full.txt and ai.txt (src/md/router.js).
+  app.use(createMarkdownRouter({
+    baseUrl: SITE_BASE_URL, prerender, log,
+    db: config.db.url ? getDb : null,
+    facets: async () => (config.db.url ? landingFacets(getDb()) : null),
+  }));
   let sampleHtml = null; // the sample analysis never changes while running
 
   async function sendLanding(req, res) {
     const cached = landingCache.get(req.path);
     if (cached) return res.type('html').send(cached);
-    const pages = await landingPages();
-    const page = pages.find((p) => p.path === req.path);
-    if (!page) return res.status(404).type('html').send(renderIndexHtml(indexHtml, req.path, SITE_BASE_URL));
-    const { tenders } = await searchFeed(getDb(), {
-      kind: page.kind, state: page.state, organisation: page.organisation, search: '',
-      status: 'open', sort: 'closing', page: 1, limit: LIST_SIZE,
-    });
-    const html = renderLandingHtml(indexHtml, page, tenders, SITE_BASE_URL, pages);
+    const found = config.db.url ? await loadLandingPage(getDb(), await landingFacets(getDb()), req.path) : null;
+    if (!found) return res.status(404).type('html').send(renderIndexHtml(indexHtml, req.path, SITE_BASE_URL));
+    const html = renderLandingHtml(indexHtml, found.page, found.tenders, SITE_BASE_URL, found.pages);
     landingCache.set(req.path, html);
     return res.type('html').send(html);
   }

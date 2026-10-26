@@ -164,6 +164,18 @@ test('served by the real app: landing page, unknown slug, sitemap, llms.txt, lan
     assert.match((await get('/dashboard')).body, /<div id="root"><\/div>/, 'app pages stay empty');
   }
 
+  // The markdown version is the same list as the HTML, from the same data.
+  const md = await get('/government-tenders/state/goa.md');
+  assert.equal(md.status, 200);
+  assert.match(md.type, /text\/markdown/);
+  assert.match(md.body, /^# Goa government tenders$/m);
+  assert.match(md.body, /^Canonical: .*\/government-tenders\/state\/goa$/m);
+  assert.equal((md.body.match(/^\d+\. \*\*Goa works \d+\*\*/gm) || []).length, 25);
+  assert.match(md.body, /^1\. \*\*Goa works 0\*\*/m, 'closing soonest first, as on the HTML page');
+  assert.match(md.body, /Not every tender in India is listed/);
+  assert.equal((await get('/government-tenders/state/keralam.md')).status, 301);
+  assert.match((await get('/llms.txt')).body, /\/government-tenders\/state\/goa\.md\)/);
+
   // Crawler requests are counted; a browser's are not.
   await get('/llms.txt', { 'user-agent': 'Mozilla/5.0 (compatible; GPTBot/1.1)' });
   await get('/pricing', { 'user-agent': 'Mozilla/5.0 (compatible; GPTBot/1.1)' });

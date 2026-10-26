@@ -64,7 +64,9 @@ Follow `harness/README.md`. In short:
 - Analytics are sent by the server only (`bidpilot/ga4.js`, public pages
   only, no IP or user agent); never add a Google tag or any browser analytics
   script. A new public page goes in `PUBLIC_PAGES` (`backend/src/seo.js`), or
-  it is served noindex, is left out of the sitemap and never reaches GA4.
+  it is served noindex, is left out of the sitemap and never reaches GA4. It
+  also needs a markdown renderer in `backend/src/md/registry.js` (or a reason
+  in `SKIPPED`); `test/md.test.js` fails otherwise.
 - Tender-search landing pages (`src/landingPages.js`) exist only for lists
   with 20 or more open tenders and always show the real list, the CPPP credit
   and "not every tender". Never generate pages without that content (no

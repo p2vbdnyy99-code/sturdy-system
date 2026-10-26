@@ -4544,3 +4544,110 @@ post task timed out on it (30 s) on 24 Oct.
 public_tenders` once, then time the counts uncached in production.
 **Reverse:** `git revert`. The index and table setting can stay; they're
 harmless.
+
+# Markdown versions of every public page, and AI discovery files (26 Oct 2026)
+
+Founder: "OK, A, allow all except Bytespider". Option A means the markdown
+for pages written as React components is made from their own server render;
+pages built from data render from that data.
+
+## What changed
+- **One markdown handler, three ways in** (`src/md/router.js`, mounted after
+  the static files and before the app's fallback):
+  - `/<path>.md`, with `/index.md` for the home page;
+  - `Accept: text/markdown` on an allowlisted page path. Markdown is sent only
+    when it has a higher q than text/html, text/* and */*, so a missing or
+    `*/*` Accept stays HTML;
+  - `/api/md/<path>`, plus `/api/md/_catalog` (JSON).
+
+  Unknown, private and app paths get a markdown 404. Responses are never HTML.
+- **Registry** (`src/md/registry.js`): route → renderer, `listMarkdownRoutes()`
+  and `SKIPPED` with reasons.
+  - **Component pages** (home, features, pricing, FAQ, about, guides,
+    privacy) use `src/md/htmlToMd.js`. It converts the `<main>` of the
+    page's own server render (the prerender bundle, React markup only).
+    - It drops icons, form controls, the illustrative hero example,
+      eyebrow labels and the sign-up buttons repeated on every page.
+    - The plan cards become a price table.
+    - FAQ `<details>` become `### Question` and answer.
+    - A linked card becomes a linked heading.
+  - **Data pages:**
+    - the sample analysis renders from `sampleView()`;
+    - the tender search renders from `feedFacets`;
+    - the tender lists render from `loadLandingPage()` + `landingMarkdown()`
+      (`src/landingPages.js`), which the HTML now shares, so both show the same
+      25 tenders.
+- **Page shape** (`src/md/format.js`): the H1, the meta description as the
+  summary, the canonical HTML URL, then the main content, then "Related"
+  (the page's own site links).
+  - "Last updated" is shown only when known: the privacy policy's printed
+    date, the guides' checked date, the sample's analysis date, and today for
+    the tender lists.
+  - Every link is absolute and points at the HTML page.
+- **Headers** (`src/md/http.js`):
+  - `text/markdown; charset=utf-8`, `X-Markdown-Tokens` (characters ÷ 4);
+  - `X-Robots-Tag: noindex, follow`, `Content-Location` and
+    `Link: rel=canonical` (Express doesn't overwrite route-level headers);
+  - `Vary: Accept` on negotiated paths (HTML too), and `Last-Modified` when
+    the date is known;
+  - CORS `*`; HEAD (no body); OPTIONS 204;
+  - `Cache-Control`: 1 day for pages, 1 hour for tender lists and the
+    search.
+- **Site files** (`src/seo.js`, one source for name, description, contact,
+  bots and private paths; each file says "keep in sync" with the other two):
+  - `llms.txt` (llmstxt.org): description, key facts, then Core pages,
+    Guides, Government tender lists (up to 50), Machine-readable and Optional,
+    all linking to `.md` versions.
+  - `llms-full.txt`: every page from the same renderer, in order core →
+    guides → the 10 largest tender lists → legal. It states the limit and is
+    cached for 24 hours. About 92k characters locally; it warns over 500k.
+  - `ai.txt`: the AI Discovery Files ai.txt format (ADF-004, current version:
+    an H1, then `Website:`/`Last Updated:`, then H2 sections). Sections:
+    Permissions, Restrictions, AI Training, Attribution, Citation Format,
+    Crawler Access, Scope Limitations, Contact and Related Files.
+  - `robots.txt`: explicit groups. AI search and user fetches (OAI-SearchBot,
+    ChatGPT-User, Claude-SearchBot, Claude-User, PerplexityBot,
+    Perplexity-User) and training crawlers (GPTBot, ClaudeBot,
+    Google-Extended, Applebot-Extended, CCBot) are allowed on public pages,
+    with the private paths blocked in every group. Bytespider gets
+    `Disallow: /`. `/clients`, `/feed` and `/insights` were added to the
+    private paths.
+- **Head signals:**
+  - every public page has `<link rel="alternate" type="text/markdown">`
+    and `<meta name="ai-summary">` (its own text for home, pricing and the
+    tender search; otherwise the description);
+  - a global `Link: …llms.txt, llms-full.txt, ai.txt; rel="describedby"`
+    header;
+  - the home JSON-LD (Organization + WebSite) is unchanged, and its name and
+    email match llms.txt and ai.txt (tested).
+- **Skipped:**
+  - `/.well-known/mcp.json` (there is no MCP server);
+  - a "View as Markdown" footer link (it would change how pages look);
+  - `/register` and the app pages (see `SKIPPED`);
+  - the WhatsApp assistant's `/privacy` (a separate product).
+
+## Verification
+- `test/md.test.js` (12 tests):
+  - every `routes.tsx` route and `PUBLIC_PAGES` path is rendered or skipped
+    with a reason;
+  - private paths never resolve;
+  - Accept q-values, including the browser default and a tie;
+  - the converter drops non-content;
+  - the page shape;
+  - sample data;
+  - llms.txt sections and `.md` links;
+  - ai.txt structure and facts matching the JSON-LD;
+  - the robots groups;
+  - head tags;
+  - the router (suffix, negotiation, `/api/md`, catalog, 404s, HEAD,
+    OPTIONS, discovery files);
+  - every page from the real bundle becoming clean markdown (no HTML left,
+    absolute links, no sign-up buttons).
+- `landing-pages.test.js`: `goa.md` lists the same 25 tenders in the same
+  order as the HTML; `keralam.md` answers 301; llms.txt lists the list.
+- Curl checklist on a local server: all as expected (run notes in
+  `harness/runs/2026-10-26-ai-readable/progress.md`).
+- verify.sh: backend 674/428/348 pass, frontend build, lint 0 errors, 57
+  unit tests, secret scan clean.
+
+**Reverse:** `git revert`. There is no migration.

@@ -12,16 +12,28 @@ import { PLANS } from './bidpilot/plans.js';
 
 const SITE_NAME = 'TenderTez';
 const CONTACT_EMAIL = 'advayaicopilot@gmail.com';
+// Who TenderTez is, for llms.txt and ai.txt (the Organization JSON-LD below
+// states the same name, address and contact).
+const SITE_DESCRIPTION = 'TenderTez helps Indian businesses and tender consultants read government tender documents (CPPP, GeM, state portals, PSUs). '
+  + 'Upload a tender PDF and it lists the deadline, EMD, fees, eligibility conditions, required documents, BOQ items, dates and risky clauses, '
+  + 'each with the page number it came from.';
+// The day the ai.txt policy below last changed.
+const AI_POLICY_UPDATED = '2026-10-26';
 // The official X account (frontend/src/config/site.ts has the same).
 const X_HANDLE = 'TenderTez';
 
 export const PUBLIC_PAGES = {
   '/': {
+    aiSummary: 'TenderTez is an AI tool that reads Indian government tender PDFs for contractors, suppliers and tender consultants and lists '
+      + 'the deadline, EMD, eligibility, BOQ and risky clauses with page numbers. The first 5 tenders are free; plans start at '
+      + `Rs ${PLANS.STARTER.pricePerMonth.toLocaleString('en-IN')} a month for ${PLANS.STARTER.tendersPerMonth} tenders.`,
     title: 'AI tender analysis for Indian government tenders | TenderTez',
     description: 'TenderTez reads a government tender PDF and lists the deadline, EMD, eligibility, BOQ and risky '
       + 'clauses, each with its page number. First 5 tenders free.',
   },
   '/government-tenders': {
+    aiSummary: 'A free search of open central, state and GeM tenders in India, by state or organisation, with tender IDs and portal links, '
+      + 'built from the Central Public Procurement Portal\u2019s public lists. Not every tender in India is listed.',
     title: 'Find government tenders across India | TenderTez',
     description: 'Search central, state and GeM tenders in one place, by state or organisation. Free, no sign-in. '
       + 'From the Central Public Procurement Portal\u2019s public lists.',
@@ -37,6 +49,9 @@ export const PUBLIC_PAGES = {
       + 'get a submission checklist, check corrigenda and track bids.',
   },
   '/pricing': {
+    aiSummary: 'TenderTez pricing: the first 5 tenders are free with no card; then '
+      + Object.values(PLANS).map((p) => `${p.name} Rs ${p.pricePerMonth.toLocaleString('en-IN')} a month for ${p.tendersPerMonth} tenders`).join(', ')
+      + '. Plans are monthly, started by email, and nothing is charged automatically.',
     title: 'Pricing: 5 tenders free, then ₹3,999 a month | TenderTez',
     description: 'Your first 5 tenders are free, no card needed. Then ₹3,999 a month for 10 tenders, ₹5,999 for 15 '
       + 'or ₹8,999 for 30. Nothing is charged automatically.',
@@ -185,12 +200,20 @@ export function structuredData(path, baseUrl) {
   return [];
 }
 
-/** The head tags for a public page (title, description, canonical, Open Graph). */
+/** The .md alternate of a page's canonical URL (the home page is /index.md). */
+export const markdownUrl = (url, baseUrl) => (url === `${baseUrl}/` ? `${baseUrl}/index.md` : `${url}.md`);
+
+/**
+ * The head tags for a public page: title, description, canonical, its
+ * markdown version, a short summary for AI agents, and Open Graph.
+ */
 export function publicPageHead(page, url, baseUrl, jsonLd = []) {
   return [
     `<title>${escapeHtml(page.title)}</title>`,
     `<meta name="description" content="${escapeHtml(page.description)}" />`,
+    `<meta name="ai-summary" content="${escapeHtml(page.aiSummary ?? page.description)}" />`,
     `<link rel="canonical" href="${escapeHtml(url)}" />`,
+    `<link rel="alternate" type="text/markdown" href="${escapeHtml(markdownUrl(url, baseUrl))}" />`,
     `<meta property="og:type" content="website" />`,
     `<meta property="og:site_name" content="${SITE_NAME}" />`,
     `<meta property="og:locale" content="en_IN" />`,
@@ -226,21 +249,39 @@ export function renderIndexHtml(indexHtml, path, baseUrl, bodyFor = () => null) 
   return body ? html.replace('<div id="root"></div>', `<div id="root">${body}</div>`) : html;
 }
 
+// Paths that are private, signed-in or not content: kept out of robots.txt
+// for every crawler and out of ai.txt's scope.
+export const PRIVATE_PATHS = ['/bidpilot/', '/dashboard', '/tenders/', '/company-profile', '/onboarding/', '/verify-email',
+  '/clients', '/feed', '/insights'];
+
+// AI crawlers named in robots.txt (founder's choice, 26 Oct 2026): search
+// and user-requested fetches decide whether answer engines can cite the site;
+// training crawlers are allowed too, except Bytespider.
+export const AI_SEARCH_BOTS = ['OAI-SearchBot', 'ChatGPT-User', 'Claude-SearchBot', 'Claude-User', 'PerplexityBot', 'Perplexity-User'];
+export const AI_TRAINING_BOTS = ['GPTBot', 'ClaudeBot', 'Google-Extended', 'Applebot-Extended', 'CCBot'];
+export const BLOCKED_BOTS = ['Bytespider'];
+
+const SYNC_NOTE = 'Built by backend/src/seo.js; keep /robots.txt, /llms.txt and /ai.txt in sync with each other.';
+
 /**
- * /llms.txt: a plain summary of the site for AI assistants that look for one
- * (a proposed convention, not a standard; nothing guarantees it is read).
- * Only what the public pages say.
+ * /llms.txt (llmstxt.org): who TenderTez is and where its pages are, with
+ * links to their markdown versions. Only what the public pages say.
+ * `routes` comes from listMarkdownRoutes() (src/md/registry.js).
  */
-export function llmsTxt(baseUrl) {
+export function llmsTxt(baseUrl, routes = null) {
   const plans = Object.values(PLANS).map((p) => `- ${p.name}: Rs ${p.pricePerMonth.toLocaleString('en-IN')} a month for ${p.tendersPerMonth} tenders`).join('\n');
+  const pages = routes ?? Object.entries(PUBLIC_PAGES).filter(([path]) => path !== '/register')
+    .map(([path, page]) => ({ path, group: path === '/privacy-policy' ? 'legal' : path.startsWith('/guides') ? 'guides' : 'core', title: page.title.replace(/ \| TenderTez$/, ''), description: page.description }));
+  const items = (group, cap = Infinity) => pages.filter((r) => r.group === group).slice(0, cap)
+    .map((r) => `- [${r.title}](${markdownUrl(`${baseUrl}${r.path === '/' ? '/' : r.path}`, baseUrl)}): ${r.description}`);
+  const lists = pages.filter((r) => r.group === 'lists');
   return [
-    '# TenderTez',
+    `# ${SITE_NAME}`,
     '',
-    '> TenderTez helps Indian businesses and tender consultants read government tender documents (CPPP, GeM, state portals, PSUs). '
-      + 'Upload a tender PDF and it lists the deadline, EMD, fees, eligibility conditions, required documents, BOQ items, dates and risky clauses, '
-      + 'each with the page number it came from.',
+    `> ${SITE_DESCRIPTION}`,
     '',
-    'Built in Mumbai by founder Sayali Londhe. Contact: ' + CONTACT_EMAIL,
+    `Built in Mumbai by founder Sayali Londhe. Contact: ${CONTACT_EMAIL}. Monthly plans by number of tenders analysed; `
+      + 'the first 5 tenders are free. For contractors, suppliers and tender consultants who bid for Indian government tenders.',
     '',
     '## What it does',
     '- Reads a tender PDF, including scanned pages, and lists every condition, document and date with its page and quoted text',
@@ -255,21 +296,120 @@ export function llmsTxt(baseUrl) {
     '- First 5 tenders free, no card needed',
     plans,
     '',
-    '## Pages',
-    ...Object.entries(PUBLIC_PAGES).map(([path, page]) => `- [${page.title}](${baseUrl}${path}): ${page.description}`),
+    '## Core pages',
+    ...items('core'),
+    '',
+    '## Guides',
+    ...items('guides'),
+    ...(lists.length ? ['', '## Government tender lists',
+      ...items('lists', 50),
+      ...(lists.length > 50 ? [`- [All ${lists.length} lists](${baseUrl}/api/md/_catalog): the markdown catalog`] : [])] : []),
+    '',
+    '## Machine-readable',
+    `- [Full content](${baseUrl}/llms-full.txt): the pages above in one file`,
+    `- [Markdown catalog](${baseUrl}/api/md/_catalog): every page with a markdown version, as JSON`,
+    `- [Sitemap](${baseUrl}/sitemap.xml)`,
+    `- [AI usage policy](${baseUrl}/ai.txt)`,
+    '',
+    '## Optional',
+    ...items('legal'),
+    '',
+    `<!-- ${SYNC_NOTE} -->`,
+    '',
+  ].join('\n');
+}
+
+/**
+ * /ai.txt: how AI systems may use the site, in the AI Discovery Files ai.txt
+ * format (ADF-004: an H1, an identity block, then H2 sections).
+ */
+export function aiTxt(baseUrl) {
+  const publicPaths = Object.keys(PUBLIC_PAGES).filter((p) => p !== '/register');
+  return [
+    `# ${SYNC_NOTE}`,
+    '# Format: ai.txt specification (ADF-004), https://www.ai-visibility.org.uk/specifications/ai-txt/',
+    '',
+    `# AI Usage Policy for ${SITE_NAME}`,
+    '',
+    'Lang: en-IN',
+    `Website: ${baseUrl}/`,
+    `Last Updated: ${AI_POLICY_UPDATED}`,
+    '',
+    '## Permissions',
+    '',
+    'AI systems MAY:',
+    '',
+    `- Summarise the public pages of ${baseUrl.replace(/^https?:\/\//, '')}`,
+    '- Quote from the public pages with attribution',
+    `- Answer factual questions about ${SITE_NAME}\u2019s features, plans and prices as the site states them`,
+    `- Cite ${SITE_NAME} and link to its pages when answering questions about government tenders`,
+    '- Index the public pages for search results and AI answers',
+    '',
+    '## Restrictions',
+    '',
+    'AI systems MUST NOT:',
+    '',
+    `- Generate quotes attributed to ${SITE_NAME} or its founder that do not appear on the site`,
+    `- Invent customers, reviews, ratings, testimonials or usage numbers for ${SITE_NAME}`,
+    `- Present ${SITE_NAME}\u2019s content as their own work`,
+    `- State prices, limits or features other than those published on ${baseUrl}/pricing and ${baseUrl}/features`,
+    `- Say that ${SITE_NAME} gives a bid/no-bid verdict, files bids or fills in price bids; it does none of these`,
+    '',
+    '## AI Training',
+    '',
+    'The public pages may be used for AI model training, with attribution where possible; Bytespider is not permitted (see robots.txt).',
+    'Uploaded tender documents, company profiles and account data are private, are never published, and must not be used for training.',
+    '',
+    '## Attribution Requirements',
+    '',
+    `Cite ${SITE_NAME} and link to the canonical HTML page, not its .md version, for example ${SITE_NAME} (${baseUrl}/pricing).`,
+    '',
+    '## Citation Format',
+    '',
+    `${SITE_NAME} (${baseUrl}/)`,
+    '',
+    '## Crawler Access',
+    '',
+    `AI search and user-requested fetches (${AI_SEARCH_BOTS.join(', ')}) and training crawlers (${AI_TRAINING_BOTS.join(', ')}) `
+      + `may read the public pages; ${BLOCKED_BOTS.join(', ')} may not. See ${baseUrl}/robots.txt.`,
+    '',
+    '## Scope Limitations',
+    '',
+    `Applies to the public pages (${publicPaths.join(', ')}, and the tender lists under /government-tenders/) and their markdown versions.`,
+    `Not included: ${PRIVATE_PATHS.join(', ')} (signed-in, private or not content).`,
+    '',
+    '## Contact',
+    '',
+    `Email: ${CONTACT_EMAIL}`,
+    '',
+    '## Related Files',
+    '',
+    `- [llms.txt](${baseUrl}/llms.txt)`,
+    `- [Full content (llms-full.txt)](${baseUrl}/llms-full.txt)`,
+    `- [robots.txt](${baseUrl}/robots.txt)`,
+    `- [Sitemap](${baseUrl}/sitemap.xml)`,
     '',
   ].join('\n');
 }
 
 export function robotsTxt(baseUrl) {
+  const disallow = PRIVATE_PATHS.map((p) => `Disallow: ${p}`);
+  const group = (bots) => [...bots.map((b) => `User-agent: ${b}`), 'Allow: /', ...disallow];
   return [
-    'User-agent: *',
-    'Disallow: /bidpilot/',
-    'Disallow: /dashboard',
-    'Disallow: /tenders/',
-    'Disallow: /company-profile',
-    'Disallow: /onboarding/',
-    'Disallow: /verify-email',
+    `# ${SYNC_NOTE}`,
+    `# About this site for AI agents: ${baseUrl}/llms.txt (usage policy: ${baseUrl}/ai.txt)`,
+    '',
+    ...group(['*']),
+    '',
+    '# AI search and user-requested fetches: allowed on public pages',
+    ...group(AI_SEARCH_BOTS),
+    '',
+    '# AI training crawlers: allowed on public pages',
+    ...group(AI_TRAINING_BOTS),
+    '',
+    '# Not allowed',
+    ...BLOCKED_BOTS.map((b) => `User-agent: ${b}`),
+    'Disallow: /',
     '',
     `Sitemap: ${baseUrl}/sitemap.xml`,
     '',

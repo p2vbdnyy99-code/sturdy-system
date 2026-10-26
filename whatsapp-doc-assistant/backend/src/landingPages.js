@@ -16,7 +16,8 @@
 // (GovernmentTendersPage reads the filter from GET /public/tenders/landing).
 
 import { publicPageHead } from './seo.js';
-import { STATE_ALIASES } from './bidpilot/repo/publicTenders.js';
+import { STATE_ALIASES, searchFeed } from './bidpilot/repo/publicTenders.js';
+import { escapeMd, link, list, mdPage, todayInIndia } from './md/format.js';
 
 export const MIN_OPEN = 20;
 export const MAX_ORGANISATIONS = 20;
@@ -129,6 +130,50 @@ export function renderLandingHtml(indexHtml, page, tenders, baseUrl, allPages) {
   return indexHtml
     .replace(/<title>[^<]*<\/title>/, head)
     .replace('<div id="root"></div>', `<div id="root">${body}</div>`);
+}
+
+/**
+ * The landing page at `path` with its list (closing soonest first), or null
+ * when no such page exists right now. Shared by the HTML and markdown versions.
+ */
+export async function loadLandingPage(db, facets, path) {
+  const pages = landingPagesFrom(facets);
+  const page = pages.find((p) => p.path === path);
+  if (!page) return null;
+  const { tenders } = await searchFeed(db, {
+    kind: page.kind, state: page.state, organisation: page.organisation, search: '',
+    status: 'open', sort: 'closing', page: 1, limit: LIST_SIZE,
+  });
+  return { page, tenders, pages };
+}
+
+/** The markdown version of a landing page: the same list and notes as its HTML. */
+export function landingMarkdown({ page, tenders, pages }, baseUrl, now = new Date()) {
+  const heading = page.kind === 'gem' ? 'GeM bids open now' : `${page.label} government tenders`;
+  const rows = tenders.map((t) => {
+    const who = [t.organisation, t.department && t.department !== t.organisation ? t.department : null, t.state].filter(Boolean).join(' · ');
+    const closes = istDate(t.closingAt);
+    const id = t.tenderId ? `${t.kind === 'gem' ? 'Bid number' : 'Tender ID'} ${t.tenderId}` : null;
+    return [`**${escapeMd(t.title)}**`, who && escapeMd(who), [closes && `Closes ${closes}`, id && escapeMd(id)].filter(Boolean).join(' · ')]
+      .filter(Boolean).join('  \n   ');
+  });
+  const body = [
+    `${page.count.toLocaleString('en-IN')} open tenders right now, closing soonest first. Search them free, without signing up, at `
+      + `${link('TenderTez tender search', searchUrlFor(page), baseUrl)}. Each tender links to its portal\u2019s search page with the ID to look for.`,
+    `## The ${tenders.length} closing soonest`,
+    list(rows, true),
+    'Source: the public \u201clatest active tenders\u201d lists of the Central Public Procurement Portal (CPPP), eprocure.gov.in. '
+      + 'Not every tender in India is listed.',
+  ].join('\n\n');
+  return mdPage({
+    title: heading,
+    summary: landingDescription(page),
+    canonical: `${baseUrl}${page.path}`,
+    lastUpdated: todayInIndia(now),
+    body,
+    related: pages.filter((p) => p.path !== page.path)
+      .map((p) => `${link(p.kind === 'gem' ? 'GeM bids' : `${p.label} tenders`, p.path, baseUrl)} (${p.count.toLocaleString('en-IN')} open)`),
+  });
 }
 
 /** A per-path cache of rendered pages, so crawlers don't hit the database on every request. */

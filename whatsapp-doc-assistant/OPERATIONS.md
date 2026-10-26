@@ -180,6 +180,18 @@ sibling of `backend/`/`frontend/`, since the Docker build needs both).
     since then use a plain user agent such as `TenderTezCheck/1.0`, which
     isn't counted, because server HTML is the same for every visitor. A
     crawler request shows a page was fetched, not that it was indexed.
+- **Markdown versions and AI discovery files (Oct 2026):**
+  - Every public page has a markdown version: `/pricing.md`, `/index.md`,
+    `/api/md/<path>`, or `/pricing` sent with `Accept: text/markdown`.
+  - `/llms.txt`, `/llms-full.txt` (cached 24 h in memory, the 10 largest
+    tender lists) and `/ai.txt` are built from code (`src/seo.js`,
+    `src/md/`); `/api/md/_catalog` lists every markdown page as JSON.
+  - Check after a deploy: `curl -sI https://tendertez.in/pricing.md` (200,
+    `text/markdown`, `X-Robots-Tag: noindex, follow`) and
+    `curl -sI https://tendertez.in/pricing` (still HTML, with a
+    `Link: …rel="describedby"` header).
+  - A new public page: add its renderer in `src/md/registry.js`;
+    `test/md.test.js` fails until it is there or skipped with a reason.
 - **Fast tender counts (Oct 2026):**
   - Migration 0013 adds `public_tenders_facets_idx` and vacuums
     `public_tenders` after 2% of rows change.
