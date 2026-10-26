@@ -11,3 +11,10 @@
 - Privacy `LAST_UPDATED` set to 27 October 2026, the deploy day (IST).
 
 Next: founder's go-ahead to commit, push and deploy (no migration).
+- 27 Oct 00:00 IST: committed 7e2cb5c, pushed, deployed (no tender was
+  ANALYZING; no migration). Live: public pages 200; ensure and rename answer
+  401 without a session; FAQ says 3/4th; privacy "Last updated: 27 October
+  2026" and the "at first your own name" wording; the live bundle has the
+  workspace set-up, the ensure call and the company name field; Google
+  sign-in still opens Google's sign-in page. No account was created in
+  production for testing.
