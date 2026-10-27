@@ -1,0 +1,1085 @@
+<title>NEET PG QBank</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: sidebar + work area on tablet/desktop; bottom tab bar on phones. Study surface first, chrome second. */
+:root{
+  --bg:#F3F6F4; --surface:#FFFFFF; --sunk:#E9EFEC; --ink:#14201C; --muted:#56655F; --line:#D7E0DC;
+  --accent:#1B6B58; --accent-ink:#FFFFFF; --accent-soft:#DCEFE8;
+  --pearl:#FFF4DE; --pearl-ink:#6B4A0E; --pearl-line:#EBCF94;
+  --good:#1D7F47; --good-soft:#DDF3E5; --bad:#B63B26; --bad-soft:#FBE3DD; --warn:#9A6A0C; --warn-soft:#FBEFD2;
+  --f-display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --f-body:"Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  --f-mono:"JetBrains Mono", ui-monospace, Menlo, monospace;
+  --r:10px; --nav-h:62px;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0E1513; --surface:#16201D; --sunk:#1C2825; --ink:#E4ECE9; --muted:#9AABA4; --line:#2A3833;
+  --accent:#58C4A5; --accent-ink:#06261E; --accent-soft:#163A31;
+  --pearl:#2B2415; --pearl-ink:#F1D398; --pearl-line:#5A4721;
+  --good:#5FD08F; --good-soft:#123422; --bad:#F08A73; --bad-soft:#3A1C16; --warn:#E6B850; --warn-soft:#3A2E12;
+  color-scheme:dark }}
+:root[data-theme="dark"]{
+  --bg:#0E1513; --surface:#16201D; --sunk:#1C2825; --ink:#E4ECE9; --muted:#9AABA4; --line:#2A3833;
+  --accent:#58C4A5; --accent-ink:#06261E; --accent-soft:#163A31;
+  --pearl:#2B2415; --pearl-ink:#F1D398; --pearl-line:#5A4721;
+  --good:#5FD08F; --good-soft:#123422; --bad:#F08A73; --bad-soft:#3A1C16; --warn:#E6B850; --warn-soft:#3A2E12;
+  color-scheme:dark }
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font:16px/1.55 var(--f-body);-webkit-text-size-adjust:100%}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--surface)}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+a{color:var(--accent);text-underline-offset:3px}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+h1,h2,h3{font-family:var(--f-display);line-height:1.15;text-wrap:balance;margin:0}
+h1{font-size:1.65rem} h2{font-size:1.25rem} h3{font-size:1.02rem}
+.num{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.muted{color:var(--muted)}
+.small{font-size:.86rem}
+.eyebrow{font-size:.74rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700}
+
+/* shell */
+.shell{display:grid;grid-template-columns:1fr;min-height:100%}
+.side{display:none}
+.main{min-width:0;padding-block:20px calc(var(--nav-h) + 28px + env(safe-area-inset-bottom,0px));
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:900px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
+.tabbar{position:fixed;left:0;right:0;bottom:0;z-index:20;display:grid;grid-template-columns:repeat(5,1fr);
+  background:var(--surface);border-top:1px solid var(--line);
+  padding:4px max(6px,env(safe-area-inset-right,0px)) env(safe-area-inset-bottom,0px) max(6px,env(safe-area-inset-left,0px))}
+.tabbar a,.side a{display:flex;flex-direction:column;align-items:center;gap:2px;padding:7px 2px;color:var(--muted);
+  text-decoration:none;font-size:.72rem;font-weight:700;border-radius:8px}
+.tabbar a[aria-current="page"],.side a[aria-current="page"]{color:var(--accent)}
+.tabbar svg,.side svg{width:22px;height:22px}
+@media (min-width:900px){
+  .shell{grid-template-columns:232px 1fr}
+  .side{display:flex;flex-direction:column;gap:4px;position:sticky;top:env(safe-area-inset-top,0px);height:100vh;
+    padding:22px 14px;border-right:1px solid var(--line);background:var(--surface);
+    padding-left:max(14px,env(safe-area-inset-left,0px))}
+  .side a{flex-direction:row;gap:10px;font-size:.95rem;padding:10px 12px;justify-content:flex-start}
+  .side a[aria-current="page"]{background:var(--accent-soft)}
+  .brand{font-family:var(--f-display);font-weight:700;font-size:1.15rem;padding:4px 12px 18px;display:flex;gap:8px;align-items:center}
+  .tabbar{display:none}
+  .main{padding-bottom:40px}
+}
+.brand-mark{width:26px;height:26px;border-radius:7px;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;font:700 .8rem var(--f-mono)}
+
+/* surfaces */
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.between{justify-content:space-between}
+.grid{display:grid;gap:12px}
+.g2{grid-template-columns:repeat(auto-fill,minmax(250px,1fr))}
+.g3{grid-template-columns:repeat(auto-fill,minmax(170px,1fr))}
+.stack{display:flex;flex-direction:column;gap:10px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:9px 16px;border-radius:9px;
+  border:1px solid var(--line);background:var(--surface);font-weight:700;text-decoration:none;color:var(--ink)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.ghost{background:transparent}
+.btn.sm{min-height:36px;padding:6px 12px;font-size:.9rem}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;border:1px solid var(--line);background:var(--surface);font-size:.88rem;font-weight:700}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.tag{display:inline-block;font-size:.7rem;font-weight:700;letter-spacing:.04em;padding:2px 7px;border-radius:5px;background:var(--sunk);color:var(--muted)}
+.tag.hy{background:var(--warn-soft);color:var(--warn)}
+.tag.ai{background:var(--accent-soft);color:var(--accent)}
+.tag.verify{background:var(--bad-soft);color:var(--bad)}
+.bar{height:6px;background:var(--sunk);border-radius:99px;overflow:hidden}
+.bar>i{display:block;height:100%;background:var(--accent);border-radius:99px}
+.bar.acc>i{background:var(--good)}
+label.f{display:flex;flex-direction:column;gap:6px;font-weight:700;font-size:.9rem}
+select,input[type=text],input[type=number],input[type=search],textarea{border:1px solid var(--line);border-radius:8px;background:var(--surface);padding:10px 12px;min-height:44px;width:100%}
+textarea{min-height:120px;resize:vertical}
+.note{border-radius:8px;padding:10px 12px;background:var(--sunk);font-size:.92rem}
+.note.warn{background:var(--warn-soft);color:var(--ink)}
+.note.bad{background:var(--bad-soft)}
+.note.good{background:var(--good-soft)}
+
+/* stat strip */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.stats>div{background:var(--surface);padding:12px 14px}
+.stats b{display:block;font:500 1.35rem var(--f-mono);font-variant-numeric:tabular-nums}
+@media (max-width:560px){.stats{grid-template-columns:repeat(2,1fr)}}
+
+/* subject list */
+.subj{display:flex;flex-direction:column;gap:8px;text-decoration:none;color:inherit;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px}
+.subj:hover{border-color:var(--accent)}
+.subj .code{font:500 .75rem var(--f-mono);color:var(--muted)}
+.topic{border-top:1px solid var(--line)}
+.topic:first-child{border-top:0}
+.topic>button{width:100%;display:flex;justify-content:space-between;gap:10px;align-items:center;background:none;border:0;padding:14px 4px;text-align:left}
+.sublist{display:flex;flex-direction:column;padding:0 0 10px}
+.subrow{display:grid;grid-template-columns:1fr auto;gap:4px 12px;align-items:center;padding:10px 10px;border-radius:8px;text-decoration:none;color:inherit}
+.subrow:hover{background:var(--sunk)}
+.subrow .bar{grid-column:1/-1}
+
+/* question */
+.qcard{display:flex;flex-direction:column;gap:14px}
+.qmeta{display:flex;gap:6px;flex-wrap:wrap;align-items:center;font-size:.82rem;color:var(--muted)}
+.stem{font-size:1.08rem;line-height:1.6}
+.qimg{border-radius:8px;border:1px solid var(--line);max-height:420px;object-fit:contain;background:var(--sunk);width:100%}
+.credit{font-size:.75rem;color:var(--muted)}
+.opts{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.opt{width:100%;display:grid;grid-template-columns:32px 1fr;gap:10px;align-items:start;text-align:left;padding:12px;border-radius:9px;border:1px solid var(--line);background:var(--surface);min-height:48px}
+.opt .k{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font:500 .85rem var(--f-mono);background:var(--sunk)}
+.opt.sel{border-color:var(--accent);background:var(--accent-soft)}
+.opt.sel .k{background:var(--accent);color:var(--accent-ink)}
+.opt.right{border-color:var(--good);background:var(--good-soft)}
+.opt.right .k{background:var(--good);color:var(--surface)}
+.opt.wrong{border-color:var(--bad);background:var(--bad-soft)}
+.opt.wrong .k{background:var(--bad);color:var(--surface)}
+.opt[disabled]{cursor:default}
+.explain{display:flex;flex-direction:column;gap:12px}
+.pearl{background:var(--pearl);border:1px solid var(--pearl-line);color:var(--pearl-ink);border-radius:9px;padding:12px 14px}
+.pearl .eyebrow{color:var(--pearl-ink)}
+.ai-out{white-space:pre-wrap;font-size:.95rem}
+.verdict{font-weight:700}
+.verdict.ok{color:var(--good)} .verdict.no{color:var(--bad)}
+
+/* test runner */
+.runbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:10;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:10px 14px}
+.timer{font:500 1.3rem var(--f-mono);font-variant-numeric:tabular-nums}
+.timer.low{color:var(--bad)}
+.palette{display:grid;grid-template-columns:repeat(auto-fill,minmax(38px,1fr));gap:6px}
+.palette button{min-height:38px;border-radius:7px;border:1px solid var(--line);background:var(--surface);font:500 .8rem var(--f-mono)}
+.palette .ans{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.palette .mk{box-shadow:inset 0 -4px 0 var(--warn)}
+.palette .cur{outline:2px solid var(--ink);outline-offset:1px}
+.secs{display:flex;gap:6px;flex-wrap:wrap}
+.secs span{font:500 .78rem var(--f-mono);padding:4px 9px;border-radius:6px;background:var(--sunk);color:var(--muted)}
+.secs .on{background:var(--accent);color:var(--accent-ink)}
+.secs .done{text-decoration:line-through}
+table{border-collapse:collapse;width:100%;font-size:.92rem}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line)}
+th{font-size:.75rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+td.n,th.n{text-align:right;font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.tscroll{overflow-x:auto}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(var(--nav-h) + 16px + env(safe-area-inset-bottom,0px));z-index:40;
+  background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:9px;font-weight:700;max-width:min(92vw,520px)}
+@media (min-width:900px){.toast{bottom:24px}}
+.drop{border:2px dashed var(--line);border-radius:var(--r);padding:18px;text-align:center}
+.drop.over{border-color:var(--accent);background:var(--accent-soft)}
+details>summary{cursor:pointer;font-weight:700}
+@media (prefers-reduced-motion:no-preference){.opt,.btn,.chip{transition:background .15s,border-color .15s}}
+</style>
+
+<div class="shell">
+  <nav class="side" aria-label="Main">
+    <div class="brand"><span class="brand-mark">PG</span> NEET PG QBank</div>
+    <div id="sidelinks" class="stack" style="gap:2px"></div>
+  </nav>
+  <main class="main"><div class="wrap" id="view" aria-live="polite"></div></main>
+  <nav class="tabbar" id="tabbar" aria-label="Main"></nav>
+</div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+"use strict";
+// ---------- constants ----------
+const GOAL = 35000;
+const NEET = { sections: 5, perSection: 36, minutes: 42, plus: 4, minus: 1 }; // NEET-PG 2026 bulletin
+const ICONS = {
+  home:'<path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>',
+  subjects:'<path d="M4 5h6v14H4zM14 5h6v6h-6zM14 15h6v4h-6z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>',
+  test:'<circle cx="12" cy="13" r="8" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 9v4l3 2M9 2h6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>',
+  revise:'<path d="M12 3l2.6 5.6L20 9.3l-4 4.1.9 5.6L12 16.3 7.1 19l.9-5.6-4-4.1 5.4-.7z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>',
+  library:'<path d="M5 4h4v16H5zM10 4h4v16h-4zM15.5 4.5l3.8 1 -3.6 15-3.8-1z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>',
+  stats:'<path d="M4 20V10M10 20V4M16 20v-7M22 20H2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>',
+  more:'<circle cx="5" cy="12" r="1.8" fill="currentColor"/><circle cx="12" cy="12" r="1.8" fill="currentColor"/><circle cx="19" cy="12" r="1.8" fill="currentColor"/>'
+};
+const NAV = [["home","Home"],["subjects","Subjects"],["test","Tests"],["revise","Revise"],["library","Build bank"],["stats","Progress"],["more","More"]];
+const TABNAV = ["home","subjects","test","library","more"];
+
+// ---------- helpers ----------
+const $ = (s, r=document) => r.querySelector(s);
+const $$ = (s, r=document) => [...r.querySelectorAll(s)];
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const pct = (a,b) => b ? Math.round(100*a/b) : 0;
+const fmt = n => Number(n).toLocaleString("en-IN");
+const shuffle = a => { a = a.slice(); for (let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; };
+const rid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,8);
+const LS = {
+  get(k, d){ try { const v = localStorage.getItem("pgq:"+k); return v ? JSON.parse(v) : d; } catch { return d; } },
+  set(k, v){ try { localStorage.setItem("pgq:"+k, JSON.stringify(v)); } catch {} },
+  del(k){ try { localStorage.removeItem("pgq:"+k); } catch {} },
+  keys(prefix){ try { return Object.keys(localStorage).filter(k=>k.startsWith("pgq:"+prefix)).map(k=>k.slice(4)); } catch { return []; } }
+};
+let toastT;
+function toast(msg){ const t=$("#toast"); t.textContent=msg; t.hidden=false; clearTimeout(toastT); toastT=setTimeout(()=>t.hidden=true, 3200); }
+function slug(s){ return s.toLowerCase().replace(/&/g,"and").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,""); }
+
+// ---------- state ----------
+const S = {
+  tx: [], subj: {},                 // taxonomy
+  Q: new Map(),                     // id -> question
+  prog: {},                         // sid -> {r:{qid:[pick,ok,ts]}, b:{qid:1}, x:{qid:1}, f:{qid:note}}
+  settings: { tier:"complex", strict:true },
+  hist: [],                         // test history
+  lib: [],                          // uploaded documents meta
+  sess: null, run: null, result: null,
+  cap: { db:null, uid:null, sample:null, assets:null, downloads:null, ready:false },
+  openTopics: {}
+};
+
+// ---------- storage: claude db when available, else this browser ----------
+const Store = {
+  dirty: new Set(), timer: null, chain: Promise.resolve(),
+  base(){ return S.cap.db && S.cap.uid ? `data/users/${S.cap.uid}` : null; },
+  async getDoc(name){
+    const b = this.base();
+    if (b) { try { const s = await S.cap.db.doc(`${b}/${name}`).get(); return s.exists ? s.data() : null; } catch { return null; } }
+    return LS.get("doc:"+name, null);
+  },
+  async setDoc(name, data){
+    const b = this.base();
+    LS.set("doc:"+name, data);
+    if (b) await S.cap.db.doc(`${b}/${name}`).set(data);
+  },
+  // collections live under a per-user doc: data/users/<uid>/<parent>/<col>/<id>
+  async list(parent, col){
+    const b = this.base();
+    if (b) { try { const snap = await S.cap.db.doc(`${b}/${parent}`).collection(col).limit(1000).get(); return snap.docs.map(d=>({id:d.id, ...d.data()})); } catch { return []; } }
+    return LS.keys(`col:${parent}/${col}/`).map(k => ({ id: k.split("/").pop(), ...LS.get(k, {}) }));
+  },
+  async getIn(parent, col, id){
+    const b = this.base();
+    if (b) { try { const s = await S.cap.db.doc(`${b}/${parent}`).collection(col).doc(id).get(); return s.exists ? s.data() : null; } catch { return null; } }
+    return LS.get(`col:${parent}/${col}/${id}`, null);
+  },
+  async put(parent, col, id, data){
+    const b = this.base();
+    if (b) await S.cap.db.doc(`${b}/${parent}`).collection(col).doc(id).set(data);
+    else LS.set(`col:${parent}/${col}/${id}`, data);
+  },
+  async remove(parent, col, id){
+    const b = this.base();
+    if (b) await S.cap.db.doc(`${b}/${parent}`).collection(col).doc(id).delete();
+    else LS.del(`col:${parent}/${col}/${id}`);
+  },
+  markProg(sid){ this.dirty.add(sid); clearTimeout(this.timer); this.timer = setTimeout(()=>this.flush(), 900); },
+  flush(){
+    const ids = [...this.dirty]; this.dirty.clear();
+    for (const sid of ids) {
+      const data = S.prog[sid];
+      this.chain = this.chain.then(()=>this.setDoc("p-"+sid, data)).catch(e=>{
+        if (e && e.code === "quota_exceeded") toast("Storage is full. Export a backup from More.");
+      });
+    }
+  }
+};
+
+// ---------- data loading ----------
+function prog(sid){ return S.prog[sid] || (S.prog[sid] = { r:{}, b:{}, x:{}, f:{} }); }
+function addQuestion(q){
+  if (!S.subj[q.s]) return false;
+  const subj = S.subj[q.s];
+  const topic = subj.topics.find(t => t.name === q.t) || null;
+  if (!topic || !topic.subs.includes(q.st)) return false;
+  if (!Array.isArray(q.o) || q.o.length !== 4 || !(q.a>=0 && q.a<4) || !q.q) return false;
+  S.Q.set(q.id, q);
+  return true;
+}
+async function loadStatic(){
+  const [tx, man] = await Promise.all([fetch("data/taxonomy.json").then(r=>r.json()), fetch("data/manifest.json").then(r=>r.json())]);
+  S.tx = tx; tx.forEach(s => S.subj[s.id] = s);
+  const files = await Promise.all(man.files.map(f => fetch("data/"+f.file).then(r=>r.json()).then(qs=>({f, qs}))));
+  for (const {f, qs} of files) qs.forEach((q,i) => addQuestion({ ...q, id: `${f.key}-${i}`, src: f.src || "seed" }));
+}
+function loadBatch(b){
+  (b.qs || []).forEach((q,i) => addQuestion({ ...q, s: q.s || b.s, id: `g${b.id}-${i}`, src: b.src || "ai", img: q.img || (q.asset ? "/_blob/"+q.asset : undefined) }));
+}
+async function loadUser(){
+  const subjIds = S.tx.map(s=>s.id);
+  const [settings, hist, ...progs] = await Promise.all([Store.getDoc("settings"), Store.getDoc("hist"), ...subjIds.map(id=>Store.getDoc("p-"+id))]);
+  if (settings) Object.assign(S.settings, settings);
+  S.hist = hist?.items || [];
+  subjIds.forEach((id,i) => { if (progs[i]) S.prog[id] = Object.assign({r:{},b:{},x:{},f:{}}, progs[i]); });
+  const batches = (await Promise.all(subjIds.map(id => Store.list("bank", id)))).flat();
+  batches.forEach(loadBatch);
+  S.lib = await Store.list("lib", "docs");
+}
+async function initCaps(){
+  if (!window.claude?.use) return;
+  const [db, user, sample, assets, downloads] = await Promise.all(["db","user","sample","assets","downloads"].map(n => window.claude.use(n).catch(()=>null)));
+  let uid = null;
+  try { uid = user ? await user.id() : null; } catch {}
+  Object.assign(S.cap, { db, uid, sample, assets, downloads });
+}
+
+// ---------- derived ----------
+function visible(q){ return !prog(q.s).x[q.id]; }
+function questionsWhere(fn){ const out=[]; for (const q of S.Q.values()) if (visible(q) && fn(q)) out.push(q); return out; }
+function statsOf(qs){
+  let att=0, cor=0;
+  for (const q of qs){ const r = prog(q.s).r[q.id]; if (r){ att++; if (r[1]) cor++; } }
+  return { n: qs.length, att, cor };
+}
+function subjectQs(sid){ return questionsWhere(q=>q.s===sid); }
+function todayCount(){
+  const t0 = new Date(); t0.setHours(0,0,0,0); let n=0;
+  for (const sid in S.prog) for (const k in S.prog[sid].r) if (S.prog[sid].r[k][2] >= t0.getTime()) n++;
+  return n;
+}
+function record(q, pick){
+  const ok = pick === q.a;
+  prog(q.s).r[q.id] = [pick, ok?1:0, Date.now()];
+  Store.markProg(q.s);
+  return ok;
+}
+
+// ---------- nav ----------
+function icon(name){ return `<svg viewBox="0 0 24 24" aria-hidden="true">${ICONS[name]}</svg>`; }
+function renderNav(active){
+  const sec = active.split("-")[0];
+  const cur = { s:"subjects", practice:"subjects", run:"test", result:"test", t:"subjects" }[sec] || sec;
+  $("#sidelinks").innerHTML = NAV.map(([k,l]) => `<a href="#${k}" ${cur===k?'aria-current="page"':""}>${icon(k)}<span>${l}</span></a>`).join("");
+  $("#tabbar").innerHTML = TABNAV.map(k => { const l = NAV.find(n=>n[0]===k)[1]; return `<a href="#${k}" ${cur===k?'aria-current="page"':""}>${icon(k)}<span>${k==="library"?"Build":l}</span></a>`; }).join("");
+}
+const routes = {};
+function go(h){ if (location.hash === "#"+h) render(); else location.hash = h; }
+function render(){
+  const h = location.hash.slice(1) || "home";
+  const [name, ...rest] = h.split("-");
+  renderNav(h);
+  const fn = routes[name] || routes.home;
+  $("#view").innerHTML = "";
+  fn(rest.join("-"));
+  if (!["practice","run"].includes(name)) window.scrollTo(0,0);
+}
+window.addEventListener("hashchange", render);
+
+// ---------- home ----------
+routes.home = () => {
+  const all = questionsWhere(()=>true), st = statsOf(all);
+  const bm = all.filter(q=>prog(q.s).b[q.id]).length;
+  const wrong = all.filter(q=>{ const r=prog(q.s).r[q.id]; return r && !r[1]; }).length;
+  const v = $("#view");
+  v.innerHTML = `
+  <header class="stack" style="gap:4px">
+    <span class="eyebrow">NEET PG 2026 pattern · 180 MCQs · +4 / −1</span>
+    <h1>Your question bank</h1>
+  </header>
+  <div class="stats">
+    <div><span class="muted small">Questions</span><b>${fmt(st.n)}</b></div>
+    <div><span class="muted small">Attempted</span><b>${fmt(st.att)}</b></div>
+    <div><span class="muted small">Accuracy</span><b>${st.att? pct(st.cor,st.att)+"%":"–"}</b></div>
+    <div><span class="muted small">Today</span><b>${fmt(todayCount())}</b></div>
+  </div>
+  <section class="panel stack">
+    <div class="row between"><h2>Bank goal</h2><span class="num small muted">${fmt(st.n)} / ${fmt(GOAL)}</span></div>
+    <div class="bar"><i style="width:${Math.min(100,100*st.n/GOAL)}%"></i></div>
+    <p class="small muted" style="margin:0">Questions grow as you generate them in <a href="#library">Build bank</a>: from Claude's knowledge, your notes, textbooks and images.</p>
+  </section>
+  <section class="grid g2">
+    <button class="btn primary" id="q20">Quick 20 · unattempted mix</button>
+    <button class="btn" id="weak">Practise weak subtopics</button>
+    <button class="btn" id="mist" ${wrong?"":"disabled"}>Redo my mistakes (${wrong})</button>
+    <button class="btn" id="bmk" ${bm?"":"disabled"}>Bookmarks (${bm})</button>
+    <a class="btn" href="#test">Grand test · 180 Q</a>
+    <a class="btn" href="#revise">Revise pearls</a>
+  </section>
+  <section class="stack">
+    <div class="row between"><h2>Subjects</h2><a href="#subjects" class="small">All subjects</a></div>
+    <div class="grid g3">${S.tx.map(subjectCard).join("")}</div>
+  </section>
+  ${!S.cap.db ? `<p class="note small">Saving in this browser only. Open this page from claude.ai while signed in to keep progress across devices.</p>` : ""}`;
+  $("#q20").onclick = () => startSession("Quick 20", shuffle(all.filter(q=>!prog(q.s).r[q.id])).slice(0,20));
+  $("#weak").onclick = () => {
+    const weakSubs = weakSubtopics(8).map(w=>w.key);
+    const qs = all.filter(q => weakSubs.includes(q.s+"|"+q.t+"|"+q.st));
+    if (!qs.length) return toast("Attempt at least 3 questions in a subtopic to find weak areas.");
+    startSession("Weak subtopics", shuffle(qs).slice(0,30));
+  };
+  $("#mist").onclick = () => startSession("My mistakes", shuffle(all.filter(q=>{const r=prog(q.s).r[q.id]; return r && !r[1];})).slice(0,40));
+  $("#bmk").onclick = () => startSession("Bookmarks", all.filter(q=>prog(q.s).b[q.id]));
+};
+function subjectCard(s){
+  const st = statsOf(subjectQs(s.id));
+  return `<a class="subj" href="#s-${s.id}">
+    <span class="code">${s.id.toUpperCase()} · ${fmt(st.n)} Q</span>
+    <h3>${esc(s.name)}</h3>
+    <div class="bar"><i style="width:${pct(st.att,st.n)}%"></i></div>
+    <span class="small muted">${st.att} done${st.att?` · ${pct(st.cor,st.att)}% correct`:""}</span></a>`;
+}
+function weakSubtopics(limit){
+  const agg = {};
+  for (const q of S.Q.values()){ const r = prog(q.s).r[q.id]; if (!r) continue; const k=q.s+"|"+q.t+"|"+q.st; (agg[k] ||= {key:k, s:q.s, t:q.t, st:q.st, att:0, cor:0}); agg[k].att++; if (r[1]) agg[k].cor++; }
+  return Object.values(agg).filter(a=>a.att>=3).sort((a,b)=>a.cor/a.att - b.cor/b.att).slice(0,limit);
+}
+
+// ---------- subjects ----------
+routes.subjects = () => {
+  $("#view").innerHTML = `<header><h1>Subjects</h1><p class="muted" style="margin:6px 0 0">19 subjects, each split into topics and subtopics.</p></header>
+  <div class="grid g3">${S.tx.map(subjectCard).join("")}</div>`;
+};
+routes.s = (sid) => {
+  const s = S.subj[sid]; if (!s) return go("subjects");
+  const all = subjectQs(sid), st = statsOf(all);
+  const v = $("#view");
+  v.innerHTML = `
+  <header class="stack" style="gap:6px"><a href="#subjects" class="small">← Subjects</a><h1>${esc(s.name)}</h1>
+   <span class="muted small">${fmt(st.n)} questions · ${st.att} attempted${st.att?` · ${pct(st.cor,st.att)}% correct`:""}</span></header>
+  <div class="row">
+    <button class="btn primary" id="sall">Practise all unattempted</button>
+    <button class="btn" id="gen">Generate more</button>
+  </div>
+  <section class="panel" id="topics">${s.topics.map((t,ti) => {
+    const tq = all.filter(q=>q.t===t.name), ts = statsOf(tq), open = S.openTopics[sid+ti];
+    return `<div class="topic"><button data-ti="${ti}" aria-expanded="${!!open}">
+      <span class="stack" style="gap:2px"><h3>${esc(t.name)}</h3><span class="small muted">${t.subs.length} subtopics · ${ts.n} Q · ${ts.att} done</span></span>
+      <span class="num small">${ts.att?pct(ts.cor,ts.att)+"%":""} ${open?"▴":"▾"}</span></button>
+      <div class="sublist" ${open?"":"hidden"}>${t.subs.map(sub => {
+        const sq = tq.filter(q=>q.st===sub), ss = statsOf(sq);
+        return `<a class="subrow" href="#t-${sid}-${ti}-${t.subs.indexOf(sub)}"><span>${esc(sub)}</span>
+          <span class="small muted num">${ss.att}/${ss.n}${ss.att?` · ${pct(ss.cor,ss.att)}%`:""}</span>
+          <div class="bar"><i style="width:${pct(ss.att,ss.n)}%"></i></div></a>`; }).join("")}
+      </div></div>`; }).join("")}</section>`;
+  $$("#topics .topic>button").forEach(b => b.onclick = () => { const k=sid+b.dataset.ti; S.openTopics[k]=!S.openTopics[k]; render(); });
+  $("#sall").onclick = () => startSession(s.name, shuffle(all.filter(q=>!prog(q.s).r[q.id])));
+  $("#gen").onclick = () => { S.genPreset = { s:sid }; go("library"); };
+};
+routes.t = (arg) => {
+  const [sid, ti, si] = arg.split("-"); const s = S.subj[sid]; const t = s?.topics[+ti]; const sub = t?.subs[+si];
+  if (!sub) return go("subjects");
+  const qs = subjectQs(sid).filter(q=>q.t===t.name && q.st===sub);
+  const st = statsOf(qs);
+  const v = $("#view");
+  const cnt = f => qs.filter(f).length;
+  const P = q => prog(q.s);
+  v.innerHTML = `<header class="stack" style="gap:6px"><a href="#s-${sid}" class="small">← ${esc(s.name)}</a>
+    <span class="eyebrow">${esc(t.name)}</span><h1>${esc(sub)}</h1>
+    <span class="muted small">${qs.length} questions · ${st.att} attempted${st.att?` · ${pct(st.cor,st.att)}% correct`:""}</span></header>
+  <section class="grid g2">
+    <button class="btn primary" data-f="un">Unattempted (${cnt(q=>!P(q).r[q.id])})</button>
+    <button class="btn" data-f="all">All (${qs.length})</button>
+    <button class="btn" data-f="wr">Incorrect (${cnt(q=>P(q).r[q.id] && !P(q).r[q.id][1])})</button>
+    <button class="btn" data-f="bm">Bookmarked (${cnt(q=>P(q).b[q.id])})</button>
+  </section>
+  <section class="panel stack"><h2>Need more here?</h2>
+    <p class="small muted" style="margin:0">Claude can write new questions for this exact subtopic.</p>
+    <div><button class="btn" id="gen">Generate 20 for ${esc(sub)}</button></div></section>`;
+  const F = { un:q=>!P(q).r[q.id], all:()=>true, wr:q=>P(q).r[q.id]&&!P(q).r[q.id][1], bm:q=>P(q).b[q.id] };
+  $$("[data-f]", v).forEach(b => b.onclick = () => { const list = qs.filter(F[b.dataset.f]); if (!list.length) return toast("Nothing in this filter yet."); startSession(sub, shuffle(list)); });
+  $("#gen").onclick = () => { S.genPreset = { s:sid, t:t.name, st:sub }; go("library"); };
+};
+
+// ---------- practice (tutor mode) ----------
+function startSession(title, qs){
+  if (!qs.length) return toast("No questions match. Generate more in Build bank.");
+  S.sess = { title, ids: qs.map(q=>q.id), i: 0, ans: {}, perm: {} };
+  go("practice");
+}
+function permFor(store, q){ return store[q.id] ||= shuffle([0,1,2,3]); }
+function qMetaHTML(q){
+  const s = S.subj[q.s];
+  return `<div class="qmeta"><span>${esc(s.name)} › ${esc(q.t)} › ${esc(q.st)}</span>
+    ${q.hy>=3?'<span class="tag hy">HIGH YIELD</span>':""}${q.src==="ai"?'<span class="tag ai">CLAUDE</span>':""}${q.src==="notes"?'<span class="tag ai">FROM YOUR NOTES</span>':""}${q.verify?'<span class="tag verify">VERIFY</span>':""}</div>`;
+}
+function imgHTML(q){ return q.img ? `<img class="qimg" src="${esc(q.img)}" alt="Image for this question" loading="lazy">${q.credit?`<span class="credit">${esc(q.credit)}</span>`:""}` : ""; }
+routes.practice = () => {
+  const ss = S.sess; if (!ss) return go("home");
+  const v = $("#view");
+  if (ss.i >= ss.ids.length) return practiceSummary();
+  const q = S.Q.get(ss.ids[ss.i]); const P = prog(q.s);
+  const perm = permFor(ss.perm, q); const done = ss.ans[q.id];
+  v.innerHTML = `
+  <div class="row between"><a href="#home" class="small">End session</a><span class="num small muted">${ss.i+1} / ${ss.ids.length}</span></div>
+  <div class="bar"><i style="width:${pct(ss.i,ss.ids.length)}%"></i></div>
+  <article class="panel qcard">
+    ${qMetaHTML(q)}
+    <div class="stem">${esc(q.q)}</div>${imgHTML(q)}
+    <ol class="opts">${perm.map((oi,k) => {
+      let cls = ""; if (done){ if (oi===q.a) cls="right"; else if (oi===done.pick) cls="wrong"; }
+      return `<li><button class="opt ${cls}" data-oi="${oi}" ${done?"disabled":""}><span class="k">${"ABCD"[k]}</span><span>${esc(q.o[oi])}</span></button></li>`; }).join("")}</ol>
+    <div id="exp"></div>
+  </article>
+  <div class="row between">
+    <button class="btn" id="prev" ${ss.i?"":"disabled"}>Previous</button>
+    <div class="row">
+      <button class="btn ghost" id="bm" aria-pressed="${!!P.b[q.id]}">${P.b[q.id]?"Bookmarked":"Bookmark"}</button>
+      <button class="btn primary" id="next">${done?"Next":"Skip"}</button>
+    </div>
+  </div>`;
+  if (done) showExplanation(q, done.pick);
+  $$(".opt", v).forEach(b => b.onclick = () => { const pick=+b.dataset.oi; const ok=record(q,pick); ss.ans[q.id]={pick,ok}; render(); });
+  $("#next").onclick = () => { ss.i++; render(); window.scrollTo(0,0); };
+  $("#prev").onclick = () => { ss.i--; render(); };
+  $("#bm").onclick = () => { if (P.b[q.id]) delete P.b[q.id]; else P.b[q.id]=1; Store.markProg(q.s); render(); };
+};
+function showExplanation(q, pick, host){
+  const el = host || $("#exp"); const ok = pick===q.a; const P = prog(q.s);
+  el.innerHTML = `<div class="explain">
+    ${pick==null?"":`<span class="verdict ${ok?"ok":"no"}">${ok?"Correct":"Incorrect"} · answer: ${esc(q.o[q.a])}</span>`}
+    <div><span class="eyebrow">Explanation</span><p style="margin:4px 0 0">${esc(q.e||"No explanation saved.")}</p></div>
+    ${q.p?`<div class="pearl"><span class="eyebrow">Pearl</span><p style="margin:4px 0 0">${esc(q.p)}</p></div>`:""}
+    <div class="row">
+      <button class="btn sm" data-act="ask">Ask Claude about this</button>
+      <button class="btn sm ghost" data-act="flag">${P.f[q.id]?"Flagged":"Flag as wrong"}</button>
+      <button class="btn sm ghost" data-act="hide">Remove from bank</button>
+    </div>
+    <div class="ai-out" data-out hidden></div>
+  </div>`;
+  const out = $("[data-out]", el);
+  $("[data-act=ask]", el).onclick = async (e) => {
+    const sample = S.cap.sample; if (!sample) return toast("Claude is available when this page is opened on claude.ai.");
+    e.target.disabled = true; out.hidden = false; out.textContent = "Thinking…";
+    try {
+      await sample(`You are helping a NEET PG aspirant revise. Explain this MCQ in depth: why the key is correct, why each other option is wrong, and 3 related high-yield facts. If you believe the key is wrong, say so plainly first and give the correct answer with reasoning. Keep it under 300 words, plain text.\n\nQuestion: ${q.q}\nOptions: ${q.o.map((o,i)=>"ABCD"[i]+") "+o).join("  ")}\nKey: ${"ABCD"[q.a]}) ${q.o[q.a]}\nSaved explanation: ${q.e||""}`, { modelTier: S.settings.tier, onText: ({text}) => out.textContent = text });
+    } catch (err) { out.textContent = err.text || sampleError(err); }
+    e.target.disabled = false;
+  };
+  $("[data-act=flag]", el).onclick = () => { if (P.f[q.id]) delete P.f[q.id]; else P.f[q.id]="flagged"; Store.markProg(q.s); toast(P.f[q.id]?"Flagged. Review flagged questions from More.":"Flag removed."); showExplanation(q,pick,host); };
+  $("[data-act=hide]", el).onclick = (e) => {
+    if (e.target.dataset.sure){ P.x[q.id]=1; Store.markProg(q.s); toast("Removed. Restore from More."); if (!host){ S.sess.i++; render(); } return; }
+    e.target.dataset.sure = 1; e.target.textContent = "Tap again to remove";
+  };
+}
+function practiceSummary(){
+  const ss = S.sess; const a = Object.values(ss.ans); const ok = a.filter(x=>x.ok).length;
+  $("#view").innerHTML = `<section class="panel stack"><span class="eyebrow">${esc(ss.title)}</span><h1>Session done</h1>
+    <div class="stats" style="grid-template-columns:repeat(3,1fr)"><div><span class="muted small">Answered</span><b>${a.length}</b></div><div><span class="muted small">Correct</span><b>${ok}</b></div><div><span class="muted small">Accuracy</span><b>${a.length?pct(ok,a.length)+"%":"–"}</b></div></div>
+    <div class="row"><button class="btn primary" id="again">Review this session</button><a class="btn" href="#home">Home</a></div></section>`;
+  $("#again").onclick = () => { ss.i = 0; render(); };
+}
+
+// ---------- tests ----------
+routes.test = () => {
+  const all = questionsWhere(()=>true);
+  const v = $("#view");
+  const runSaved = LS.get("run", null);
+  v.innerHTML = `<header><h1>Tests</h1></header>
+  ${runSaved ? `<div class="note warn row between"><span>A test is in progress.</span><a class="btn sm primary" href="#run">Resume</a></div>` : ""}
+  <section class="panel stack">
+    <span class="eyebrow">NEET-PG 2026 format</span><h2>Grand test</h2>
+    <p style="margin:0">180 MCQs in 5 sections of 36. Each section is timed at 42 minutes and locks when its time ends: you cannot go back to it, and you move on only when its time is up. +4 for correct, −1 for wrong, 0 if unattempted.</p>
+    ${all.length < 180 ? `<p class="note warn small" style="margin:0">Your bank has ${all.length} questions. The test will use all of them in 5 sections, with section time scaled to 42 min per 36 questions. Build the bank to 180+ for a full paper.</p>` : ""}
+    <label class="row small"><input type="checkbox" id="strict" ${S.settings.strict?"checked":""}> Exam lock: wait out each section's time (uncheck to allow moving on early)</label>
+    <div><button class="btn primary" id="grand">Start grand test</button></div>
+  </section>
+  <section class="panel stack">
+    <h2>Custom test</h2>
+    <div class="row" id="subs">${S.tx.map(s=>`<button class="chip" data-s="${s.id}" aria-pressed="false">${esc(s.name)}</button>`).join("")}</div>
+    <div class="grid g2">
+      <label class="f">Number of questions<input type="number" id="n" min="5" max="200" value="30"></label>
+      <label class="f">Questions to include<select id="pool"><option value="un">Unattempted first</option><option value="all">Any</option><option value="wr">Previously incorrect</option></select></label>
+    </div>
+    <p class="small muted" style="margin:0">Timed at 70 seconds per question (the NEET PG average). Pick no subject to mix all 19.</p>
+    <div><button class="btn primary" id="custom">Start custom test</button></div>
+  </section>
+  ${S.hist.length ? `<section class="panel stack"><h2>Past tests</h2><div class="tscroll"><table><tr><th>Date</th><th>Test</th><th class="n">Score</th><th class="n">Correct</th><th class="n">Wrong</th></tr>
+    ${S.hist.slice().reverse().slice(0,15).map(h=>`<tr><td>${new Date(h.at).toLocaleDateString("en-IN")}</td><td>${esc(h.title)}</td><td class="n">${h.score}/${h.max}</td><td class="n">${h.cor}</td><td class="n">${h.wr}</td></tr>`).join("")}</table></div></section>` : ""}`;
+  $$("#subs .chip").forEach(c => c.onclick = () => c.setAttribute("aria-pressed", c.getAttribute("aria-pressed")==="true"?"false":"true"));
+  $("#strict").onchange = e => { S.settings.strict = e.target.checked; Store.setDoc("settings", S.settings).catch(()=>{}); };
+  $("#grand").onclick = () => startTest("Grand test", pickGrand(all), true);
+  $("#custom").onclick = () => {
+    const subs = $$("#subs .chip[aria-pressed=true]").map(c=>c.dataset.s);
+    const n = Math.max(5, Math.min(200, +$("#n").value || 30)); const pool = $("#pool").value;
+    let qs = all.filter(q=>!subs.length || subs.includes(q.s));
+    const P = q => prog(q.s).r[q.id];
+    if (pool==="wr") qs = qs.filter(q=>P(q) && !P(q)[1]);
+    qs = pool==="un" ? [...shuffle(qs.filter(q=>!P(q))), ...shuffle(qs.filter(q=>P(q)))] : shuffle(qs);
+    qs = qs.slice(0,n);
+    if (!qs.length) return toast("No questions match.");
+    startTest(`Custom · ${qs.length} Q`, qs, false);
+  };
+};
+function pickGrand(all){
+  const by = {}; S.tx.forEach(s=>by[s.id]=[]);
+  const P = q => prog(q.s).r[q.id];
+  all.forEach(q=>by[q.s].push(q));
+  for (const k in by) by[k] = [...shuffle(by[k].filter(q=>!P(q))), ...shuffle(by[k].filter(q=>P(q)))];
+  const out = []; let round = 0;
+  while (out.length < 180){ let added = 0; for (const k in by){ if (by[k][round]){ out.push(by[k][round]); added++; if (out.length>=180) break; } } if (!added) break; round++; }
+  return shuffle(out);
+}
+function startTest(title, qs, grand){
+  let sections;
+  if (grand){
+    const per = Math.ceil(qs.length / NEET.sections);
+    sections = []; for (let i=0;i<NEET.sections;i++){ const ids = qs.slice(i*per,(i+1)*per).map(q=>q.id); if (ids.length) sections.push({ ids, secs: Math.round(NEET.minutes*60*ids.length/NEET.perSection) }); }
+  } else sections = [{ ids: qs.map(q=>q.id), secs: qs.length*70 }];
+  S.run = { title, grand, strict: grand && S.settings.strict, sections, cur: 0, i: 0, endsAt: Date.now()+sections[0].secs*1000, ans:{}, mark:{}, perm:{}, startedAt: Date.now() };
+  LS.set("run", S.run); go("run");
+}
+let tick;
+function secLeft(){ return Math.max(0, Math.round((S.run.endsAt - Date.now())/1000)); }
+function mmss(s){ const m=Math.floor(s/60), r=s%60; return `${m}:${String(r).padStart(2,"0")}`; }
+function nextSection(R){
+  // a section that timed out hands its end time to the next one, so the clock keeps running while away
+  const from = R.endsAt <= Date.now() ? R.endsAt : Date.now();
+  R.cur++; R.i = 0; R.endsAt = from + R.sections[R.cur].secs*1000;
+}
+function advanceSection(){
+  const R = S.run;
+  if (R.cur >= R.sections.length-1) return finishTest();
+  nextSection(R); LS.set("run", R); render();
+}
+routes.run = () => {
+  const R = S.run || (S.run = LS.get("run", null)); if (!R) return go("test");
+  while (R.endsAt <= Date.now() && R.cur < R.sections.length-1) nextSection(R);
+  if (R.endsAt <= Date.now()) return finishTest();
+  LS.set("run", R);
+  const sec = R.sections[R.cur]; const q = S.Q.get(sec.ids[R.i]);
+  if (!q){ sec.ids.splice(R.i,1); if (!sec.ids.length) return advanceSection(); return render(); }
+  const perm = permFor(R.perm, q); const pick = R.ans[q.id];
+  const v = $("#view");
+  v.innerHTML = `
+  <div class="runbar stack">
+    <div class="row between"><span class="small"><b>${esc(R.title)}</b>${R.sections.length>1?` · Section ${R.cur+1} of ${R.sections.length}`:""}</span><span class="timer" id="timer">${mmss(secLeft())}</span></div>
+    ${R.sections.length>1?`<div class="secs">${R.sections.map((s,i)=>`<span class="${i===R.cur?"on":i<R.cur?"done":""}">S${i+1} · ${s.ids.length}Q</span>`).join("")}</div>`:""}
+  </div>
+  <article class="panel qcard">
+    <div class="row between"><span class="num small muted">Q ${R.i+1} / ${sec.ids.length}</span>${q.img?'<span class="tag">IMAGE</span>':""}</div>
+    <div class="stem">${esc(q.q)}</div>${imgHTML(q)}
+    <ol class="opts">${perm.map((oi,k)=>`<li><button class="opt ${pick===oi?"sel":""}" data-oi="${oi}"><span class="k">${"ABCD"[k]}</span><span>${esc(q.o[oi])}</span></button></li>`).join("")}</ol>
+    <div class="row"><button class="btn sm ghost" id="clr" ${pick==null?"disabled":""}>Clear response</button>
+    <button class="btn sm ghost" id="mk" aria-pressed="${!!R.mark[q.id]}">${R.mark[q.id]?"Marked for review":"Mark for review"}</button></div>
+  </article>
+  <div class="row between"><button class="btn" id="prev" ${R.i?"":"disabled"}>Previous</button><button class="btn primary" id="next">${R.i<sec.ids.length-1?"Save & next":"Last question"}</button></div>
+  <section class="panel stack"><div class="row between"><h3>Section palette</h3><span class="small muted">${sec.ids.filter(id=>R.ans[id]!=null).length} answered</span></div>
+    <div class="palette">${sec.ids.map((id,k)=>`<button data-k="${k}" class="${R.ans[id]!=null?"ans":""} ${R.mark[id]?"mk":""} ${k===R.i?"cur":""}">${k+1}</button>`).join("")}</div>
+    <div class="row between"><span class="small muted">${R.strict && R.cur<R.sections.length-1 ? "Next section opens when the timer ends." : ""}</span>
+    <button class="btn" id="endsec">${R.cur<R.sections.length-1 ? "Submit section" : "Submit test"}</button></div>
+  </section>`;
+  const save = () => LS.set("run", R);
+  $$(".opt", v).forEach(b => b.onclick = () => { R.ans[q.id] = +b.dataset.oi; save(); render(); });
+  $("#clr").onclick = () => { delete R.ans[q.id]; save(); render(); };
+  $("#mk").onclick = () => { if (R.mark[q.id]) delete R.mark[q.id]; else R.mark[q.id]=1; save(); render(); };
+  $("#prev").onclick = () => { R.i--; save(); render(); };
+  $("#next").onclick = () => { if (R.i < sec.ids.length-1){ R.i++; save(); render(); window.scrollTo(0,0); } };
+  $$(".palette button", v).forEach(b => b.onclick = () => { R.i = +b.dataset.k; save(); render(); });
+  const end = $("#endsec");
+  if (R.strict && R.cur < R.sections.length-1) end.disabled = true;
+  end.onclick = (e) => {
+    if (!e.target.dataset.sure){ e.target.dataset.sure=1; e.target.textContent = R.cur<R.sections.length-1 ? "Tap again: you can't return to this section" : "Tap again to submit"; return; }
+    advanceSection();
+  };
+  clearInterval(tick);
+  tick = setInterval(() => {
+    if (!S.run || !location.hash.startsWith("#run")) return clearInterval(tick);
+    const s = secLeft(); const t = $("#timer"); if (t){ t.textContent = mmss(s); t.classList.toggle("low", s<300); }
+    if (s<=0){ clearInterval(tick); toast(R.cur<R.sections.length-1?"Section time over. Next section started.":"Time over. Test submitted."); advanceSection(); }
+  }, 1000);
+};
+function finishTest(){
+  const R = S.run; clearInterval(tick);
+  const rows = []; let cor=0, wr=0, un=0; const bySub = {};
+  R.sections.forEach((s,si) => s.ids.forEach(id => {
+    const q = S.Q.get(id); if (!q) return; const p = R.ans[id];
+    const st = p==null ? "u" : p===q.a ? "c" : "w";
+    if (st==="c") cor++; else if (st==="w") wr++; else un++;
+    if (p!=null) record(q, p);
+    const b = bySub[q.s] ||= {c:0,w:0,u:0}; b[st]++;
+    rows.push({ id, si, st });
+  }));
+  const total = rows.length, score = cor*NEET.plus - wr*NEET.minus;
+  const res = { title:R.title, at:Date.now(), total, cor, wr, un, score, max: total*NEET.plus, rows, bySub, perm:R.perm, ans:R.ans, secs:R.sections.length, mins: Math.round((Date.now()-R.startedAt)/60000) };
+  S.result = res; S.run = null; LS.del("run"); LS.set("lastResult", res);
+  S.hist.push({ title:res.title, at:res.at, score, max:res.max, cor, wr, un });
+  if (S.hist.length > 200) S.hist = S.hist.slice(-200);
+  Store.setDoc("hist", { items:S.hist }).catch(()=>{});
+  go("result");
+}
+routes.result = () => {
+  const r = S.result || (S.result = LS.get("lastResult", null)); if (!r) return go("test");
+  const v = $("#view");
+  const secRows = []; for (let i=0;i<r.secs;i++){ const rr = r.rows.filter(x=>x.si===i); secRows.push({ i, c:rr.filter(x=>x.st==="c").length, w:rr.filter(x=>x.st==="w").length, u:rr.filter(x=>x.st==="u").length }); }
+  v.innerHTML = `<header class="stack" style="gap:4px"><span class="eyebrow">${esc(r.title)} · ${r.mins} min</span><h1>Score ${r.score} / ${r.max}</h1>
+    <span class="muted small">+${NEET.plus} correct, −${NEET.minus} wrong, 0 unattempted</span></header>
+  <div class="stats"><div><span class="muted small">Correct</span><b>${r.cor}</b></div><div><span class="muted small">Wrong</span><b>${r.wr}</b></div><div><span class="muted small">Unattempted</span><b>${r.un}</b></div><div><span class="muted small">Accuracy</span><b>${r.cor+r.wr?pct(r.cor,r.cor+r.wr)+"%":"–"}</b></div></div>
+  ${r.secs>1?`<section class="panel"><div class="tscroll"><table><tr><th>Section</th><th class="n">Correct</th><th class="n">Wrong</th><th class="n">Skipped</th><th class="n">Marks</th></tr>${secRows.map(s=>`<tr><td>Section ${s.i+1}</td><td class="n">${s.c}</td><td class="n">${s.w}</td><td class="n">${s.u}</td><td class="n">${s.c*4-s.w}</td></tr>`).join("")}</table></div></section>`:""}
+  <section class="panel"><div class="tscroll"><table><tr><th>Subject</th><th class="n">Correct</th><th class="n">Wrong</th><th class="n">Skipped</th><th class="n">Accuracy</th></tr>
+    ${Object.entries(r.bySub).sort((a,b)=>a[0].localeCompare(b[0])).map(([sid,b])=>`<tr><td>${esc(S.subj[sid]?.name||sid)}</td><td class="n">${b.c}</td><td class="n">${b.w}</td><td class="n">${b.u}</td><td class="n">${b.c+b.w?pct(b.c,b.c+b.w)+"%":"–"}</td></tr>`).join("")}</table></div></section>
+  <section class="stack"><div class="row between"><h2>Review</h2><select id="rf" style="width:auto"><option value="w">Wrong</option><option value="u">Unattempted</option><option value="c">Correct</option><option value="all">All</option></select></div><div id="rev" class="stack"></div></section>`;
+  const draw = () => {
+    const f = $("#rf").value; const list = r.rows.filter(x=>f==="all"||x.st===f).slice(0,200);
+    $("#rev").innerHTML = list.length ? list.map((x,k)=>{ const q=S.Q.get(x.id); if(!q) return ""; const perm=r.perm[x.id]||[0,1,2,3]; const p=r.ans[x.id];
+      return `<article class="panel qcard">${qMetaHTML(q)}<div class="stem">${esc(q.q)}</div>${imgHTML(q)}
+        <ol class="opts">${perm.map((oi,j)=>`<li><div class="opt ${oi===q.a?"right":oi===p?"wrong":""}"><span class="k">${"ABCD"[j]}</span><span>${esc(q.o[oi])}</span></div></li>`).join("")}</ol>
+        <div data-exp="${k}"></div></article>`; }).join("") : `<p class="muted">Nothing here.</p>`;
+    list.forEach((x,k)=>{ const q=S.Q.get(x.id); const host=$(`[data-exp="${k}"]`); if(q&&host) showExplanation(q, r.ans[x.id]??null, host); });
+  };
+  $("#rf").onchange = draw; draw();
+};
+
+// ---------- revise ----------
+routes.revise = () => {
+  const v = $("#view");
+  v.innerHTML = `<header><h1>Revise</h1><p class="muted" style="margin:6px 0 0">Every pearl in your bank, by subject. Search across questions, explanations and pearls.</p></header>
+  <div class="grid g2"><label class="f">Subject<select id="rs"><option value="">All subjects</option>${S.tx.map(s=>`<option value="${s.id}">${esc(s.name)}</option>`).join("")}</select></label>
+  <label class="f">Search<input type="search" id="rq" placeholder="e.g. psammoma, ankyrin, Parkland"></label></div>
+  <div class="row"><label class="row small"><input type="checkbox" id="rhy"> High-yield only</label><label class="row small"><input type="checkbox" id="rwr"> Only topics I got wrong</label></div>
+  <div id="rlist" class="stack"></div>`;
+  const draw = () => {
+    const s=$("#rs").value, term=$("#rq").value.trim().toLowerCase(), hy=$("#rhy").checked, wr=$("#rwr").checked;
+    const list = questionsWhere(q => q.p && (!s||q.s===s) && (!hy||q.hy>=3) && (!wr || (prog(q.s).r[q.id] && !prog(q.s).r[q.id][1])) &&
+      (!term || (q.q+" "+q.p+" "+(q.e||"")+" "+q.o.join(" ")).toLowerCase().includes(term)));
+    list.sort((a,b)=>(a.s+a.t+a.st).localeCompare(b.s+b.t+b.st));
+    let last = "";
+    $("#rlist").innerHTML = list.length ? list.slice(0,300).map(q => { const head = q.s+q.t; const h = head!==last ? `<h3 style="margin-top:8px">${esc(S.subj[q.s].name)} · ${esc(q.t)}</h3>` : ""; last = head;
+      return `${h}<div class="pearl"><span class="eyebrow">${esc(q.st)}</span><p style="margin:4px 0 0">${esc(q.p)}</p><details class="small" style="margin-top:6px"><summary>Question</summary><p>${esc(q.q)}</p><p><b>Answer:</b> ${esc(q.o[q.a])}</p></details></div>`; }).join("")
+      + (list.length>300?`<p class="muted small">Showing 300 of ${list.length}. Narrow by subject or search.</p>`:"")
+      : `<p class="muted">No pearls match.</p>`;
+  };
+  ["rs","rq","rhy","rwr"].forEach(id => $("#"+id).addEventListener("input", draw)); draw();
+};
+
+// ---------- progress ----------
+routes.stats = () => {
+  const v = $("#view");
+  const rows = S.tx.map(s => ({ s, ...statsOf(subjectQs(s.id)) }));
+  const weak = weakSubtopics(12);
+  v.innerHTML = `<header><h1>Progress</h1></header>
+  <section class="panel stack"><h2>By subject</h2>
+   <div class="tscroll"><table><tr><th>Subject</th><th class="n">Bank</th><th class="n">Done</th><th class="n">Accuracy</th><th style="width:30%">Coverage</th></tr>
+   ${rows.map(r=>`<tr><td><a href="#s-${r.s.id}">${esc(r.s.name)}</a></td><td class="n">${fmt(r.n)}</td><td class="n">${fmt(r.att)}</td><td class="n">${r.att?pct(r.cor,r.att)+"%":"–"}</td><td><div class="bar"><i style="width:${pct(r.att,r.n)}%"></i></div></td></tr>`).join("")}
+   </table></div></section>
+  <section class="panel stack"><h2>Weakest subtopics</h2>
+   ${weak.length?`<div class="tscroll"><table><tr><th>Subtopic</th><th class="n">Attempted</th><th class="n">Accuracy</th></tr>${weak.map(w=>`<tr><td>${esc(S.subj[w.s].name)} › ${esc(w.t)} › ${esc(w.st)}</td><td class="n">${w.att}</td><td class="n">${pct(w.cor,w.att)}%</td></tr>`).join("")}</table></div>`:`<p class="muted" style="margin:0">Attempt 3 or more questions in a subtopic to see it ranked here.</p>`}</section>
+  ${S.hist.length?`<section class="panel stack"><h2>Test scores</h2><div class="tscroll"><table><tr><th>Date</th><th>Test</th><th class="n">Score</th><th class="n">%</th></tr>${S.hist.slice().reverse().map(h=>`<tr><td>${new Date(h.at).toLocaleDateString("en-IN")}</td><td>${esc(h.title)}</td><td class="n">${h.score}/${h.max}</td><td class="n">${pct(Math.max(0,h.score),h.max)}%</td></tr>`).join("")}</table></div></section>`:""}`;
+};
+
+// ---------- Claude generation ----------
+function sampleError(e){
+  const m = { not_granted:"Claude access wasn't allowed for this page. Allow it from the page's permissions to generate.", rate_limited:"Claude is busy or you've hit a usage limit. Try again in a little while.",
+    refused:"Claude declined this request. Try a different topic or section.", invalid_json:"Claude's reply couldn't be read as questions. Try again.", prompt_too_large:"That section is too large. Try a smaller file or paste less text.",
+    sampling_disabled:"Claude isn't available on this account.", session_expired:"Sign in to claude.ai again, then retry.", cancelled:"Stopped." };
+  return m[e?.code] || "Something went wrong talking to Claude. Try again.";
+}
+function existingStems(sid, t){ return questionsWhere(q=>q.s===sid && (!t||q.t===t)).slice(-60).map(q=>"- "+q.q.slice(0,110)).join("\n"); }
+function taxonomyText(sid, onlyTopic){
+  return S.subj[sid].topics.filter(t=>!onlyTopic||t.name===onlyTopic).map(t=>`${t.name}: ${t.subs.join(" | ")}`).join("\n");
+}
+const RULES = `Rules:
+- Write ORIGINAL questions in your own words. Never copy or closely paraphrase questions from coaching platforms (Marrow, PrepLadder, etc.), question books or leaked papers.
+- Single best answer, exactly 4 options, exactly one correct.
+- Match the current NEET PG pattern (NBEMS, 2026): mostly clinical vignettes and applied questions, some one-liners, some "all EXCEPT" and sequencing questions.
+- Facts must agree with current standard textbooks and current Indian national guidelines. Do not use any fact you are not sure of.
+- "e": 2-4 sentences: why the answer is right and why the main distractors are wrong.
+- "p": one high-yield pearl related to the question (max 40 words) for rapid revision.
+- "hy": 1, 2 or 3 for how often this concept is tested.
+- "conf": your confidence (0 to 1) that the key is correct.`;
+function cleanGenerated(arr, sid, src, fixed){
+  if (!Array.isArray(arr)) return [];
+  const subj = S.subj[sid]; const out = [];
+  for (const x of arr){
+    if (!x || typeof x !== "object") continue;
+    const t = fixed?.t || String(x.t||""); const topic = subj.topics.find(tt=>tt.name===t); if (!topic) continue;
+    const st = fixed?.st || String(x.st||""); if (!topic.subs.includes(st)) continue;
+    const o = Array.isArray(x.o) ? x.o.map(String) : []; const a = Number(x.a);
+    if (o.length!==4 || !(a>=0&&a<4) || !x.q) continue;
+    const q = { s:sid, t, st, q:String(x.q), o, a, e:String(x.e||""), p:String(x.p||""), hy:Math.max(1,Math.min(3,Number(x.hy)||2)) };
+    if (Number(x.conf) < 0.85) q.verify = 1;
+    if (x.img) q.img = x.img; if (x.asset) q.asset = x.asset; if (x.credit) q.credit = x.credit;
+    out.push(q);
+  }
+  return out;
+}
+async function saveBatch(sid, qs, src){
+  const id = rid();
+  const b = { s:sid, src, created:Date.now(), qs };
+  await Store.put("bank", sid, id, b);
+  loadBatch({ id, ...b });
+  return id;
+}
+let genCtl = null;
+async function runGen({ prompt, sid, src, fixed, images, status, btn, patch }){
+  const sample = S.cap.sample; if (!sample){ status.className="note warn"; status.textContent = "Generation works when this page is opened on claude.ai (it uses your Claude account)."; return; }
+  genCtl = new AbortController(); btn.disabled = true; status.className = "note"; status.textContent = "Thinking… (good questions take 30-90 seconds)";
+  const stop = document.createElement("button"); stop.className="btn sm"; stop.textContent="Stop"; stop.onclick=()=>genCtl.abort(); btn.after(stop);
+  try {
+    const opts = { modelTier: S.settings.tier, signal: genCtl.signal, cache:false,
+      onText: ({text}) => { const n = (text.match(/"q"\s*:/g)||[]).length; status.textContent = `Writing… ${n} question${n===1?"":"s"} so far`; } };
+    if (images) opts.images = images;
+    const arr = await sample.json(prompt, opts);
+    let qs = cleanGenerated(arr, sid, src, fixed);
+    if (patch) qs = qs.map(patch);
+    if (!qs.length){ status.className="note bad"; status.textContent = "No usable questions came back. Try again, or add a hint about what the material shows."; return; }
+    const bid = await saveBatch(sid, qs, src);
+    const flagged = qs.filter(q=>q.verify).length;
+    status.className = "note good"; status.innerHTML = `Added ${qs.length} questions to ${esc(S.subj[sid].name)}.${flagged?` ${flagged} marked VERIFY (Claude was less sure).`:""} <a href="#" class="pnow">Practise them now</a>`;
+    $(".pnow", status).onclick = (e) => { e.preventDefault(); startSession("New questions", qs.map((_,i)=>S.Q.get(`g${bid}-${i}`)).filter(Boolean)); };
+    return qs.length;
+  } catch (e) {
+    status.className = "note bad"; status.textContent = sampleError(e);
+    if (e?.code === "quota_exceeded") status.textContent = "Your saved bank is full. Export a backup from More, then remove old batches.";
+  } finally { btn.disabled = false; stop.remove(); }
+}
+
+// ---------- build bank (library) ----------
+routes.library = () => {
+  const v = $("#view"); const pre = S.genPreset || {}; S.genPreset = null;
+  const total = questionsWhere(()=>true).length;
+  const opts = S.tx.map(s=>`<option value="${s.id}" ${pre.s===s.id?"selected":""}>${esc(s.name)}</option>`).join("");
+  v.innerHTML = `<header class="stack" style="gap:4px"><h1>Build your bank</h1>
+    <span class="muted small">${fmt(total)} of ${fmt(GOAL)} questions · about ${fmt(Math.ceil(GOAL/19))} per subject</span></header>
+  <div class="bar"><i style="width:${Math.min(100,100*total/GOAL)}%"></i></div>
+  <p class="note small" style="margin:0">Generation runs on your own Claude account, so it uses your Claude plan's usage. Every question is written fresh by Claude; anything Claude is less sure of is tagged VERIFY. Check doubtful facts against your textbook.</p>
+
+  <section class="panel stack"><h2>1 · Generate by topic</h2>
+    <div class="grid g2">
+      <label class="f">Subject<select id="gs">${opts}</select></label>
+      <label class="f">Topic<select id="gt"></select></label>
+      <label class="f">Subtopic<select id="gst"></select></label>
+      <label class="f">How many<select id="gn"><option>10</option><option selected>20</option><option>25</option></select></label>
+    </div>
+    <div class="row"><button class="btn primary" id="gbtn">Generate</button><button class="btn ghost" id="gleast">Pick the least-covered subtopic</button></div>
+    <div id="gstat" hidden></div>
+  </section>
+
+  <section class="panel stack"><h2>2 · From your notes and textbooks</h2>
+    <p class="small muted" style="margin:0">Add PDFs, text or Markdown notes. The text is split into sections, and each tap turns the next section into questions. Scanned PDFs (photos of pages) have no text; add page photos in step 3 instead.</p>
+    <div class="drop" id="drop"><p style="margin:0 0 8px">Drop files here or</p><label class="btn sm">Choose files<input type="file" id="files" accept=".pdf,.txt,.md,text/plain,application/pdf" multiple hidden></label></div>
+    <div class="grid g2"><label class="f">These files are for<select id="ls">${opts}</select></label></div>
+    <div id="lstat" hidden></div>
+    <div id="docs" class="stack"></div>
+    <details><summary>Or paste notes</summary><div class="stack" style="margin-top:10px">
+      <textarea id="paste" placeholder="Paste a page of your notes here"></textarea>
+      <div class="row"><select id="ps" style="width:auto">${opts}</select><button class="btn" id="pbtn">Make questions from pasted notes</button></div>
+      <div id="pstat" hidden></div></div></details>
+  </section>
+
+  <section class="panel stack"><h2>3 · Image questions</h2>
+    <p class="small muted" style="margin:0">Add an image from your own material: X-ray, CT, ECG, histology slide, specimen, clinical photo, or a photographed textbook page. Claude writes questions that need the image to answer.</p>
+    <div class="grid g2"><label class="f">Subject<select id="is">${opts}</select></label>
+      <label class="f">Image<input type="file" id="ifile" accept="image/png,image/jpeg,image/webp"></label></div>
+    <label class="f">What is it? (optional, helps accuracy)<input type="text" id="ihint" placeholder="e.g. chest X-ray PA view, known diagnosis: sarcoidosis"></label>
+    <div><button class="btn primary" id="ibtn">Make image questions</button></div>
+    <div id="istat" hidden></div>
+  </section>
+
+  <section class="panel stack"><h2>Coverage by subject</h2>
+    <div class="tscroll"><table><tr><th>Subject</th><th class="n">Questions</th><th style="width:40%">Toward ${fmt(Math.ceil(GOAL/19))}</th></tr>
+    ${S.tx.map(s=>{ const n=subjectQs(s.id).length; return `<tr><td>${esc(s.name)}</td><td class="n">${fmt(n)}</td><td><div class="bar"><i style="width:${Math.min(100,100*n/(GOAL/19))}%"></i></div></td></tr>`; }).join("")}</table></div>
+  </section>`;
+
+  // topic pickers
+  const fillTopics = () => { const s = S.subj[$("#gs").value]; $("#gt").innerHTML = `<option value="">Any topic</option>`+s.topics.map(t=>`<option ${pre.t===t.name?"selected":""}>${esc(t.name)}</option>`).join(""); fillSubs(); };
+  const fillSubs = () => { const s = S.subj[$("#gs").value]; const t = s.topics.find(t=>t.name===$("#gt").value);
+    $("#gst").innerHTML = `<option value="">Any subtopic</option>` + (t? t.subs.map(x=>`<option ${pre.st===x?"selected":""}>${esc(x)}</option>`).join("") : ""); $("#gst").disabled = !t; };
+  $("#gs").onchange = () => { pre.t = pre.st = null; fillTopics(); }; $("#gt").onchange = fillSubs; fillTopics();
+  $("#gleast").onclick = () => {
+    const sid = $("#gs").value; const s = S.subj[sid]; let best = null;
+    s.topics.forEach(t=>t.subs.forEach(st=>{ const n = subjectQs(sid).filter(q=>q.t===t.name&&q.st===st).length; if (!best || n<best.n) best={t:t.name,st,n}; }));
+    pre.t = best.t; pre.st = best.st; fillTopics(); toast(`${best.t} › ${best.st} (${best.n} questions)`);
+  };
+  $("#gbtn").onclick = () => {
+    const sid = $("#gs").value, t = $("#gt").value, st = $("#gst").value, n = +$("#gn").value; const status = $("#gstat"); status.hidden = false;
+    const scope = st ? `Topic: ${t}\nSubtopic (use exactly this for "st"): ${st}` : t ? `Topic: ${t}. Spread the questions over its subtopics.` : `Spread the questions across the whole subject, favouring high-yield topics.`;
+    const prompt = `You write NEET PG practice MCQs for one student's private study app.
+Subject: ${S.subj[sid].name}
+${scope}
+Allowed topics and subtopics (copy names exactly into "t" and "st"):
+${taxonomyText(sid, t||null)}
+
+Write ${n} new questions.
+${RULES}
+- Do not repeat these stems already in the bank:
+${existingStems(sid, t||null) || "(none yet)"}
+
+Reply with only a JSON array, each item: {"t":"topic","st":"subtopic","q":"stem","o":["A","B","C","D"],"a":0,"e":"explanation","p":"pearl","hy":2,"conf":0.95}`;
+    runGen({ prompt, sid, src:"ai", fixed: st?{t,st}:null, status, btn: $("#gbtn") });
+  };
+
+  // documents
+  const drawDocs = () => {
+    $("#docs").innerHTML = S.lib.length ? S.lib.slice().sort((a,b)=>b.created-a.created).map(d => {
+      const done = (d.done||[]).length; return `<div class="panel stack" style="background:var(--sunk)">
+      <div class="row between"><b>${esc(d.name)}</b><span class="small muted">${esc(S.subj[d.s]?.name||"")}</span></div>
+      <div class="bar"><i style="width:${pct(done,d.n)}%"></i></div>
+      <div class="row between"><span class="small muted">${done} of ${d.n} sections used</span>
+      <div class="row"><button class="btn sm primary" data-gen="${d.id}" ${done>=d.n?"disabled":""}>Make 15 questions from next section</button><button class="btn sm ghost" data-del="${d.id}">Remove</button></div></div>
+      <div data-st="${d.id}" hidden></div></div>`; }).join("") : "";
+    $$("[data-gen]").forEach(b => b.onclick = () => genFromDoc(b.dataset.gen, b));
+    $$("[data-del]").forEach(b => b.onclick = async () => {
+      if (!b.dataset.sure){ b.dataset.sure=1; b.textContent="Tap again to remove the file (questions stay)"; return; }
+      const d = S.lib.find(x=>x.id===b.dataset.del); S.lib = S.lib.filter(x=>x!==d);
+      await Store.remove("lib","docs",d.id).catch(()=>{}); for (let i=0;i<d.n;i++) Store.remove("libtext", d.id, String(i)).catch(()=>{});
+      drawDocs();
+    });
+  };
+  drawDocs();
+  const handleFiles = async (files) => {
+    const status = $("#lstat"); status.hidden = false; status.className = "note";
+    for (const f of files){
+      try {
+        status.textContent = `Reading ${f.name}…`;
+        const text = /\.pdf$/i.test(f.name) || f.type==="application/pdf" ? await pdfText(f, p => status.textContent = `Reading ${f.name}: page ${p.page} of ${p.pages}`) : await f.text();
+        const clean = text.replace(/[ \t]+/g," ").replace(/\n{3,}/g,"\n\n").trim();
+        if (clean.length < 400){ status.className="note warn"; status.textContent = `${f.name} has almost no text (probably scanned). Add page photos under Image questions instead.`; continue; }
+        const chunks = []; const size = 12000;
+        for (let i=0;i<clean.length;i+=size){ let end = Math.min(clean.length, i+size); chunks.push(clean.slice(i, end)); }
+        const id = rid(); const meta = { name:f.name, s:$("#ls").value, n:chunks.length, done:[], created:Date.now() };
+        status.textContent = `Saving ${chunks.length} sections of ${f.name}…`;
+        for (let i=0;i<chunks.length;i++) await Store.put("libtext", id, String(i), { text: chunks[i] });
+        await Store.put("lib","docs",id,meta); S.lib.push({ id, ...meta });
+        status.className = "note good"; status.textContent = `${f.name}: ${chunks.length} sections ready.`;
+      } catch (e) {
+        status.className = "note bad"; status.textContent = e?.code==="quota_exceeded" ? "Saved storage is full. Remove an old file first." : `Couldn't read ${f.name}. Try a text-based PDF or paste the text.`;
+      }
+    }
+    drawDocs();
+  };
+  $("#files").onchange = e => handleFiles([...e.target.files]);
+  const drop = $("#drop");
+  drop.ondragover = e => { e.preventDefault(); drop.classList.add("over"); };
+  drop.ondragleave = () => drop.classList.remove("over");
+  drop.ondrop = e => { e.preventDefault(); drop.classList.remove("over"); handleFiles([...e.dataTransfer.files]); };
+
+  $("#pbtn").onclick = () => {
+    const txt = $("#paste").value.trim(); const status = $("#pstat"); status.hidden = false;
+    if (txt.length < 200){ status.className="note warn"; status.textContent="Paste at least a paragraph of notes."; return; }
+    runGen({ prompt: notesPrompt($("#ps").value, txt.slice(0, 40000), 15), sid: $("#ps").value, src:"notes", status, btn: $("#pbtn") });
+  };
+  $("#ibtn").onclick = async () => {
+    const f = $("#ifile").files[0]; const status = $("#istat"); status.hidden = false;
+    if (!f){ status.className="note warn"; status.textContent="Choose an image first."; return; }
+    const sid = $("#is").value; const hint = $("#ihint").value.trim();
+    let asset = null, inline = null;
+    try {
+      const small = await downscale(f, 1400);
+      if (S.cap.assets){ const up = await S.cap.assets.upload(small); asset = up.id; }
+      else inline = await blobToDataURL(await downscale(f, 900, 0.8));
+    } catch { status.className="note bad"; status.textContent="Couldn't store that image. Try a JPEG or PNG under 20 MB."; return; }
+    const prompt = `You write NEET PG image-based MCQs for one student's private study app.
+Subject: ${S.subj[sid].name}
+Allowed topics and subtopics (copy names exactly into "t" and "st"):
+${taxonomyText(sid)}
+The attached image is from the student's own study material.${hint?` The student says: "${hint}".`:""}
+First decide what the image shows. If you cannot identify it confidently, return an empty array [].
+Write 1 to 3 questions that need the image to answer (the stem should refer to "the image shown"). Do not reveal the diagnosis in the stem.
+${RULES}
+Reply with only a JSON array, each item: {"t":"topic","st":"subtopic","q":"stem","o":["A","B","C","D"],"a":0,"e":"explanation","p":"pearl","hy":2,"conf":0.9}`;
+    // every question in this batch points at the stored image
+    const patch = q => asset ? { ...q, asset } : { ...q, img: inline };
+    await runGen({ prompt, sid, src:"ai", images:[f], status, btn: $("#ibtn"), patch });
+  };
+};
+function notesPrompt(sid, text, n){
+  return `You write NEET PG practice MCQs for one student's private study app, based on the student's own study material.
+Subject: ${S.subj[sid].name}
+Allowed topics and subtopics (copy names exactly into "t" and "st"):
+${taxonomyText(sid)}
+
+Write up to ${n} questions that test the important, exam-relevant facts in the SOURCE below. Skip trivia. If the source is outdated or wrong compared with current standard references, follow the current standard and mention the difference in "e".
+Do not copy sentences from the source; write the stems and options in your own words.
+${RULES}
+
+SOURCE:
+"""
+${text}
+"""
+
+Reply with only a JSON array, each item: {"t":"topic","st":"subtopic","q":"stem","o":["A","B","C","D"],"a":0,"e":"explanation","p":"pearl","hy":2,"conf":0.95}`;
+}
+async function genFromDoc(docId, btn){
+  const d = S.lib.find(x=>x.id===docId); if (!d) return;
+  const status = $(`[data-st="${docId}"]`); status.hidden = false;
+  const next = [...Array(d.n).keys()].find(i=>!(d.done||[]).includes(i)); if (next==null) return;
+  const chunk = await Store.getIn("libtext", docId, String(next));
+  if (!chunk){ status.className="note bad"; status.textContent="That section's text is missing. Remove the file and add it again."; return; }
+  const n = await runGen({ prompt: notesPrompt(d.s, chunk.text, 15), sid: d.s, src:"notes", status, btn });
+  if (n){ d.done = [...(d.done||[]), next]; const { id, ...meta } = d; await Store.put("lib","docs",id,meta).catch(()=>{}); btn.textContent = d.done.length>=d.n ? "All sections used" : "Make 15 questions from next section"; btn.disabled = d.done.length>=d.n; }
+}
+let pdfReady = null;
+function loadScript(src){ return new Promise((res, rej) => { const s=document.createElement("script"); s.src=src; s.onload=res; s.onerror=rej; document.head.append(s); }); }
+async function pdfText(file, onProgress){
+  pdfReady ||= (async () => {
+    await loadScript("https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js");
+    await loadScript("https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js");
+    window.pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+  })();
+  await pdfReady;
+  const pdf = await window.pdfjsLib.getDocument({ data: new Uint8Array(await file.arrayBuffer()) }).promise;
+  let out = "";
+  for (let p=1; p<=pdf.numPages; p++){
+    const page = await pdf.getPage(p); const tc = await page.getTextContent();
+    out += tc.items.map(i=>i.str + (i.hasEOL?"\n":" ")).join("") + "\n\n";
+    if (p%5===0 || p===pdf.numPages) onProgress({ page:p, pages:pdf.numPages });
+  }
+  return out;
+}
+function downscale(file, max, quality=0.86){
+  return new Promise((res, rej) => {
+    const img = new Image(); const url = URL.createObjectURL(file);
+    img.onload = () => { const k = Math.min(1, max/Math.max(img.width,img.height)); const c=document.createElement("canvas"); c.width=Math.round(img.width*k); c.height=Math.round(img.height*k);
+      c.getContext("2d").drawImage(img,0,0,c.width,c.height); URL.revokeObjectURL(url); c.toBlob(b => b?res(b):rej(), "image/jpeg", quality); };
+    img.onerror = rej; img.src = url;
+  });
+}
+function blobToDataURL(b){ return new Promise(res => { const r=new FileReader(); r.onload=()=>res(r.result); r.readAsDataURL(b); }); }
+
+// ---------- more ----------
+routes.more = () => {
+  const v = $("#view");
+  const flagged = questionsWhere(q=>prog(q.s).f[q.id]);
+  const removed = [...S.Q.values()].filter(q=>prog(q.s).x[q.id]);
+  v.innerHTML = `<header><h1>More</h1></header>
+  <section class="panel stack"><h2>Claude quality</h2>
+    <label class="f">Model for generating and explaining<select id="tier"><option value="complex">Most capable (slower, best for medicine)</option><option value="default">Balanced (faster)</option></select></label>
+    <p class="small muted" style="margin:0">Uses your Claude account. Status: ${S.cap.sample?"available":"open this page on claude.ai to enable"} · Saving: ${S.cap.db&&S.cap.uid?"your Claude account (syncs across devices)":"this browser only"}.</p>
+  </section>
+  <section class="panel stack"><h2>Flagged questions (${flagged.length})</h2>
+    <div class="row"><button class="btn" id="pflag" ${flagged.length?"":"disabled"}>Review flagged</button><button class="btn ghost" id="restore" ${removed.length?"":"disabled"}>Restore ${removed.length} removed</button></div></section>
+  <section class="panel stack"><h2>Add your own questions</h2>
+    <p class="small muted" style="margin:0">Paste a JSON array: [{"s":"mi","t":"Mycology","st":"Systemic mycoses","q":"…","o":["…","…","…","…"],"a":0,"e":"…","p":"…"}]. Subject codes: ${S.tx.map(s=>`${s.id} = ${esc(s.name)}`).join(", ")}.</p>
+    <textarea id="imp" placeholder='[{"s":"pa", ...}]'></textarea>
+    <div class="row"><button class="btn" id="impbtn">Add questions</button></div><div id="impstat" hidden></div></section>
+  <section class="panel stack"><h2>Backup</h2>
+    <p class="small muted" style="margin:0">Save your generated questions, progress and test history as one file, and restore it on any device.</p>
+    <div class="row"><button class="btn" id="exp">Export backup</button><label class="btn ghost">Restore backup<input type="file" id="restorefile" accept="application/json,.json" hidden></label></div><div id="bstat" hidden></div></section>
+  <section class="panel stack"><h2>About this bank</h2>
+    <p class="small" style="margin:0">The starter questions were written for this app. Questions you generate are written by Claude from its own knowledge or from material you upload. Nothing is copied from coaching question banks. Exam format follows the NEET-PG 2026 Information Bulletin (NBEMS): 180 MCQs, 5 sections × 36 questions, 42 minutes per section, +4 / −1.</p></section>`;
+  $("#tier").value = S.settings.tier;
+  $("#tier").onchange = e => { S.settings.tier = e.target.value; Store.setDoc("settings", S.settings).catch(()=>{}); toast("Saved."); };
+  $("#pflag").onclick = () => startSession("Flagged", flagged);
+  $("#restore").onclick = () => { removed.forEach(q=>{ delete prog(q.s).x[q.id]; Store.markProg(q.s); }); toast("Restored."); render(); };
+  $("#impbtn").onclick = async () => {
+    const st = $("#impstat"); st.hidden = false;
+    let arr; try { arr = JSON.parse($("#imp").value); } catch { st.className="note bad"; st.textContent="That isn't valid JSON."; return; }
+    if (!Array.isArray(arr)){ st.className="note bad"; st.textContent="Paste a JSON array."; return; }
+    const by = {}; arr.forEach(x => { if (S.subj[x?.s]) (by[x.s] ||= []).push(x); });
+    let added = 0, skipped = 0;
+    for (const sid in by){ const fixed = cleanGenerated(by[sid].map(x=>({...x, conf:1})), sid, "import"); skipped += by[sid].length - fixed.length; for (let i=0;i<fixed.length;i+=50){ await saveBatch(sid, fixed.slice(i,i+50), "import"); } added += fixed.length; }
+    skipped += arr.length - Object.values(by).flat().length;
+    st.className = added?"note good":"note warn"; st.textContent = `Added ${added}. Skipped ${skipped} (check subject code, topic and subtopic names, 4 options, answer index 0-3).`;
+  };
+  $("#exp").onclick = async () => {
+    const st = $("#bstat"); st.hidden = false; st.className = "note";
+    const batches = (await Promise.all(S.tx.map(s => Store.list("bank", s.id)))).flat();
+    const data = JSON.stringify({ v:1, exported:new Date().toISOString(), batches, prog:S.prog, hist:S.hist, settings:S.settings });
+    if (!S.cap.downloads){ st.className="note warn"; st.textContent="Saving files works when this page is opened on claude.ai."; return; }
+    try { await S.cap.downloads.save({ filename:`neetpg-qbank-backup-${new Date().toISOString().slice(0,10)}.json`, data }); st.className="note good"; st.textContent="Backup saved."; }
+    catch (e) { st.className="note warn"; st.textContent = e?.code==="declined" ? "Backup not saved." : "Couldn't save the file here."; }
+  };
+  $("#restorefile").onchange = async e => {
+    const st = $("#bstat"); st.hidden = false;
+    try {
+      const d = JSON.parse(await e.target.files[0].text());
+      let nb = 0;
+      for (const b of d.batches||[]){ if (!S.subj[b.s]) continue; const { id, ...body } = b; const nid = id || rid(); if (![...S.Q.keys()].some(k=>k.startsWith(`g${nid}-`))){ await Store.put("bank", b.s, nid, body); loadBatch({ id:nid, ...body }); nb++; } }
+      for (const sid in d.prog||{}){ const P = prog(sid), Q = d.prog[sid]; for (const k of ["r","b","x","f"]) Object.assign(P[k], Q[k]||{}); Store.markProg(sid); }
+      if (Array.isArray(d.hist)){ S.hist = [...S.hist, ...d.hist.filter(h=>!S.hist.some(x=>x.at===h.at))].sort((a,b)=>a.at-b.at); Store.setDoc("hist",{items:S.hist}).catch(()=>{}); }
+      st.className="note good"; st.textContent = `Restored ${nb} question batches and your progress.`;
+    } catch { st.className="note bad"; st.textContent="That file isn't a backup from this app."; }
+  };
+};
+
+// ---------- boot ----------
+(async function boot(){
+  $("#view").innerHTML = `<p class="muted">Loading your bank…</p>`;
+  try { await loadStatic(); } catch { $("#view").innerHTML = `<p class="note bad">The question files didn't load. Reload the page.</p>`; return; }
+  try { const cached = LS.get("doc:settings", null); if (cached) Object.assign(S.settings, cached); } catch {}
+  // local cache first so the page is usable at once
+  S.tx.forEach(s => { const p = LS.get("doc:p-"+s.id, null); if (p) S.prog[s.id] = Object.assign({r:{},b:{},x:{},f:{}}, p); });
+  render();
+  await initCaps();
+  try { await loadUser(); } catch {}
+  if (!["run","practice"].includes((location.hash.slice(1)||"home").split("-")[0])) render();
+})();
+</script>
