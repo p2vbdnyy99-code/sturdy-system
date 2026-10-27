@@ -1,0 +1,2479 @@
+{
+ "_about": "Original learning modules for priority topics. Written by Claude (AI), Oct 2026; not reviewed by a doctor. 'why' links each module to the evidence in evidence.json or to an educational category (A/C). References are suggestions to check, not verified citations. MCQs are AI-generated practice questions, never exam questions.",
+ "modules": [
+  {
+   "id": "courvoisier",
+   "title": "Obstructive jaundice and Courvoisier's law",
+   "s": "su",
+   "t": "Hepatobiliary & Pancreas",
+   "st": "Gallbladder & biliary",
+   "why": {
+    "category": "B",
+    "concepts": [
+     "courvoisier"
+    ],
+    "text": "The only concept in this dataset reported in two sessions (NEET-PG 2025 and INI-CET May 2026, both third-party recall)."
+   },
+   "concept": "In a jaundiced patient, a palpable gallbladder that is not tender is unlikely to be caused by gallstones. Gallstone disease usually scars the gallbladder through repeated inflammation, so it cannot distend. A slowly progressive obstruction of the distal common bile duct by a tumour lets the healthy gallbladder fill and enlarge. The rule is a clinical probability, not a diagnosis.",
+   "facts": [
+    "Typical causes of a palpable, non-tender gallbladder with jaundice: carcinoma of the head of pancreas, periampullary carcinoma, distal cholangiocarcinoma.",
+    "Obstruction above the cystic duct (hilar cholangiocarcinoma, Klatskin tumour) leaves the gallbladder collapsed even though the patient is jaundiced.",
+    "Obstructive pattern: conjugated hyperbilirubinaemia, high ALP and GGT, pale stools, dark urine, pruritus.",
+    "Ultrasound is the first test; contrast CT (pancreatic protocol) stages a suspected tumour; MRCP maps the ducts; EUS helps with small lesions and biopsy.",
+    "CA 19-9 supports but does not make the diagnosis; it can rise in cholangitis and benign obstruction."
+   ],
+   "associations": [
+    "Painless progressive jaundice with weight loss in an older patient suggests malignancy.",
+    "Recent-onset diabetes or migratory thrombophlebitis can accompany pancreatic cancer."
+   ],
+   "clues": [
+    "Painless, progressive jaundice",
+    "Palpable, non-tender gallbladder",
+    "Weight loss and anorexia",
+    "Itching with pale stools and dark urine"
+   ],
+   "differentials": {
+    "h": [
+     "Condition",
+     "Gallbladder",
+     "Jaundice pattern",
+     "Key clue"
+    ],
+    "r": [
+     [
+      "Distal CBD or pancreatic head tumour",
+      "Distended, non-tender",
+      "Progressive, painless",
+      "Weight loss, older age"
+     ],
+     [
+      "CBD stone",
+      "Usually not palpable (fibrosed)",
+      "Fluctuating, often painful",
+      "Biliary colic, cholangitis"
+     ],
+     [
+      "Hilar cholangiocarcinoma",
+      "Collapsed",
+      "Progressive",
+      "Dilated intrahepatic ducts only"
+     ],
+     [
+      "Acute cholecystitis",
+      "Tender (Murphy sign)",
+      "Usually mild or absent",
+      "Fever, RUQ pain"
+     ]
+    ]
+   },
+   "flow": {
+    "title": "Work-up of obstructive jaundice",
+    "steps": [
+     {
+      "t": "Jaundice with conjugated hyperbilirubinaemia and high ALP"
+     },
+     {
+      "t": "Ultrasound abdomen",
+      "d": [
+       {
+        "if": "Ducts not dilated",
+        "then": "Think hepatocellular or intrahepatic causes"
+       },
+       {
+        "if": "Ducts dilated",
+        "then": "Look for the level and cause"
+       }
+      ]
+     },
+     {
+      "t": "Stone seen in CBD",
+      "d": [
+       {
+        "if": "Yes",
+        "then": "ERCP clearance; cholecystectomy later"
+       },
+       {
+        "if": "No stone, mass suspected",
+        "then": "CECT pancreatic protocol ± MRCP / EUS"
+       }
+      ]
+     },
+     {
+      "t": "Resectable tumour → pancreaticoduodenectomy (Whipple); unresectable → biliary stent and palliation"
+     }
+    ]
+   },
+   "mm": {
+    "c": "Courvoisier's law",
+    "n": [
+     {
+      "t": "Rule",
+      "k": [
+       "Palpable non-tender GB + jaundice",
+       "Stones unlikely"
+      ]
+     },
+     {
+      "t": "Why",
+      "k": [
+       "Stones scar the GB",
+       "Tumour obstruction lets GB distend"
+      ]
+     },
+     {
+      "t": "Causes",
+      "k": [
+       "Ca head of pancreas",
+       "Periampullary Ca",
+       "Distal cholangiocarcinoma"
+      ]
+     },
+     {
+      "t": "Exceptions",
+      "k": [
+       "Hilar tumour: GB collapsed",
+       "Rare double impaction"
+      ]
+     }
+    ]
+   },
+   "misconceptions": [
+    "It does not prove pancreatic cancer; it shifts probability.",
+    "A tender, palpable gallbladder points to inflammation (acute cholecystitis), not to the law."
+   ],
+   "image": "No openly licensed image has been added for this topic. In an image question, look for a dilated CBD and pancreatic duct (double-duct sign) on CT or MRCP.",
+   "refs": [
+    "Bailey & Love's Short Practice of Surgery (hepatobiliary chapters)",
+    "Sabiston Textbook of Surgery"
+   ],
+   "mcqs": [
+    {
+     "q": "A 64-year-old man has had painless, steadily deepening jaundice for 6 weeks with 7 kg weight loss. A smooth, non-tender mass is felt below the right costal margin that moves with respiration. Where is the obstruction most likely to be?",
+     "o": [
+      "Head of the pancreas or periampullary region",
+      "Common bile duct stone",
+      "Confluence of the hepatic ducts (hilar)",
+      "Hepatocytes (viral hepatitis)"
+     ],
+     "a": 0,
+     "e": "A distended, non-tender gallbladder with painless progressive jaundice fits a distal biliary obstruction by a tumour, most often in the pancreatic head or periampullary region.",
+     "p": "Double-duct sign on imaging (dilated CBD and pancreatic duct) supports a pancreatic head or ampullary tumour.",
+     "hy": 3,
+     "w": [
+      "Correct. Distal malignant obstruction lets a previously healthy gallbladder distend.",
+      "Stones usually scar the gallbladder and cause painful, fluctuating jaundice.",
+      "Hilar obstruction is above the cystic duct, so the gallbladder stays collapsed.",
+      "Hepatitis does not obstruct the biliary tree or distend the gallbladder."
+     ]
+    },
+    {
+     "q": "A jaundiced patient has a tumour at the confluence of the right and left hepatic ducts. What is the expected state of the gallbladder?",
+     "o": [
+      "Collapsed and not palpable",
+      "Distended and palpable",
+      "Tender and palpable",
+      "Filled with stones"
+     ],
+     "a": 0,
+     "e": "The cystic duct joins below a hilar obstruction, so bile cannot reach the gallbladder; it stays collapsed despite deep jaundice.",
+     "p": "Hilar (Klatskin) tumours: dilated intrahepatic ducts with a normal-calibre CBD and collapsed gallbladder.",
+     "hy": 2,
+     "w": [
+      "Correct. Bile is blocked before it reaches the cystic duct.",
+      "Distension needs obstruction below the cystic duct.",
+      "Tenderness suggests inflammation, not a hilar tumour.",
+      "Stones are not part of the picture of a hilar tumour."
+     ]
+    }
+   ]
+  },
+  {
+   "id": "trauma-gcs",
+   "title": "Trauma primary survey, GCS and head injury",
+   "s": "su",
+   "t": "Trauma",
+   "st": "Head injury",
+   "why": {
+    "category": "A",
+    "concepts": [
+     "gcs",
+     "trauma-primary-survey",
+     "diffuse-axonal-injury"
+    ],
+    "text": "Head-injury concepts appear in two sessions in this dataset (diffuse axonal injury, NEET-PG 2025; GCS, INI-CET May 2026); also foundational (A2).",
+    "groups": [
+     "A2"
+    ]
+   },
+   "concept": "Trauma care follows a fixed priority order so that the most rapidly lethal problems are treated first. Many current protocols start with control of catastrophic external bleeding, then airway with cervical-spine protection, breathing, circulation, disability (GCS, pupils, glucose) and exposure. The Glasgow Coma Scale scores the best eye, verbal and motor responses and is the common language for head-injury severity.",
+   "facts": [
+    "GCS components: eye 1-4, verbal 1-5, motor 1-6; total 3-15.",
+    "Severity: mild 13-15, moderate 9-12, severe 3-8. GCS 8 or less usually means the airway needs securing.",
+    "Extradural haematoma: often middle meningeal artery with temporal fracture; biconvex, does not cross sutures; may show a lucid interval.",
+    "Subdural haematoma: bridging veins; crescent-shaped, crosses sutures; common in older adults and people with alcohol misuse.",
+    "Diffuse axonal injury: shearing at the grey-white junction, corpus callosum and brainstem; coma out of proportion to a near-normal CT; MRI is more sensitive.",
+    "Cushing response to rising intracranial pressure: hypertension, bradycardia and irregular breathing."
+   ],
+   "associations": [
+    "Hypotension in head injury is rarely from the head alone in adults: look for bleeding elsewhere.",
+    "Hypoxia and hypotension worsen secondary brain injury."
+   ],
+   "clues": [
+    "Lucid interval → extradural",
+    "Elderly, minor fall, slow decline → subdural",
+    "Deep coma, CT nearly normal → diffuse axonal injury"
+   ],
+   "differentials": {
+    "h": [
+     "Lesion",
+     "Vessel or mechanism",
+     "CT shape",
+     "Classic clue"
+    ],
+    "r": [
+     [
+      "Extradural haematoma",
+      "Middle meningeal artery",
+      "Biconvex, stops at sutures",
+      "Lucid interval"
+     ],
+     [
+      "Acute subdural haematoma",
+      "Bridging veins",
+      "Crescent, crosses sutures",
+      "Elderly, anticoagulants"
+     ],
+     [
+      "Diffuse axonal injury",
+      "Rotational shearing",
+      "Often near-normal; small haemorrhages",
+      "Coma out of proportion to CT"
+     ],
+     [
+      "Subarachnoid haemorrhage",
+      "Traumatic or aneurysmal",
+      "Blood in sulci and cisterns",
+      "Thunderclap headache if aneurysmal"
+     ]
+    ]
+   },
+   "flow": {
+    "title": "Primary survey order",
+    "steps": [
+     {
+      "t": "Catastrophic external haemorrhage: direct pressure, tourniquet"
+     },
+     {
+      "t": "Airway with cervical-spine protection"
+     },
+     {
+      "t": "Breathing: look for tension pneumothorax, open chest wound"
+     },
+     {
+      "t": "Circulation: haemorrhage control, two large-bore lines, blood"
+     },
+     {
+      "t": "Disability: GCS, pupils, glucose",
+      "d": [
+       {
+        "if": "GCS ≤ 8",
+        "then": "Secure the airway"
+       },
+       {
+        "if": "GCS 9-15",
+        "then": "Reassess and image as indicated"
+       }
+      ]
+     },
+     {
+      "t": "Exposure: full examination, prevent hypothermia"
+     }
+    ]
+   },
+   "mm": {
+    "c": "Head injury",
+    "n": [
+     {
+      "t": "GCS",
+      "k": [
+       "E4 V5 M6",
+       "Severe ≤ 8",
+       "Intubate ≤ 8"
+      ]
+     },
+     {
+      "t": "Extradural",
+      "k": [
+       "Middle meningeal artery",
+       "Biconvex",
+       "Lucid interval"
+      ]
+     },
+     {
+      "t": "Subdural",
+      "k": [
+       "Bridging veins",
+       "Crescent",
+       "Elderly"
+      ]
+     },
+     {
+      "t": "Diffuse axonal injury",
+      "k": [
+       "Shearing",
+       "CT near-normal",
+       "MRI better"
+      ]
+     },
+     {
+      "t": "Raised ICP",
+      "k": [
+       "Cushing response",
+       "Head up, oxygen, avoid hypotension"
+      ]
+     }
+    ]
+   },
+   "misconceptions": [
+    "Total GCS alone hides detail: record E, V and M separately.",
+    "A normal CT does not exclude diffuse axonal injury."
+   ],
+   "image": "No openly licensed CT image has been added. Learn the biconvex (extradural) versus crescent (subdural) shapes.",
+   "refs": [
+    "ATLS Student Course Manual (American College of Surgeons)",
+    "Bailey & Love's Short Practice of Surgery (head injury)"
+   ],
+   "mcqs": [
+    {
+     "q": "After a road traffic accident, a man opens his eyes only to a painful stimulus, says inappropriate words, and withdraws his arm from pain. What is his GCS?",
+     "o": [
+      "9",
+      "8",
+      "10",
+      "11"
+     ],
+     "a": 0,
+     "e": "Eye opening to pain = 2, inappropriate words = 3, withdrawal = 4. Total = 9 (moderate head injury).",
+     "p": "Write GCS as E2 V3 M4 = 9; the motor score is the strongest single predictor of outcome.",
+     "hy": 3,
+     "w": [
+      "Correct. 2 + 3 + 4 = 9.",
+      "8 would need one point less, e.g. abnormal flexion (M3).",
+      "10 would need eye opening to speech (E3) or confused speech (V4).",
+      "11 is two points too high."
+     ]
+    },
+    {
+     "q": "A young motorcyclist is in deep coma after a high-speed crash. CT head shows only a few tiny haemorrhages at the grey-white junction and in the corpus callosum, with no mass lesion. What is the most likely diagnosis?",
+     "o": [
+      "Diffuse axonal injury",
+      "Extradural haematoma",
+      "Acute subdural haematoma",
+      "Cerebral concussion"
+     ],
+     "a": 0,
+     "e": "Rotational acceleration shears axons. Coma out of proportion to a near-normal CT, with small haemorrhages in the corpus callosum and at the grey-white junction, is typical. MRI shows the injury better.",
+     "p": "Suspect diffuse axonal injury when the patient is much worse than the CT looks.",
+     "hy": 3,
+     "w": [
+      "Correct. Shearing injury with deep coma and minimal CT findings.",
+      "Extradural haematoma shows a biconvex collection with mass effect.",
+      "Subdural haematoma shows a crescentic collection.",
+      "Concussion does not cause prolonged deep coma or structural haemorrhages."
+     ]
+    }
+   ]
+  },
+  {
+   "id": "atonic-pph",
+   "title": "Atonic postpartum haemorrhage",
+   "s": "ob",
+   "t": "Obstetrics",
+   "st": "Postpartum haemorrhage",
+   "why": {
+    "category": "A",
+    "concepts": [
+     "atonic-pph"
+    ],
+    "text": "Reported in the NEET-PG 2025 recall list (single third-party source); a leading cause of maternal death and part of the obstetric-emergencies priority (A8).",
+    "groups": [
+     "A8"
+    ]
+   },
+   "concept": "After the placenta separates, bleeding from the placental bed stops mainly because the uterine muscle contracts and kinks the vessels. If the uterus stays soft (atony), bleeding continues. Management runs in parallel: call for help and resuscitate while making the uterus contract, giving tranexamic acid early, and escalating to mechanical and surgical measures if drugs fail.",
+   "facts": [
+    "WHO defines PPH as blood loss of 500 mL or more within 24 hours of birth; 1000 mL or more is severe.",
+    "Causes (4 Ts): Tone (most common), Trauma, Tissue, Thrombin.",
+    "Oxytocin is the first-line uterotonic.",
+    "Tranexamic acid 1 g IV within 3 hours of birth reduces deaths from bleeding; a second dose can be given if bleeding continues after 30 minutes.",
+    "Ergometrine is avoided in hypertension and pre-eclampsia; carboprost (PGF2α) is avoided in asthma.",
+    "Next steps if drugs fail: balloon tamponade (e.g. Bakri), compression sutures (B-Lynch), uterine or internal iliac artery ligation, embolisation, hysterectomy."
+   ],
+   "associations": [
+    "Risk factors for atony: overdistended uterus (twins, polyhydramnios, macrosomia), prolonged or induced labour, chorioamnionitis, grand multiparity."
+   ],
+   "clues": [
+    "Soft, boggy uterus above the umbilicus",
+    "Bleeding that restarts after massage stops"
+   ],
+   "differentials": {
+    "h": [
+     "Cause",
+     "Uterus",
+     "Bleeding",
+     "Clue"
+    ],
+    "r": [
+     [
+      "Atony (Tone)",
+      "Soft, boggy",
+      "Brisk, often clots",
+      "Overdistension, long labour"
+     ],
+     [
+      "Trauma",
+      "Firm",
+      "Bright red, continuous",
+      "Instrumental delivery, tears"
+     ],
+     [
+      "Retained tissue",
+      "Soft or firm",
+      "Persistent",
+      "Incomplete placenta"
+     ],
+     [
+      "Coagulopathy",
+      "Firm",
+      "Oozing from sites",
+      "Abruption, sepsis, DIC"
+     ]
+    ]
+   },
+   "flow": {
+    "title": "Stepwise management of atonic PPH",
+    "steps": [
+     {
+      "t": "Call for help; ABC; two large-bore cannulas; crossmatch; catheterise"
+     },
+     {
+      "t": "Uterine massage and bimanual compression"
+     },
+     {
+      "t": "Oxytocin IV/IM, then infusion; tranexamic acid 1 g IV within 3 h"
+     },
+     {
+      "t": "Further uterotonics",
+      "d": [
+       {
+        "if": "No hypertension",
+        "then": "Ergometrine"
+       },
+       {
+        "if": "No asthma",
+        "then": "Carboprost IM, repeat as needed"
+       },
+       {
+        "if": "Either",
+        "then": "Misoprostol"
+       }
+      ]
+     },
+     {
+      "t": "Balloon tamponade (e.g. Bakri)"
+     },
+     {
+      "t": "Surgery: compression sutures, artery ligation or embolisation; hysterectomy as last resort"
+     }
+    ]
+   },
+   "mm": {
+    "c": "Atonic PPH",
+    "n": [
+     {
+      "t": "Define",
+      "k": [
+       "≥500 mL in 24 h",
+       "Severe ≥1000 mL"
+      ]
+     },
+     {
+      "t": "Drugs",
+      "k": [
+       "Oxytocin first",
+       "Tranexamic acid ≤3 h",
+       "Ergometrine, carboprost, misoprostol"
+      ]
+     },
+     {
+      "t": "Contraindications",
+      "k": [
+       "Ergometrine: hypertension",
+       "Carboprost: asthma"
+      ]
+     },
+     {
+      "t": "Mechanical",
+      "k": [
+       "Bimanual compression",
+       "Balloon tamponade"
+      ]
+     },
+     {
+      "t": "Surgical",
+      "k": [
+       "B-Lynch",
+       "Artery ligation",
+       "Hysterectomy"
+      ]
+     }
+    ]
+   },
+   "misconceptions": [
+    "Waiting for a measured 500 mL before acting: treat clinical signs early.",
+    "Tranexamic acid is not a uterotonic; it reduces fibrinolysis and must be given early."
+   ],
+   "image": "No licensed image added. Learn the bimanual compression technique from a teaching video (see Watch a video).",
+   "refs": [
+    "WHO recommendations for the prevention and treatment of postpartum haemorrhage",
+    "DC Dutta's Textbook of Obstetrics",
+    "Williams Obstetrics"
+   ],
+   "mcqs": [
+    {
+     "q": "Twenty minutes after a vaginal birth, a woman with severe pre-eclampsia (BP 168/112 mmHg) is bleeding heavily. The uterus is soft and boggy despite massage and an oxytocin infusion. Which uterotonic should be AVOIDED?",
+     "o": [
+      "Ergometrine",
+      "Carboprost",
+      "Misoprostol",
+      "Increasing the oxytocin infusion"
+     ],
+     "a": 0,
+     "e": "Ergometrine causes vasoconstriction and can provoke a dangerous rise in blood pressure, so it is avoided in hypertension and pre-eclampsia.",
+     "p": "Ergometrine: avoid in hypertension/heart disease. Carboprost: avoid in asthma.",
+     "hy": 3,
+     "w": [
+      "Correct. Vasoconstriction worsens severe hypertension.",
+      "Carboprost is suitable here unless she has asthma.",
+      "Misoprostol can be used.",
+      "Oxytocin remains appropriate."
+     ]
+    },
+    {
+     "q": "In postpartum haemorrhage, tranexamic acid gives the greatest benefit when it is given:",
+     "o": [
+      "Within 3 hours of birth",
+      "Only after 6 hours",
+      "Only if fibrinogen is below 1 g/L",
+      "Only after a hysterectomy"
+     ],
+     "a": 0,
+     "e": "The benefit of tranexamic acid in PPH is time-dependent; giving it within 3 hours of birth reduces deaths from bleeding, and later use is not recommended.",
+     "p": "Tranexamic acid 1 g IV over 10 minutes; repeat once if bleeding continues after 30 minutes.",
+     "hy": 3,
+     "w": [
+      "Correct. Early use is what reduces mortality.",
+      "Late use loses the benefit.",
+      "It is given on clinical grounds without waiting for fibrinogen.",
+      "It is part of early medical management, not a last step."
+     ]
+    }
+   ]
+  },
+  {
+   "id": "eclampsia-mgso4",
+   "title": "Eclampsia and magnesium sulphate",
+   "s": "ob",
+   "t": "Obstetrics",
+   "st": "Hypertensive disorders",
+   "why": {
+    "category": "A",
+    "concepts": [
+     "mgso4-pritchard"
+    ],
+    "text": "The Pritchard regimen is in the NEET-PG 2025 recall list (single third-party source); part of obstetric emergencies (A8).",
+    "groups": [
+     "A8"
+    ]
+   },
+   "concept": "Magnesium sulphate prevents and treats eclamptic seizures better than diazepam or phenytoin. Its narrow therapeutic range means each dose depends on bedside checks of reflexes, breathing and urine output, because magnesium is excreted by the kidneys.",
+   "facts": [
+    "Pritchard (IM) regimen: loading 4 g IV slowly plus 10 g IM (5 g in each buttock); maintenance 5 g IM every 4 hours in alternate buttocks.",
+    "Zuspan (IV) regimen: loading 4-6 g IV over 15-20 minutes, then 1-2 g per hour by infusion.",
+    "Continue for 24 hours after delivery or after the last seizure, whichever is later.",
+    "Before each dose: patellar reflex present, respiratory rate at least 12/min (some protocols 16), urine output at least 30 mL/hour (100 mL in 4 hours).",
+    "Approximate serum levels: loss of patellar reflex near 10 mEq/L, respiratory depression above about 12 mEq/L, cardiac arrest above about 25 mEq/L.",
+    "Antidote: 10 mL of 10% calcium gluconate IV slowly.",
+    "Blood pressure control (labetalol, nifedipine, hydralazine) is needed as well; delivery is the definitive treatment."
+   ],
+   "associations": [
+    "HELLP syndrome: haemolysis, raised liver enzymes, low platelets."
+   ],
+   "clues": [
+    "Seizure in a woman with hypertension and proteinuria in pregnancy or soon after birth"
+   ],
+   "differentials": {
+    "h": [
+     "Finding",
+     "Action"
+    ],
+    "r": [
+     [
+      "Patellar reflex absent",
+      "Withhold the dose; check level"
+     ],
+     [
+      "Respiratory rate < 12/min",
+      "Withhold; give calcium gluconate if depressed"
+     ],
+     [
+      "Urine < 30 mL/hour",
+      "Reduce or withhold; risk of accumulation"
+     ],
+     [
+      "All checks normal",
+      "Give the scheduled dose"
+     ]
+    ]
+   },
+   "flow": {
+    "title": "Each maintenance dose",
+    "steps": [
+     {
+      "t": "Check patellar reflex, respiratory rate, urine output"
+     },
+     {
+      "t": "All within limits?",
+      "d": [
+       {
+        "if": "Yes",
+        "then": "Give the dose"
+       },
+       {
+        "if": "No",
+        "then": "Withhold and review; calcium gluconate if respiratory depression"
+       }
+      ]
+     },
+     {
+      "t": "Continue 24 h after delivery or last seizure"
+     }
+    ]
+   },
+   "mm": {
+    "c": "Magnesium sulphate",
+    "n": [
+     {
+      "t": "Pritchard",
+      "k": [
+       "4 g IV + 10 g IM load",
+       "5 g IM every 4 h"
+      ]
+     },
+     {
+      "t": "Zuspan",
+      "k": [
+       "4-6 g IV load",
+       "1-2 g/h infusion"
+      ]
+     },
+     {
+      "t": "Monitor",
+      "k": [
+       "Patellar reflex",
+       "Resp rate ≥12",
+       "Urine ≥30 mL/h"
+      ]
+     },
+     {
+      "t": "Toxicity",
+      "k": [
+       "Reflex loss first",
+       "Respiratory depression",
+       "Cardiac arrest"
+      ]
+     },
+     {
+      "t": "Antidote",
+      "k": [
+       "10% calcium gluconate 10 mL IV"
+      ]
+     }
+    ]
+   },
+   "misconceptions": [
+    "Magnesium sulphate does not treat hypertension; antihypertensives are still needed.",
+    "Loss of reflexes comes before respiratory depression, so the reflex check is the early warning."
+   ],
+   "image": "Not an image topic.",
+   "refs": [
+    "DC Dutta's Textbook of Obstetrics",
+    "Williams Obstetrics",
+    "WHO recommendations for prevention and treatment of pre-eclampsia and eclampsia"
+   ],
+   "mcqs": [
+    {
+     "q": "Using the Pritchard regimen, what is the total loading dose of magnesium sulphate?",
+     "o": [
+      "14 g",
+      "4 g",
+      "10 g",
+      "24 g"
+     ],
+     "a": 0,
+     "e": "Pritchard loading = 4 g IV given slowly plus 10 g IM (5 g in each buttock) = 14 g.",
+     "p": "Pritchard maintenance: 5 g IM every 4 hours in alternate buttocks, with checks before each dose.",
+     "hy": 3,
+     "w": [
+      "Correct. 4 g IV + 10 g IM.",
+      "4 g is only the IV part.",
+      "10 g is only the IM part.",
+      "24 g is not a loading dose."
+     ]
+    },
+    {
+     "q": "A woman on Pritchard maintenance therapy is due her next dose. Which finding means the dose should be withheld?",
+     "o": [
+      "Respiratory rate 10/min",
+      "Urine output 40 mL/hour",
+      "Brisk patellar reflexes",
+      "BP 150/100 mmHg"
+     ],
+     "a": 0,
+     "e": "A respiratory rate below 12/min suggests magnesium toxicity; the dose is withheld and calcium gluconate considered.",
+     "p": "Before every dose: reflexes present, breathing ≥12/min, urine ≥30 mL/hour.",
+     "hy": 3,
+     "w": [
+      "Correct. Respiratory depression is a sign of toxicity.",
+      "40 mL/hour is adequate urine output.",
+      "Present reflexes are reassuring.",
+      "Blood pressure is managed separately; it does not stop magnesium."
+     ]
+    }
+   ]
+  },
+  {
+   "id": "labour-emergencies",
+   "title": "Shoulder dystocia and cord prolapse",
+   "s": "ob",
+   "t": "Obstetrics",
+   "st": "Labour",
+   "why": {
+    "category": "A",
+    "concepts": [
+     "shoulder-dystocia",
+     "cord-prolapse"
+    ],
+    "text": "Both are in the NEET-PG 2025 recall list (single third-party source); time-critical obstetric emergencies (A8).",
+    "groups": [
+     "A8"
+    ]
+   },
+   "concept": "Both are labour emergencies where minutes matter and the steps follow a set order. In shoulder dystocia the anterior shoulder is stuck behind the pubic symphysis after the head delivers. In cord prolapse the cord lies below the presenting part after the membranes rupture and can be compressed, cutting off oxygen to the baby.",
+   "facts": [
+    "Shoulder dystocia sign: the head delivers then retracts against the perineum ('turtle sign').",
+    "First-line: call for help, McRoberts manoeuvre (hyperflex the mother's thighs onto her abdomen) with suprapubic pressure.",
+    "Next: internal rotation manoeuvres (Rubin II, Woods screw), delivery of the posterior arm, all-fours position.",
+    "Avoid fundal pressure and strong lateral traction on the head (brachial plexus injury, Erb palsy C5-C6).",
+    "Cord prolapse: do not push the cord back; handle it as little as possible.",
+    "Relieve compression: push the presenting part up manually, knee-chest or head-down position, fill the bladder with 500-750 mL saline; then deliver fast (usually emergency caesarean unless vaginal birth is imminent)."
+   ],
+   "associations": [
+    "Shoulder dystocia risks: macrosomia, maternal diabetes, obesity, prolonged second stage, instrumental delivery.",
+    "Cord prolapse risks: malpresentation (breech, transverse), polyhydramnios, prematurity, artificial rupture with a high head."
+   ],
+   "clues": [
+    "Turtle sign → shoulder dystocia",
+    "Sudden fetal bradycardia after membranes rupture → check for cord prolapse"
+   ],
+   "differentials": {
+    "h": [
+     "Emergency",
+     "Recognition",
+     "First action",
+     "Avoid"
+    ],
+    "r": [
+     [
+      "Shoulder dystocia",
+      "Turtle sign",
+      "McRoberts + suprapubic pressure",
+      "Fundal pressure, strong traction"
+     ],
+     [
+      "Cord prolapse",
+      "Cord felt or seen; bradycardia",
+      "Elevate presenting part, position, fill bladder",
+      "Handling or replacing the cord"
+     ]
+    ]
+   },
+   "flow": {
+    "title": "Shoulder dystocia sequence",
+    "steps": [
+     {
+      "t": "Call for help; stop pushing; note the time"
+     },
+     {
+      "t": "McRoberts manoeuvre"
+     },
+     {
+      "t": "Suprapubic pressure"
+     },
+     {
+      "t": "Internal rotation (Rubin II, Woods screw)"
+     },
+     {
+      "t": "Deliver the posterior arm"
+     },
+     {
+      "t": "All-fours position; last-resort measures by senior staff"
+     }
+    ]
+   },
+   "mm": {
+    "c": "Labour emergencies",
+    "n": [
+     {
+      "t": "Shoulder dystocia",
+      "k": [
+       "Turtle sign",
+       "McRoberts first",
+       "Avoid fundal pressure"
+      ]
+     },
+     {
+      "t": "Risks (dystocia)",
+      "k": [
+       "Macrosomia",
+       "Diabetes",
+       "Prolonged 2nd stage"
+      ]
+     },
+     {
+      "t": "Cord prolapse",
+      "k": [
+       "Don't replace cord",
+       "Elevate presenting part",
+       "Fill bladder"
+      ]
+     },
+     {
+      "t": "Delivery",
+      "k": [
+       "Fastest safe route",
+       "Usually emergency CS"
+      ]
+     }
+    ]
+   },
+   "misconceptions": [
+    "Fundal pressure does not help shoulder dystocia; it impacts the shoulder further.",
+    "Pushing a prolapsed cord back into the uterus is not recommended."
+   ],
+   "image": "Not an image topic; drills and videos teach the manoeuvres best.",
+   "refs": [
+    "RCOG Green-top Guideline No. 42 (Shoulder dystocia)",
+    "RCOG Green-top Guideline No. 50 (Umbilical cord prolapse)",
+    "DC Dutta's Textbook of Obstetrics"
+   ],
+   "mcqs": [
+    {
+     "q": "During a vaginal delivery, the fetal head delivers and then retracts tightly against the perineum. After calling for help, what is the most appropriate first manoeuvre?",
+     "o": [
+      "McRoberts manoeuvre",
+      "Fundal pressure",
+      "Zavanelli manoeuvre",
+      "Strong lateral traction on the head"
+     ],
+     "a": 0,
+     "e": "The 'turtle sign' indicates shoulder dystocia. McRoberts (hyperflexing the thighs) flattens the lumbosacral angle and rotates the pubic symphysis, freeing many impacted shoulders, especially with suprapubic pressure.",
+     "p": "Shoulder dystocia: help, McRoberts, suprapubic pressure, internal manoeuvres, posterior arm, all-fours.",
+     "hy": 3,
+     "w": [
+      "Correct. Simple, effective first step.",
+      "Fundal pressure worsens impaction.",
+      "Zavanelli (cephalic replacement) is a last resort.",
+      "Strong traction risks brachial plexus injury."
+     ]
+    },
+    {
+     "q": "At 6 cm cervical dilatation, soon after the membranes rupture, the fetal heart rate drops to 70/min and a loop of cord is felt in the vagina. What should be done while arranging immediate delivery?",
+     "o": [
+      "Push the presenting part up off the cord and position the mother knee-chest",
+      "Replace the cord into the uterus",
+      "Wait for full dilatation and then deliver vaginally",
+      "Encourage the mother to push"
+     ],
+     "a": 0,
+     "e": "The priority is to stop the presenting part compressing the cord (manual elevation, knee-chest or head-down position, bladder filling) until an emergency caesarean is done.",
+     "p": "Cord prolapse: minimal handling of the cord; relieve compression; deliver by the quickest safe route.",
+     "hy": 3,
+     "w": [
+      "Correct. Relieves cord compression while delivery is arranged.",
+      "Replacing the cord is not recommended.",
+      "Waiting risks fetal hypoxia.",
+      "Pushing at 6 cm is ineffective and harmful."
+     ]
+    }
+   ]
+  },
+  {
+   "id": "leukaemia-translocations",
+   "title": "Acute leukaemia and key translocations",
+   "s": "pa",
+   "t": "Haematology",
+   "st": "Leukaemias",
+   "why": {
+    "category": "A",
+    "concepts": [
+     "apl-t1517",
+     "follicular-lymphoma"
+    ],
+    "text": "APL and follicular lymphoma translocations are in the NEET-PG 2025 recall list (single third-party source); general pathology foundation (A4).",
+    "groups": [
+     "A4"
+    ]
+   },
+   "concept": "Many haematological cancers are defined by a recurrent chromosomal translocation that creates a fusion gene or moves an oncogene next to an active promoter. Knowing the translocation tells you the disease, its biology and sometimes its targeted treatment, such as retinoic acid for PML::RARA or imatinib for BCR::ABL1.",
+   "facts": [
+    "t(15;17) PML::RARA: acute promyelocytic leukaemia; DIC at presentation; treat with ATRA plus arsenic trioxide.",
+    "t(9;22) BCR::ABL1 (Philadelphia chromosome): CML, also some ALL; tyrosine kinase inhibitors (imatinib).",
+    "t(8;14) MYC: Burkitt lymphoma; 'starry sky' pattern.",
+    "t(14;18) BCL2: follicular lymphoma; BCL2 blocks apoptosis.",
+    "t(11;14) cyclin D1: mantle cell lymphoma.",
+    "Acute leukaemia is traditionally ≥20% blasts in marrow or blood; WHO 2022 allows AML with defining genetic abnormalities such as PML::RARA at lower blast counts."
+   ],
+   "associations": [
+    "APL is a medical emergency: start ATRA as soon as APL is suspected, before genetic confirmation.",
+    "Differentiation syndrome is a complication of ATRA/arsenic."
+   ],
+   "clues": [
+    "Bleeding + Auer rods/faggot cells + low fibrinogen → APL",
+    "Massive splenomegaly + very high WBC with all stages of maturation → CML"
+   ],
+   "differentials": {
+    "h": [
+     "Translocation",
+     "Gene",
+     "Disease",
+     "Treatment link"
+    ],
+    "r": [
+     [
+      "t(15;17)",
+      "PML::RARA",
+      "APL",
+      "ATRA + arsenic trioxide"
+     ],
+     [
+      "t(9;22)",
+      "BCR::ABL1",
+      "CML (some ALL)",
+      "Imatinib"
+     ],
+     [
+      "t(8;14)",
+      "MYC",
+      "Burkitt lymphoma",
+      "Intensive chemotherapy"
+     ],
+     [
+      "t(14;18)",
+      "BCL2",
+      "Follicular lymphoma",
+      "Indolent; rituximab-based"
+     ],
+     [
+      "t(11;14)",
+      "CCND1",
+      "Mantle cell lymphoma",
+      "Aggressive behaviour"
+     ]
+    ]
+   },
+   "flow": {
+    "title": "Approach to suspected acute leukaemia",
+    "steps": [
+     {
+      "t": "Blood count and peripheral smear: blasts, cytopenias"
+     },
+     {
+      "t": "Coagulation screen",
+      "d": [
+       {
+        "if": "DIC with promyelocytes",
+        "then": "Start ATRA now (suspected APL)"
+       },
+       {
+        "if": "No DIC",
+        "then": "Proceed with work-up"
+       }
+      ]
+     },
+     {
+      "t": "Bone marrow: blast count, morphology"
+     },
+     {
+      "t": "Flow cytometry: myeloid vs lymphoid lineage"
+     },
+     {
+      "t": "Cytogenetics and molecular tests: classify and risk-stratify"
+     }
+    ]
+   },
+   "mm": {
+    "c": "Translocations",
+    "n": [
+     {
+      "t": "t(15;17)",
+      "k": [
+       "APL",
+       "PML::RARA",
+       "ATRA"
+      ]
+     },
+     {
+      "t": "t(9;22)",
+      "k": [
+       "CML",
+       "BCR::ABL1",
+       "Imatinib"
+      ]
+     },
+     {
+      "t": "t(8;14)",
+      "k": [
+       "Burkitt",
+       "MYC",
+       "Starry sky"
+      ]
+     },
+     {
+      "t": "t(14;18)",
+      "k": [
+       "Follicular",
+       "BCL2"
+      ]
+     },
+     {
+      "t": "t(11;14)",
+      "k": [
+       "Mantle cell",
+       "Cyclin D1"
+      ]
+     }
+    ]
+   },
+   "misconceptions": [
+    "Philadelphia chromosome is not unique to CML; it occurs in some ALL.",
+    "Waiting for cytogenetics before ATRA in suspected APL costs lives."
+   ],
+   "image": "No licensed smear image has been added. On a smear, APL shows abnormal promyelocytes with many Auer rods ('faggot cells').",
+   "refs": [
+    "Robbins & Cotran Pathologic Basis of Disease",
+    "WHO Classification of Haematolymphoid Tumours, 5th edition (2022)"
+   ],
+   "mcqs": [
+    {
+     "q": "A 30-year-old presents with gum bleeding and bruises. Blood shows pancytopenia with abnormal promyelocytes containing bundles of Auer rods; fibrinogen is low and D-dimer high. What should be done first?",
+     "o": [
+      "Start all-trans retinoic acid immediately",
+      "Wait for cytogenetic confirmation before any treatment",
+      "Start heparin alone",
+      "Start imatinib"
+     ],
+     "a": 0,
+     "e": "This is suspected acute promyelocytic leukaemia with DIC. ATRA is started on suspicion because early death from bleeding is the main risk.",
+     "p": "APL: t(15;17) PML::RARA, DIC, ATRA + arsenic trioxide; watch for differentiation syndrome.",
+     "hy": 3,
+     "w": [
+      "Correct. ATRA on clinical suspicion reduces early haemorrhagic death.",
+      "Delay increases fatal bleeding risk.",
+      "Heparin alone does not treat the cause.",
+      "Imatinib targets BCR::ABL1, not PML::RARA."
+     ]
+    },
+    {
+     "q": "Which translocation places the BCL2 gene next to the immunoglobulin heavy-chain locus, blocking apoptosis?",
+     "o": [
+      "t(14;18) in follicular lymphoma",
+      "t(8;14) in Burkitt lymphoma",
+      "t(9;22) in CML",
+      "t(15;17) in APL"
+     ],
+     "a": 0,
+     "e": "In follicular lymphoma, t(14;18) drives overexpression of the anti-apoptotic protein BCL2.",
+     "p": "BCL2 = survival (anti-apoptosis); MYC = proliferation.",
+     "hy": 3,
+     "w": [
+      "Correct.",
+      "Burkitt involves MYC, a proliferation gene.",
+      "CML involves BCR::ABL1, a tyrosine kinase.",
+      "APL involves PML::RARA, a block in differentiation."
+     ]
+    }
+   ]
+  },
+  {
+   "id": "aspergillus-mucor",
+   "title": "Aspergillus and Mucor",
+   "s": "mi",
+   "t": "Mycology",
+   "st": "Opportunistic mycoses",
+   "why": {
+    "category": "OBSERVED_ONCE",
+    "concepts": [
+     "aspergillus-hyphae"
+    ],
+    "text": "Aspergillus hyphal morphology is in the NEET-PG 2025 recall list (single third-party source); image-friendly microbiology."
+   },
+   "concept": "Both are mould infections of immunocompromised patients that invade blood vessels, but they differ in who gets them, how they look under the microscope and which drugs work. Getting the drug wrong matters: voriconazole treats Aspergillus but does not work against Mucorales.",
+   "facts": [
+    "Aspergillus: narrow septate hyphae with acute-angle (about 45°) branching.",
+    "Mucorales: broad, ribbon-like, few-septate hyphae with wide-angle (up to 90°) branching.",
+    "Aspergillus syndromes: allergic bronchopulmonary aspergillosis, aspergilloma (fungus ball, air-crescent sign), invasive aspergillosis (halo sign on CT in neutropenia; galactomannan test).",
+    "Mucormycosis: rhino-orbito-cerebral disease in diabetic ketoacidosis or after steroids; black necrotic eschar of palate or nose.",
+    "Treatment: invasive aspergillosis → voriconazole (or isavuconazole); mucormycosis → liposomal amphotericin B plus urgent surgical debridement."
+   ],
+   "associations": [
+    "Mucormycosis rose sharply in India with COVID-19, steroids and uncontrolled diabetes."
+   ],
+   "clues": [
+    "DKA + black eschar → Mucor",
+    "Neutropenia + halo sign → invasive Aspergillus"
+   ],
+   "differentials": {
+    "h": [
+     "Feature",
+     "Aspergillus",
+     "Mucorales"
+    ],
+    "r": [
+     [
+      "Hyphae",
+      "Narrow, septate",
+      "Broad, few septa"
+     ],
+     [
+      "Branching",
+      "Acute (~45°)",
+      "Wide (~90°)"
+     ],
+     [
+      "Typical host",
+      "Neutropenia, transplant",
+      "DKA, steroids, iron overload"
+     ],
+     [
+      "First-line drug",
+      "Voriconazole",
+      "Liposomal amphotericin B + debridement"
+     ]
+    ]
+   },
+   "flow": {
+    "title": "Suspected invasive mould infection",
+    "steps": [
+     {
+      "t": "Immunocompromised patient with sinus, orbital or lung signs"
+     },
+     {
+      "t": "Imaging and tissue: KOH/histology, culture",
+      "d": [
+       {
+        "if": "Broad, few-septate hyphae",
+        "then": "Mucor: liposomal amphotericin B + surgery"
+       },
+       {
+        "if": "Narrow septate, acute-angle",
+        "then": "Aspergillus: voriconazole"
+       }
+      ]
+     },
+     {
+      "t": "Correct the host factor: control glucose and acidosis, reduce steroids"
+     }
+    ]
+   },
+   "mm": {
+    "c": "Moulds",
+    "n": [
+     {
+      "t": "Aspergillus",
+      "k": [
+       "Septate, narrow",
+       "Acute angle",
+       "Voriconazole"
+      ]
+     },
+     {
+      "t": "Mucor",
+      "k": [
+       "Broad, few septa",
+       "Right angle",
+       "Amphotericin B + surgery"
+      ]
+     },
+     {
+      "t": "Hosts",
+      "k": [
+       "Neutropenia → Aspergillus",
+       "DKA → Mucor"
+      ]
+     },
+     {
+      "t": "Imaging",
+      "k": [
+       "Halo sign",
+       "Air crescent"
+      ]
+     }
+    ]
+   },
+   "misconceptions": [
+    "Voriconazole is not active against Mucorales.",
+    "Antifungals alone are not enough for mucormycosis; debridement is essential."
+   ],
+   "image": "No openly licensed micrograph has been added. Compare hyphal width, septa and branch angle when you see one.",
+   "refs": [
+    "Ananthanarayan and Paniker's Textbook of Microbiology",
+    "IDSA practice guideline on aspergillosis (2016)",
+    "Global guideline for the diagnosis and management of mucormycosis (ECMM/MSG ERC, 2019)"
+   ],
+   "mcqs": [
+    {
+     "q": "A man with uncontrolled diabetes and ketoacidosis has facial swelling and a black necrotic patch on the hard palate. Biopsy shows broad, ribbon-like hyphae with few septa. Which drug is first-line?",
+     "o": [
+      "Liposomal amphotericin B",
+      "Voriconazole",
+      "Fluconazole",
+      "Caspofungin"
+     ],
+     "a": 0,
+     "e": "This is rhino-orbito-cerebral mucormycosis. Liposomal amphotericin B with urgent surgical debridement is first-line; voriconazole and fluconazole are inactive against Mucorales.",
+     "p": "Step-down or salvage options for mucormycosis include posaconazole and isavuconazole.",
+     "hy": 3,
+     "w": [
+      "Correct.",
+      "Voriconazole does not cover Mucorales.",
+      "Fluconazole has no mould activity.",
+      "Echinocandins are not adequate for mucormycosis."
+     ]
+    },
+    {
+     "q": "A neutropenic patient on chemotherapy has fever and a lung nodule surrounded by a ground-glass 'halo' on CT. Serum galactomannan is positive. What is the drug of choice?",
+     "o": [
+      "Voriconazole",
+      "Fluconazole",
+      "Griseofulvin",
+      "Terbinafine"
+     ],
+     "a": 0,
+     "e": "The picture fits invasive aspergillosis; voriconazole (or isavuconazole) is first-line.",
+     "p": "Air-crescent sign appears later, often with neutrophil recovery.",
+     "hy": 3,
+     "w": [
+      "Correct.",
+      "Fluconazole lacks activity against Aspergillus.",
+      "Griseofulvin treats dermatophytes.",
+      "Terbinafine is for dermatophyte infections."
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ards",
+   "title": "ARDS: definition and ventilation",
+   "s": "me",
+   "t": "Respiratory",
+   "st": "ARDS & respiratory failure",
+   "why": {
+    "category": "OBSERVED_ONCE",
+    "concepts": [
+     "ards-ventilation"
+    ],
+    "text": "ARDS management is in the NEET-PG 2025 recall list (single third-party source); a core critical-care concept."
+   },
+   "concept": "ARDS is diffuse inflammatory lung injury that makes the lungs stiff and fills alveoli with protein-rich fluid, causing severe hypoxaemia. Ventilation itself can injure the lungs further, so management limits the stretch of each breath (low tidal volume and plateau pressure) while keeping enough PEEP to hold alveoli open.",
+   "facts": [
+    "Berlin definition: onset within 1 week; bilateral opacities not explained by effusion, collapse or nodules; not fully explained by heart failure or fluid overload.",
+    "Severity by PaO2/FiO2 with PEEP ≥5 cmH2O: mild 201-300, moderate 101-200, severe ≤100 mmHg.",
+    "Tidal volume about 6 mL/kg of predicted (not actual) body weight; plateau pressure ≤30 cmH2O.",
+    "Higher PEEP in moderate to severe disease; prone positioning for long sessions when PaO2/FiO2 is below about 150.",
+    "Conservative fluids once shock has resolved; ECMO in selected refractory cases.",
+    "Pathology: diffuse alveolar damage with hyaline membranes."
+   ],
+   "associations": [
+    "Common causes: sepsis, pneumonia, aspiration, trauma, pancreatitis, massive transfusion."
+   ],
+   "clues": [
+    "Bilateral infiltrates with severe hypoxaemia and normal cardiac function after a major insult"
+   ],
+   "differentials": {
+    "h": [
+     "Feature",
+     "ARDS",
+     "Cardiogenic pulmonary oedema"
+    ],
+    "r": [
+     [
+      "Cause",
+      "Inflammatory injury",
+      "Raised left atrial pressure"
+     ],
+     [
+      "Heart size and BNP",
+      "Often normal",
+      "Cardiomegaly, high BNP"
+     ],
+     [
+      "Response to diuretics",
+      "Limited",
+      "Rapid"
+     ],
+     [
+      "Pathology",
+      "Diffuse alveolar damage",
+      "Transudate"
+     ]
+    ]
+   },
+   "flow": {
+    "title": "Lung-protective ventilation",
+    "steps": [
+     {
+      "t": "Calculate predicted body weight from height and sex"
+     },
+     {
+      "t": "Set tidal volume about 6 mL/kg PBW"
+     },
+     {
+      "t": "Check plateau pressure",
+      "d": [
+       {
+        "if": "> 30 cmH2O",
+        "then": "Lower tidal volume (down to 4 mL/kg)"
+       },
+       {
+        "if": "≤ 30 cmH2O",
+        "then": "Continue"
+       }
+      ]
+     },
+     {
+      "t": "Titrate PEEP and FiO2 to oxygenation targets"
+     },
+     {
+      "t": "PaO2/FiO2 < 150 → prone positioning"
+     }
+    ]
+   },
+   "mm": {
+    "c": "ARDS",
+    "n": [
+     {
+      "t": "Berlin",
+      "k": [
+       "≤1 week",
+       "Bilateral opacities",
+       "Not cardiac"
+      ]
+     },
+     {
+      "t": "Severity (P/F)",
+      "k": [
+       "Mild 201-300",
+       "Moderate 101-200",
+       "Severe ≤100"
+      ]
+     },
+     {
+      "t": "Ventilation",
+      "k": [
+       "6 mL/kg PBW",
+       "Plateau ≤30",
+       "Adequate PEEP"
+      ]
+     },
+     {
+      "t": "Rescue",
+      "k": [
+       "Prone",
+       "ECMO"
+      ]
+     }
+    ]
+   },
+   "misconceptions": [
+    "Tidal volume is based on predicted, not actual, body weight.",
+    "A high PaO2 is not the goal at the cost of high pressures."
+   ],
+   "image": "No licensed chest image has been added. Expect bilateral diffuse opacities without cardiomegaly.",
+   "refs": [
+    "Harrison's Principles of Internal Medicine (ARDS)",
+    "ARDS Definition Task Force: the Berlin definition (JAMA, 2012)",
+    "ARDS Network low tidal volume trial (NEJM, 2000)"
+   ],
+   "mcqs": [
+    {
+     "q": "A ventilated patient with ARDS weighs 95 kg; her predicted body weight from height is 60 kg. What initial tidal volume is recommended?",
+     "o": [
+      "About 360 mL (6 mL/kg predicted body weight)",
+      "About 950 mL (10 mL/kg actual weight)",
+      "About 720 mL (12 mL/kg predicted body weight)",
+      "About 380 mL (4 mL/kg actual weight)"
+     ],
+     "a": 0,
+     "e": "Lung-protective ventilation uses about 6 mL/kg of predicted body weight: 6 × 60 = 360 mL.",
+     "p": "Also keep plateau pressure ≤30 cmH2O.",
+     "hy": 3,
+     "w": [
+      "Correct. 6 × 60 kg PBW.",
+      "Actual weight and 10 mL/kg overdistend the lungs.",
+      "12 mL/kg is the old, harmful volume.",
+      "Volumes are not based on actual weight."
+     ]
+    },
+    {
+     "q": "A patient with bilateral infiltrates after pancreatitis has PaO2 84 mmHg on FiO2 0.7 with PEEP 8 cmH2O. Echocardiography is normal. How is the ARDS graded?",
+     "o": [
+      "Moderate",
+      "Mild",
+      "Severe",
+      "Does not meet ARDS criteria"
+     ],
+     "a": 0,
+     "e": "PaO2/FiO2 = 84 / 0.7 = 120 mmHg, which is in the moderate range (101-200) with PEEP ≥5.",
+     "p": "Always divide PaO2 by FiO2 as a fraction (0.7, not 70).",
+     "hy": 2,
+     "w": [
+      "Correct. Ratio 120.",
+      "Mild needs 201-300.",
+      "Severe needs ≤100.",
+      "All Berlin criteria are met."
+     ]
+    }
+   ]
+  },
+  {
+   "id": "hiv-tb",
+   "title": "HIV-TB co-infection: ART timing and IRIS",
+   "s": "me",
+   "t": "Infectious Diseases",
+   "st": "HIV & opportunistic",
+   "why": {
+    "category": "A",
+    "concepts": [
+     "hiv-tb-art-timing",
+     "hiv-tb-iris"
+    ],
+    "text": "Both concepts are in the NEET-PG 2025 recall list (single third-party source); spans medicine, microbiology, pharmacology and PSM (A9).",
+    "groups": [
+     "A9"
+    ]
+   },
+   "concept": "In people with HIV and tuberculosis, starting antiretroviral therapy early saves lives, but the recovering immune system can react to TB antigens and temporarily worsen symptoms (immune reconstitution inflammatory syndrome). Timing balances these risks, with an exception for TB meningitis, where early ART increases harm.",
+   "facts": [
+    "Start TB treatment first, then ART as soon as possible and within 2 weeks of starting TB treatment, regardless of CD4 count (WHO).",
+    "TB meningitis: delay ART for 4-8 weeks after starting TB treatment.",
+    "TB-IRIS: fever, enlarging lymph nodes or worsening infiltrates within weeks of starting ART, despite response to treatment; a diagnosis of exclusion.",
+    "Manage IRIS by continuing ART and TB treatment; NSAIDs for mild cases, prednisolone for moderate to severe.",
+    "Rifampicin induces liver enzymes: dolutegravir is given twice daily with rifampicin.",
+    "Co-trimoxazole prophylaxis and TB preventive treatment are part of HIV care."
+   ],
+   "associations": [
+    "Low CD4 count and high viral load raise IRIS risk."
+   ],
+   "clues": [
+    "Patient improving on ATT, then worse 2-6 weeks after ART started, adherent, viral load falling → IRIS"
+   ],
+   "differentials": {
+    "h": [
+     "Possibility",
+     "Clue",
+     "Action"
+    ],
+    "r": [
+     [
+      "TB-IRIS",
+      "Viral load falling, adherent",
+      "Continue both; steroids if needed"
+     ],
+     [
+      "Drug-resistant TB",
+      "No response to ATT, resistance test",
+      "Change regimen"
+     ],
+     [
+      "New opportunistic infection",
+      "New organism",
+      "Treat it"
+     ],
+     [
+      "Non-adherence",
+      "Missed doses",
+      "Support adherence"
+     ]
+    ]
+   },
+   "flow": {
+    "title": "ART timing in HIV-TB",
+    "steps": [
+     {
+      "t": "Start TB treatment"
+     },
+     {
+      "t": "TB meningitis?",
+      "d": [
+       {
+        "if": "Yes",
+        "then": "Start ART after 4-8 weeks"
+       },
+       {
+        "if": "No",
+        "then": "Start ART within 2 weeks"
+       }
+      ]
+     },
+     {
+      "t": "Watch for IRIS in the first weeks to months; exclude other causes before diagnosing it"
+     }
+    ]
+   },
+   "mm": {
+    "c": "HIV-TB",
+    "n": [
+     {
+      "t": "Timing",
+      "k": [
+       "ATT first",
+       "ART within 2 weeks",
+       "TBM: 4-8 weeks"
+      ]
+     },
+     {
+      "t": "IRIS",
+      "k": [
+       "Paradoxical worsening",
+       "Exclude resistance",
+       "Continue ART"
+      ]
+     },
+     {
+      "t": "Interactions",
+      "k": [
+       "Rifampicin induces enzymes",
+       "Dolutegravir twice daily"
+      ]
+     },
+     {
+      "t": "Prevention",
+      "k": [
+       "Co-trimoxazole",
+       "TB preventive treatment"
+      ]
+     }
+    ]
+   },
+   "misconceptions": [
+    "IRIS is not treatment failure; stopping ART is usually wrong.",
+    "Waiting for CD4 results is not needed to time ART in HIV-TB."
+   ],
+   "image": "Not an image topic.",
+   "refs": [
+    "WHO consolidated guidelines on HIV prevention, testing, treatment, service delivery and monitoring",
+    "WHO consolidated guidelines on tuberculosis",
+    "National TB Elimination Programme (India) guidance"
+   ],
+   "mcqs": [
+    {
+     "q": "A 32-year-old with newly diagnosed HIV (CD4 180 cells/µL) has smear-positive pulmonary TB. There is no meningitis. When should antiretroviral therapy start?",
+     "o": [
+      "Within 2 weeks of starting TB treatment",
+      "After completing 6 months of TB treatment",
+      "Before TB treatment begins",
+      "Only when CD4 falls below 50"
+     ],
+     "a": 0,
+     "e": "For HIV-TB co-infection without meningitis, ART should start as soon as possible within 2 weeks of TB treatment, whatever the CD4 count.",
+     "p": "Exception: TB meningitis, where ART is delayed 4-8 weeks.",
+     "hy": 3,
+     "w": [
+      "Correct.",
+      "Delaying ART until TB treatment ends increases mortality.",
+      "TB treatment is started first.",
+      "CD4 count does not decide timing here."
+     ]
+    },
+    {
+     "q": "Three weeks after starting ART, a man being treated for TB develops fever and enlarging neck nodes. He is adherent, his viral load has fallen sharply, and resistance testing shows drug-sensitive TB. What is the best management?",
+     "o": [
+      "Continue ART and TB treatment; add prednisolone if symptoms are significant",
+      "Stop ART permanently",
+      "Switch to a second-line TB regimen",
+      "Stop TB treatment"
+     ],
+     "a": 0,
+     "e": "This is paradoxical TB-IRIS. Both treatments continue; anti-inflammatory treatment (NSAIDs or prednisolone) controls symptoms.",
+     "p": "IRIS is a diagnosis of exclusion: rule out resistance, other infections and non-adherence.",
+     "hy": 3,
+     "w": [
+      "Correct.",
+      "Stopping ART loses the survival benefit.",
+      "TB is drug-sensitive; no need to switch.",
+      "Stopping TB treatment is dangerous."
+     ]
+    }
+   ]
+  },
+  {
+   "id": "adrenal-insufficiency",
+   "title": "Adrenal insufficiency",
+   "s": "me",
+   "t": "Endocrinology",
+   "st": "Adrenal",
+   "why": {
+    "category": "A",
+    "concepts": [
+     "adrenal-insufficiency"
+    ],
+    "text": "Addison disease is in the NEET-PG 2025 recall list (single third-party source); endocrine emergencies (A10).",
+    "groups": [
+     "A10"
+    ]
+   },
+   "concept": "Failure of the adrenal cortex (primary, Addison disease) removes both cortisol and aldosterone; the pituitary drives ACTH up, which causes pigmentation. Failure of ACTH supply (secondary) removes cortisol only, because aldosterone is controlled by the renin-angiotensin system. Adrenal crisis is a life-threatening emergency treated before tests come back.",
+   "facts": [
+    "Primary: low cortisol and aldosterone, high ACTH, high renin → hyponatraemia, hyperkalaemia, hypotension, hyperpigmentation (palmar creases, buccal mucosa).",
+    "Secondary: low ACTH, no pigmentation, potassium usually normal.",
+    "Commonest cause overall of secondary insufficiency: stopping long-term steroid treatment.",
+    "Causes of primary disease include autoimmune adrenalitis and tuberculosis (important in India), adrenal haemorrhage and metastases.",
+    "Diagnosis: low morning cortisol and an inadequate cortisol rise on the short ACTH (cosyntropin) stimulation test; ACTH level separates primary from secondary.",
+    "Crisis: hydrocortisone 100 mg IV immediately, then continued dosing; rapid IV 0.9% saline; correct glucose. Take blood for cortisol and ACTH first if it causes no delay."
+   ],
+   "associations": [
+    "Sick-day rules: increase steroid dose during illness; carry an emergency card."
+   ],
+   "clues": [
+    "Hyperpigmentation + hyponatraemia + hyperkalaemia + hypotension → primary adrenal insufficiency"
+   ],
+   "differentials": {
+    "h": [
+     "Feature",
+     "Primary",
+     "Secondary"
+    ],
+    "r": [
+     [
+      "ACTH",
+      "High",
+      "Low"
+     ],
+     [
+      "Pigmentation",
+      "Present",
+      "Absent"
+     ],
+     [
+      "Potassium",
+      "High",
+      "Usually normal"
+     ],
+     [
+      "Mineralocorticoid needed",
+      "Yes (fludrocortisone)",
+      "No"
+     ]
+    ]
+   },
+   "flow": {
+    "title": "Suspected adrenal crisis",
+    "steps": [
+     {
+      "t": "Shock, vomiting, confusion; known or suspected adrenal disease"
+     },
+     {
+      "t": "Draw cortisol and ACTH if no delay"
+     },
+     {
+      "t": "Hydrocortisone 100 mg IV now + IV saline + glucose"
+     },
+     {
+      "t": "Confirm later with ACTH stimulation test; find the cause"
+     }
+    ]
+   },
+   "mm": {
+    "c": "Adrenal insufficiency",
+    "n": [
+     {
+      "t": "Primary",
+      "k": [
+       "High ACTH",
+       "Pigmentation",
+       "High K+"
+      ]
+     },
+     {
+      "t": "Secondary",
+      "k": [
+       "Low ACTH",
+       "No pigmentation",
+       "Steroid withdrawal"
+      ]
+     },
+     {
+      "t": "Tests",
+      "k": [
+       "Morning cortisol",
+       "ACTH stimulation"
+      ]
+     },
+     {
+      "t": "Crisis",
+      "k": [
+       "Hydrocortisone 100 mg IV",
+       "Saline",
+       "Glucose"
+      ]
+     },
+     {
+      "t": "Long term",
+      "k": [
+       "Hydrocortisone",
+       "Fludrocortisone (primary)",
+       "Sick-day rules"
+      ]
+     }
+    ]
+   },
+   "misconceptions": [
+    "Do not wait for test results to treat a suspected crisis.",
+    "Pigmentation comes from ACTH (and related peptides), so it is absent in secondary disease."
+   ],
+   "image": "Clinical photographs of buccal or palmar crease pigmentation are typical image material; none is licensed here yet.",
+   "refs": [
+    "Harrison's Principles of Internal Medicine (adrenal cortex)",
+    "Endocrine Society clinical practice guideline: primary adrenal insufficiency (2016)"
+   ],
+   "mcqs": [
+    {
+     "q": "A 40-year-old has fatigue, weight loss, darkened palmar creases and buccal pigmentation. Sodium is 128 mmol/L and potassium 5.9 mmol/L. Which hormone level is expected to be HIGH?",
+     "o": [
+      "ACTH",
+      "Cortisol",
+      "Aldosterone",
+      "Renin is low"
+     ],
+     "a": 0,
+     "e": "This is primary adrenal insufficiency. Low cortisol removes negative feedback, so ACTH rises and causes pigmentation; aldosterone is low and renin is high.",
+     "p": "Pigmentation means a high ACTH, so it points to a primary (adrenal) cause.",
+     "hy": 3,
+     "w": [
+      "Correct.",
+      "Cortisol is low.",
+      "Aldosterone is low (hence high potassium).",
+      "Renin is high, not low, in primary disease."
+     ]
+    },
+    {
+     "q": "A patient on long-term prednisolone stopped it abruptly a week ago and now presents with hypotension, vomiting and confusion. What is the immediate treatment?",
+     "o": [
+      "Hydrocortisone 100 mg IV with IV saline",
+      "Oral fludrocortisone alone",
+      "Wait for the ACTH stimulation test result",
+      "IV insulin"
+     ],
+     "a": 0,
+     "e": "This is adrenal crisis from steroid withdrawal. Give hydrocortisone IV and fluids at once; tests can be done later.",
+     "p": "Abrupt withdrawal of long-term steroids is the commonest cause of secondary adrenal insufficiency.",
+     "hy": 3,
+     "w": [
+      "Correct.",
+      "Fludrocortisone alone does not replace cortisol and is not needed in secondary disease.",
+      "Delay is dangerous.",
+      "Insulin is for DKA, not adrenal crisis."
+     ]
+    }
+   ]
+  },
+  {
+   "id": "kawasaki",
+   "title": "Kawasaki disease",
+   "s": "pe",
+   "t": "Paediatric Cardiology",
+   "st": "Acquired heart disease",
+   "why": {
+    "category": "OBSERVED_ONCE",
+    "concepts": [
+     "kawasaki"
+    ],
+    "text": "Reported in the INI-CET May 2026 recall (single third-party source); a leading cause of acquired heart disease in children."
+   },
+   "concept": "Kawasaki disease is a medium-vessel vasculitis of young children. Its importance lies in the coronary arteries: untreated, a significant minority develop coronary aneurysms. Diagnosis is clinical, based on prolonged fever plus mucocutaneous features, and early IVIG greatly lowers the aneurysm risk.",
+   "facts": [
+    "Fever for at least 5 days plus at least 4 of: bilateral non-exudative conjunctival injection, lip and oral changes (cracked red lips, strawberry tongue), polymorphous rash, hand and foot changes (redness, swelling, later peeling around the nails), cervical lymph node ≥1.5 cm (usually one-sided).",
+    "Incomplete Kawasaki disease (fewer criteria) is diagnosed with lab support and echocardiography.",
+    "Labs: high CRP and ESR; platelets rise in the second week; sterile pyuria; low albumin.",
+    "Echocardiography at diagnosis and during follow-up looks for coronary aneurysms.",
+    "Treatment: IVIG 2 g/kg as a single infusion, ideally within 10 days of fever onset, plus aspirin.",
+    "Live vaccines (MMR, varicella) are usually deferred for about 11 months after high-dose IVIG."
+   ],
+   "associations": [
+    "Differentials include measles, scarlet fever, toxic shock syndrome, drug reactions and MIS-C."
+   ],
+   "clues": [
+    "Infant or toddler with 5+ days of fever, red eyes, red cracked lips, swollen hands and feet"
+   ],
+   "differentials": {
+    "h": [
+     "Condition",
+     "Distinguishing clue"
+    ],
+    "r": [
+     [
+      "Kawasaki disease",
+      "Non-exudative conjunctivitis, extremity changes, coronary risk"
+     ],
+     [
+      "Measles",
+      "Cough, coryza, Koplik spots, rash from head downwards"
+     ],
+     [
+      "Scarlet fever",
+      "Sandpaper rash, positive throat swab, responds to penicillin"
+     ],
+     [
+      "MIS-C",
+      "Recent SARS-CoV-2, GI symptoms, shock, myocardial dysfunction"
+     ]
+    ]
+   },
+   "flow": {
+    "title": "Suspected Kawasaki disease",
+    "steps": [
+     {
+      "t": "Fever ≥5 days"
+     },
+     {
+      "t": "Count principal features",
+      "d": [
+       {
+        "if": "≥4 features",
+        "then": "Complete Kawasaki disease"
+       },
+       {
+        "if": "2-3 features",
+        "then": "Check CRP/ESR, labs and echo (incomplete KD)"
+       }
+      ]
+     },
+     {
+      "t": "IVIG 2 g/kg + aspirin; echocardiography"
+     },
+     {
+      "t": "Repeat echo during follow-up; IVIG-resistant cases get further treatment"
+     }
+    ]
+   },
+   "mm": {
+    "c": "Kawasaki disease",
+    "n": [
+     {
+      "t": "Criteria",
+      "k": [
+       "Fever ≥5 days",
+       "Conjunctivitis",
+       "Oral changes",
+       "Rash",
+       "Extremities",
+       "Lymph node"
+      ]
+     },
+     {
+      "t": "Danger",
+      "k": [
+       "Coronary aneurysm"
+      ]
+     },
+     {
+      "t": "Tests",
+      "k": [
+       "CRP, ESR",
+       "Late thrombocytosis",
+       "Echo"
+      ]
+     },
+     {
+      "t": "Treatment",
+      "k": [
+       "IVIG 2 g/kg",
+       "Aspirin"
+      ]
+     }
+    ]
+   },
+   "misconceptions": [
+    "Normal platelets early do not exclude it; thrombocytosis appears in the second week.",
+    "Antibiotics do not treat it; IVIG does."
+   ],
+   "image": "Clinical photographs (lips, conjunctivae, peeling fingers) are typical image material; none is licensed here yet.",
+   "refs": [
+    "Nelson Textbook of Pediatrics",
+    "American Heart Association scientific statement on Kawasaki disease (2017)",
+    "Ghai Essential Pediatrics"
+   ],
+   "mcqs": [
+    {
+     "q": "A 2-year-old has had fever for 6 days with bilateral red eyes without discharge, cracked red lips, a strawberry tongue, a rash on the trunk and swollen red hands. Which investigation is most important for long-term outcome?",
+     "o": [
+      "Echocardiography",
+      "Throat swab culture",
+      "Monospot test",
+      "Skin biopsy"
+     ],
+     "a": 0,
+     "e": "This is Kawasaki disease. Coronary artery aneurysms decide the prognosis, so echocardiography is essential at diagnosis and during follow-up.",
+     "p": "IVIG within 10 days of fever onset lowers the aneurysm risk.",
+     "hy": 3,
+     "w": [
+      "Correct.",
+      "A throat swab helps with scarlet fever, not Kawasaki disease.",
+      "Monospot is for infectious mononucleosis.",
+      "Biopsy is not used for diagnosis."
+     ]
+    },
+    {
+     "q": "What is the standard initial treatment for Kawasaki disease?",
+     "o": [
+      "IVIG 2 g/kg with aspirin",
+      "Oral penicillin",
+      "Oral steroids alone",
+      "Ibuprofen alone"
+     ],
+     "a": 0,
+     "e": "High-dose IVIG with aspirin is first-line and reduces coronary aneurysms.",
+     "p": "Ibuprofen can interfere with aspirin's antiplatelet effect.",
+     "hy": 3,
+     "w": [
+      "Correct.",
+      "Antibiotics do not treat Kawasaki disease.",
+      "Steroids are used in selected high-risk or resistant cases, not alone as standard.",
+      "Ibuprofen alone does not prevent aneurysms."
+     ]
+    }
+   ]
+  },
+  {
+   "id": "barrett",
+   "title": "Barrett oesophagus",
+   "s": "pa",
+   "t": "Systemic Pathology",
+   "st": "GIT & liver",
+   "why": {
+    "category": "OBSERVED_ONCE",
+    "concepts": [
+     "barrett"
+    ],
+    "text": "Reported as an image question in the INI-CET May 2026 recall (single third-party source); a classic histology image topic."
+   },
+   "concept": "Long-standing acid reflux damages the squamous lining of the lower oesophagus, which can be replaced by columnar epithelium better suited to acid (metaplasia). When this includes intestinal-type goblet cells it is Barrett oesophagus, the main precursor of oesophageal adenocarcinoma.",
+   "facts": [
+    "Definition: columnar mucosa extending above the gastro-oesophageal junction on endoscopy, confirmed on biopsy; many guidelines require intestinal metaplasia with goblet cells.",
+    "Histology: columnar epithelium with goblet cells (clear mucin vacuoles; Alcian blue positive) replacing squamous epithelium.",
+    "Cancer risk: adenocarcinoma, not squamous cell carcinoma.",
+    "Risk factors: chronic GERD, male sex, age over 50, central obesity, smoking, long-segment disease.",
+    "Management: PPI; endoscopic surveillance; dysplasia is treated endoscopically (resection, radiofrequency ablation)."
+   ],
+   "associations": [
+    "Adenocarcinoma of the lower oesophagus is linked to Barrett and GERD; squamous carcinoma is linked to smoking and alcohol."
+   ],
+   "clues": [
+    "Image: oesophageal biopsy with columnar cells and goblet cells"
+   ],
+   "differentials": {
+    "h": [
+     "Feature",
+     "Barrett oesophagus",
+     "Normal oesophagus",
+     "Gastric cardia"
+    ],
+    "r": [
+     [
+      "Epithelium",
+      "Columnar with goblet cells",
+      "Stratified squamous",
+      "Columnar, no goblet cells"
+     ],
+     [
+      "Cancer link",
+      "Adenocarcinoma",
+      "—",
+      "—"
+     ],
+     [
+      "Cause",
+      "Chronic reflux",
+      "—",
+      "Normal"
+     ]
+    ]
+   },
+   "flow": {
+    "title": "Barrett oesophagus",
+    "steps": [
+     {
+      "t": "Chronic GERD → squamous injury"
+     },
+     {
+      "t": "Columnar metaplasia with goblet cells (Barrett)"
+     },
+     {
+      "t": "Dysplasia?",
+      "d": [
+       {
+        "if": "None",
+        "then": "PPI and surveillance"
+       },
+       {
+        "if": "Present",
+        "then": "Endoscopic resection or ablation"
+       }
+      ]
+     },
+     {
+      "t": "Untreated progression → adenocarcinoma"
+     }
+    ]
+   },
+   "mm": {
+    "c": "Barrett oesophagus",
+    "n": [
+     {
+      "t": "Cause",
+      "k": [
+       "Chronic GERD"
+      ]
+     },
+     {
+      "t": "Histology",
+      "k": [
+       "Columnar epithelium",
+       "Goblet cells",
+       "Alcian blue +"
+      ]
+     },
+     {
+      "t": "Risk",
+      "k": [
+       "Adenocarcinoma"
+      ]
+     },
+     {
+      "t": "Management",
+      "k": [
+       "PPI",
+       "Surveillance",
+       "Ablate dysplasia"
+      ]
+     }
+    ]
+   },
+   "misconceptions": [
+    "Barrett raises the risk of adenocarcinoma, not squamous cell carcinoma.",
+    "It is metaplasia, not dysplasia; dysplasia is a later, separate step."
+   ],
+   "image": "No openly licensed histology image has been added. What to recognise: goblet cells (clear vacuoles) among columnar cells in an oesophageal biopsy.",
+   "refs": [
+    "Robbins & Cotran Pathologic Basis of Disease (oesophagus)",
+    "ACG clinical guideline: diagnosis and management of Barrett's esophagus (2022)"
+   ],
+   "mcqs": [
+    {
+     "q": "A biopsy from the lower oesophagus of a man with long-standing reflux shows columnar epithelium with scattered goblet cells. This finding increases his risk of:",
+     "o": [
+      "Adenocarcinoma of the oesophagus",
+      "Squamous cell carcinoma of the oesophagus",
+      "Oesophageal leiomyoma",
+      "Achalasia cardia"
+     ],
+     "a": 0,
+     "e": "This is Barrett oesophagus (intestinal metaplasia), the main precursor of oesophageal adenocarcinoma.",
+     "p": "Smoking and alcohol drive squamous carcinoma; reflux and Barrett drive adenocarcinoma.",
+     "hy": 3,
+     "w": [
+      "Correct.",
+      "Squamous carcinoma is not linked to Barrett.",
+      "Leiomyoma is a benign smooth-muscle tumour, unrelated.",
+      "Achalasia is a motility disorder, not caused by Barrett."
+     ]
+    },
+    {
+     "q": "What type of cellular adaptation is Barrett oesophagus?",
+     "o": [
+      "Metaplasia: squamous to columnar",
+      "Metaplasia: columnar to squamous",
+      "Dysplasia",
+      "Hyperplasia"
+     ],
+     "a": 0,
+     "e": "One mature cell type (squamous) is replaced by another (columnar with goblet cells), which is metaplasia.",
+     "p": "Columnar-to-squamous metaplasia is seen in the bronchi of smokers.",
+     "hy": 2,
+     "w": [
+      "Correct.",
+      "This direction describes smokers' bronchi, not Barrett.",
+      "Dysplasia may develop later but is a different change.",
+      "Hyperplasia is an increase in cell number of the same type."
+     ]
+    }
+   ]
+  },
+  {
+   "id": "screening-biases",
+   "title": "Screening tests and their biases",
+   "s": "cm",
+   "t": "Epidemiology",
+   "st": "Screening",
+   "why": {
+    "category": "A",
+    "concepts": [
+     "lead-time-bias"
+    ],
+    "text": "Lead-time bias is in the NEET-PG 2025 recall list (single third-party source); needed to read any screening evidence (A7).",
+    "groups": [
+     "A7"
+    ]
+   },
+   "concept": "Screening finds disease earlier, but finding it earlier does not prove that people live longer. Several biases can make screening look better than it is. The fair test is a randomised trial that compares disease-specific mortality in screened and unscreened groups.",
+   "facts": [
+    "Lead-time bias: diagnosis is earlier, so survival measured from diagnosis looks longer even if death occurs at the same time.",
+    "Length-time bias: screening preferentially finds slow-growing disease with a long pre-clinical phase, which has a better prognosis anyway.",
+    "Overdiagnosis: detecting disease that would never have caused symptoms or death (an extreme form of length-time bias).",
+    "Volunteer (healthy-user) bias: people who choose to be screened tend to be healthier.",
+    "Sensitivity and specificity belong to the test; predictive values change with prevalence."
+   ],
+   "associations": [
+    "Wilson and Jungner criteria describe when screening is worthwhile."
+   ],
+   "clues": [
+    "Survival from diagnosis rises but deaths per population do not → lead-time bias"
+   ],
+   "differentials": {
+    "h": [
+     "Bias",
+     "What it does",
+     "Fix"
+    ],
+    "r": [
+     [
+      "Lead-time",
+      "Inflates survival from diagnosis",
+      "Compare mortality, not survival"
+     ],
+     [
+      "Length-time",
+      "Over-samples slow disease",
+      "Randomised trial"
+     ],
+     [
+      "Overdiagnosis",
+      "Counts harmless disease",
+      "Trial mortality; long follow-up"
+     ],
+     [
+      "Volunteer",
+      "Healthier attenders",
+      "Randomise invitation"
+     ]
+    ]
+   },
+   "flow": {
+    "title": "Judging a screening programme",
+    "steps": [
+     {
+      "t": "Does screening detect disease earlier?"
+     },
+     {
+      "t": "Outcome measured",
+      "d": [
+       {
+        "if": "Survival from diagnosis",
+        "then": "Biased by lead time and length time"
+       },
+       {
+        "if": "Disease-specific mortality in a randomised trial",
+        "then": "Fair comparison"
+       }
+      ]
+     },
+     {
+      "t": "Weigh benefits against overdiagnosis and harms"
+     }
+    ]
+   },
+   "mm": {
+    "c": "Screening biases",
+    "n": [
+     {
+      "t": "Lead-time",
+      "k": [
+       "Earlier diagnosis",
+       "Same death time"
+      ]
+     },
+     {
+      "t": "Length-time",
+      "k": [
+       "Slow tumours found"
+      ]
+     },
+     {
+      "t": "Overdiagnosis",
+      "k": [
+       "Harmless disease counted"
+      ]
+     },
+     {
+      "t": "Volunteer",
+      "k": [
+       "Healthier attenders"
+      ]
+     },
+     {
+      "t": "Fix",
+      "k": [
+       "RCT",
+       "Mortality outcome"
+      ]
+     }
+    ]
+   },
+   "misconceptions": [
+    "Longer 5-year survival after diagnosis does not prove that screening works.",
+    "Finding more cases is not the same as saving lives."
+   ],
+   "image": "Not an image topic; a timeline diagram (onset, diagnosis, death) shows lead time clearly.",
+   "refs": [
+    "Park's Textbook of Preventive and Social Medicine",
+    "Gordis Epidemiology"
+   ],
+   "mcqs": [
+    {
+     "q": "After a new screening test is introduced for a cancer, 5-year survival from diagnosis rises from 40% to 60%, but the cancer death rate in the population is unchanged. The most likely explanation is:",
+     "o": [
+      "Lead-time bias",
+      "Berkson bias",
+      "Recall bias",
+      "Hawthorne effect"
+     ],
+     "a": 0,
+     "e": "Earlier diagnosis adds time to 'survival' without delaying death, so survival rises while mortality is unchanged.",
+     "p": "Use disease-specific mortality in a randomised trial to judge screening.",
+     "hy": 3,
+     "w": [
+      "Correct.",
+      "Berkson bias arises in hospital-based case-control studies.",
+      "Recall bias affects reporting of past exposures.",
+      "Hawthorne effect is behaviour change from being observed."
+     ]
+    },
+    {
+     "q": "Which outcome best avoids lead-time and length-time bias when evaluating a screening programme?",
+     "o": [
+      "Disease-specific mortality in a randomised controlled trial",
+      "5-year survival after diagnosis",
+      "Stage at diagnosis",
+      "Number of cases detected"
+     ],
+     "a": 0,
+     "e": "Randomisation balances groups, and mortality per population is not affected by when diagnosis happens.",
+     "p": "Stage shift and detection rates can improve without any mortality benefit.",
+     "hy": 3,
+     "w": [
+      "Correct.",
+      "Survival from diagnosis is inflated by lead time.",
+      "Earlier stage can reflect length-time bias.",
+      "More cases can mean overdiagnosis."
+     ]
+    }
+   ]
+  },
+  {
+   "id": "phaeochromocytoma",
+   "title": "Phaeochromocytoma: diagnosis and pre-operative care",
+   "s": "pm",
+   "t": "Autonomic Nervous System",
+   "st": "Adrenergic drugs",
+   "why": {
+    "category": "A",
+    "concepts": [
+     "pheo-phenoxybenzamine"
+    ],
+    "text": "Phenoxybenzamine in phaeochromocytoma is in the NEET-PG 2025 recall list (single third-party source); autonomic pharmacology (A5).",
+    "groups": [
+     "A5"
+    ]
+   },
+   "concept": "A phaeochromocytoma releases catecholamines in surges. Before surgery, alpha-receptors must be blocked first so that blood vessels can relax and the depleted blood volume can be restored; only then is a beta-blocker added for heart rate. Giving a beta-blocker first leaves alpha-mediated vasoconstriction unopposed and can trigger a hypertensive crisis.",
+   "facts": [
+    "Classic symptoms: episodic headache, sweating and palpitations, with paroxysmal or sustained hypertension.",
+    "Best initial test: plasma free metanephrines (or 24-hour urinary fractionated metanephrines); imaging only after biochemical confirmation.",
+    "Hereditary syndromes (MEN2, VHL, NF1, SDH genes) account for a large share; the old 'rule of 10s' underestimates heredity.",
+    "Pre-operative alpha-blockade for about 10-14 days: phenoxybenzamine (non-selective, irreversible) or selective alpha-1 blockers (doxazosin, prazosin); generous salt and fluids.",
+    "Beta-blocker added only after adequate alpha-blockade.",
+    "After removal: watch for hypotension and hypoglycaemia."
+   ],
+   "associations": [
+    "Drugs that can provoke a crisis include unopposed beta-blockers, metoclopramide and glucagon."
+   ],
+   "clues": [
+    "Paroxysms of headache, sweating, palpitations with labile hypertension"
+   ],
+   "differentials": {
+    "h": [
+     "Step",
+     "Drug",
+     "Reason"
+    ],
+    "r": [
+     [
+      "1",
+      "Alpha-blocker (phenoxybenzamine or doxazosin)",
+      "Reverse vasoconstriction, restore volume"
+     ],
+     [
+      "2",
+      "Beta-blocker",
+      "Control reflex tachycardia, arrhythmia"
+     ],
+     [
+      "Never first",
+      "Beta-blocker",
+      "Unopposed alpha → hypertensive crisis"
+     ]
+    ]
+   },
+   "flow": {
+    "title": "Pre-operative preparation",
+    "steps": [
+     {
+      "t": "Biochemical confirmation (metanephrines), then imaging"
+     },
+     {
+      "t": "Alpha-blockade 10-14 days + salt and fluids"
+     },
+     {
+      "t": "Adequate alpha-blockade?",
+      "d": [
+       {
+        "if": "Yes",
+        "then": "Add beta-blocker for heart rate"
+       },
+       {
+        "if": "No",
+        "then": "Titrate alpha-blocker"
+       }
+      ]
+     },
+     {
+      "t": "Surgery; monitor for post-operative hypotension and hypoglycaemia"
+     }
+    ]
+   },
+   "mm": {
+    "c": "Phaeochromocytoma",
+    "n": [
+     {
+      "t": "Symptoms",
+      "k": [
+       "Headache",
+       "Sweating",
+       "Palpitations"
+      ]
+     },
+     {
+      "t": "Test",
+      "k": [
+       "Plasma free metanephrines"
+      ]
+     },
+     {
+      "t": "Pre-op",
+      "k": [
+       "Alpha first",
+       "Then beta",
+       "Salt and fluids"
+      ]
+     },
+     {
+      "t": "Genetics",
+      "k": [
+       "MEN2",
+       "VHL",
+       "NF1",
+       "SDH"
+      ]
+     },
+     {
+      "t": "After surgery",
+      "k": [
+       "Hypotension",
+       "Hypoglycaemia"
+      ]
+     }
+    ]
+   },
+   "misconceptions": [
+    "Starting a beta-blocker alone to 'control palpitations' is dangerous.",
+    "Imaging before biochemical confirmation leads to false leads from incidental adrenal masses."
+   ],
+   "image": "Not usually an image topic; MIBG or DOTATATE scans may appear in imaging questions.",
+   "refs": [
+    "KD Tripathi's Essentials of Medical Pharmacology",
+    "Endocrine Society clinical practice guideline: pheochromocytoma and paraganglioma (2014)"
+   ],
+   "mcqs": [
+    {
+     "q": "A 35-year-old with biochemically confirmed phaeochromocytoma is scheduled for adrenalectomy. Which drug should be started first?",
+     "o": [
+      "Phenoxybenzamine",
+      "Propranolol",
+      "Furosemide",
+      "Clonidine"
+     ],
+     "a": 0,
+     "e": "Alpha-blockade (phenoxybenzamine or a selective alpha-1 blocker) comes first, for about 10-14 days, to control blood pressure and restore volume.",
+     "p": "Add a beta-blocker only after adequate alpha-blockade.",
+     "hy": 3,
+     "w": [
+      "Correct.",
+      "A beta-blocker first can cause a hypertensive crisis.",
+      "A diuretic worsens the existing volume depletion.",
+      "Clonidine is not used for pre-operative preparation."
+     ]
+    },
+    {
+     "q": "Why must a beta-blocker never be started before an alpha-blocker in phaeochromocytoma?",
+     "o": [
+      "Unopposed alpha-receptor stimulation can cause a hypertensive crisis",
+      "Beta-blockers increase catecholamine secretion from the tumour",
+      "Beta-blockers cause severe hypoglycaemia in these patients",
+      "Beta-blockers interfere with metanephrine testing"
+     ],
+     "a": 0,
+     "e": "Blocking beta-2 mediated vasodilation leaves alpha-mediated vasoconstriction unopposed, so blood pressure can rise sharply.",
+     "p": "Labetalol has more beta than alpha blocking effect and is not a substitute for initial alpha-blockade.",
+     "hy": 3,
+     "w": [
+      "Correct.",
+      "They do not increase tumour secretion.",
+      "This is not the main danger.",
+      "Testing interference is not the reason."
+     ]
+    }
+   ]
+  }
+ ]
+}

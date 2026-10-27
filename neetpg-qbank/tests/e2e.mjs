@@ -30,6 +30,21 @@ const known = new Set(pyq.meta.sources.map(s => s.id));
 check(hot.every(h => h.src.every(x => known.has(x))), "every cited source id exists in the source list");
 check(qs.filter(q => q.img).every(q => q.media && q.media.license && q.media.url), "every image has a licence record");
 
+// learning modules and evidence
+const mods = read("modules.json").modules, ev = read("evidence.json");
+const prio = JSON.parse(fs.readFileSync(path.join(root, "pipeline/registry/priorities.json"), "utf8"));
+const modQs = mods.flatMap(m => m.mcqs.map(q => ({ ...q, s: m.s, t: m.t, st: m.st })));
+const TOTAL = qs.length + modQs.length;
+check(mods.every(m => subs.has(`${m.s}|${m.t}|${m.st}`)), "every module maps to a subtopic");
+check(modQs.every(q => q.o.length === 4 && q.a >= 0 && q.a < 4 && q.w?.length === 4), "every module question has 4 options, a key and 4 option reasons");
+const evC = new Map(ev.concepts.map(c => [c.id, c]));
+check(mods.every(m => m.why.concepts.every(c => evC.has(c))), "every module cites concepts that exist in the evidence");
+check(mods.filter(m => m.why.category === "B").every(m => m.why.concepts.some(c => evC.get(c).distinct_sessions >= 2)), "category B modules really recur in 2+ sessions");
+const aIds = new Set(prio.A.map(a => a.id));
+check(mods.filter(m => m.why.category === "A").every(m => m.why.groups?.length && m.why.groups.every(g => aIds.has(g))), "category A modules name an existing A group");
+check(mods.filter(m => m.why.category === "OBSERVED_ONCE").every(m => m.why.concepts.every(c => evC.get(c).distinct_sessions === 1)), "'reported once' modules really have one session");
+check(!ev.trend.run, "evidence makes no trend claim");
+
 // ---- browser checks ----
 const html = fs.readFileSync(path.join(root, "index.html"), "utf8");
 const page = `<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1"></head><body>${html}</body></html>`;
@@ -47,7 +62,7 @@ await p.route(/\/(data|img)\//, r => { fetched++; r.abort(); });   // the iOS vi
 try {
   await p.goto(U + "#home"); await p.waitForTimeout(1200);
   const stats = (await p.textContent(".stats")).replace(/\s+/g, " ");
-  check(/Questions\s*156/.test(stats), "page loads 156 questions with sibling files blocked", stats.trim());
+  check(new RegExp(`Questions\\s*${TOTAL}`).test(stats), `page loads ${TOTAL} questions (156 starter + ${modQs.length} module) with sibling files blocked`, stats.trim());
   check(fetched === 0, "page makes no sibling-file requests", String(fetched));
 
   await p.goto(U + "#t-pa-1-1"); await p.waitForTimeout(300);
@@ -79,6 +94,53 @@ try {
   for (let i = 0; i < 4 && !(await p.$(".qimg")); i++) { await p.click("#next"); await p.waitForTimeout(150); }
   const credit = await p.textContent(".credit").catch(() => "");
   check(/CC0|CC BY|Public domain/.test(credit) && /not an exam image/.test(credit), "image shows licence and 'not an exam image'", credit.slice(0, 80));
+
+  // modules
+  await p.goto(U + "#modules"); await p.waitForTimeout(300);
+  check((await p.locator(".modcard").count()) === mods.length, "modules page lists every module", String(await p.locator(".modcard").count()));
+  const cm = mods.find(m => m.id === "courvoisier");
+  await p.goto(U + "#m-courvoisier"); await p.waitForTimeout(300);
+  check((await p.locator(".fstep").count()) === cm.flow.steps.length && (await p.locator(".fopt").count()) === cm.flow.steps.reduce((n, s) => n + (s.d?.length || 0), 0), "flowchart renders every step and branch");
+  const mtext = await p.textContent("#view");
+  check(/SUGGESTED · NOT VERIFIED/.test(mtext) && /AI-WRITTEN · UNREVIEWED/.test(mtext) && /B · Recurred/.test(mtext), "module shows its evidence category and unverified labels");
+  await p.click("#mdone"); await p.waitForTimeout(200);
+  check(/next revision/.test(await p.textContent("#view")), "marking a module studied schedules the next revision");
+
+  // practice a module question: guess toggle, timing, wrong answer, miss classification, spaced review
+  await p.click("#mq"); await p.waitForTimeout(300);
+  check(/AI-GENERATED/.test(await p.textContent(".qmeta")), "module question is labelled AI-GENERATED");
+  await p.check("#guess"); await p.waitForTimeout(150);
+  const qid = await p.evaluate(() => S.sess.ids[S.sess.i]);
+  const wrongBtn = p.locator(`.opt:not([data-oi="0"])`).first();
+  await wrongBtn.click(); await p.waitForTimeout(300);
+  check(await p.$("[data-errpick]") !== null, "a wrong answer offers the miss classification");
+  await p.click('[data-err="confused"]'); await p.waitForTimeout(200);
+  check((await p.getAttribute('[data-err="confused"]', "aria-pressed")) === "true", "choosing a reason marks it");
+  const sr = await p.evaluate(id => { const q = S.Q.get(id); return prog(q.s).sr[id]; }, qid);
+  check(sr && sr[0] === 0 && Math.abs(sr[1] - Date.now() - 864e5) < 60e3, "wrong answer is scheduled for review in 1 day", JSON.stringify(sr));
+  await p.waitForTimeout(1500);   // attempt log flush
+
+  await p.reload(); await p.waitForTimeout(1200);
+  await p.goto(U + "#analytics"); await p.waitForTimeout(800);
+  const an = (await p.textContent("#view")).replace(/\s+/g, " ");
+  check(/Confused it with something similar\s*1(?!\d)/.test(an) && /Guessing\s*1\s*0%/.test(an), "analytics reads the saved log after reload (error type and guess)", an.slice(an.indexOf("Guessing"), an.indexOf("Guessing") + 40));
+
+  // evidence and review
+  await p.goto(U + "#evidence"); await p.waitForTimeout(300);
+  const et = await p.textContent("#view");
+  check(/Not run\./.test(et) && /RECONSTRUCTED FROM MEMORY/.test(et) && /RECOMMENDATION/.test(et) && /HYPOTHESIS/.test(et), "evidence page separates the kinds of statement and shows no trend");
+  check(!/most repeated topics over 10 years[^,]/i.test(et.replace("no basis for \"most repeated topics over 10 years\"", "")), "evidence page makes no 10-year repeat claim");
+  await p.goto(U + "#review"); await p.waitForTimeout(300);
+  check((await p.locator("#rvlist .qcard").count()) > 0 && /Verification details/.test(await p.textContent("#rvlist")), "review queue lists questions with verification details");
+  await p.goto(U + "#review-sources"); await p.waitForTimeout(300);
+  check((await p.locator("details.panel").count()) === ev.sources.length, "source registry lists every source", String(await p.locator("details.panel").count()));
+
+  // adaptive planner
+  await p.goto(U + "#plan"); await p.waitForTimeout(200);
+  const d = new Date(Date.now() + 200 * 864e5).toISOString().slice(0, 10);
+  await p.fill("#pexam", d); await p.click("#pmake"); await p.waitForTimeout(600);
+  const pt = await p.textContent("#view");
+  check((await p.locator("#planx table tr").count()) === 8 && /Staying on track/.test(pt) && /1, 3, 7, 21 and 60 days/.test(pt), "plan shows next 7 days, catch-up status and the review schedule");
 
   check(errors.length === 0, "no page errors", errors.join(" | "));
 } finally {

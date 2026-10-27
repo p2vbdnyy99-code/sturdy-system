@@ -935,7 +935,7 @@
     },
     {
      "t": "Rheumatology",
-     "st": "Arthritis",
+     "st": "Metabolic bone disease",
      "txt": "Paget's disease of bone",
      "src": [
       "MEP2025"
@@ -1034,14 +1034,6 @@
      "t": "GI Surgery",
      "st": "Oesophagus & stomach",
      "txt": "Achalasia cardia: manometry",
-     "src": [
-      "MEP2025"
-     ]
-    },
-    {
-     "t": "Trauma",
-     "st": "Chest trauma",
-     "txt": "Fat embolism syndrome",
      "src": [
       "MEP2025"
      ]
@@ -1258,6 +1250,14 @@
      "st": "Tuberculosis of spine",
      "txt": "Pott spine",
      "src": []
+    },
+    {
+     "t": "Lower Limb Trauma",
+     "st": "Hip & femur",
+     "txt": "Fat embolism syndrome",
+     "src": [
+      "MEP2025"
+     ]
     }
    ],
    "how": "X-ray recognition is key: learn the classic fracture and tumour images. Use eponyms with their pictures.",

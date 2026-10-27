@@ -1,147 +1,1106 @@
 [
-{"id":"an","name":"Anatomy","topics":[
- {"name":"General Anatomy & Embryology","subs":["General embryology","Pharyngeal arches","Histology","Genetics"]},
- {"name":"Upper Limb","subs":["Brachial plexus","Nerve injuries","Muscles & joints","Vessels"]},
- {"name":"Lower Limb","subs":["Lumbosacral plexus","Gluteal region & hip","Knee, leg & foot","Vessels"]},
- {"name":"Thorax","subs":["Heart & coronaries","Lungs & pleura","Mediastinum"]},
- {"name":"Abdomen & Pelvis","subs":["Peritoneum","GI tract","Kidney & posterior wall","Pelvis & perineum"]},
- {"name":"Head & Neck","subs":["Skull & cranial cavity","Cranial nerves","Neck","Larynx & pharynx","Orbit"]},
- {"name":"Neuroanatomy","subs":["Brainstem","Cerebrum & white matter","Spinal cord tracts","Blood supply & ventricles"]},
- {"name":"Back","subs":["Vertebral column","Spinal nerves"]}]},
-{"id":"ph","name":"Physiology","topics":[
- {"name":"General & Cell Physiology","subs":["Membrane transport","Body fluids"]},
- {"name":"Nerve & Muscle","subs":["Action potential","Neuromuscular junction","Muscle contraction"]},
- {"name":"Blood","subs":["RBC & haemoglobin","Haemostasis","Immunity"]},
- {"name":"Cardiovascular","subs":["Cardiac cycle","ECG","Blood pressure regulation","Cardiac output"]},
- {"name":"Respiratory","subs":["Mechanics","Gas transport","Ventilation-perfusion","Regulation"]},
- {"name":"Renal","subs":["GFR & clearance","Tubular function","Acid-base"]},
- {"name":"Gastrointestinal","subs":["GI hormones","Secretions","Digestion & absorption"]},
- {"name":"Endocrine","subs":["Hormone mechanisms","Pituitary","Thyroid & adrenal","Calcium"]},
- {"name":"Reproductive","subs":["Male","Female","Pregnancy"]},
- {"name":"Neurophysiology","subs":["Sensory system","Motor system & reflexes","Sleep & EEG","Special senses"]}]},
-{"id":"bc","name":"Biochemistry","topics":[
- {"name":"Carbohydrate Metabolism","subs":["Glycolysis & TCA","Gluconeogenesis","Glycogen storage diseases","HMP shunt"]},
- {"name":"Lipid Metabolism","subs":["Cholesterol & lipoproteins","Fatty acid oxidation","Lipid storage disorders"]},
- {"name":"Amino Acid Metabolism","subs":["Urea cycle","Aminoacidopathies"]},
- {"name":"Enzymes","subs":["Enzyme kinetics","Clinical enzymology"]},
- {"name":"Vitamins & Minerals","subs":["Fat-soluble vitamins","Water-soluble vitamins","Minerals"]},
- {"name":"Molecular Biology","subs":["DNA replication & repair","Transcription & translation","Techniques"]},
- {"name":"Nucleotide Metabolism","subs":["Purines","Pyrimidines"]},
- {"name":"Haem & Porphyrins","subs":["Porphyrias","Bilirubin"]}]},
-{"id":"pa","name":"Pathology","topics":[
- {"name":"General Pathology","subs":["Cell injury","Inflammation","Haemodynamics","Neoplasia","Immunopathology & amyloidosis","Genetics"]},
- {"name":"Haematology","subs":["Anaemias","Leukaemias","Lymphomas","Bleeding disorders","Transfusion"]},
- {"name":"Systemic Pathology","subs":["Cardiovascular","Respiratory","GIT & liver","Kidney","CNS","Bone & soft tissue","Breast & female genital","Endocrine","Male genital"]}]},
-{"id":"pm","name":"Pharmacology","topics":[
- {"name":"General Pharmacology","subs":["Pharmacokinetics","Pharmacodynamics","Adverse effects & interactions"]},
- {"name":"Autonomic Nervous System","subs":["Cholinergic drugs","Adrenergic drugs"]},
- {"name":"Cardiovascular & Renal","subs":["Antihypertensives","Antiarrhythmics","Heart failure","Diuretics"]},
- {"name":"CNS","subs":["Antiepileptics","Antipsychotics & antidepressants","Opioids","Sedative-hypnotics"]},
- {"name":"Autacoids & Respiratory","subs":["NSAIDs","Asthma drugs"]},
- {"name":"Endocrine","subs":["Antidiabetics","Thyroid drugs","Corticosteroids"]},
- {"name":"Chemotherapy","subs":["Antibacterials","Antitubercular","Antifungal & antiviral","Antimalarials","Anticancer"]},
- {"name":"Blood","subs":["Anticoagulants & antiplatelets","Haematinics"]},
- {"name":"Gastrointestinal","subs":["Peptic ulcer drugs","Antiemetics"]}]},
-{"id":"mi","name":"Microbiology","topics":[
- {"name":"General Microbiology","subs":["Sterilisation & disinfection","Culture media","Bacterial genetics"]},
- {"name":"Immunology","subs":["Immunity","Hypersensitivity","Antigen-antibody reactions"]},
- {"name":"Bacteriology","subs":["Gram-positive cocci","Gram-positive bacilli","Gram-negative bacteria","Mycobacteria","Spirochaetes","Anaerobes"]},
- {"name":"Virology","subs":["DNA viruses","RNA viruses","HIV","Hepatitis viruses"]},
- {"name":"Mycology","subs":["Superficial mycoses","Subcutaneous mycoses","Systemic mycoses","Opportunistic mycoses"]},
- {"name":"Parasitology","subs":["Protozoa","Helminths"]}]},
-{"id":"fm","name":"Forensic Medicine","topics":[
- {"name":"Identification","subs":["Age estimation","Dental & DNA","Trace evidence"]},
- {"name":"Thanatology","subs":["Postmortem changes","Time since death"]},
- {"name":"Injuries","subs":["Mechanical injuries","Firearm injuries","Thermal & electrical"]},
- {"name":"Asphyxial Deaths","subs":["Hanging & strangulation","Drowning"]},
- {"name":"Toxicology","subs":["General toxicology","Metallic poisons","Alcohols","Plant & animal poisons"]},
- {"name":"Legal Medicine & Ethics","subs":["Legal procedures","Medical ethics","Sexual offences"]}]},
-{"id":"cm","name":"Community Medicine","topics":[
- {"name":"Epidemiology","subs":["Concepts","Study designs","Screening"]},
- {"name":"Biostatistics","subs":["Measures & tests","Sampling"]},
- {"name":"Communicable Diseases","subs":["Vaccine-preventable","Tuberculosis","Vector-borne","Other infections"]},
- {"name":"Immunisation & Cold Chain","subs":["Vaccines","Cold chain"]},
- {"name":"Nutrition","subs":["Nutrients","Nutritional programmes"]},
- {"name":"Environment & Occupational Health","subs":["Water & sanitation","Occupational diseases"]},
- {"name":"Health Programmes & Care","subs":["National programmes","Health care delivery"]},
- {"name":"Demography & MCH","subs":["Demography & family planning","Maternal & child health"]}]},
-{"id":"en","name":"ENT","topics":[
- {"name":"Ear","subs":["External ear","Middle ear & CSOM","Inner ear & hearing tests","Facial nerve","Otosclerosis"]},
- {"name":"Nose & Paranasal Sinuses","subs":["Nasal septum & epistaxis","Sinusitis","Tumours"]},
- {"name":"Pharynx","subs":["Tonsils & adenoids","Nasopharynx","Deep neck spaces"]},
- {"name":"Larynx","subs":["Vocal cord lesions","Laryngeal cancer","Airway"]}]},
-{"id":"op","name":"Ophthalmology","topics":[
- {"name":"Conjunctiva & Cornea","subs":["Conjunctivitis & trachoma","Keratitis"]},
- {"name":"Lens","subs":["Cataract"]},
- {"name":"Glaucoma","subs":["Angle closure","Open angle"]},
- {"name":"Uvea","subs":["Uveitis"]},
- {"name":"Retina","subs":["Retinal vascular disease","Diabetic retinopathy","Retinal detachment"]},
- {"name":"Neuro-ophthalmology","subs":["Pupil","Visual pathway"]},
- {"name":"Optics & Refraction","subs":["Refraction","Visual acuity"]},
- {"name":"Strabismus","subs":["Squint"]},
- {"name":"Community Ophthalmology","subs":["Blindness"]}]},
-{"id":"me","name":"Medicine","topics":[
- {"name":"Cardiology","subs":["Arrhythmias","Ischaemic heart disease","Heart failure","Valvular disease"]},
- {"name":"Respiratory","subs":["Pneumonia","Obstructive disease","Interstitial disease"]},
- {"name":"Gastroenterology & Hepatology","subs":["Liver","GI tract"]},
- {"name":"Nephrology","subs":["Electrolytes","Kidney disease"]},
- {"name":"Endocrinology","subs":["Diabetes","Thyroid","Adrenal"]},
- {"name":"Neurology","subs":["Stroke","Spinal cord","Seizures & others"]},
- {"name":"Haematology","subs":["Anaemia","Haematological malignancy"]},
- {"name":"Rheumatology","subs":["Arthritis","Connective tissue disease"]},
- {"name":"Infectious Diseases","subs":["Tropical infections","HIV & opportunistic"]}]},
-{"id":"su","name":"Surgery","topics":[
- {"name":"General Surgery","subs":["Shock & fluids","Burns","Wounds"]},
- {"name":"Trauma","subs":["Head injury","Abdominal trauma","Chest trauma"]},
- {"name":"Hepatobiliary & Pancreas","subs":["Gallbladder & biliary","Pancreas","Liver"]},
- {"name":"GI Surgery","subs":["Oesophagus & stomach","Small & large bowel","Anorectal","Hernia"]},
- {"name":"Breast & Endocrine","subs":["Breast","Thyroid","Adrenal & parathyroid"]},
- {"name":"Urology","subs":["Stones","Prostate","Testis"]},
- {"name":"Vascular","subs":["Arterial","Venous"]}]},
-{"id":"ob","name":"Obstetrics & Gynaecology","topics":[
- {"name":"Obstetrics","subs":["Physiology of pregnancy","Antenatal care","Hypertensive disorders","Labour","Postpartum haemorrhage","Ectopic & abortion","Medical disorders in pregnancy"]},
- {"name":"Gynaecology","subs":["Menstrual disorders & PCOS","Infertility","Contraception","Gynae oncology","Fibroids & endometriosis"]}]},
-{"id":"pe","name":"Paediatrics","topics":[
- {"name":"Growth & Development","subs":["Milestones","Growth"]},
- {"name":"Neonatology","subs":["Neonatal jaundice","Neonatal resuscitation & sepsis"]},
- {"name":"Nutrition","subs":["Malnutrition","Micronutrients"]},
- {"name":"Infections & Immunisation","subs":["Exanthems","Respiratory infections","Immunisation"]},
- {"name":"Paediatric Cardiology","subs":["Congenital heart disease"]},
- {"name":"Genetics & Syndromes","subs":["Chromosomal disorders"]},
- {"name":"Paediatric Neurology & Nephrology","subs":["Neurology","Nephrology"]}]},
-{"id":"or","name":"Orthopaedics","topics":[
- {"name":"Upper Limb Trauma","subs":["Elbow & forearm","Shoulder & arm","Wrist & hand"]},
- {"name":"Lower Limb Trauma","subs":["Hip & femur","Knee & leg","Ankle & foot"]},
- {"name":"Peripheral Nerve Injuries","subs":["Upper limb nerves","Lower limb nerves"]},
- {"name":"Bone Tumours","subs":["Benign","Malignant"]},
- {"name":"Infections & Spine","subs":["Osteomyelitis","Tuberculosis of spine"]},
- {"name":"Paediatric Orthopaedics","subs":["CTEV & DDH","Perthes & SCFE"]}]},
-{"id":"de","name":"Dermatology","topics":[
- {"name":"Papulosquamous Disorders","subs":["Psoriasis","Lichen planus"]},
- {"name":"Vesiculobullous Disorders","subs":["Pemphigus & pemphigoid","Dermatitis herpetiformis"]},
- {"name":"Infections & Infestations","subs":["Fungal","Viral","Bacterial","Scabies & lice"]},
- {"name":"Leprosy","subs":["Classification & treatment","Reactions"]},
- {"name":"STIs","subs":["Syphilis","Other STIs"]},
- {"name":"Pigmentary, Hair & Nail","subs":["Pigmentary","Hair & nails"]}]},
-{"id":"ps","name":"Psychiatry","topics":[
- {"name":"Psychotic Disorders","subs":["Schizophrenia"]},
- {"name":"Mood Disorders","subs":["Depression","Bipolar disorder"]},
- {"name":"Anxiety & Related","subs":["Anxiety disorders","OCD"]},
- {"name":"Substance Use","subs":["Alcohol","Other substances"]},
- {"name":"Child Psychiatry","subs":["ADHD & autism"]},
- {"name":"Psychopharmacology & Therapies","subs":["Antipsychotics","Mood stabilisers","ECT"]}]},
-{"id":"as","name":"Anaesthesia","topics":[
- {"name":"Airway & Pre-op","subs":["Airway assessment","Pre-operative evaluation"]},
- {"name":"Inhalational Agents","subs":["Pharmacology"]},
- {"name":"IV Agents & Muscle Relaxants","subs":["Induction agents","Muscle relaxants"]},
- {"name":"Local & Regional","subs":["Local anaesthetics","Spinal & epidural"]},
- {"name":"Monitoring & Complications","subs":["Monitoring","Malignant hyperthermia"]},
- {"name":"CPR","subs":["Basic & advanced life support"]}]},
-{"id":"ra","name":"Radiology","topics":[
- {"name":"Physics & Radiation Protection","subs":["Units & protection","Radiobiology"]},
- {"name":"Chest Imaging","subs":["Chest X-ray signs"]},
- {"name":"Neuroimaging","subs":["Brain"]},
- {"name":"Abdominal Imaging","subs":["GI signs","Hepatobiliary"]},
- {"name":"Musculoskeletal Imaging","subs":["Bone & joint"]},
- {"name":"Nuclear Medicine","subs":["Isotopes & scans"]}]}
+ {
+  "id": "an",
+  "name": "Anatomy",
+  "topics": [
+   {
+    "name": "General Anatomy & Embryology",
+    "subs": [
+     "General embryology",
+     "Pharyngeal arches",
+     "Histology",
+     "Genetics"
+    ]
+   },
+   {
+    "name": "Upper Limb",
+    "subs": [
+     "Brachial plexus",
+     "Nerve injuries",
+     "Muscles & joints",
+     "Vessels"
+    ]
+   },
+   {
+    "name": "Lower Limb",
+    "subs": [
+     "Lumbosacral plexus",
+     "Gluteal region & hip",
+     "Knee, leg & foot",
+     "Vessels"
+    ]
+   },
+   {
+    "name": "Thorax",
+    "subs": [
+     "Heart & coronaries",
+     "Lungs & pleura",
+     "Mediastinum"
+    ]
+   },
+   {
+    "name": "Abdomen & Pelvis",
+    "subs": [
+     "Peritoneum",
+     "GI tract",
+     "Kidney & posterior wall",
+     "Pelvis & perineum"
+    ]
+   },
+   {
+    "name": "Head & Neck",
+    "subs": [
+     "Skull & cranial cavity",
+     "Cranial nerves",
+     "Neck",
+     "Larynx & pharynx",
+     "Orbit"
+    ]
+   },
+   {
+    "name": "Neuroanatomy",
+    "subs": [
+     "Brainstem",
+     "Cerebrum & white matter",
+     "Spinal cord tracts",
+     "Blood supply & ventricles"
+    ]
+   },
+   {
+    "name": "Back",
+    "subs": [
+     "Vertebral column",
+     "Spinal nerves"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "ph",
+  "name": "Physiology",
+  "topics": [
+   {
+    "name": "General & Cell Physiology",
+    "subs": [
+     "Membrane transport",
+     "Body fluids"
+    ]
+   },
+   {
+    "name": "Nerve & Muscle",
+    "subs": [
+     "Action potential",
+     "Neuromuscular junction",
+     "Muscle contraction"
+    ]
+   },
+   {
+    "name": "Blood",
+    "subs": [
+     "RBC & haemoglobin",
+     "Haemostasis",
+     "Immunity"
+    ]
+   },
+   {
+    "name": "Cardiovascular",
+    "subs": [
+     "Cardiac cycle",
+     "ECG",
+     "Blood pressure regulation",
+     "Cardiac output"
+    ]
+   },
+   {
+    "name": "Respiratory",
+    "subs": [
+     "Mechanics",
+     "Gas transport",
+     "Ventilation-perfusion",
+     "Regulation"
+    ]
+   },
+   {
+    "name": "Renal",
+    "subs": [
+     "GFR & clearance",
+     "Tubular function",
+     "Acid-base"
+    ]
+   },
+   {
+    "name": "Gastrointestinal",
+    "subs": [
+     "GI hormones",
+     "Secretions",
+     "Digestion & absorption"
+    ]
+   },
+   {
+    "name": "Endocrine",
+    "subs": [
+     "Hormone mechanisms",
+     "Pituitary",
+     "Thyroid & adrenal",
+     "Calcium"
+    ]
+   },
+   {
+    "name": "Reproductive",
+    "subs": [
+     "Male",
+     "Female",
+     "Pregnancy"
+    ]
+   },
+   {
+    "name": "Neurophysiology",
+    "subs": [
+     "Sensory system",
+     "Motor system & reflexes",
+     "Sleep & EEG",
+     "Special senses"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "bc",
+  "name": "Biochemistry",
+  "topics": [
+   {
+    "name": "Carbohydrate Metabolism",
+    "subs": [
+     "Glycolysis & TCA",
+     "Gluconeogenesis",
+     "Glycogen storage diseases",
+     "HMP shunt"
+    ]
+   },
+   {
+    "name": "Lipid Metabolism",
+    "subs": [
+     "Cholesterol & lipoproteins",
+     "Fatty acid oxidation",
+     "Lipid storage disorders"
+    ]
+   },
+   {
+    "name": "Amino Acid Metabolism",
+    "subs": [
+     "Urea cycle",
+     "Aminoacidopathies"
+    ]
+   },
+   {
+    "name": "Enzymes",
+    "subs": [
+     "Enzyme kinetics",
+     "Clinical enzymology"
+    ]
+   },
+   {
+    "name": "Vitamins & Minerals",
+    "subs": [
+     "Fat-soluble vitamins",
+     "Water-soluble vitamins",
+     "Minerals"
+    ]
+   },
+   {
+    "name": "Molecular Biology",
+    "subs": [
+     "DNA replication & repair",
+     "Transcription & translation",
+     "Techniques"
+    ]
+   },
+   {
+    "name": "Nucleotide Metabolism",
+    "subs": [
+     "Purines",
+     "Pyrimidines"
+    ]
+   },
+   {
+    "name": "Haem & Porphyrins",
+    "subs": [
+     "Porphyrias",
+     "Bilirubin"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "pa",
+  "name": "Pathology",
+  "topics": [
+   {
+    "name": "General Pathology",
+    "subs": [
+     "Cell injury",
+     "Inflammation",
+     "Haemodynamics",
+     "Neoplasia",
+     "Immunopathology & amyloidosis",
+     "Genetics"
+    ]
+   },
+   {
+    "name": "Haematology",
+    "subs": [
+     "Anaemias",
+     "Leukaemias",
+     "Lymphomas",
+     "Bleeding disorders",
+     "Transfusion"
+    ]
+   },
+   {
+    "name": "Systemic Pathology",
+    "subs": [
+     "Cardiovascular",
+     "Respiratory",
+     "GIT & liver",
+     "Kidney",
+     "CNS",
+     "Bone & soft tissue",
+     "Breast & female genital",
+     "Endocrine",
+     "Male genital"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "pm",
+  "name": "Pharmacology",
+  "topics": [
+   {
+    "name": "General Pharmacology",
+    "subs": [
+     "Pharmacokinetics",
+     "Pharmacodynamics",
+     "Adverse effects & interactions"
+    ]
+   },
+   {
+    "name": "Autonomic Nervous System",
+    "subs": [
+     "Cholinergic drugs",
+     "Adrenergic drugs"
+    ]
+   },
+   {
+    "name": "Cardiovascular & Renal",
+    "subs": [
+     "Antihypertensives",
+     "Antiarrhythmics",
+     "Heart failure",
+     "Diuretics"
+    ]
+   },
+   {
+    "name": "CNS",
+    "subs": [
+     "Antiepileptics",
+     "Antipsychotics & antidepressants",
+     "Opioids",
+     "Sedative-hypnotics"
+    ]
+   },
+   {
+    "name": "Autacoids & Respiratory",
+    "subs": [
+     "NSAIDs",
+     "Asthma drugs"
+    ]
+   },
+   {
+    "name": "Endocrine",
+    "subs": [
+     "Antidiabetics",
+     "Thyroid drugs",
+     "Corticosteroids"
+    ]
+   },
+   {
+    "name": "Chemotherapy",
+    "subs": [
+     "Antibacterials",
+     "Antitubercular",
+     "Antifungal & antiviral",
+     "Antimalarials",
+     "Anticancer"
+    ]
+   },
+   {
+    "name": "Blood",
+    "subs": [
+     "Anticoagulants & antiplatelets",
+     "Haematinics"
+    ]
+   },
+   {
+    "name": "Gastrointestinal",
+    "subs": [
+     "Peptic ulcer drugs",
+     "Antiemetics"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "mi",
+  "name": "Microbiology",
+  "topics": [
+   {
+    "name": "General Microbiology",
+    "subs": [
+     "Sterilisation & disinfection",
+     "Culture media",
+     "Bacterial genetics"
+    ]
+   },
+   {
+    "name": "Immunology",
+    "subs": [
+     "Immunity",
+     "Hypersensitivity",
+     "Antigen-antibody reactions"
+    ]
+   },
+   {
+    "name": "Bacteriology",
+    "subs": [
+     "Gram-positive cocci",
+     "Gram-positive bacilli",
+     "Gram-negative bacteria",
+     "Mycobacteria",
+     "Spirochaetes",
+     "Anaerobes"
+    ]
+   },
+   {
+    "name": "Virology",
+    "subs": [
+     "DNA viruses",
+     "RNA viruses",
+     "HIV",
+     "Hepatitis viruses"
+    ]
+   },
+   {
+    "name": "Mycology",
+    "subs": [
+     "Superficial mycoses",
+     "Subcutaneous mycoses",
+     "Systemic mycoses",
+     "Opportunistic mycoses"
+    ]
+   },
+   {
+    "name": "Parasitology",
+    "subs": [
+     "Protozoa",
+     "Helminths"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "fm",
+  "name": "Forensic Medicine",
+  "topics": [
+   {
+    "name": "Identification",
+    "subs": [
+     "Age estimation",
+     "Dental & DNA",
+     "Trace evidence"
+    ]
+   },
+   {
+    "name": "Thanatology",
+    "subs": [
+     "Postmortem changes",
+     "Time since death"
+    ]
+   },
+   {
+    "name": "Injuries",
+    "subs": [
+     "Mechanical injuries",
+     "Firearm injuries",
+     "Thermal & electrical"
+    ]
+   },
+   {
+    "name": "Asphyxial Deaths",
+    "subs": [
+     "Hanging & strangulation",
+     "Drowning"
+    ]
+   },
+   {
+    "name": "Toxicology",
+    "subs": [
+     "General toxicology",
+     "Metallic poisons",
+     "Alcohols",
+     "Plant & animal poisons"
+    ]
+   },
+   {
+    "name": "Legal Medicine & Ethics",
+    "subs": [
+     "Legal procedures",
+     "Medical ethics",
+     "Sexual offences"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "cm",
+  "name": "Community Medicine",
+  "topics": [
+   {
+    "name": "Epidemiology",
+    "subs": [
+     "Concepts",
+     "Study designs",
+     "Screening"
+    ]
+   },
+   {
+    "name": "Biostatistics",
+    "subs": [
+     "Measures & tests",
+     "Sampling"
+    ]
+   },
+   {
+    "name": "Communicable Diseases",
+    "subs": [
+     "Vaccine-preventable",
+     "Tuberculosis",
+     "Vector-borne",
+     "Other infections"
+    ]
+   },
+   {
+    "name": "Immunisation & Cold Chain",
+    "subs": [
+     "Vaccines",
+     "Cold chain"
+    ]
+   },
+   {
+    "name": "Nutrition",
+    "subs": [
+     "Nutrients",
+     "Nutritional programmes"
+    ]
+   },
+   {
+    "name": "Environment & Occupational Health",
+    "subs": [
+     "Water & sanitation",
+     "Occupational diseases"
+    ]
+   },
+   {
+    "name": "Health Programmes & Care",
+    "subs": [
+     "National programmes",
+     "Health care delivery"
+    ]
+   },
+   {
+    "name": "Demography & MCH",
+    "subs": [
+     "Demography & family planning",
+     "Maternal & child health"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "en",
+  "name": "ENT",
+  "topics": [
+   {
+    "name": "Ear",
+    "subs": [
+     "External ear",
+     "Middle ear & CSOM",
+     "Inner ear & hearing tests",
+     "Facial nerve",
+     "Otosclerosis"
+    ]
+   },
+   {
+    "name": "Nose & Paranasal Sinuses",
+    "subs": [
+     "Nasal septum & epistaxis",
+     "Sinusitis",
+     "Tumours"
+    ]
+   },
+   {
+    "name": "Pharynx",
+    "subs": [
+     "Tonsils & adenoids",
+     "Nasopharynx",
+     "Deep neck spaces"
+    ]
+   },
+   {
+    "name": "Larynx",
+    "subs": [
+     "Vocal cord lesions",
+     "Laryngeal cancer",
+     "Airway"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "op",
+  "name": "Ophthalmology",
+  "topics": [
+   {
+    "name": "Conjunctiva & Cornea",
+    "subs": [
+     "Conjunctivitis & trachoma",
+     "Keratitis"
+    ]
+   },
+   {
+    "name": "Lens",
+    "subs": [
+     "Cataract"
+    ]
+   },
+   {
+    "name": "Glaucoma",
+    "subs": [
+     "Angle closure",
+     "Open angle"
+    ]
+   },
+   {
+    "name": "Uvea",
+    "subs": [
+     "Uveitis"
+    ]
+   },
+   {
+    "name": "Retina",
+    "subs": [
+     "Retinal vascular disease",
+     "Diabetic retinopathy",
+     "Retinal detachment"
+    ]
+   },
+   {
+    "name": "Neuro-ophthalmology",
+    "subs": [
+     "Pupil",
+     "Visual pathway"
+    ]
+   },
+   {
+    "name": "Optics & Refraction",
+    "subs": [
+     "Refraction",
+     "Visual acuity"
+    ]
+   },
+   {
+    "name": "Strabismus",
+    "subs": [
+     "Squint"
+    ]
+   },
+   {
+    "name": "Community Ophthalmology",
+    "subs": [
+     "Blindness"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "me",
+  "name": "Medicine",
+  "topics": [
+   {
+    "name": "Cardiology",
+    "subs": [
+     "Arrhythmias",
+     "Ischaemic heart disease",
+     "Heart failure",
+     "Valvular disease"
+    ]
+   },
+   {
+    "name": "Respiratory",
+    "subs": [
+     "Pneumonia",
+     "Obstructive disease",
+     "Interstitial disease",
+     "ARDS & respiratory failure"
+    ]
+   },
+   {
+    "name": "Gastroenterology & Hepatology",
+    "subs": [
+     "Liver",
+     "GI tract"
+    ]
+   },
+   {
+    "name": "Nephrology",
+    "subs": [
+     "Electrolytes",
+     "Kidney disease"
+    ]
+   },
+   {
+    "name": "Endocrinology",
+    "subs": [
+     "Diabetes",
+     "Thyroid",
+     "Adrenal"
+    ]
+   },
+   {
+    "name": "Neurology",
+    "subs": [
+     "Stroke",
+     "Spinal cord",
+     "Seizures & others"
+    ]
+   },
+   {
+    "name": "Haematology",
+    "subs": [
+     "Anaemia",
+     "Haematological malignancy"
+    ]
+   },
+   {
+    "name": "Rheumatology",
+    "subs": [
+     "Arthritis",
+     "Connective tissue disease",
+     "Metabolic bone disease"
+    ]
+   },
+   {
+    "name": "Infectious Diseases",
+    "subs": [
+     "Tropical infections",
+     "HIV & opportunistic"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "su",
+  "name": "Surgery",
+  "topics": [
+   {
+    "name": "General Surgery",
+    "subs": [
+     "Shock & fluids",
+     "Burns",
+     "Wounds"
+    ]
+   },
+   {
+    "name": "Trauma",
+    "subs": [
+     "Head injury",
+     "Abdominal trauma",
+     "Chest trauma",
+     "Primary survey"
+    ]
+   },
+   {
+    "name": "Hepatobiliary & Pancreas",
+    "subs": [
+     "Gallbladder & biliary",
+     "Pancreas",
+     "Liver"
+    ]
+   },
+   {
+    "name": "GI Surgery",
+    "subs": [
+     "Oesophagus & stomach",
+     "Small & large bowel",
+     "Anorectal",
+     "Hernia"
+    ]
+   },
+   {
+    "name": "Breast & Endocrine",
+    "subs": [
+     "Breast",
+     "Thyroid",
+     "Adrenal & parathyroid"
+    ]
+   },
+   {
+    "name": "Urology",
+    "subs": [
+     "Stones",
+     "Prostate",
+     "Testis"
+    ]
+   },
+   {
+    "name": "Vascular",
+    "subs": [
+     "Arterial",
+     "Venous"
+    ]
+   },
+   {
+    "name": "Paediatric Surgery",
+    "subs": [
+     "Congenital anomalies"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "ob",
+  "name": "Obstetrics & Gynaecology",
+  "topics": [
+   {
+    "name": "Obstetrics",
+    "subs": [
+     "Physiology of pregnancy",
+     "Antenatal care",
+     "Hypertensive disorders",
+     "Labour",
+     "Postpartum haemorrhage",
+     "Ectopic & abortion",
+     "Medical disorders in pregnancy"
+    ]
+   },
+   {
+    "name": "Gynaecology",
+    "subs": [
+     "Menstrual disorders & PCOS",
+     "Infertility",
+     "Contraception",
+     "Gynae oncology",
+     "Fibroids & endometriosis"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "pe",
+  "name": "Paediatrics",
+  "topics": [
+   {
+    "name": "Growth & Development",
+    "subs": [
+     "Milestones",
+     "Growth"
+    ]
+   },
+   {
+    "name": "Neonatology",
+    "subs": [
+     "Neonatal jaundice",
+     "Neonatal resuscitation & sepsis"
+    ]
+   },
+   {
+    "name": "Nutrition",
+    "subs": [
+     "Malnutrition",
+     "Micronutrients"
+    ]
+   },
+   {
+    "name": "Infections & Immunisation",
+    "subs": [
+     "Exanthems",
+     "Respiratory infections",
+     "Immunisation"
+    ]
+   },
+   {
+    "name": "Paediatric Cardiology",
+    "subs": [
+     "Congenital heart disease",
+     "Acquired heart disease"
+    ]
+   },
+   {
+    "name": "Genetics & Syndromes",
+    "subs": [
+     "Chromosomal disorders"
+    ]
+   },
+   {
+    "name": "Paediatric Neurology & Nephrology",
+    "subs": [
+     "Neurology",
+     "Nephrology"
+    ]
+   },
+   {
+    "name": "Paediatric Endocrinology",
+    "subs": [
+     "Thyroid & growth"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "or",
+  "name": "Orthopaedics",
+  "topics": [
+   {
+    "name": "Upper Limb Trauma",
+    "subs": [
+     "Elbow & forearm",
+     "Shoulder & arm",
+     "Wrist & hand"
+    ]
+   },
+   {
+    "name": "Lower Limb Trauma",
+    "subs": [
+     "Hip & femur",
+     "Knee & leg",
+     "Ankle & foot"
+    ]
+   },
+   {
+    "name": "Peripheral Nerve Injuries",
+    "subs": [
+     "Upper limb nerves",
+     "Lower limb nerves"
+    ]
+   },
+   {
+    "name": "Bone Tumours",
+    "subs": [
+     "Benign",
+     "Malignant"
+    ]
+   },
+   {
+    "name": "Infections & Spine",
+    "subs": [
+     "Osteomyelitis",
+     "Tuberculosis of spine"
+    ]
+   },
+   {
+    "name": "Paediatric Orthopaedics",
+    "subs": [
+     "CTEV & DDH",
+     "Perthes & SCFE"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "de",
+  "name": "Dermatology",
+  "topics": [
+   {
+    "name": "Papulosquamous Disorders",
+    "subs": [
+     "Psoriasis",
+     "Lichen planus"
+    ]
+   },
+   {
+    "name": "Vesiculobullous Disorders",
+    "subs": [
+     "Pemphigus & pemphigoid",
+     "Dermatitis herpetiformis"
+    ]
+   },
+   {
+    "name": "Infections & Infestations",
+    "subs": [
+     "Fungal",
+     "Viral",
+     "Bacterial",
+     "Scabies & lice"
+    ]
+   },
+   {
+    "name": "Leprosy",
+    "subs": [
+     "Classification & treatment",
+     "Reactions"
+    ]
+   },
+   {
+    "name": "STIs",
+    "subs": [
+     "Syphilis",
+     "Other STIs"
+    ]
+   },
+   {
+    "name": "Pigmentary, Hair & Nail",
+    "subs": [
+     "Pigmentary",
+     "Hair & nails"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "ps",
+  "name": "Psychiatry",
+  "topics": [
+   {
+    "name": "Psychotic Disorders",
+    "subs": [
+     "Schizophrenia"
+    ]
+   },
+   {
+    "name": "Mood Disorders",
+    "subs": [
+     "Depression",
+     "Bipolar disorder"
+    ]
+   },
+   {
+    "name": "Anxiety & Related",
+    "subs": [
+     "Anxiety disorders",
+     "OCD"
+    ]
+   },
+   {
+    "name": "Substance Use",
+    "subs": [
+     "Alcohol",
+     "Other substances"
+    ]
+   },
+   {
+    "name": "Child Psychiatry",
+    "subs": [
+     "ADHD & autism"
+    ]
+   },
+   {
+    "name": "Psychopharmacology & Therapies",
+    "subs": [
+     "Antipsychotics",
+     "Mood stabilisers",
+     "ECT"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "as",
+  "name": "Anaesthesia",
+  "topics": [
+   {
+    "name": "Airway & Pre-op",
+    "subs": [
+     "Airway assessment",
+     "Pre-operative evaluation"
+    ]
+   },
+   {
+    "name": "Inhalational Agents",
+    "subs": [
+     "Pharmacology"
+    ]
+   },
+   {
+    "name": "IV Agents & Muscle Relaxants",
+    "subs": [
+     "Induction agents",
+     "Muscle relaxants"
+    ]
+   },
+   {
+    "name": "Local & Regional",
+    "subs": [
+     "Local anaesthetics",
+     "Spinal & epidural"
+    ]
+   },
+   {
+    "name": "Monitoring & Complications",
+    "subs": [
+     "Monitoring",
+     "Malignant hyperthermia"
+    ]
+   },
+   {
+    "name": "CPR",
+    "subs": [
+     "Basic & advanced life support"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "ra",
+  "name": "Radiology",
+  "topics": [
+   {
+    "name": "Physics & Radiation Protection",
+    "subs": [
+     "Units & protection",
+     "Radiobiology"
+    ]
+   },
+   {
+    "name": "Chest Imaging",
+    "subs": [
+     "Chest X-ray signs"
+    ]
+   },
+   {
+    "name": "Neuroimaging",
+    "subs": [
+     "Brain"
+    ]
+   },
+   {
+    "name": "Abdominal Imaging",
+    "subs": [
+     "GI signs",
+     "Hepatobiliary"
+    ]
+   },
+   {
+    "name": "Musculoskeletal Imaging",
+    "subs": [
+     "Bone & joint"
+    ]
+   },
+   {
+    "name": "Nuclear Medicine",
+    "subs": [
+     "Isotopes & scans"
+    ]
+   }
+  ]
+ }
 ]
