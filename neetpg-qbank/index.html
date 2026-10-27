@@ -10,22 +10,31 @@
   --accent:#1B6B58; --accent-ink:#FFFFFF; --accent-soft:#DCEFE8;
   --pearl:#FFF4DE; --pearl-ink:#6B4A0E; --pearl-line:#EBCF94;
   --good:#1D7F47; --good-soft:#DDF3E5; --bad:#B63B26; --bad-soft:#FBE3DD; --warn:#9A6A0C; --warn-soft:#FBEFD2;
+  --violet:#5B4CB0; --violet-soft:#ECE9FA;
+  --hue0:#1B6B58; --hue1:#3A6FB0; --hue2:#B0702A; --hue3:#8A4FA8; --hue4:#B04A62;
+  --shadow:0 1px 2px rgba(20,32,28,.05), 0 4px 14px rgba(20,32,28,.04);
   --f-display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
   --f-body:"Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
   --f-mono:"JetBrains Mono", ui-monospace, Menlo, monospace;
-  --r:10px; --nav-h:62px;
+  --r:14px; --nav-h:62px;
 }
 @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
   --bg:#0E1513; --surface:#16201D; --sunk:#1C2825; --ink:#E4ECE9; --muted:#9AABA4; --line:#2A3833;
   --accent:#58C4A5; --accent-ink:#06261E; --accent-soft:#163A31;
   --pearl:#2B2415; --pearl-ink:#F1D398; --pearl-line:#5A4721;
   --good:#5FD08F; --good-soft:#123422; --bad:#F08A73; --bad-soft:#3A1C16; --warn:#E6B850; --warn-soft:#3A2E12;
+  --violet:#B3A8F0; --violet-soft:#26213F;
+  --hue0:#58C4A5; --hue1:#7FA9E0; --hue2:#E0A85C; --hue3:#C292DC; --hue4:#E58AA0;
+  --shadow:0 1px 2px rgba(0,0,0,.3);
   color-scheme:dark }}
 :root[data-theme="dark"]{
   --bg:#0E1513; --surface:#16201D; --sunk:#1C2825; --ink:#E4ECE9; --muted:#9AABA4; --line:#2A3833;
   --accent:#58C4A5; --accent-ink:#06261E; --accent-soft:#163A31;
   --pearl:#2B2415; --pearl-ink:#F1D398; --pearl-line:#5A4721;
   --good:#5FD08F; --good-soft:#123422; --bad:#F08A73; --bad-soft:#3A1C16; --warn:#E6B850; --warn-soft:#3A2E12;
+  --violet:#B3A8F0; --violet-soft:#26213F;
+  --hue0:#58C4A5; --hue1:#7FA9E0; --hue2:#E0A85C; --hue3:#C292DC; --hue4:#E58AA0;
+  --shadow:0 1px 2px rgba(0,0,0,.3);
   color-scheme:dark }
 html,body{height:100%}
 body{background:var(--bg);color:var(--ink);font:16px/1.55 var(--f-body);-webkit-text-size-adjust:100%}
@@ -70,7 +79,7 @@ h1{font-size:1.65rem} h2{font-size:1.25rem} h3{font-size:1.02rem}
 .brand-mark{width:26px;height:26px;border-radius:7px;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;font:700 .8rem var(--f-mono)}
 
 /* surfaces */
-.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px;box-shadow:var(--shadow)}
 .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .between{justify-content:space-between}
 .grid{display:grid;gap:12px}
@@ -165,6 +174,67 @@ td.n,th.n{text-align:right;font-family:var(--f-mono);font-variant-numeric:tabula
 .drop{border:2px dashed var(--line);border-radius:var(--r);padding:18px;text-align:center}
 .drop.over{border-color:var(--accent);background:var(--accent-soft)}
 details>summary{cursor:pointer;font-weight:700}
+.tag.pyq{background:var(--violet-soft);color:var(--violet)}
+.tag.ok{background:var(--good-soft);color:var(--good)}
+/* mock cards */
+.mock{display:flex;flex-direction:column;gap:6px;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px;box-shadow:var(--shadow)}
+button.mock:hover{border-color:var(--accent)}
+.mock b{font-family:var(--f-display);font-size:1.05rem}
+/* explanation layers */
+.explain section{display:flex;flex-direction:column;gap:6px}
+.why{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.why li{display:grid;grid-template-columns:28px 1fr;gap:10px;padding:10px 12px;border-radius:9px;border:1px solid var(--line)}
+.why li div{display:flex;flex-direction:column;gap:2px;min-width:0}
+.why li span:not(.k){font-size:.93rem;color:var(--muted)}
+.why .k{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font:500 .8rem var(--f-mono);background:var(--sunk)}
+.why .is-right{border-color:var(--good);background:var(--good-soft)}
+.why .is-right .k{background:var(--good);color:var(--surface)}
+.why .is-right span:not(.k){color:var(--ink)}
+.mmap{margin:0;display:flex;flex-direction:column;align-items:center;gap:0}
+.mm-c{background:var(--accent);color:var(--accent-ink);font:700 1rem var(--f-display);padding:10px 18px;border-radius:999px;text-align:center;max-width:100%}
+.mm-b{position:relative;width:100%;display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;padding-top:22px;margin-top:0}
+.mm-b::before{content:"";position:absolute;top:0;left:50%;width:2px;height:12px;background:var(--line)}
+.mm-b::after{content:"";position:absolute;top:12px;left:8%;right:8%;height:2px;background:var(--line);border-radius:2px}
+.mm-n{position:relative;border-radius:10px;padding:10px 12px;border:1px solid var(--line);background:var(--surface)}
+.mm-n::before{content:"";position:absolute;top:-10px;left:50%;width:2px;height:10px;background:var(--line)}
+.mm-n b{display:block;font-size:.9rem;margin-bottom:4px}
+@media (max-width:560px){ .mm-b::after,.mm-n::before{display:none} .mm-b{padding-top:14px} }
+.mm-n ul{margin:0;padding-left:18px;font-size:.88rem}
+.mm-n.h0{border-top:4px solid var(--hue0)} .mm-n.h1{border-top:4px solid var(--hue1)} .mm-n.h2{border-top:4px solid var(--hue2)} .mm-n.h3{border-top:4px solid var(--hue3)} .mm-n.h4{border-top:4px solid var(--hue4)}
+.infog table{background:var(--surface);border:1px solid var(--line);border-radius:9px;overflow:hidden}
+.infog th{background:var(--accent-soft);color:var(--ink)}
+.steps{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:8px}
+.steps li{padding-left:4px}
+.steps li::marker{font-family:var(--f-mono);color:var(--accent)}
+.mnemo{background:var(--violet-soft);border:1px solid var(--violet);border-radius:9px;padding:12px 14px}
+.mnemo .eyebrow{color:var(--violet)}
+.src{margin:0;color:var(--muted)}
+.ask{display:flex;gap:8px;align-items:flex-end}
+.ask textarea{min-height:56px}
+@media (prefers-reduced-motion:no-preference){
+  .mm-c{animation:pop .35s ease both}
+  .mm-n{animation:rise .45s ease both;animation-delay:calc(.12s + var(--d)*.1s)}
+  .walk.playing .steps li{animation:stepin .5s ease both;animation-delay:calc(var(--d)*1.1s)}
+  .walk.playing .steps li::marker{color:var(--violet)}
+}
+@keyframes pop{from{transform:scale(.85);opacity:0}to{transform:none;opacity:1}}
+@keyframes rise{from{transform:translateY(10px);opacity:0}to{transform:none;opacity:1}}
+@keyframes stepin{0%{opacity:0;transform:translateX(-8px)}60%{background:var(--accent-soft)}100%{opacity:1;transform:none;background:transparent}}
+/* plan, pyq, menu */
+.today{border-left:4px solid var(--accent)}
+tr.now td{background:var(--accent-soft)}
+.prio{display:inline-block;font-size:.72rem;font-weight:700;padding:2px 8px;border-radius:99px}
+.prio.p3{background:var(--bad-soft);color:var(--bad)} .prio.p2{background:var(--warn-soft);color:var(--warn)} .prio.p1{background:var(--sunk);color:var(--muted)}
+.pyqd>summary{display:flex;justify-content:space-between;align-items:center;gap:10px;list-style:none}
+.pyqd>summary::-webkit-details-marker{display:none}
+.hot{list-style:none;margin:6px 0 0;padding:0;display:flex;flex-direction:column;gap:6px}
+.hot li{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;background:var(--sunk)}
+.hot li div{display:flex;flex-direction:column;min-width:0}
+ul.clean{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:4px}
+.menu-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px}
+.menu-grid a{display:flex;gap:12px;align-items:center;padding:14px;border-radius:var(--r);border:1px solid var(--line);background:var(--surface);color:var(--ink);text-decoration:none;box-shadow:var(--shadow)}
+.menu-grid a>span{display:flex;flex-direction:column}
+.menu-grid svg{width:24px;height:24px;color:var(--accent);flex:none}
 @media (prefers-reduced-motion:no-preference){.opt,.btn,.chip{transition:background .15s,border-color .15s}}
 </style>
 
@@ -190,10 +260,12 @@ const ICONS = {
   revise:'<path d="M12 3l2.6 5.6L20 9.3l-4 4.1.9 5.6L12 16.3 7.1 19l.9-5.6-4-4.1 5.4-.7z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>',
   library:'<path d="M5 4h4v16H5zM10 4h4v16h-4zM15.5 4.5l3.8 1 -3.6 15-3.8-1z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>',
   stats:'<path d="M4 20V10M10 20V4M16 20v-7M22 20H2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>',
-  more:'<circle cx="5" cy="12" r="1.8" fill="currentColor"/><circle cx="12" cy="12" r="1.8" fill="currentColor"/><circle cx="19" cy="12" r="1.8" fill="currentColor"/>'
+  more:'<circle cx="5" cy="12" r="1.8" fill="currentColor"/><circle cx="12" cy="12" r="1.8" fill="currentColor"/><circle cx="19" cy="12" r="1.8" fill="currentColor"/>',
+  plan:'<rect x="3" y="5" width="18" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M3 10h18M8 3v4M16 3v4M8 15l2 2 4-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>',
+  pyq:'<path d="M4 19h16M6 16V9M11 16V5M16 16v-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="19" cy="6" r="2" fill="none" stroke="currentColor" stroke-width="2"/>'
 };
-const NAV = [["home","Home"],["subjects","Subjects"],["test","Tests"],["revise","Revise"],["library","Build bank"],["stats","Progress"],["more","More"]];
-const TABNAV = ["home","subjects","test","library","more"];
+const NAV = [["home","Home"],["subjects","Subjects"],["test","Tests"],["plan","Study plan"],["pyq","PYQ insights"],["revise","Revise"],["library","Build bank"],["stats","Progress"],["more","More"]];
+const TABNAV = ["home","subjects","test","plan","more"];
 
 // ---------- helpers ----------
 const $ = (s, r=document) => r.querySelector(s);
@@ -218,7 +290,8 @@ const S = {
   tx: [], subj: {},                 // taxonomy
   Q: new Map(),                     // id -> question
   prog: {},                         // sid -> {r:{qid:[pick,ok,ts]}, b:{qid:1}, x:{qid:1}, f:{qid:note}}
-  settings: { tier:"complex", strict:true },
+  settings: { tier:"complex", strict:true, verify:true },
+  pyq: null, plan: null,
   hist: [],                         // test history
   lib: [],                          // uploaded documents meta
   sess: null, run: null, result: null,
@@ -289,7 +362,16 @@ async function loadStatic(){
   S.tx = tx; tx.forEach(s => S.subj[s.id] = s);
   const files = await Promise.all(man.files.map(f => fetch("data/"+f.file).then(r=>r.json()).then(qs=>({f, qs}))));
   for (const {f, qs} of files) qs.forEach((q,i) => addQuestion({ ...q, id: `${f.key}-${i}`, src: f.src || "seed" }));
+  // explanation layers (option-wise reasons, mind map, walkthrough, source) keyed by question id
+  const [enrich, pyq] = await Promise.all([
+    Promise.all((man.enrich||[]).map(f => fetch("data/"+f).then(r=>r.json()).catch(()=>({})))),
+    man.pyq ? fetch("data/"+man.pyq).then(r=>r.json()).catch(()=>null) : null
+  ]);
+  enrich.forEach(e => Object.entries(e).forEach(([id, x]) => applyEnrich(id, x)));
+  S.pyq = pyq;
 }
+const RICH = ["w","mm","tb","steps","mn","ref","pyq"];
+function applyEnrich(id, x){ const q = S.Q.get(id); if (!q || !x) return; for (const k of RICH) if (x[k] != null) q[k] = x[k]; }
 function loadBatch(b){
   (b.qs || []).forEach((q,i) => addQuestion({ ...q, s: q.s || b.s, id: `g${b.id}-${i}`, src: b.src || "ai", img: q.img || (q.asset ? "/_blob/"+q.asset : undefined) }));
 }
@@ -301,7 +383,10 @@ async function loadUser(){
   subjIds.forEach((id,i) => { if (progs[i]) S.prog[id] = Object.assign({r:{},b:{},x:{},f:{}}, progs[i]); });
   const batches = (await Promise.all(subjIds.map(id => Store.list("bank", id)))).flat();
   batches.forEach(loadBatch);
+  const enr = (await Promise.all(subjIds.map(id => Store.list("enr", id)))).flat();
+  enr.forEach(e => applyEnrich(e.qid || e.id, e));
   S.lib = await Store.list("lib", "docs");
+  S.plan = await Store.getDoc("plan");
 }
 async function initCaps(){
   if (!window.claude?.use) return;
@@ -370,6 +455,7 @@ routes.home = () => {
     <div><span class="muted small">Accuracy</span><b>${st.att? pct(st.cor,st.att)+"%":"–"}</b></div>
     <div><span class="muted small">Today</span><b>${fmt(todayCount())}</b></div>
   </div>
+  ${todayCardHTML(all)}
   <section class="panel stack">
     <div class="row between"><h2>Bank goal</h2><span class="num small muted">${fmt(st.n)} / ${fmt(GOAL)}</span></div>
     <div class="bar"><i style="width:${Math.min(100,100*st.n/GOAL)}%"></i></div>
@@ -380,7 +466,9 @@ routes.home = () => {
     <button class="btn" id="weak">Practise weak subtopics</button>
     <button class="btn" id="mist" ${wrong?"":"disabled"}>Redo my mistakes (${wrong})</button>
     <button class="btn" id="bmk" ${bm?"":"disabled"}>Bookmarks (${bm})</button>
-    <a class="btn" href="#test">Grand test · 180 Q</a>
+    <button class="btn" id="due" ${all.filter(isDue).length?"":"disabled"}>Spaced review due (${all.filter(isDue).length})</button>
+    <button class="btn" id="pyqp">PYQ-concept mix · 30</button>
+    <a class="btn" href="#test">Mock tests & custom modules</a>
     <a class="btn" href="#revise">Revise pearls</a>
   </section>
   <section class="stack">
@@ -397,7 +485,19 @@ routes.home = () => {
   };
   $("#mist").onclick = () => startSession("My mistakes", shuffle(all.filter(q=>{const r=prog(q.s).r[q.id]; return r && !r[1];})).slice(0,40));
   $("#bmk").onclick = () => startSession("Bookmarks", all.filter(q=>prog(q.s).b[q.id]));
+  $("#due").onclick = () => startSession("Spaced review", shuffle(all.filter(isDue)).slice(0,40));
+  $("#pyqp").onclick = () => startSession("PYQ-concept mix", orderUnattemptedFirst(all.filter(q=>q.pyq)).slice(0,30));
+  const tgo = $("#todaygo"); if (tgo) tgo.onclick = () => { const t = planToday(); const qs = orderUnattemptedFirst(all.filter(q=>q.s===t.sid)).slice(0, t.target); startSession(`Today · ${S.subj[t.sid].name}`, qs); };
 };
+function todayCardHTML(all){
+  const t = planToday();
+  if (!t) return `<section class="panel row between today"><div class="stack" style="gap:2px"><span class="eyebrow">Study plan</span><b>Set your exam date and daily hours to get a day-by-day plan.</b></div><a class="btn primary" href="#plan">Create my plan</a></section>`;
+  const due = all.filter(isDue).length;
+  return `<section class="panel stack today"><div class="row between"><span class="eyebrow">Today · ${esc(t.phase)} · ${t.daysLeft} days to exam</span><a class="small" href="#plan">Plan</a></div>
+    <h2>${esc(S.subj[t.sid].name)}${t.focus?` · ${esc(t.focus)}`:""}</h2>
+    <p class="small muted" style="margin:0">${t.target} questions${due?` + ${due} spaced reviews`:""}${t.test?` · ${esc(t.test)} today`:""}</p>
+    <div class="row"><button class="btn primary" id="todaygo">Start today's questions</button>${t.test?`<a class="btn" href="#test">Go to tests</a>`:""}</div></section>`;
+}
 function subjectCard(s){
   const st = statsOf(subjectQs(s.id));
   return `<a class="subj" href="#s-${s.id}">
@@ -478,8 +578,19 @@ function permFor(store, q){ return store[q.id] ||= shuffle([0,1,2,3]); }
 function qMetaHTML(q){
   const s = S.subj[q.s];
   return `<div class="qmeta"><span>${esc(s.name)} › ${esc(q.t)} › ${esc(q.st)}</span>
-    ${q.hy>=3?'<span class="tag hy">HIGH YIELD</span>':""}${q.src==="ai"?'<span class="tag ai">CLAUDE</span>':""}${q.src==="notes"?'<span class="tag ai">FROM YOUR NOTES</span>':""}${q.verify?'<span class="tag verify">VERIFY</span>':""}</div>`;
+    ${q.hy>=3?'<span class="tag hy">HIGH YIELD</span>':""}${q.pyq?'<span class="tag pyq">PYQ CONCEPT</span>':""}${q.img?'<span class="tag">IMAGE</span>':""}${q.src==="ai"?'<span class="tag ai">CLAUDE</span>':""}${q.src==="notes"?'<span class="tag ai">FROM YOUR NOTES</span>':""}${q.vf?'<span class="tag ok">2-PASS CHECKED</span>':""}${q.verify?'<span class="tag verify">VERIFY</span>':""}</div>`;
 }
+const MM_HUES = 5;
+function mindMapHTML(mm){
+  if (!mm?.c || !Array.isArray(mm.n)) return "";
+  return `<figure class="mmap" aria-label="Mind map: ${esc(mm.c)}"><div class="mm-c">${esc(mm.c)}</div>
+    <div class="mm-b">${mm.n.map((b,i)=>`<div class="mm-n h${i%MM_HUES}" style="--d:${i}"><b>${esc(b.t)}</b><ul>${(b.k||[]).map(k=>`<li>${esc(k)}</li>`).join("")}</ul></div>`).join("")}</div></figure>`;
+}
+function tableHTML(tb){
+  if (!tb?.h || !Array.isArray(tb.r)) return "";
+  return `<div class="tscroll infog"><table><tr>${tb.h.map(h=>`<th>${esc(h)}</th>`).join("")}</tr>${tb.r.map(r=>`<tr>${r.map(c=>`<td>${esc(c)}</td>`).join("")}</tr>`).join("")}</table></div>`;
+}
+function videoURL(q){ return "https://www.youtube.com/results?search_query=" + encodeURIComponent(`${q.mm?.c || q.o[q.a]} ${q.st} NEET PG`); }
 function imgHTML(q){ return q.img ? `<img class="qimg" src="${esc(q.img)}" alt="Image for this question" loading="lazy">${q.credit?`<span class="credit">${esc(q.credit)}</span>`:""}` : ""; }
 routes.practice = () => {
   const ss = S.sess; if (!ss) return go("home");
@@ -505,26 +616,53 @@ routes.practice = () => {
       <button class="btn primary" id="next">${done?"Next":"Skip"}</button>
     </div>
   </div>`;
-  if (done) showExplanation(q, done.pick);
+  if (done) showExplanation(q, done.pick, null, perm);
   $$(".opt", v).forEach(b => b.onclick = () => { const pick=+b.dataset.oi; const ok=record(q,pick); ss.ans[q.id]={pick,ok}; render(); });
   $("#next").onclick = () => { ss.i++; render(); window.scrollTo(0,0); };
   $("#prev").onclick = () => { ss.i--; render(); };
   $("#bm").onclick = () => { if (P.b[q.id]) delete P.b[q.id]; else P.b[q.id]=1; Store.markProg(q.s); render(); };
 };
-function showExplanation(q, pick, host){
+function showExplanation(q, pick, host, perm){
   const el = host || $("#exp"); const ok = pick===q.a; const P = prog(q.s);
+  const order = perm || [0,1,2,3];
+  const rich = !!(q.w || q.mm || q.steps);
   el.innerHTML = `<div class="explain">
     ${pick==null?"":`<span class="verdict ${ok?"ok":"no"}">${ok?"Correct":"Incorrect"} · answer: ${esc(q.o[q.a])}</span>`}
-    <div><span class="eyebrow">Explanation</span><p style="margin:4px 0 0">${esc(q.e||"No explanation saved.")}</p></div>
+    ${q.vnote?`<p class="note warn small" style="margin:0">${esc(q.vnote)}</p>`:""}${typeof P.f[q.id]==="string"&&P.f[q.id].startsWith("Claude disagreed")?`<p class="note warn small" style="margin:0">${esc(P.f[q.id])}</p>`:""}
+    <section><span class="eyebrow">In short</span><p style="margin:4px 0 0">${esc(q.e||"No explanation saved.")}</p></section>
+    ${q.w?`<section><span class="eyebrow">Why each option</span><ol class="why">${order.map((oi,k)=>`<li class="${oi===q.a?"is-right":"is-wrong"}"><span class="k">${"ABCD"[k]}</span><div><b>${esc(q.o[oi])}</b><span>${esc(q.w[oi]||"")}</span></div></li>`).join("")}</ol></section>`:""}
+    ${q.mm?`<section><span class="eyebrow">Mind map</span>${mindMapHTML(q.mm)}</section>`:""}
+    ${q.tb?`<section><span class="eyebrow">At a glance</span>${tableHTML(q.tb)}</section>`:""}
+    ${q.steps?.length?`<section class="walk"><div class="row between"><span class="eyebrow">How to reason it out</span><button class="btn sm" data-act="play">Play walkthrough</button></div>
+      <ol class="steps">${q.steps.map((s,i)=>`<li style="--d:${i}">${esc(s)}</li>`).join("")}</ol></section>`:""}
+    ${q.mn?`<div class="mnemo"><span class="eyebrow">Memory hook</span><p style="margin:4px 0 0">${esc(q.mn)}</p></div>`:""}
     ${q.p?`<div class="pearl"><span class="eyebrow">Pearl</span><p style="margin:4px 0 0">${esc(q.p)}</p></div>`:""}
+    <p class="src small">${q.ref?`<span class="tag">SOURCE</span> ${esc(q.ref)}`:`<span class="tag">SOURCE</span> Not tagged yet`}${q.pyq?` · <span class="tag pyq">PYQ CONCEPT</span> tested in past papers (recall analyses)`:""}</p>
     <div class="row">
-      <button class="btn sm" data-act="ask">Ask Claude about this</button>
+      <a class="btn sm" href="${videoURL(q)}" target="_blank" rel="noopener">Watch a video on this</a>
+      <button class="btn sm" data-act="ask">Ask Claude a follow-up</button>
+      ${rich?"":`<button class="btn sm primary" data-act="deep">Build full explanation</button>`}
       <button class="btn sm ghost" data-act="flag">${P.f[q.id]?"Flagged":"Flag as wrong"}</button>
       <button class="btn sm ghost" data-act="hide">Remove from bank</button>
     </div>
+    <div class="ask" data-askbox hidden><textarea data-askq rows="2" placeholder="e.g. Why isn't option C correct? Explain with an example."></textarea><button class="btn sm primary" data-act="send">Ask</button></div>
     <div class="ai-out" data-out hidden></div>
   </div>`;
   const out = $("[data-out]", el);
+  const play = $("[data-act=play]", el);
+  if (play) play.onclick = () => { const w = $(".walk", el); w.classList.remove("playing"); void w.offsetWidth; w.classList.add("playing"); };
+  const deep = $("[data-act=deep]", el);
+  if (deep) deep.onclick = () => deepExplain(q, el, pick, host, perm, deep);
+  $("[data-act=ask]", el).onclick = () => { const b = $("[data-askbox]", el); b.hidden = !b.hidden; if (!b.hidden) $("[data-askq]", el).focus(); };
+  $("[data-act=send]", el).onclick = async (e) => {
+    const sample = S.cap.sample; if (!sample) return toast("Claude is available when this page is opened on claude.ai.");
+    const ask = $("[data-askq]", el).value.trim() || "Explain this question in more depth with a simple example.";
+    e.target.disabled = true; out.hidden = false; out.textContent = "Thinking…";
+    try {
+      await sample(`You are a patient NEET PG tutor. A student answered this MCQ and asks a follow-up. Answer simply and accurately, using a short clinical example where helpful. If you believe the key is wrong, say so first with the correct answer and reasoning. Name the standard textbook or guideline your answer agrees with. Under 250 words, plain text.\n\nQuestion: ${q.q}\nOptions: ${q.o.map((o,i)=>"ABCD"[i]+") "+o).join("  ")}\nKey: ${q.o[q.a]}\nSaved explanation: ${q.e||""}\nStudent's question: ${ask}`, { modelTier: S.settings.tier, cache:false, onText: ({text}) => out.textContent = text });
+    } catch (err) { out.textContent = err.text || sampleError(err); }
+    e.target.disabled = false;
+  };
   $("[data-act=ask]", el).onclick = async (e) => {
     const sample = S.cap.sample; if (!sample) return toast("Claude is available when this page is opened on claude.ai.");
     e.target.disabled = true; out.hidden = false; out.textContent = "Thinking…";
@@ -533,11 +671,35 @@ function showExplanation(q, pick, host){
     } catch (err) { out.textContent = err.text || sampleError(err); }
     e.target.disabled = false;
   };
-  $("[data-act=flag]", el).onclick = () => { if (P.f[q.id]) delete P.f[q.id]; else P.f[q.id]="flagged"; Store.markProg(q.s); toast(P.f[q.id]?"Flagged. Review flagged questions from More.":"Flag removed."); showExplanation(q,pick,host); };
+  $("[data-act=flag]", el).onclick = () => { if (P.f[q.id]) delete P.f[q.id]; else P.f[q.id]="flagged"; Store.markProg(q.s); toast(P.f[q.id]?"Flagged. Review flagged questions from More.":"Flag removed."); showExplanation(q,pick,host,perm); };
   $("[data-act=hide]", el).onclick = (e) => {
     if (e.target.dataset.sure){ P.x[q.id]=1; Store.markProg(q.s); toast("Removed. Restore from More."); if (!host){ S.sess.i++; render(); } return; }
     e.target.dataset.sure = 1; e.target.textContent = "Tap again to remove";
   };
+}
+async function deepExplain(q, el, pick, host, perm, btn){
+  const sample = S.cap.sample; if (!sample) return toast("Claude is available when this page is opened on claude.ai.");
+  const out = $("[data-out]", el); btn.disabled = true; out.hidden = false; out.textContent = "Building the explanation… (30-60 seconds)";
+  try {
+    const x = await sample.json(`You are a meticulous NEET PG tutor writing the explanation layer for one MCQ in a student's private study app.
+First solve the question yourself. If you disagree with the key, set "agree" to false and explain in "note".
+
+Question: ${q.q}
+Options (index: text): ${q.o.map((o,i)=>`${i}: ${o}`).join(" | ")}
+Key index: ${q.a}
+Existing short explanation: ${q.e||""}
+
+Return only one JSON object:
+{"agree":true,"note":"","w":[...],"mm":{...},"steps":[...],"mn":"","tb":null,"ref":"","pyq":0}
+${RICH_SPEC}`, { modelTier: S.settings.tier, cache:false });
+    const r = cleanRich(x);
+    if (!r.w){ out.textContent = "Claude's reply was incomplete. Try again."; btn.disabled = false; return; }
+    if (x.agree === false){ r.verify = 1; prog(q.s).f[q.id] = "Claude disagreed: " + String(x.note||"").slice(0,300); Store.markProg(q.s); }
+    Object.assign(q, r);
+    await Store.put("enr", q.s, q.id, { qid:q.id, ...r }).catch(()=>{});
+    showExplanation(q, pick, host, perm);
+    if (x.agree === false) toast("Claude disagreed with this key. It's flagged VERIFY: check your textbook.");
+  } catch (e) { out.textContent = e.text ? "" : sampleError(e); btn.disabled = false; }
 }
 function practiceSummary(){
   const ss = S.sess; const a = Object.values(ss.ans); const ok = a.filter(x=>x.ok).length;
@@ -552,58 +714,83 @@ routes.test = () => {
   const all = questionsWhere(()=>true);
   const v = $("#view");
   const runSaved = LS.get("run", null);
-  v.innerHTML = `<header><h1>Tests</h1></header>
+  const mocks = [
+    { id:"grand", n:180, name:"Grand test", sub:"180 Q · 5 sections × 36 · 3 h 30 min" },
+    { id:"half", n:72, name:"Mini mock", sub:"72 Q · 2 sections × 36 · 84 min" },
+    { id:"drill", n:36, name:"Section drill", sub:"36 Q · 1 section · 42 min" }
+  ];
+  v.innerHTML = `<header class="stack" style="gap:4px"><h1>Tests</h1><span class="muted small">NEET PG 2027 (expected): the 2027 bulletin isn't out yet, so tests follow the 2026 NBEMS pattern.</span></header>
   ${runSaved ? `<div class="note warn row between"><span>A test is in progress.</span><a class="btn sm primary" href="#run">Resume</a></div>` : ""}
-  <section class="panel stack">
-    <span class="eyebrow">NEET-PG 2026 format</span><h2>Grand test</h2>
-    <p style="margin:0">180 MCQs in 5 sections of 36. Each section is timed at 42 minutes and locks when its time ends: you cannot go back to it, and you move on only when its time is up. +4 for correct, −1 for wrong, 0 if unattempted.</p>
-    ${all.length < 180 ? `<p class="note warn small" style="margin:0">Your bank has ${all.length} questions. The test will use all of them in 5 sections, with section time scaled to 42 min per 36 questions. Build the bank to 180+ for a full paper.</p>` : ""}
-    <label class="row small"><input type="checkbox" id="strict" ${S.settings.strict?"checked":""}> Exam lock: wait out each section's time (uncheck to allow moving on early)</label>
-    <div><button class="btn primary" id="grand">Start grand test</button></div>
+  <section class="stack"><h2>Mock tests</h2>
+    <div class="grid g3">${mocks.map(m=>`<button class="mock" data-mock="${m.id}"><span class="eyebrow">${m.id==="grand"?"Full paper":"Practice"}</span><b>${m.name}</b><span class="small muted">${m.sub}</span></button>`).join("")}
+      <div class="mock"><span class="eyebrow">One subject</span><b>Subject test</b><select id="subjtest" aria-label="Subject">${S.tx.map(s=>`<option value="${s.id}">${esc(s.name)}</option>`).join("")}</select><button class="btn sm primary" id="subjgo">Start · 50 Q</button></div></div>
+    <p class="small muted" style="margin:0">Mocks mix subjects in proportion to the old NBE blueprint scaled to 180 (see PYQ insights). Sections lock like the real exam; +4 / −1 marking.${all.length<180?` Your bank has ${all.length} questions, so a full grand test uses all of them.`:""}</p>
+    <label class="row small"><input type="checkbox" id="strict" ${S.settings.strict?"checked":""}> Exam lock: wait out each section's 42 minutes (uncheck to allow moving on early)</label>
   </section>
   <section class="panel stack">
-    <h2>Custom test</h2>
-    <div class="row" id="subs">${S.tx.map(s=>`<button class="chip" data-s="${s.id}" aria-pressed="false">${esc(s.name)}</button>`).join("")}</div>
+    <h2>Custom module</h2>
+    <div class="stack" style="gap:6px"><span class="small"><b>Size</b></span><div class="row" id="sizes">${[20,30,50,100].map(n=>`<button class="chip" data-n="${n}" aria-pressed="${n===20}">${n} questions</button>`).join("")}<input type="number" id="n" min="5" max="200" placeholder="Other" style="width:110px" aria-label="Custom size"></div></div>
+    <div class="stack" style="gap:6px"><span class="small"><b>Subjects</b> <span class="muted">(none = all 19)</span></span><div class="row" id="subs">${S.tx.map(s=>`<button class="chip" data-s="${s.id}" aria-pressed="false">${esc(s.name)}</button>`).join("")}</div></div>
     <div class="grid g2">
-      <label class="f">Number of questions<input type="number" id="n" min="5" max="200" value="30"></label>
-      <label class="f">Questions to include<select id="pool"><option value="un">Unattempted first</option><option value="all">Any</option><option value="wr">Previously incorrect</option></select></label>
+      <label class="f">Topic<select id="ctopic" disabled><option value="">Pick one subject to choose a topic</option></select></label>
+      <label class="f">Questions to include<select id="pool"><option value="un">Unattempted first</option><option value="all">Any</option><option value="wr">Previously incorrect</option><option value="due">Due for review</option><option value="bm">Bookmarked</option><option value="fl">Flagged</option></select></label>
     </div>
-    <p class="small muted" style="margin:0">Timed at 70 seconds per question (the NEET PG average). Pick no subject to mix all 19.</p>
-    <div><button class="btn primary" id="custom">Start custom test</button></div>
+    <div class="row"><label class="row small"><input type="checkbox" id="thy"> High-yield only</label><label class="row small"><input type="checkbox" id="tpyq"> PYQ concepts only</label><label class="row small"><input type="checkbox" id="timg"> Image-based only</label></div>
+    <div class="row" role="radiogroup" aria-label="Mode"><label class="row small"><input type="radio" name="mode" value="tutor" checked> Tutor mode: explanation after each question</label><label class="row small"><input type="radio" name="mode" value="exam"> Exam mode: timed, review at the end</label></div>
+    <div><button class="btn primary" id="custom">Start module</button></div>
   </section>
   ${S.hist.length ? `<section class="panel stack"><h2>Past tests</h2><div class="tscroll"><table><tr><th>Date</th><th>Test</th><th class="n">Score</th><th class="n">Correct</th><th class="n">Wrong</th></tr>
     ${S.hist.slice().reverse().slice(0,15).map(h=>`<tr><td>${new Date(h.at).toLocaleDateString("en-IN")}</td><td>${esc(h.title)}</td><td class="n">${h.score}/${h.max}</td><td class="n">${h.cor}</td><td class="n">${h.wr}</td></tr>`).join("")}</table></div></section>` : ""}`;
-  $$("#subs .chip").forEach(c => c.onclick = () => c.setAttribute("aria-pressed", c.getAttribute("aria-pressed")==="true"?"false":"true"));
+  const toggle = c => c.setAttribute("aria-pressed", c.getAttribute("aria-pressed")==="true"?"false":"true");
+  $$("#sizes .chip").forEach(c => c.onclick = () => { $$("#sizes .chip").forEach(x=>x.setAttribute("aria-pressed","false")); c.setAttribute("aria-pressed","true"); $("#n").value=""; });
+  $("#n").oninput = () => $$("#sizes .chip").forEach(x=>x.setAttribute("aria-pressed","false"));
+  $$("#subs .chip").forEach(c => c.onclick = () => { toggle(c); const sel = $$("#subs .chip[aria-pressed=true]").map(x=>x.dataset.s); const t = $("#ctopic");
+    if (sel.length===1){ t.disabled=false; t.innerHTML = `<option value="">All topics</option>`+S.subj[sel[0]].topics.map(x=>`<option>${esc(x.name)}</option>`).join(""); } else { t.disabled=true; t.innerHTML=`<option value="">Pick one subject to choose a topic</option>`; } });
   $("#strict").onchange = e => { S.settings.strict = e.target.checked; Store.setDoc("settings", S.settings).catch(()=>{}); };
-  $("#grand").onclick = () => startTest("Grand test", pickGrand(all), true);
+  $$("[data-mock]").forEach(b => b.onclick = () => { const m = mocks.find(x=>x.id===b.dataset.mock); startTest(m.name, pickMock(all, m.n), "neet"); });
+  $("#subjgo").onclick = () => { const sid=$("#subjtest").value; const qs = orderUnattemptedFirst(all.filter(q=>q.s===sid)).slice(0,50); if (!qs.length) return toast("No questions in this subject yet."); startTest(`${S.subj[sid].name} test · ${qs.length} Q`, shuffle(qs), "flat"); };
   $("#custom").onclick = () => {
     const subs = $$("#subs .chip[aria-pressed=true]").map(c=>c.dataset.s);
-    const n = Math.max(5, Math.min(200, +$("#n").value || 30)); const pool = $("#pool").value;
-    let qs = all.filter(q=>!subs.length || subs.includes(q.s));
+    const sizeChip = $("#sizes .chip[aria-pressed=true]");
+    const n = Math.max(5, Math.min(200, +$("#n").value || (sizeChip ? +sizeChip.dataset.n : 20)));
+    const pool = $("#pool").value, topic = $("#ctopic").value;
     const P = q => prog(q.s).r[q.id];
-    if (pool==="wr") qs = qs.filter(q=>P(q) && !P(q)[1]);
-    qs = pool==="un" ? [...shuffle(qs.filter(q=>!P(q))), ...shuffle(qs.filter(q=>P(q)))] : shuffle(qs);
+    let qs = all.filter(q => (!subs.length || subs.includes(q.s)) && (!topic || q.t===topic)
+      && (!$("#thy").checked || q.hy>=3) && (!$("#tpyq").checked || q.pyq) && (!$("#timg").checked || q.img));
+    const F = { wr:q=>P(q)&&!P(q)[1], due:q=>isDue(q), bm:q=>prog(q.s).b[q.id], fl:q=>prog(q.s).f[q.id] };
+    if (F[pool]) qs = qs.filter(F[pool]);
+    qs = pool==="un" ? orderUnattemptedFirst(qs) : shuffle(qs);
     qs = qs.slice(0,n);
-    if (!qs.length) return toast("No questions match.");
-    startTest(`Custom · ${qs.length} Q`, qs, false);
+    if (!qs.length) return toast("No questions match these filters.");
+    const title = `Custom module · ${qs.length} Q`;
+    if ($("input[name=mode]:checked").value === "tutor") startSession(title, shuffle(qs)); else startTest(title, shuffle(qs), "flat");
   };
 };
-function pickGrand(all){
-  const by = {}; S.tx.forEach(s=>by[s.id]=[]);
-  const P = q => prog(q.s).r[q.id];
-  all.forEach(q=>by[q.s].push(q));
-  for (const k in by) by[k] = [...shuffle(by[k].filter(q=>!P(q))), ...shuffle(by[k].filter(q=>P(q)))];
-  const out = []; let round = 0;
-  while (out.length < 180){ let added = 0; for (const k in by){ if (by[k][round]){ out.push(by[k][round]); added++; if (out.length>=180) break; } } if (!added) break; round++; }
-  return shuffle(out);
+function orderUnattemptedFirst(qs){ const P = q => prog(q.s).r[q.id]; return [...shuffle(qs.filter(q=>!P(q))), ...shuffle(qs.filter(q=>P(q)))]; }
+// Old NBE 300-question blueprint scaled to 180. Splits inside the Medicine group (me/de/ps) and Surgery group (su/or/as/ra) are estimates.
+const MOCK_W = { an:10, ph:10, bc:10, pa:15, pm:12, mi:12, fm:6, cm:15, en:6, op:6, me:17, de:5, ps:5, su:15, or:5, as:4, ra:3, ob:18, pe:6 };
+function pickMock(all, n){
+  const by = {}; S.tx.forEach(s=>by[s.id]=[]); all.forEach(q=>by[q.s].push(q));
+  for (const k in by) by[k] = orderUnattemptedFirst(by[k]);
+  const out = [];
+  for (const k in by){ const want = Math.round(MOCK_W[k]/180*n); out.push(...by[k].splice(0, want)); }
+  // fill any shortfall (thin subjects) from whatever is left, round-robin
+  let added = true;
+  while (out.length < n && added){ added = false; for (const k in by){ if (by[k].length && out.length < n){ out.push(by[k].shift()); added = true; } } }
+  return shuffle(out.slice(0, n));
 }
-function startTest(title, qs, grand){
+function isDue(q){
+  // spaced review: a wrong answer comes back after 1 day, a right one after 21 days
+  const r = prog(q.s).r[q.id]; if (!r) return false;
+  const age = Date.now() - r[2];
+  return r[1] ? age > 21*864e5 : age > 864e5;
+}
+function startTest(title, qs, kind){
   let sections;
-  if (grand){
-    const per = Math.ceil(qs.length / NEET.sections);
-    sections = []; for (let i=0;i<NEET.sections;i++){ const ids = qs.slice(i*per,(i+1)*per).map(q=>q.id); if (ids.length) sections.push({ ids, secs: Math.round(NEET.minutes*60*ids.length/NEET.perSection) }); }
+  if (kind === "neet"){
+    sections = []; for (let i=0;i<qs.length;i+=NEET.perSection){ const ids = qs.slice(i,i+NEET.perSection).map(q=>q.id); sections.push({ ids, secs: Math.round(NEET.minutes*60*ids.length/NEET.perSection) }); }
   } else sections = [{ ids: qs.map(q=>q.id), secs: qs.length*70 }];
-  S.run = { title, grand, strict: grand && S.settings.strict, sections, cur: 0, i: 0, endsAt: Date.now()+sections[0].secs*1000, ans:{}, mark:{}, perm:{}, startedAt: Date.now() };
+  S.run = { title, grand: kind==="neet", strict: kind==="neet" && sections.length>1 && S.settings.strict, sections, cur: 0, i: 0, endsAt: Date.now()+sections[0].secs*1000, ans:{}, mark:{}, perm:{}, startedAt: Date.now() };
   LS.set("run", S.run); go("run");
 }
 let tick;
@@ -702,9 +889,132 @@ routes.result = () => {
       return `<article class="panel qcard">${qMetaHTML(q)}<div class="stem">${esc(q.q)}</div>${imgHTML(q)}
         <ol class="opts">${perm.map((oi,j)=>`<li><div class="opt ${oi===q.a?"right":oi===p?"wrong":""}"><span class="k">${"ABCD"[j]}</span><span>${esc(q.o[oi])}</span></div></li>`).join("")}</ol>
         <div data-exp="${k}"></div></article>`; }).join("") : `<p class="muted">Nothing here.</p>`;
-    list.forEach((x,k)=>{ const q=S.Q.get(x.id); const host=$(`[data-exp="${k}"]`); if(q&&host) showExplanation(q, r.ans[x.id]??null, host); });
+    list.forEach((x,k)=>{ const q=S.Q.get(x.id); const host=$(`[data-exp="${k}"]`); if(q&&host) showExplanation(q, r.ans[x.id]??null, host, r.perm[x.id]); });
   };
   $("#rf").onchange = draw; draw();
+};
+
+// ---------- study plan ----------
+const DAY = 864e5;
+const dayStart = d => { const x = new Date(d); x.setHours(0,0,0,0); return x.getTime(); };
+function buildPlan({ exam, hours, weak }){
+  const start = dayStart(Date.now()), end = dayStart(exam);
+  const days = Math.max(14, Math.round((end - start)/DAY));
+  const p1 = Math.round(days*0.55), p2 = Math.round(days*0.30);
+  // phase 1 blocks: every subject, days in proportion to exam weight, weak subjects get 30% extra
+  const w = S.tx.map(s => ({ sid:s.id, w: MOCK_W[s.id] * (weak.includes(s.id) ? 1.3 : 1) }));
+  const tot = w.reduce((a,b)=>a+b.w,0);
+  let alloc = w.map(x => ({ sid:x.sid, d: Math.max(1, Math.round(x.w/tot*p1)) }));
+  // order: high-priority subjects first, weak ones before strong ones within a priority
+  const pri = sid => (S.pyq?.subjects?.[sid]?.pri || 1) + (weak.includes(sid) ? 0.5 : 0);
+  alloc.sort((a,b) => pri(b.sid) - pri(a.sid));
+  const blocks = []; let cur = start;
+  for (const a of alloc){ blocks.push({ sid:a.sid, from:cur, to:cur + a.d*DAY - 1, phase:"Cover" }); cur += a.d*DAY; }
+  const p1end = cur;
+  // phase 2: rotate through subjects again, faster
+  const r2 = Math.max(1, Math.floor(p2 / S.tx.length));
+  for (const a of alloc){ if (cur >= end) break; blocks.push({ sid:a.sid, from:cur, to:cur + r2*DAY - 1, phase:"Revise" }); cur += r2*DAY; }
+  return { exam:end, start, hours, weak, blocks, p1end, p3start: cur, created: Date.now() };
+}
+function planToday(){
+  const P = S.plan; if (!P || !P.blocks) return null;
+  const now = dayStart(Date.now()); const daysLeft = Math.max(0, Math.round((P.exam - now)/DAY));
+  const target = Math.max(20, Math.round((P.hours||6) * 15));
+  const dow = new Date().getDay();
+  if (now >= P.p3start){
+    // final phase: grand test every third day, weakest subject on the others
+    const weak = weakSubtopics(1)[0];
+    const sid = weak?.s || P.weak?.[0] || "me";
+    return { sid, focus: weak?.st || "", phase:"Final tests", target, daysLeft, test: daysLeft % 3 === 0 ? "Grand test" : "" };
+  }
+  const b = P.blocks.find(x => now >= x.from && now <= x.to) || P.blocks[P.blocks.length-1];
+  const s = S.subj[b.sid];
+  // walk subtopics in order across the block's days
+  const subs = s.topics.flatMap(t => t.subs.map(st => `${t.name} › ${st}`));
+  const span = Math.max(1, Math.round((b.to - b.from + 1)/DAY)); const idx = Math.round((now - b.from)/DAY);
+  const per = Math.ceil(subs.length / span);
+  const focus = subs.slice(idx*per, idx*per+per).slice(0,2).join(", ");
+  return { sid: b.sid, focus, phase: b.phase==="Cover" ? "Cover all subjects" : "Revision", target, daysLeft, test: dow===0 ? (b.phase==="Cover" ? "Mini mock" : "Grand test") : "" };
+}
+routes.plan = () => {
+  const v = $("#view"); const P = S.plan; const t = planToday();
+  const weakNow = [...new Set(weakSubtopics(6).map(w=>w.s))];
+  const examVal = P ? new Date(P.exam).toISOString().slice(0,10) : "";
+  v.innerHTML = `<header class="stack" style="gap:4px"><h1>Study plan</h1><span class="muted small">A day-by-day plan built from exam weightage, your weak subjects and your time. NBEMS hasn't announced the NEET PG 2027 date yet, so enter your target date and update it when it's announced.</span></header>
+  <section class="panel stack">
+    <div class="grid g2">
+      <label class="f">Exam date<input type="date" id="pexam" value="${examVal}"></label>
+      <label class="f">Study hours per day<input type="number" id="phours" min="1" max="16" value="${P?.hours||8}"></label>
+    </div>
+    <div class="stack" style="gap:6px"><span class="small"><b>Subjects to give extra time</b> ${weakNow.length?`<span class="muted">(your weakest are pre-selected)</span>`:""}</span>
+      <div class="row" id="pweak">${S.tx.map(s=>`<button class="chip" data-s="${s.id}" aria-pressed="${(P?.weak||weakNow).includes(s.id)}">${esc(s.name)}</button>`).join("")}</div></div>
+    <div class="row"><button class="btn primary" id="pmake">${P?"Rebuild plan":"Create plan"}</button>${P?`<button class="btn" id="pask">Ask Claude to review my plan</button>`:""}</div>
+    <div class="ai-out" id="pout" hidden></div>
+  </section>
+  ${P ? `<section class="panel stack"><h2>How the plan works</h2>
+    <ol class="steps static"><li><b>Cover (55% of days):</b> every subject once, in order of exam weight and your weak areas. About ${Math.max(20,Math.round(P.hours*15))} questions a day, plus a mini mock on Sundays.</li>
+    <li><b>Revision (30%):</b> a faster second pass with custom modules and a grand test every Sunday.</li>
+    <li><b>Final tests (15%):</b> a grand test every third day, and your weakest subtopics in between.</li>
+    <li><b>Every day:</b> clear spaced reviews (wrong answers come back after 1 day, right ones after 21).</li></ol>
+    <p class="small muted" style="margin:0">The questions-per-day figure assumes about 4 minutes per question including reading the explanation. That's an estimate: adjust your hours if it feels too much or too little.</p></section>
+  <section class="panel stack"><h2>Schedule</h2><div class="tscroll"><table><tr><th>Dates</th><th>Phase</th><th>Subject</th></tr>
+    ${P.blocks.map(b=>`<tr class="${t&&b.sid===t.sid&&Date.now()>=b.from&&Date.now()<=b.to?"now":""}"><td class="num small">${new Date(b.from).toLocaleDateString("en-IN",{day:"numeric",month:"short"})} – ${new Date(b.to).toLocaleDateString("en-IN",{day:"numeric",month:"short"})}</td><td>${b.phase==="Cover"?"Cover":"Revise"}</td><td><a href="#s-${b.sid}">${esc(S.subj[b.sid].name)}</a></td></tr>`).join("")}
+    <tr><td class="num small">${new Date(P.p3start).toLocaleDateString("en-IN",{day:"numeric",month:"short"})} – ${new Date(P.exam).toLocaleDateString("en-IN",{day:"numeric",month:"short"})}</td><td>Final</td><td>Grand tests + weak areas</td></tr></table></div></section>` : ""}`;
+  $$("#pweak .chip").forEach(c => c.onclick = () => c.setAttribute("aria-pressed", c.getAttribute("aria-pressed")==="true"?"false":"true"));
+  $("#pmake").onclick = async () => {
+    const d = $("#pexam").value; if (!d) return toast("Enter your exam date first.");
+    if (new Date(d).getTime() - Date.now() < 14*DAY) return toast("Pick a date at least 2 weeks away.");
+    S.plan = buildPlan({ exam: new Date(d+"T00:00:00").getTime(), hours: Math.max(1, Math.min(16, +$("#phours").value||8)), weak: $$("#pweak .chip[aria-pressed=true]").map(c=>c.dataset.s) });
+    await Store.setDoc("plan", S.plan).catch(()=>{});
+    toast("Plan saved."); render();
+  };
+  const ask = $("#pask");
+  if (ask) ask.onclick = async () => {
+    const sample = S.cap.sample; if (!sample) return toast("Claude is available when this page is opened on claude.ai.");
+    const out = $("#pout"); out.hidden = false; out.textContent = "Thinking…"; ask.disabled = true;
+    const stats = S.tx.map(s => { const x = statsOf(subjectQs(s.id)); return `${s.name}: ${x.att} done, ${x.att?pct(x.cor,x.att)+"%":"no data"}`; }).join("; ");
+    const weak = weakSubtopics(8).map(w=>`${S.subj[w.s].name} › ${w.st} (${pct(w.cor,w.att)}%)`).join("; ");
+    try {
+      await sample(`You are an experienced NEET PG mentor. Review this student's plan and progress and give specific, practical advice for the next 2 weeks: what to prioritise, what to cut, how to use tests, and how to fix the weakest areas. Be honest and concrete; no generic motivation. Under 300 words, plain text with short numbered points.
+
+Exam in ${t?.daysLeft ?? "?"} days. Studies ${P.hours} h/day. Current phase: ${t?.phase || "?"}.
+Accuracy by subject: ${stats}
+Weakest subtopics: ${weak || "not enough data yet"}
+Recent test scores: ${S.hist.slice(-5).map(h=>`${h.title} ${h.score}/${h.max}`).join("; ") || "none yet"}`, { modelTier: S.settings.tier, cache:false, onText: ({text}) => out.textContent = text });
+    } catch (e) { out.textContent = e.text || sampleError(e); }
+    ask.disabled = false;
+  };
+};
+
+// ---------- PYQ insights ----------
+routes.pyq = () => {
+  const v = $("#view"); const Y = S.pyq;
+  if (!Y){ v.innerHTML = `<p class="note bad">The PYQ data didn't load. Reload the page.</p>`; return; }
+  const all = questionsWhere(()=>true);
+  const subIndex = (sid, t, st) => { const s = S.subj[sid]; const ti = s.topics.findIndex(x=>x.name===t); return ti<0?null:`${ti}-${s.topics[ti].subs.indexOf(st)}`; };
+  v.innerHTML = `<header class="stack" style="gap:4px"><span class="eyebrow">Previous-year analysis</span><h1>PYQ insights</h1>
+    <span class="muted small">${esc(Y.meta.official)}</span></header>
+  <section class="panel stack"><h2>What the recent papers looked like</h2>
+    <p class="small" style="margin:0"><b>Pattern.</b> ${esc(Y.meta.pattern)}</p>
+    <ul class="clean">${Y.meta.trends.map(t=>`<li>${esc(t)}</li>`).join("")}</ul>
+    <p class="small" style="margin:0"><b>Image questions.</b> ${esc(Y.meta.imageSources)}</p></section>
+  <section class="panel stack"><h2>Subject weightage</h2>
+    <p class="small muted" style="margin:0">Two independent estimates, because there is no official count. "Blueprint" is the old NBE 300-question syllabus scaled to 180. "Recent recalls" are coaching estimates for the 200-question papers. Priority combines both.</p>
+    <div class="tscroll"><table><tr><th>Subject</th><th class="n">Blueprint /180</th><th>Recent recalls</th><th>Priority</th><th class="n">In your bank</th><th class="n">Your accuracy</th></tr>
+    ${S.tx.map(s=>{ const y=Y.subjects[s.id]; const x=statsOf(subjectQs(s.id)); return `<tr><td><a href="#s-${s.id}">${esc(s.name)}</a></td><td class="n">${esc(y.bp)}</td><td class="small">${esc(y.rr)}</td><td><span class="prio p${y.pri}">${["","Low","Medium","High"][y.pri]}</span></td><td class="n">${x.n}</td><td class="n">${x.att?pct(x.cor,x.att)+"%":"–"}</td></tr>`; }).join("")}</table></div></section>
+  <section class="stack"><h2>Subject by subject</h2>
+    ${S.tx.map(s=>{ const y=Y.subjects[s.id]; return `<details class="panel pyqd"><summary><span>${esc(s.name)}</span><span class="prio p${y.pri}">${["","Low","Medium","High"][y.pri]} priority</span></summary>
+      <div class="stack" style="margin-top:12px">
+        <div><span class="eyebrow">Repeatedly tested topics</span><ul class="hot">${y.hot.map(h=>{ const ix=subIndex(s.id,h[0],h[1]); const n=all.filter(q=>q.s===s.id&&q.t===h[0]&&q.st===h[1]).length;
+          return `<li><div><b>${esc(h[2])}</b><span class="small muted">${esc(h[0])} › ${esc(h[1])} · ${n} in your bank</span></div>${ix?`<a class="btn sm" href="#t-${s.id}-${ix}">Practise</a>`:""}</li>`; }).join("")}</ul></div>
+        <div class="grid g2"><div class="note good small"><b>How to study it.</b> ${esc(y.how)}</div><div class="note warn small"><b>Don't over-invest in.</b> ${esc(y.skip)}</div></div>
+        <p class="small" style="margin:0"><b>Image types seen:</b> ${esc(y.img)}</p>
+        <div class="row"><button class="btn sm primary" data-pyqgen="${s.id}">Generate questions on these PYQ topics</button><button class="btn sm" data-pyqprac="${s.id}">Practise PYQ concepts</button></div>
+      </div></details>`; }).join("")}</section>
+  <section class="panel stack"><h2>Sources</h2><ul class="clean small">${Y.meta.sources.map(x=>`<li><b>${esc(x.tag)}:</b> ${esc(x.what)}</li>`).join("")}</ul>
+    <p class="small muted" style="margin:0">Updated ${esc(Y.meta.updated)}. Recall-based figures differ between sources and between years: use them to set priorities, not as exact counts.</p></section>`;
+  $$("[data-pyqgen]").forEach(b => b.onclick = () => { S.genPreset = { s:b.dataset.pyqgen, pyq:true }; go("library"); });
+  $$("[data-pyqprac]").forEach(b => b.onclick = () => { const qs = all.filter(q=>q.s===b.dataset.pyqprac && q.pyq); if (!qs.length) return toast("No PYQ-tagged questions here yet. Generate some first."); startSession(`PYQ concepts · ${S.subj[b.dataset.pyqprac].name}`, orderUnattemptedFirst(qs)); });
 };
 
 // ---------- revise ----------
@@ -751,6 +1061,38 @@ function sampleError(e){
     sampling_disabled:"Claude isn't available on this account.", session_expired:"Sign in to claude.ai again, then retry.", cancelled:"Stopped." };
   return m[e?.code] || "Something went wrong talking to Claude. Try again.";
 }
+const RICH_SPEC = `  "w": array of 4 strings in the same order as the options: for the correct option say why it is right; for each wrong option say exactly why it is wrong (1-2 plain sentences each).
+  "mm": mind map {"c":"central concept","n":[{"t":"branch","k":["leaf","leaf"]}]} with 3-5 branches of 2-5 leaves, each leaf under 8 words.
+  "steps": 3-5 short steps showing how to reason from the stem to the answer, for a student who got it wrong.
+  "mn": a mnemonic or memory hook only if a genuinely useful one exists, else "".
+  "tb": a comparison table {"h":["column",...],"r":[["cell",...],...]} only when comparing options or differentials helps, else null.
+  "ref": the standard textbook or official guideline the answer follows, title only (e.g. "Robbins Basic Pathology", "Park's Textbook of PSM", "WHO malaria guidelines"). Never invent chapter, page or edition numbers.
+  "pyq": 1 if this concept is commonly reported in NEET PG or INI-CET recall analyses, else 0.`;
+const ITEM_SHAPE = `{"t":"topic","st":"subtopic","q":"stem","o":["A","B","C","D"],"a":0,"e":"2-4 sentence explanation","p":"pearl","hy":2,"conf":0.95,"w":["","","",""],"mm":{"c":"","n":[{"t":"","k":[""]}]},"steps":[""],"mn":"","tb":null,"ref":"","pyq":0}`;
+function cleanRich(x){
+  const r = {}; if (!x || typeof x !== "object") return r;
+  if (Array.isArray(x.w) && x.w.length === 4) r.w = x.w.map(s=>String(s).slice(0,600));
+  if (x.mm && x.mm.c && Array.isArray(x.mm.n)) r.mm = { c:String(x.mm.c).slice(0,80), n: x.mm.n.slice(0,6).map(b=>({ t:String(b?.t||"").slice(0,60), k:(Array.isArray(b?.k)?b.k:[]).slice(0,6).map(k=>String(k).slice(0,80)) })).filter(b=>b.t) };
+  if (Array.isArray(x.steps) && x.steps.length) r.steps = x.steps.slice(0,6).map(s=>String(s).slice(0,300));
+  if (x.mn) r.mn = String(x.mn).slice(0,300);
+  if (x.tb && Array.isArray(x.tb.h) && Array.isArray(x.tb.r)) r.tb = { h:x.tb.h.slice(0,5).map(String), r:x.tb.r.slice(0,8).map(row=>(Array.isArray(row)?row:[]).slice(0,5).map(String)) };
+  if (x.ref) r.ref = String(x.ref).slice(0,160);
+  if (Number(x.pyq) === 1) r.pyq = 1;
+  return r;
+}
+async function verifyBatch(qs, status){
+  // independent second pass: Claude answers without seeing the key; disagreements are flagged
+  if (!S.settings.verify || !S.cap.sample || !qs.length) return qs;
+  status.textContent = `Double-checking ${qs.length} answers with an independent second pass…`;
+  try {
+    const ans = await S.cap.sample.json(`Answer each NEET PG MCQ independently. Think carefully; these are for a student's revision and must be correct.
+Return only a JSON array of integers: the 0-based index of the single best option for each question, in order.
+
+${qs.map((q,i)=>`Q${i+1}. ${q.q}\n${q.o.map((o,j)=>`  ${j}: ${o}`).join("\n")}`).join("\n\n")}`, { modelTier: S.settings.tier, cache:false });
+    if (Array.isArray(ans) && ans.length === qs.length) return qs.map((q,i) => Number(ans[i]) === q.a ? (q.verify ? q : { ...q, vf:1 }) : { ...q, verify:1, vnote:`An independent second check chose "${q.o[Number(ans[i])] ?? "?"}" instead. Check this against your textbook.` });
+  } catch {}
+  return qs;
+}
 function existingStems(sid, t){ return questionsWhere(q=>q.s===sid && (!t||q.t===t)).slice(-60).map(q=>"- "+q.q.slice(0,110)).join("\n"); }
 function taxonomyText(sid, onlyTopic){
   return S.subj[sid].topics.filter(t=>!onlyTopic||t.name===onlyTopic).map(t=>`${t.name}: ${t.subs.join(" | ")}`).join("\n");
@@ -763,7 +1105,9 @@ const RULES = `Rules:
 - "e": 2-4 sentences: why the answer is right and why the main distractors are wrong.
 - "p": one high-yield pearl related to the question (max 40 words) for rapid revision.
 - "hy": 1, 2 or 3 for how often this concept is tested.
-- "conf": your confidence (0 to 1) that the key is correct.`;
+- "conf": your confidence (0 to 1) that the key is correct.
+- Also include the explanation layer for each question:
+${RICH_SPEC}`;
 function cleanGenerated(arr, sid, src, fixed){
   if (!Array.isArray(arr)) return [];
   const subj = S.subj[sid]; const out = [];
@@ -776,7 +1120,7 @@ function cleanGenerated(arr, sid, src, fixed){
     const q = { s:sid, t, st, q:String(x.q), o, a, e:String(x.e||""), p:String(x.p||""), hy:Math.max(1,Math.min(3,Number(x.hy)||2)) };
     if (Number(x.conf) < 0.85) q.verify = 1;
     if (x.img) q.img = x.img; if (x.asset) q.asset = x.asset; if (x.credit) q.credit = x.credit;
-    out.push(q);
+    out.push(Object.assign(q, cleanRich(x)));
   }
   return out;
 }
@@ -800,6 +1144,7 @@ async function runGen({ prompt, sid, src, fixed, images, status, btn, patch }){
     let qs = cleanGenerated(arr, sid, src, fixed);
     if (patch) qs = qs.map(patch);
     if (!qs.length){ status.className="note bad"; status.textContent = "No usable questions came back. Try again, or add a hint about what the material shows."; return; }
+    qs = await verifyBatch(qs, status);
     const bid = await saveBatch(sid, qs, src);
     const flagged = qs.filter(q=>q.verify).length;
     status.className = "note good"; status.innerHTML = `Added ${qs.length} questions to ${esc(S.subj[sid].name)}.${flagged?` ${flagged} marked VERIFY (Claude was less sure).`:""} <a href="#" class="pnow">Practise them now</a>`;
@@ -826,8 +1171,9 @@ routes.library = () => {
       <label class="f">Subject<select id="gs">${opts}</select></label>
       <label class="f">Topic<select id="gt"></select></label>
       <label class="f">Subtopic<select id="gst"></select></label>
-      <label class="f">How many<select id="gn"><option>10</option><option selected>20</option><option>25</option></select></label>
+      <label class="f">How many<select id="gn"><option>5</option><option selected>10</option><option>15</option></select></label>
     </div>
+    <label class="row small"><input type="checkbox" id="gpyq" ${pre.pyq?"checked":""}> Focus on past-paper (PYQ) concepts for this subject</label>
     <div class="row"><button class="btn primary" id="gbtn">Generate</button><button class="btn ghost" id="gleast">Pick the least-covered subtopic</button></div>
     <div id="gstat" hidden></div>
   </section>
@@ -871,9 +1217,11 @@ routes.library = () => {
   $("#gbtn").onclick = () => {
     const sid = $("#gs").value, t = $("#gt").value, st = $("#gst").value, n = +$("#gn").value; const status = $("#gstat"); status.hidden = false;
     const scope = st ? `Topic: ${t}\nSubtopic (use exactly this for "st"): ${st}` : t ? `Topic: ${t}. Spread the questions over its subtopics.` : `Spread the questions across the whole subject, favouring high-yield topics.`;
+    const hot = (S.pyq?.subjects?.[sid]?.hot || []).filter(h => !t || h[0]===t);
+    const pyqFocus = $("#gpyq").checked && hot.length ? `\nFocus on concepts that recur in NEET PG past papers (from recall analyses). Write NEW questions that test these concepts from a fresh clinical angle; do not reconstruct actual exam questions:\n${hot.map(h=>`- ${h[2]} (${h[0]} › ${h[1]})`).join("\n")}\nSet "pyq": 1 on these.` : "";
     const prompt = `You write NEET PG practice MCQs for one student's private study app.
 Subject: ${S.subj[sid].name}
-${scope}
+${scope}${pyqFocus}
 Allowed topics and subtopics (copy names exactly into "t" and "st"):
 ${taxonomyText(sid, t||null)}
 
@@ -882,7 +1230,7 @@ ${RULES}
 - Do not repeat these stems already in the bank:
 ${existingStems(sid, t||null) || "(none yet)"}
 
-Reply with only a JSON array, each item: {"t":"topic","st":"subtopic","q":"stem","o":["A","B","C","D"],"a":0,"e":"explanation","p":"pearl","hy":2,"conf":0.95}`;
+Reply with only a JSON array, each item: ${ITEM_SHAPE}`;
     runGen({ prompt, sid, src:"ai", fixed: st?{t,st}:null, status, btn: $("#gbtn") });
   };
 
@@ -893,7 +1241,7 @@ Reply with only a JSON array, each item: {"t":"topic","st":"subtopic","q":"stem"
       <div class="row between"><b>${esc(d.name)}</b><span class="small muted">${esc(S.subj[d.s]?.name||"")}</span></div>
       <div class="bar"><i style="width:${pct(done,d.n)}%"></i></div>
       <div class="row between"><span class="small muted">${done} of ${d.n} sections used</span>
-      <div class="row"><button class="btn sm primary" data-gen="${d.id}" ${done>=d.n?"disabled":""}>Make 15 questions from next section</button><button class="btn sm ghost" data-del="${d.id}">Remove</button></div></div>
+      <div class="row"><button class="btn sm primary" data-gen="${d.id}" ${done>=d.n?"disabled":""}>Make 10 questions from next section</button><button class="btn sm ghost" data-del="${d.id}">Remove</button></div></div>
       <div data-st="${d.id}" hidden></div></div>`; }).join("") : "";
     $$("[data-gen]").forEach(b => b.onclick = () => genFromDoc(b.dataset.gen, b));
     $$("[data-del]").forEach(b => b.onclick = async () => {
@@ -934,7 +1282,7 @@ Reply with only a JSON array, each item: {"t":"topic","st":"subtopic","q":"stem"
   $("#pbtn").onclick = () => {
     const txt = $("#paste").value.trim(); const status = $("#pstat"); status.hidden = false;
     if (txt.length < 200){ status.className="note warn"; status.textContent="Paste at least a paragraph of notes."; return; }
-    runGen({ prompt: notesPrompt($("#ps").value, txt.slice(0, 40000), 15), sid: $("#ps").value, src:"notes", status, btn: $("#pbtn") });
+    runGen({ prompt: notesPrompt($("#ps").value, txt.slice(0, 40000), 10), sid: $("#ps").value, src:"notes", status, btn: $("#pbtn") });
   };
   $("#ibtn").onclick = async () => {
     const f = $("#ifile").files[0]; const status = $("#istat"); status.hidden = false;
@@ -954,7 +1302,7 @@ The attached image is from the student's own study material.${hint?` The student
 First decide what the image shows. If you cannot identify it confidently, return an empty array [].
 Write 1 to 3 questions that need the image to answer (the stem should refer to "the image shown"). Do not reveal the diagnosis in the stem.
 ${RULES}
-Reply with only a JSON array, each item: {"t":"topic","st":"subtopic","q":"stem","o":["A","B","C","D"],"a":0,"e":"explanation","p":"pearl","hy":2,"conf":0.9}`;
+Reply with only a JSON array, each item: ${ITEM_SHAPE}`;
     // every question in this batch points at the stored image
     const patch = q => asset ? { ...q, asset } : { ...q, img: inline };
     await runGen({ prompt, sid, src:"ai", images:[f], status, btn: $("#ibtn"), patch });
@@ -975,7 +1323,7 @@ SOURCE:
 ${text}
 """
 
-Reply with only a JSON array, each item: {"t":"topic","st":"subtopic","q":"stem","o":["A","B","C","D"],"a":0,"e":"explanation","p":"pearl","hy":2,"conf":0.95}`;
+Reply with only a JSON array, each item: ${ITEM_SHAPE}`;
 }
 async function genFromDoc(docId, btn){
   const d = S.lib.find(x=>x.id===docId); if (!d) return;
@@ -983,8 +1331,8 @@ async function genFromDoc(docId, btn){
   const next = [...Array(d.n).keys()].find(i=>!(d.done||[]).includes(i)); if (next==null) return;
   const chunk = await Store.getIn("libtext", docId, String(next));
   if (!chunk){ status.className="note bad"; status.textContent="That section's text is missing. Remove the file and add it again."; return; }
-  const n = await runGen({ prompt: notesPrompt(d.s, chunk.text, 15), sid: d.s, src:"notes", status, btn });
-  if (n){ d.done = [...(d.done||[]), next]; const { id, ...meta } = d; await Store.put("lib","docs",id,meta).catch(()=>{}); btn.textContent = d.done.length>=d.n ? "All sections used" : "Make 15 questions from next section"; btn.disabled = d.done.length>=d.n; }
+  const n = await runGen({ prompt: notesPrompt(d.s, chunk.text, 10), sid: d.s, src:"notes", status, btn });
+  if (n){ d.done = [...(d.done||[]), next]; const { id, ...meta } = d; await Store.put("lib","docs",id,meta).catch(()=>{}); btn.textContent = d.done.length>=d.n ? "All sections used" : "Make 10 questions from next section"; btn.disabled = d.done.length>=d.n; }
 }
 let pdfReady = null;
 function loadScript(src){ return new Promise((res, rej) => { const s=document.createElement("script"); s.src=src; s.onload=res; s.onerror=rej; document.head.append(s); }); }
@@ -1020,8 +1368,10 @@ routes.more = () => {
   const flagged = questionsWhere(q=>prog(q.s).f[q.id]);
   const removed = [...S.Q.values()].filter(q=>prog(q.s).x[q.id]);
   v.innerHTML = `<header><h1>More</h1></header>
+  <nav class="menu-grid" aria-label="All sections">${[["pyq","PYQ insights","Weightage, repeated topics, what to skip"],["revise","Revise","Pearls and quick search"],["library","Build bank","Generate from topics, notes, images"],["stats","Progress","Accuracy and weak subtopics"],["plan","Study plan","Your day-by-day schedule"],["test","Tests","Mocks and custom modules"]].map(([h,t,d])=>`<a href="#${h}">${icon(h)}<span><b>${t}</b><span class="small muted">${d}</span></span></a>`).join("")}</nav>
   <section class="panel stack"><h2>Claude quality</h2>
     <label class="f">Model for generating and explaining<select id="tier"><option value="complex">Most capable (slower, best for medicine)</option><option value="default">Balanced (faster)</option></select></label>
+    <label class="row small"><input type="checkbox" id="verify" ${S.settings.verify?"checked":""}> Double-check every new batch with an independent second pass (uses a little more of your Claude usage; recommended)</label>
     <p class="small muted" style="margin:0">Uses your Claude account. Status: ${S.cap.sample?"available":"open this page on claude.ai to enable"} · Saving: ${S.cap.db&&S.cap.uid?"your Claude account (syncs across devices)":"this browser only"}.</p>
   </section>
   <section class="panel stack"><h2>Flagged questions (${flagged.length})</h2>
@@ -1037,6 +1387,7 @@ routes.more = () => {
     <p class="small" style="margin:0">The starter questions were written for this app. Questions you generate are written by Claude from its own knowledge or from material you upload. Nothing is copied from coaching question banks. Exam format follows the NEET-PG 2026 Information Bulletin (NBEMS): 180 MCQs, 5 sections × 36 questions, 42 minutes per section, +4 / −1.</p></section>`;
   $("#tier").value = S.settings.tier;
   $("#tier").onchange = e => { S.settings.tier = e.target.value; Store.setDoc("settings", S.settings).catch(()=>{}); toast("Saved."); };
+  $("#verify").onchange = e => { S.settings.verify = e.target.checked; Store.setDoc("settings", S.settings).catch(()=>{}); toast("Saved."); };
   $("#pflag").onclick = () => startSession("Flagged", flagged);
   $("#restore").onclick = () => { removed.forEach(q=>{ delete prog(q.s).x[q.id]; Store.markProg(q.s); }); toast("Restored."); render(); };
   $("#impbtn").onclick = async () => {

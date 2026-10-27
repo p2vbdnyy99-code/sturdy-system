@@ -1,1 +1,3 @@
-{"files":[{"key":"s1","file":"seed-1.json","src":"seed"},{"key":"i1","file":"seed-img-1.json","src":"seed"}]}
+{"files":[{"key":"s1","file":"seed-1.json","src":"seed"},{"key":"i1","file":"seed-img-1.json","src":"seed"}],
+ "enrich":["enrich-1.json","enrich-2.json","enrich-3.json"],
+ "pyq":"pyq.json"}
