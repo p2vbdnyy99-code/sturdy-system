@@ -1,100 +1,1464 @@
 {
-"meta":{
- "updated":"2026-10-27",
- "pattern":"NEET-PG 2026 (NBEMS bulletin, 1 Jul 2026): 180 MCQs, 5 sections × 36, 42 min each, sections lock, +4 / −1. The NEET-PG 2027 bulletin is not out yet (expected mid-2027); reports expect the 2026 structure to continue.",
- "official":"NBEMS does not publish the question paper or a subject-wise question count. All PYQ data below comes from memory-based recalls compiled by coaching platforms and candidates.",
- "trends":[
-  "Clinical, application-based questions dominate; long vignettes with close options (2025 and 2026 reports).",
-  "Repeats: coaching analyses of 2023-2025 claim about 30% of questions are direct or modified repeats of earlier topics.",
-  "Image questions vary a lot by year: about 18-25% claimed for 2025 by PrepLadder (about 50% by another recall blog), but candidates reported very few image questions in 2026.",
-  "Video questions: none reported in NEET PG 2026.",
-  "Basic sciences are increasingly asked inside clinical scenarios (nerve injuries, enzyme defects, applied physiology)."
- ],
- "imageSources":"NBEMS does not say where images come from. Reports describe classic, textbook-style images: ECGs, peripheral smears, chest and bone X-rays, CT, CTG and obstetric USG, histopathology slides, gross specimens, clinical photographs (skin, eye, ENT), instruments and specimens. Practise recognising the classic appearance of each, not rare variants.",
- "sources":[
-  {"tag":"NBEMS","what":"NEET-PG 2026 Information Bulletin: pattern and marking"},
-  {"tag":"Blueprint","what":"Older NBE 300-question syllabus weightage (reproduced by DigiNerve, Nov 2025), scaled here to 180"},
-  {"tag":"PL","what":"PrepLadder, Most Expected Topics for NEET PG 2026 (PYQ analysis 2023-2025)"},
-  {"tag":"MEP","what":"MedExamsPrep, NEET PG 2025 recall analysis (its table totals 195 of 200, so treat as approximate)"},
-  {"tag":"Fornix","what":"Fornix Academy, NEET PG 2026 exam analysis (31 Aug 2026)"}
- ]
-},
-"subjects":{
-"an":{"bp":"10","rr":"9 (MEP 2025)","pri":2,"img":"Cross-sectional anatomy, nerve-injury hand/limb postures, surface anatomy photos, CT/MRI landmarks",
- "hot":[["Upper Limb","Nerve injuries","Nerve injury with fracture site; claw hand, wrist drop, ape thumb; Erb and Klumpke palsy"],["Upper Limb","Brachial plexus","Roots, trunks, cords; branches and their muscles"],["Lower Limb","Gluteal region & hip","Trendelenburg sign; gluteal injection site; hip blood supply"],["Lower Limb","Knee, leg & foot","Foot drop; knee ligaments and menisci; arches of the foot"],["Head & Neck","Cranial nerves","Cranial nerve lesions, nuclei, foramina"],["Head & Neck","Larynx & pharynx","Laryngeal nerves and muscles; piriform fossa"],["Neuroanatomy","Brainstem","Brainstem syndromes (medial/lateral medullary, Weber); INO"],["Neuroanatomy","Blood supply & ventricles","Circle of Willis; artery-territory strokes"],["General Anatomy & Embryology","Pharyngeal arches","Arch derivatives and nerves; pouch derivatives"],["Thorax","Heart & coronaries","Coronary dominance; venous drainage; conduction system supply"]],
- "how":"Learn every nerve as a clinical picture: site of injury → muscles lost → deformity → sensory loss. Use diagrams and cross-sections, and solve image questions.",
- "skip":"Detailed origins and insertions of minor muscles, and rare embryological anomalies, beyond the classic ones."},
-"ph":{"bp":"10","rr":"5 (MEP 2025)","pri":2,"img":"ECG strips, pressure-volume loops, O2 dissociation curve, spirometry graphs",
- "hot":[["Cardiovascular","Cardiac cycle","JVP waves; heart sounds; pressure-volume loops"],["Cardiovascular","ECG","Normal intervals; axis"],["Respiratory","Gas transport","O2 dissociation curve shifts; CO poisoning"],["Respiratory","Mechanics","Lung volumes, compliance, surfactant"],["Renal","GFR & clearance","Clearance concepts, inulin/PAH, filtration fraction"],["Renal","Acid-base","ABG interpretation, anion gap"],["Endocrine","Hormone mechanisms","Receptor and second-messenger types"],["Nerve & Muscle","Action potential","Ion channels, refractory periods"],["Neurophysiology","Sleep & EEG","Sleep stages and EEG waves"],["Neurophysiology","Sensory system","Receptors, tracts, pain pathways"]],
- "how":"Understand graphs (cardiac cycle, O2 curve, pressure-volume loops) well enough to redraw them. Most questions are applied: what happens to X when Y changes.",
- "skip":"Historical experiments, and numerical values that are never clinically used."},
-"bc":{"bp":"10","rr":"15 (MEP 2025)","pri":2,"img":"Electrophoresis patterns, chromatography, clinical photos of metabolic disease",
- "hot":[["Carbohydrate Metabolism","Glycogen storage diseases","GSD types with enzyme and key feature"],["Amino Acid Metabolism","Urea cycle","Urea cycle defects; orotic aciduria"],["Amino Acid Metabolism","Aminoacidopathies","PKU, alkaptonuria, homocystinuria, MSUD"],["Lipid Metabolism","Lipid storage disorders","Gaucher, Niemann-Pick, Tay-Sachs, Fabry"],["Lipid Metabolism","Cholesterol & lipoproteins","Lipoprotein disorders; statin target"],["Vitamins & Minerals","Water-soluble vitamins","Thiamine, B12, folate deficiency and tests"],["Vitamins & Minerals","Fat-soluble vitamins","Vitamin A, D, K functions and deficiency"],["Molecular Biology","Techniques","PCR types, blotting, CRISPR, microarray"],["Nucleotide Metabolism","Purines","Lesch-Nyhan, gout, ADA deficiency"],["Enzymes","Enzyme kinetics","Inhibition types and Km/Vmax"]],
- "how":"Learn each disorder as enzyme → blocked step → what accumulates → clinical clue. Make one table per pathway.",
- "skip":"Full structural formulas, and every intermediate of long pathways (learn the rate-limiting and regulated steps)."},
-"pa":{"bp":"15","rr":"15-20 (PL)","pri":3,"img":"Histopathology slides, gross specimens, peripheral smears, bone marrow",
- "hot":[["General Pathology","Neoplasia","Oncogenes and tumour suppressors; tumour markers; psammoma bodies"],["General Pathology","Cell injury","Reversible vs irreversible injury; necrosis types; apoptosis"],["General Pathology","Inflammation","Mediators; chemotaxis; granuloma"],["General Pathology","Immunopathology & amyloidosis","Amyloid types and stains"],["Haematology","Leukaemias","AML M3 t(15;17); CML t(9;22); cytochemistry"],["Haematology","Lymphomas","Follicular t(14;18), Burkitt t(8;14), Hodgkin RS cells"],["Haematology","Anaemias","Peripheral smear findings; HS; thalassaemia vs iron deficiency"],["Haematology","Bleeding disorders","PT/aPTT interpretation; DIC"],["Systemic Pathology","Kidney","Glomerular diseases on EM/IF"],["Systemic Pathology","GIT & liver","IBD; hepatitis; PBC (AMA)"]],
- "how":"Pair every disease with its image (slide or smear) and its genetic or marker association. Practise image questions on slides and smears.",
- "skip":"Rare tumour subtypes and grading minutiae beyond what has been asked before."},
-"pm":{"bp":"12","rr":"15 (MEP 2025)","pri":3,"img":"Rarely image-based; occasionally drug-reaction photos (SJS, gum hypertrophy)",
- "hot":[["Chemotherapy","Antibacterials","Mechanisms and toxicities (aminoglycosides, vancomycin, fluoroquinolones)"],["Chemotherapy","Antitubercular","ATT adverse effects; MDR-TB regimens"],["Chemotherapy","Antifungal & antiviral","Azoles vs amphotericin; HIV and hepatitis drugs"],["Cardiovascular & Renal","Heart failure","Guideline-directed HF therapy; SGLT2 inhibitors"],["Cardiovascular & Renal","Antihypertensives","Drug choice by comorbidity; contraindications"],["CNS","Antiepileptics","Drug of choice by seizure type; teratogenicity"],["Autonomic Nervous System","Cholinergic drugs","Organophosphate poisoning; atropine, oximes"],["Blood","Anticoagulants & antiplatelets","Antidotes; DAPT"],["General Pharmacology","Pharmacokinetics","Zero-order kinetics; half-life; bioavailability"],["Endocrine","Antidiabetics","Metformin, SGLT2, GLP-1 actions and side effects"]],
- "how":"Learn drug of choice, mechanism, signature adverse effect and antidote for each group. Recent guideline changes are asked often.",
- "skip":"Exact doses (except a few classic ones such as MgSO4 regimens), and brand names."},
-"mi":{"bp":"12","rr":"15-18 (PL)","pri":3,"img":"Gram/ZN stains, culture plates and colony morphology, fungal KOH mounts, parasite eggs and smears",
- "hot":[["General Microbiology","Culture media","Specific media for specific organisms (highest-yield per PL)"],["General Microbiology","Sterilisation & disinfection","Biological indicators; autoclave"],["Bacteriology","Gram-positive cocci","Staph vs Strep tests (CAMP, bacitracin, optochin)"],["Bacteriology","Gram-negative bacteria","Enterobacteriaceae, Pseudomonas"],["Bacteriology","Mycobacteria","TB diagnosis (CBNAAT), NTM, leprosy"],["Virology","Hepatitis viruses","HBV serology interpretation"],["Virology","HIV","Window period, diagnosis, viral load"],["Mycology","Opportunistic mycoses","Aspergillus vs Mucor hyphae; Candida"],["Parasitology","Helminths","Egg identification; cysticercosis; hydatid"],["Immunology","Hypersensitivity","Hypersensitivity types with examples"]],
- "how":"Image-heavy subject: learn the look of each stain, colony, hypha and egg. Tabulate media, special tests and serology.",
- "skip":"Taxonomy history, and rare organisms without a classic clinical picture."},
-"fm":{"bp":"6","rr":"5-8 (PL)","pri":1,"img":"Injury photos (bruise ageing, firearm wounds, ligature marks), poisonous plants and snakes, weapons, skull and bone",
- "hot":[["Thanatology","Postmortem changes","Rigor, livor, algor mortis; adipocere, mummification"],["Asphyxial Deaths","Hanging & strangulation","Hanging vs strangulation features"],["Asphyxial Deaths","Drowning","Diatom test; signs of drowning"],["Injuries","Firearm injuries","Range of fire; entry vs exit"],["Toxicology","Plant & animal poisons","Dhatura, oleander, snake bite"],["Toxicology","Metallic poisons","Arsenic, lead, mercury signs"],["Identification","Age estimation","Ossification and teeth"],["Legal Medicine & Ethics","Legal procedures","BNS/BNSS/BSA sections that replaced IPC/CrPC/IEA (2024)"]],
- "how":"Use photographs for injuries and poisons. Note: India's criminal laws changed on 1 July 2024 (BNS, BNSS, BSA), so check which section numbers your source uses.",
- "skip":"Exhaustive lists of old IPC section numbers, and rare poisons."},
-"cm":{"bp":"15","rr":"16 (MEP 2025)","pri":3,"img":"Vaccine vial monitors, vectors (mosquitoes, flies), charts and graphs, cold-chain equipment",
- "hot":[["Epidemiology","Screening","Sensitivity, specificity, PPV; lead-time bias"],["Epidemiology","Study designs","Cohort, case-control, RCT, cluster RCT; biases"],["Biostatistics","Measures & tests","Tests of significance; central tendency"],["Immunisation & Cold Chain","Vaccines","UIP schedule; VVM interpretation"],["Health Programmes & Care","National programmes","NTEP, malaria and other national programme updates"],["Communicable Diseases","Vector-borne","Malaria, dengue, filaria control"],["Environment & Occupational Health","Water & sanitation","Chlorination; Nalgonda technique (defluoridation)"],["Demography & MCH","Demography & family planning","Health indicators (IMR, MMR); demographic cycle"],["Nutrition","Nutritional programmes","Vitamin A, iron supplementation programmes"]],
- "how":"Biostatistics and epidemiology need practice problems. National programmes change often: always use the latest version (Park's newest edition, plus MoHFW updates).",
- "skip":"Historical dates of old programmes, and memorising every guideline number that is never asked."},
-"en":{"bp":"6","rr":"5 (MEP 2025)","pri":1,"img":"Otoscopy photos, audiograms, instruments, X-ray/CT of sinuses",
- "hot":[["Ear","Inner ear & hearing tests","Tuning-fork tests; audiogram patterns"],["Ear","Middle ear & CSOM","CSOM types, cholesteatoma, complications"],["Ear","Otosclerosis","Carhart notch, stapes surgery"],["Ear","Facial nerve","Bell palsy; nerve course"],["Nose & Paranasal Sinuses","Tumours","JNA"],["Pharynx","Deep neck spaces","Quinsy, retropharyngeal and parapharyngeal abscess"],["Larynx","Vocal cord lesions","Nerve palsies and cord positions"]],
- "how":"Learn instruments and the classic otoscopy and audiogram images. Short subject, high return per hour.",
- "skip":"Operative step-by-step details of rare surgeries."},
-"op":{"bp":"6","rr":"8-10 (PL)","pri":2,"img":"Fundus photos, slit-lamp images, visual-field charts, squint photos",
- "hot":[["Retina","Retinal vascular disease","CRAO, CRVO, hypertensive retinopathy fundus"],["Retina","Diabetic retinopathy","Grading and management"],["Glaucoma","Angle closure","Acute angle closure; drugs to avoid"],["Uvea","Uveitis","Anterior uveitis signs; HLA-B27"],["Neuro-ophthalmology","Visual pathway","Field defects by lesion site"],["Neuro-ophthalmology","Pupil","RAPD, Argyll Robertson, Horner"],["Conjunctiva & Cornea","Keratitis","Fungal vs bacterial keratitis"],["Lens","Cataract","Types and surgery"]],
- "how":"Image-driven subject: learn the classic fundus and slit-lamp pictures. Draw the visual pathway with each lesion's field defect.",
- "skip":"Detailed optics calculations beyond the basics."},
-"me":{"bp":"27 incl. Derm and Psych (Blueprint)","rr":"25-30 (PL)","pri":3,"img":"ECGs, chest X-rays, peripheral smears, CT brain, clinical signs",
- "hot":[["Cardiology","Arrhythmias","ECG diagnosis; AF, heart blocks, SVT management"],["Cardiology","Ischaemic heart disease","STEMI recognition and management"],["Cardiology","Heart failure","Guideline-directed medical therapy"],["Respiratory","Pneumonia","CURB-65, CAP antibiotics; ARDS ventilation"],["Gastroenterology & Hepatology","Liver","Cirrhosis scoring, variceal bleeding, SAAG"],["Nephrology","Electrolytes","Hyponatraemia algorithm, hyperkalaemia"],["Endocrinology","Adrenal","Addison disease, Cushing, phaeochromocytoma"],["Endocrinology","Diabetes","DKA management"],["Infectious Diseases","HIV & opportunistic","IRIS, ART timing in TB"],["Infectious Diseases","Tropical infections","Dengue warning signs, malaria"],["Haematology","Anaemia","Smear-based diagnosis"],["Rheumatology","Arthritis","RA, gout, spondyloarthritis"]],
- "how":"Think in management algorithms (first step, drug of choice, next best step). Learn ECG and X-ray patterns from images. Follow the current guideline versions.",
- "skip":"Rare syndromes with no exam history, and outdated treatment regimens."},
-"su":{"bp":"27 incl. Ortho, Anaes and Radio (Blueprint)","rr":"18 (MEP 2025)","pri":3,"img":"Abdominal X-rays, CT abdomen, clinical photos (swellings, ulcers), instruments",
- "hot":[["GI Surgery","Small & large bowel","Intestinal obstruction on X-ray; volvulus"],["Hepatobiliary & Pancreas","Gallbladder & biliary","Cholecystitis, cholangitis, Courvoisier law"],["Trauma","Head injury","GCS; EDH vs SDH; diffuse axonal injury"],["Trauma","Abdominal trauma","FAST vs CT; organ injury"],["GI Surgery","Anorectal","Fistula-in-ano (Parks, Goodsall), fissure, haemorrhoids"],["GI Surgery","Hernia","Types and repairs"],["Breast & Endocrine","Breast","Triple assessment; breast cancer management"],["Breast & Endocrine","Thyroid","Thyroid cancers and surgery complications"],["General Surgery","Burns","Parkland formula; rule of nines"],["Urology","Testis","Torsion and other urological emergencies"]],
- "how":"Combine anatomy, imaging and the decision (operate or not). Learn named signs and laws with their meaning. Practise X-ray and CT recognition.",
- "skip":"Detailed operative steps of rarely asked procedures, and instrument trivia beyond the common ones."},
-"ob":{"bp":"18","rr":"25-30 (PL); 20 (MEP 2025)","pri":3,"img":"CTG traces, obstetric USG, partograph, instruments, specimens",
- "hot":[["Obstetrics","Postpartum haemorrhage","Atonic PPH steps; uterotonics; Bakri balloon (every year per PL)"],["Obstetrics","Hypertensive disorders","Pre-eclampsia criteria, HELLP, MgSO4 regimens"],["Obstetrics","Labour","Partograph, shoulder dystocia (McRoberts), cord prolapse, CTG"],["Obstetrics","Antenatal care","IUGR, Doppler, screening tests"],["Obstetrics","Ectopic & abortion","Ectopic diagnosis and methotrexate criteria"],["Gynaecology","Menstrual disorders & PCOS","AUB evaluation, PCOS, POI (high FSH, low AMH)"],["Gynaecology","Contraception","Methods, contraindications, emergency contraception"],["Gynaecology","Gynae oncology","Cervical screening, staging, ovarian tumour markers"],["Gynaecology","Fibroids & endometriosis","Adenomyosis on MRI; fibroid management"]],
- "how":"Learn emergencies as stepwise algorithms. CTG and USG images are frequent. One of the highest-weight subjects in recent recalls.",
- "skip":"Rare congenital anomalies of the genital tract beyond the classic ones."},
-"pe":{"bp":"6","rr":"5 (MEP 2025)","pri":2,"img":"Clinical photos of syndromes and rashes, growth charts, X-rays (e.g. rickets)",
- "hot":[["Growth & Development","Milestones","Milestones by age (every year per PL)"],["Infections & Immunisation","Immunisation","National schedule (every year per PL)"],["Neonatology","Neonatal resuscitation & sepsis","Apgar, NRP, early vs late-onset sepsis"],["Neonatology","Neonatal jaundice","Physiological vs pathological"],["Infections & Immunisation","Exanthems","Measles, rubella and other rash illnesses"],["Nutrition","Malnutrition","SAM criteria and management"],["Paediatric Cardiology","Congenital heart disease","TOF, VSD, PDA features"],["Genetics & Syndromes","Chromosomal disorders","Down, Turner, Klinefelter"]],
- "how":"Milestones and the immunisation schedule appear almost every year: learn them cold. Use photos for syndromes and rashes.",
- "skip":"Rare inborn errors already covered in Biochemistry."},
-"or":{"bp":"(within Surgery group)","rr":"8-10 (PL)","pri":2,"img":"Fracture X-rays, bone-tumour X-rays, clinical deformity photos",
- "hot":[["Upper Limb Trauma","Elbow & forearm","Supracondylar fracture; Monteggia vs Galeazzi"],["Lower Limb Trauma","Hip & femur","Neck of femur fractures, Garden classification"],["Bone Tumours","Benign","GCT, osteochondroma, osteoid osteoma"],["Bone Tumours","Malignant","Osteosarcoma vs Ewing on X-ray"],["Peripheral Nerve Injuries","Upper limb nerves","Nerve injury with fracture"],["Paediatric Orthopaedics","CTEV & DDH","Ponseti method; DDH tests"],["Infections & Spine","Tuberculosis of spine","Pott spine"]],
- "how":"X-ray recognition is key: learn the classic fracture and tumour images. Use eponyms with their pictures.",
- "skip":"Implant brand details and complex fixation techniques."},
-"de":{"bp":"(within Medicine group)","rr":"8-10 (PL); 8 (MEP 2025)","pri":2,"img":"Clinical photographs of classic lesions (per PL)",
- "hot":[["Papulosquamous Disorders","Psoriasis","Signs (Auspitz, Koebner) and treatment"],["Papulosquamous Disorders","Lichen planus","6 Ps; Wickham striae"],["Vesiculobullous Disorders","Pemphigus & pemphigoid","Antigens and immunofluorescence"],["Infections & Infestations","Fungal","Tinea types and treatment"],["Infections & Infestations","Scabies & lice","Scabies treatment"],["Leprosy","Classification & treatment","Cardinal signs; WHO MDT"],["STIs","Syphilis","Stages and tests"]],
- "how":"Almost entirely photo recognition: go through a good image atlas repeatedly. Pair each lesion with one sign and one drug.",
- "skip":"Rare genodermatoses."},
-"ps":{"bp":"(within Medicine group)","rr":"5-8 (PL)","pri":1,"img":"Rarely image-based",
- "hot":[["Psychotic Disorders","Schizophrenia","Schneider first-rank symptoms; treatment"],["Mood Disorders","Bipolar disorder","Lithium and its toxicity"],["Psychopharmacology & Therapies","Antipsychotics","Clozapine monitoring; NMS vs serotonin syndrome"],["Substance Use","Alcohol","Withdrawal timeline; Wernicke-Korsakoff"],["Anxiety & Related","OCD","Treatment (SSRIs, ERP)"],["Child Psychiatry","ADHD & autism","Diagnosis and drugs"]],
- "how":"Short subject: drug side effects and defence mechanisms are classic. Learn DSM-5/ICD-11 key criteria only.",
- "skip":"Psychoanalytic theory detail."},
-"as":{"bp":"(within Surgery group)","rr":"5-8 (PL)","pri":1,"img":"Airway equipment, laryngoscopy views, capnography traces, circuits",
- "hot":[["Inhalational Agents","Pharmacology","Blood:gas coefficients; MAC; agent of choice"],["IV Agents & Muscle Relaxants","Muscle relaxants","Succinylcholine contraindications; reversal"],["IV Agents & Muscle Relaxants","Induction agents","Ketamine, propofol, etomidate uses"],["Local & Regional","Local anaesthetics","LA toxicity and lipid emulsion"],["Monitoring & Complications","Malignant hyperthermia","Dantrolene"],["Airway & Pre-op","Airway assessment","Mallampati, Cormack-Lehane"],["CPR","Basic & advanced life support","Compression rate and depth; shockable rhythms"]],
- "how":"Learn equipment images and capnography patterns. Most questions are drug comparisons.",
- "skip":"Vaporiser engineering details."},
-"ra":{"bp":"(within Surgery group)","rr":"5-8 (PL)","pri":1,"img":"X-ray, CT and MRI signs (the subject itself is images)",
- "hot":[["Chest Imaging","Chest X-ray signs","Classic CXR signs (bat wing, silhouette)"],["Abdominal Imaging","GI signs","Pneumoperitoneum, obstruction, volvulus signs"],["Neuroimaging","Brain","SAH, EDH vs SDH on CT"],["Physics & Radiation Protection","Units & protection","Units, dose limits, most radiosensitive tissues"],["Nuclear Medicine","Isotopes & scans","Isotopes and their uses"]],
- "how":"Learn named signs with an image beside each. Radiation units and limits are easy marks.",
- "skip":"Detailed physics of MRI sequences."}
-}
+ "meta": {
+  "updated": "2026-10-27",
+  "pattern": "NEET-PG 2026 (NBEMS bulletin, 1 Jul 2026): 180 MCQs, 5 sections × 36, 42 min each, sections lock, +4 / −1. The NEET-PG 2027 bulletin is not out yet (expected mid-2027); reports expect the 2026 structure to continue.",
+  "official": "NBEMS does not publish the question paper or a subject-wise question count. All PYQ data below comes from memory-based recalls compiled by coaching platforms and candidates.",
+  "trends": [
+   {
+    "txt": "Clinical, application-based questions dominate; long vignettes with close options.",
+    "src": [
+     "Fornix2026",
+     "MEP2025"
+    ]
+   },
+   {
+    "txt": "Coaching analyses of 2023-2025 claim about 30% of questions are direct or modified repeats of earlier topics.",
+    "src": [
+     "PL2026",
+     "MEP2025"
+    ]
+   },
+   {
+    "txt": "Image questions vary by year: 18-25% (PrepLadder) or about 50% (MedExamsPrep) claimed for 2025; candidates reported very few in 2026.",
+    "src": [
+     "PL2026",
+     "MEP2025",
+     "Fornix2026"
+    ]
+   },
+   {
+    "txt": "No video-based questions were reported in NEET PG 2026.",
+    "src": [
+     "Fornix2026"
+    ]
+   },
+   {
+    "txt": "Basic sciences are increasingly asked inside clinical scenarios.",
+    "src": [
+     "MEP2025"
+    ]
+   }
+  ],
+  "imageSources": "NBEMS does not say where images come from. Reports describe classic, textbook-style images: ECGs, peripheral smears, chest and bone X-rays, CT, CTG and obstetric USG, histopathology slides, gross specimens, clinical photographs (skin, eye, ENT), instruments and specimens. Practise recognising the classic appearance of each, not rare variants.",
+  "sources": [
+   {
+    "id": "NBEMS2026",
+    "kind": "official",
+    "what": "NBEMS, NEET-PG 2026 Information Bulletin (v2.1, 1 Jul 2026): pattern and marking scheme"
+   },
+   {
+    "id": "Blueprint",
+    "kind": "secondary",
+    "what": "Older NBE 300-question syllabus weightage, as reproduced by DigiNerve (Nov 2025); scaled here to 180. Not the current pattern."
+   },
+   {
+    "id": "MEP2025",
+    "kind": "coaching recall analysis",
+    "what": "MedExamsPrep, 'NEET PG 2025 Paper Analysis' (5 Aug 2025): topics reported from candidate recall. Single source; its subject table totals 195 of 200."
+   },
+   {
+    "id": "PL2026",
+    "kind": "coaching forecast",
+    "what": "PrepLadder, 'Most Expected Topics for NEET PG 2026' (PYQ analysis 2023-2025): topics it expects, not observed counts."
+   },
+   {
+    "id": "Fornix2026",
+    "kind": "exam-report summary",
+    "what": "Fornix Academy, 'NEET PG 2026 Exam Analysis' (31 Aug 2026): candidate and expert feedback."
+   }
+  ],
+  "attribution": "Each topic shows its source. 'Reported 2025' = named in one coaching recall analysis of NEET PG 2025. 'Forecast' = a coaching platform's expectation. 'Unattributed' = suggested by Claude from general knowledge, with no source behind it. None of these is a verified count of how often a topic was asked."
+ },
+ "subjects": {
+  "an": {
+   "bp": "10",
+   "rr": "9 (MEP 2025)",
+   "pri": 2,
+   "img": "Cross-sectional anatomy, nerve-injury hand/limb postures, surface anatomy photos, CT/MRI landmarks",
+   "hot": [
+    {
+     "t": "Upper Limb",
+     "st": "Nerve injuries",
+     "txt": "Nerve injury with fracture site; claw hand, wrist drop, ape thumb; Erb and Klumpke palsy",
+     "src": []
+    },
+    {
+     "t": "Upper Limb",
+     "st": "Brachial plexus",
+     "txt": "Roots, trunks, cords; branches and their muscles",
+     "src": []
+    },
+    {
+     "t": "Lower Limb",
+     "st": "Gluteal region & hip",
+     "txt": "Trendelenburg sign; gluteal injection site; hip blood supply",
+     "src": []
+    },
+    {
+     "t": "Lower Limb",
+     "st": "Knee, leg & foot",
+     "txt": "Foot drop; knee ligaments and menisci; arches of the foot",
+     "src": []
+    },
+    {
+     "t": "Head & Neck",
+     "st": "Cranial nerves",
+     "txt": "Cranial nerve lesions, nuclei, foramina",
+     "src": []
+    },
+    {
+     "t": "Head & Neck",
+     "st": "Larynx & pharynx",
+     "txt": "Laryngeal nerves and muscles; piriform fossa",
+     "src": []
+    },
+    {
+     "t": "Neuroanatomy",
+     "st": "Brainstem",
+     "txt": "Brainstem syndromes (medial/lateral medullary, Weber); INO",
+     "src": []
+    },
+    {
+     "t": "Neuroanatomy",
+     "st": "Blood supply & ventricles",
+     "txt": "Circle of Willis; artery-territory strokes",
+     "src": []
+    },
+    {
+     "t": "General Anatomy & Embryology",
+     "st": "Pharyngeal arches",
+     "txt": "Arch derivatives and nerves; pouch derivatives",
+     "src": []
+    },
+    {
+     "t": "Thorax",
+     "st": "Heart & coronaries",
+     "txt": "Coronary dominance; venous drainage; conduction system supply",
+     "src": []
+    }
+   ],
+   "how": "Learn every nerve as a clinical picture: site of injury → muscles lost → deformity → sensory loss. Use diagrams and cross-sections, and solve image questions.",
+   "skip": "Detailed origins and insertions of minor muscles, and rare embryological anomalies, beyond the classic ones.",
+   "imgSrc": []
+  },
+  "ph": {
+   "bp": "10",
+   "rr": "5 (MEP 2025)",
+   "pri": 2,
+   "img": "ECG strips, pressure-volume loops, O2 dissociation curve, spirometry graphs",
+   "hot": [
+    {
+     "t": "Cardiovascular",
+     "st": "Cardiac cycle",
+     "txt": "JVP waves; heart sounds; pressure-volume loops",
+     "src": []
+    },
+    {
+     "t": "Cardiovascular",
+     "st": "ECG",
+     "txt": "Normal intervals; axis",
+     "src": []
+    },
+    {
+     "t": "Respiratory",
+     "st": "Gas transport",
+     "txt": "O2 dissociation curve shifts; CO poisoning",
+     "src": []
+    },
+    {
+     "t": "Respiratory",
+     "st": "Mechanics",
+     "txt": "Lung volumes, compliance, surfactant",
+     "src": []
+    },
+    {
+     "t": "Renal",
+     "st": "GFR & clearance",
+     "txt": "Clearance concepts, inulin/PAH, filtration fraction",
+     "src": []
+    },
+    {
+     "t": "Renal",
+     "st": "Acid-base",
+     "txt": "ABG interpretation, anion gap",
+     "src": []
+    },
+    {
+     "t": "Endocrine",
+     "st": "Hormone mechanisms",
+     "txt": "Receptor and second-messenger types",
+     "src": []
+    },
+    {
+     "t": "Nerve & Muscle",
+     "st": "Action potential",
+     "txt": "Ion channels, refractory periods",
+     "src": []
+    },
+    {
+     "t": "Neurophysiology",
+     "st": "Sleep & EEG",
+     "txt": "Sleep stages and EEG waves",
+     "src": []
+    },
+    {
+     "t": "Neurophysiology",
+     "st": "Sensory system",
+     "txt": "Receptors, tracts, pain pathways",
+     "src": []
+    }
+   ],
+   "how": "Understand graphs (cardiac cycle, O2 curve, pressure-volume loops) well enough to redraw them. Most questions are applied: what happens to X when Y changes.",
+   "skip": "Historical experiments, and numerical values that are never clinically used.",
+   "imgSrc": []
+  },
+  "bc": {
+   "bp": "10",
+   "rr": "15 (MEP 2025)",
+   "pri": 2,
+   "img": "Electrophoresis patterns, chromatography, clinical photos of metabolic disease",
+   "hot": [
+    {
+     "t": "Carbohydrate Metabolism",
+     "st": "Glycogen storage diseases",
+     "txt": "GSD types with enzyme and key feature",
+     "src": []
+    },
+    {
+     "t": "Amino Acid Metabolism",
+     "st": "Urea cycle",
+     "txt": "Urea cycle defects; orotic aciduria",
+     "src": []
+    },
+    {
+     "t": "Amino Acid Metabolism",
+     "st": "Aminoacidopathies",
+     "txt": "PKU, alkaptonuria, homocystinuria, MSUD",
+     "src": []
+    },
+    {
+     "t": "Lipid Metabolism",
+     "st": "Lipid storage disorders",
+     "txt": "Gaucher, Niemann-Pick, Tay-Sachs, Fabry",
+     "src": []
+    },
+    {
+     "t": "Lipid Metabolism",
+     "st": "Cholesterol & lipoproteins",
+     "txt": "Lipoprotein disorders; statin target",
+     "src": []
+    },
+    {
+     "t": "Vitamins & Minerals",
+     "st": "Water-soluble vitamins",
+     "txt": "Thiamine, B12, folate deficiency and tests",
+     "src": []
+    },
+    {
+     "t": "Vitamins & Minerals",
+     "st": "Fat-soluble vitamins",
+     "txt": "Vitamin A, D, K functions and deficiency",
+     "src": []
+    },
+    {
+     "t": "Molecular Biology",
+     "st": "Techniques",
+     "txt": "PCR types, blotting, CRISPR, microarray",
+     "src": []
+    },
+    {
+     "t": "Nucleotide Metabolism",
+     "st": "Purines",
+     "txt": "Lesch-Nyhan, gout, ADA deficiency",
+     "src": []
+    },
+    {
+     "t": "Enzymes",
+     "st": "Enzyme kinetics",
+     "txt": "Inhibition types and Km/Vmax",
+     "src": []
+    }
+   ],
+   "how": "Learn each disorder as enzyme → blocked step → what accumulates → clinical clue. Make one table per pathway.",
+   "skip": "Full structural formulas, and every intermediate of long pathways (learn the rate-limiting and regulated steps).",
+   "imgSrc": []
+  },
+  "pa": {
+   "bp": "15",
+   "rr": "15-20 (PL)",
+   "pri": 3,
+   "img": "Histopathology slides, gross specimens, peripheral smears, bone marrow",
+   "hot": [
+    {
+     "t": "General Pathology",
+     "st": "Neoplasia",
+     "txt": "Oncogenes and tumour suppressors; tumour markers; psammoma bodies",
+     "src": [
+      "PL2026"
+     ]
+    },
+    {
+     "t": "General Pathology",
+     "st": "Cell injury",
+     "txt": "Reversible vs irreversible injury; necrosis types; apoptosis",
+     "src": []
+    },
+    {
+     "t": "General Pathology",
+     "st": "Inflammation",
+     "txt": "Mediators; chemotaxis; granuloma",
+     "src": []
+    },
+    {
+     "t": "General Pathology",
+     "st": "Immunopathology & amyloidosis",
+     "txt": "Amyloid types and stains",
+     "src": []
+    },
+    {
+     "t": "Haematology",
+     "st": "Leukaemias",
+     "txt": "AML M3 t(15;17); CML t(9;22); cytochemistry",
+     "src": [
+      "MEP2025",
+      "PL2026"
+     ]
+    },
+    {
+     "t": "Haematology",
+     "st": "Lymphomas",
+     "txt": "Follicular t(14;18), Burkitt t(8;14), Hodgkin RS cells",
+     "src": [
+      "MEP2025"
+     ]
+    },
+    {
+     "t": "Haematology",
+     "st": "Anaemias",
+     "txt": "Peripheral smear findings; HS; thalassaemia vs iron deficiency",
+     "src": []
+    },
+    {
+     "t": "Haematology",
+     "st": "Bleeding disorders",
+     "txt": "PT/aPTT interpretation; DIC",
+     "src": [
+      "PL2026"
+     ]
+    },
+    {
+     "t": "Systemic Pathology",
+     "st": "Kidney",
+     "txt": "Glomerular diseases on EM/IF",
+     "src": []
+    },
+    {
+     "t": "Systemic Pathology",
+     "st": "GIT & liver",
+     "txt": "IBD; hepatitis; PBC (AMA)",
+     "src": [
+      "MEP2025",
+      "PL2026"
+     ]
+    }
+   ],
+   "how": "Pair every disease with its image (slide or smear) and its genetic or marker association. Practise image questions on slides and smears.",
+   "skip": "Rare tumour subtypes and grading minutiae beyond what has been asked before.",
+   "imgSrc": [
+    "PL2026"
+   ]
+  },
+  "pm": {
+   "bp": "12",
+   "rr": "15 (MEP 2025)",
+   "pri": 3,
+   "img": "Rarely image-based; occasionally drug-reaction photos (SJS, gum hypertrophy)",
+   "hot": [
+    {
+     "t": "Chemotherapy",
+     "st": "Antibacterials",
+     "txt": "Mechanisms and toxicities (aminoglycosides, vancomycin, fluoroquinolones)",
+     "src": [
+      "PL2026"
+     ]
+    },
+    {
+     "t": "Chemotherapy",
+     "st": "Antitubercular",
+     "txt": "ATT adverse effects; MDR-TB regimens",
+     "src": [
+      "PL2026"
+     ]
+    },
+    {
+     "t": "Chemotherapy",
+     "st": "Antifungal & antiviral",
+     "txt": "Azoles vs amphotericin; HIV and hepatitis drugs",
+     "src": [
+      "PL2026"
+     ]
+    },
+    {
+     "t": "Cardiovascular & Renal",
+     "st": "Heart failure",
+     "txt": "Guideline-directed HF therapy; SGLT2 inhibitors",
+     "src": [
+      "MEP2025",
+      "PL2026"
+     ]
+    },
+    {
+     "t": "Cardiovascular & Renal",
+     "st": "Antihypertensives",
+     "txt": "Drug choice by comorbidity; contraindications",
+     "src": [
+      "PL2026"
+     ]
+    },
+    {
+     "t": "CNS",
+     "st": "Antiepileptics",
+     "txt": "Drug of choice by seizure type; teratogenicity",
+     "src": [
+      "PL2026"
+     ]
+    },
+    {
+     "t": "Autonomic Nervous System",
+     "st": "Cholinergic drugs",
+     "txt": "Organophosphate poisoning; atropine, oximes",
+     "src": [
+      "PL2026"
+     ]
+    },
+    {
+     "t": "Blood",
+     "st": "Anticoagulants & antiplatelets",
+     "txt": "Antidotes; DAPT",
+     "src": [
+      "PL2026"
+     ]
+    },
+    {
+     "t": "General Pharmacology",
+     "st": "Pharmacokinetics",
+     "txt": "Zero-order kinetics; half-life; bioavailability",
+     "src": []
+    },
+    {
+     "t": "Endocrine",
+     "st": "Antidiabetics",
+     "txt": "Metformin, SGLT2, GLP-1 actions and side effects",
+     "src": []
+    },
+    {
+     "t": "CNS",
+     "st": "Antiepileptics",
+     "txt": "Topiramate for migraine prophylaxis in a patient with CAD",
+     "src": [
+      "MEP2025"
+     ]
+    },
+    {
+     "t": "Autonomic Nervous System",
+     "st": "Adrenergic drugs",
+     "txt": "Phenoxybenzamine in phaeochromocytoma",
+     "src": [
+      "MEP2025"
+     ]
+    }
+   ],
+   "how": "Learn drug of choice, mechanism, signature adverse effect and antidote for each group. Recent guideline changes are asked often.",
+   "skip": "Exact doses (except a few classic ones such as MgSO4 regimens), and brand names.",
+   "imgSrc": []
+  },
+  "mi": {
+   "bp": "12",
+   "rr": "15-18 (PL)",
+   "pri": 3,
+   "img": "Gram/ZN stains, culture plates and colony morphology, fungal KOH mounts, parasite eggs and smears",
+   "hot": [
+    {
+     "t": "General Microbiology",
+     "st": "Culture media",
+     "txt": "Specific media for specific organisms",
+     "src": [
+      "PL2026"
+     ]
+    },
+    {
+     "t": "General Microbiology",
+     "st": "Sterilisation & disinfection",
+     "txt": "Biological indicators; autoclave",
+     "src": []
+    },
+    {
+     "t": "Bacteriology",
+     "st": "Gram-positive cocci",
+     "txt": "Staph vs Strep tests (CAMP, bacitracin, optochin)",
+     "src": [
+      "PL2026"
+     ]
+    },
+    {
+     "t": "Bacteriology",
+     "st": "Gram-negative bacteria",
+     "txt": "Enterobacteriaceae, Pseudomonas",
+     "src": [
+      "PL2026"
+     ]
+    },
+    {
+     "t": "Bacteriology",
+     "st": "Mycobacteria",
+     "txt": "TB diagnosis (CBNAAT), NTM, leprosy",
+     "src": [
+      "PL2026"
+     ]
+    },
+    {
+     "t": "Virology",
+     "st": "Hepatitis viruses",
+     "txt": "HBV serology interpretation",
+     "src": [
+      "PL2026"
+     ]
+    },
+    {
+     "t": "Virology",
+     "st": "HIV",
+     "txt": "Window period, diagnosis, viral load",
+     "src": [
+      "PL2026"
+     ]
+    },
+    {
+     "t": "Mycology",
+     "st": "Opportunistic mycoses",
+     "txt": "Aspergillus vs Mucor hyphae; Candida",
+     "src": [
+      "MEP2025"
+     ]
+    },
+    {
+     "t": "Parasitology",
+     "st": "Helminths",
+     "txt": "Egg identification; cysticercosis; hydatid",
+     "src": [
+      "PL2026"
+     ]
+    },
+    {
+     "t": "Immunology",
+     "st": "Hypersensitivity",
+     "txt": "Hypersensitivity types with examples",
+     "src": []
+    },
+    {
+     "t": "Bacteriology",
+     "st": "Gram-positive bacilli",
+     "txt": "Nocardia: paraffin bait technique",
+     "src": [
+      "MEP2025"
+     ]
+    },
+    {
+     "t": "Parasitology",
+     "st": "Helminths",
+     "txt": "Enterobius vermicularis: perianal pruritus",
+     "src": [
+      "MEP2025"
+     ]
+    }
+   ],
+   "how": "Image-heavy subject: learn the look of each stain, colony, hypha and egg. Tabulate media, special tests and serology.",
+   "skip": "Taxonomy history, and rare organisms without a classic clinical picture.",
+   "imgSrc": []
+  },
+  "fm": {
+   "bp": "6",
+   "rr": "5-8 (PL)",
+   "pri": 1,
+   "img": "Injury photos (bruise ageing, firearm wounds, ligature marks), poisonous plants and snakes, weapons, skull and bone",
+   "hot": [
+    {
+     "t": "Thanatology",
+     "st": "Postmortem changes",
+     "txt": "Rigor, livor, algor mortis; adipocere, mummification",
+     "src": []
+    },
+    {
+     "t": "Asphyxial Deaths",
+     "st": "Hanging & strangulation",
+     "txt": "Hanging vs strangulation features",
+     "src": []
+    },
+    {
+     "t": "Asphyxial Deaths",
+     "st": "Drowning",
+     "txt": "Diatom test; signs of drowning",
+     "src": []
+    },
+    {
+     "t": "Injuries",
+     "st": "Firearm injuries",
+     "txt": "Range of fire; entry vs exit",
+     "src": []
+    },
+    {
+     "t": "Toxicology",
+     "st": "Plant & animal poisons",
+     "txt": "Dhatura, oleander, snake bite",
+     "src": []
+    },
+    {
+     "t": "Toxicology",
+     "st": "Metallic poisons",
+     "txt": "Arsenic, lead, mercury signs",
+     "src": []
+    },
+    {
+     "t": "Identification",
+     "st": "Age estimation",
+     "txt": "Ossification and teeth",
+     "src": []
+    },
+    {
+     "t": "Legal Medicine & Ethics",
+     "st": "Legal procedures",
+     "txt": "BNS/BNSS/BSA sections that replaced IPC/CrPC/IEA (2024)",
+     "src": []
+    }
+   ],
+   "how": "Use photographs for injuries and poisons. Note: India's criminal laws changed on 1 July 2024 (BNS, BNSS, BSA), so check which section numbers your source uses.",
+   "skip": "Exhaustive lists of old IPC section numbers, and rare poisons.",
+   "imgSrc": []
+  },
+  "cm": {
+   "bp": "15",
+   "rr": "16 (MEP 2025)",
+   "pri": 3,
+   "img": "Vaccine vial monitors, vectors (mosquitoes, flies), charts and graphs, cold-chain equipment",
+   "hot": [
+    {
+     "t": "Epidemiology",
+     "st": "Screening",
+     "txt": "Sensitivity, specificity, PPV; lead-time bias",
+     "src": [
+      "MEP2025"
+     ]
+    },
+    {
+     "t": "Epidemiology",
+     "st": "Study designs",
+     "txt": "Cohort, case-control, RCT, cluster RCT; biases",
+     "src": [
+      "MEP2025"
+     ]
+    },
+    {
+     "t": "Biostatistics",
+     "st": "Measures & tests",
+     "txt": "Tests of significance; central tendency",
+     "src": [
+      "PL2026"
+     ]
+    },
+    {
+     "t": "Immunisation & Cold Chain",
+     "st": "Vaccines",
+     "txt": "UIP schedule; VVM interpretation",
+     "src": [
+      "MEP2025"
+     ]
+    },
+    {
+     "t": "Health Programmes & Care",
+     "st": "National programmes",
+     "txt": "NTEP, malaria and other national programme updates",
+     "src": [
+      "PL2026"
+     ]
+    },
+    {
+     "t": "Communicable Diseases",
+     "st": "Vector-borne",
+     "txt": "Malaria, dengue, filaria control",
+     "src": [
+      "PL2026"
+     ]
+    },
+    {
+     "t": "Environment & Occupational Health",
+     "st": "Water & sanitation",
+     "txt": "Chlorination; Nalgonda technique (defluoridation)",
+     "src": [
+      "MEP2025"
+     ]
+    },
+    {
+     "t": "Demography & MCH",
+     "st": "Demography & family planning",
+     "txt": "Health indicators (IMR, MMR); demographic cycle",
+     "src": [
+      "PL2026"
+     ]
+    },
+    {
+     "t": "Nutrition",
+     "st": "Nutritional programmes",
+     "txt": "Vitamin A, iron supplementation programmes",
+     "src": []
+    }
+   ],
+   "how": "Biostatistics and epidemiology need practice problems. National programmes change often: always use the latest version (Park's newest edition, plus MoHFW updates).",
+   "skip": "Historical dates of old programmes, and memorising every guideline number that is never asked.",
+   "imgSrc": []
+  },
+  "en": {
+   "bp": "6",
+   "rr": "5 (MEP 2025)",
+   "pri": 1,
+   "img": "Otoscopy photos, audiograms, instruments, X-ray/CT of sinuses",
+   "hot": [
+    {
+     "t": "Ear",
+     "st": "Inner ear & hearing tests",
+     "txt": "Tuning-fork tests; audiogram patterns",
+     "src": []
+    },
+    {
+     "t": "Ear",
+     "st": "Middle ear & CSOM",
+     "txt": "CSOM types, cholesteatoma, complications",
+     "src": [
+      "PL2026"
+     ]
+    },
+    {
+     "t": "Ear",
+     "st": "Otosclerosis",
+     "txt": "Carhart notch, stapes surgery",
+     "src": []
+    },
+    {
+     "t": "Ear",
+     "st": "Facial nerve",
+     "txt": "Bell palsy; nerve course",
+     "src": []
+    },
+    {
+     "t": "Nose & Paranasal Sinuses",
+     "st": "Tumours",
+     "txt": "JNA",
+     "src": []
+    },
+    {
+     "t": "Pharynx",
+     "st": "Deep neck spaces",
+     "txt": "Quinsy, retropharyngeal and parapharyngeal abscess",
+     "src": []
+    },
+    {
+     "t": "Larynx",
+     "st": "Vocal cord lesions",
+     "txt": "Nerve palsies and cord positions",
+     "src": []
+    }
+   ],
+   "how": "Learn instruments and the classic otoscopy and audiogram images. Short subject, high return per hour.",
+   "skip": "Operative step-by-step details of rare surgeries.",
+   "imgSrc": []
+  },
+  "op": {
+   "bp": "6",
+   "rr": "8-10 (PL)",
+   "pri": 2,
+   "img": "Fundus photos, slit-lamp images, visual-field charts, squint photos",
+   "hot": [
+    {
+     "t": "Retina",
+     "st": "Retinal vascular disease",
+     "txt": "CRAO, CRVO, hypertensive retinopathy fundus",
+     "src": []
+    },
+    {
+     "t": "Retina",
+     "st": "Diabetic retinopathy",
+     "txt": "Grading and management",
+     "src": []
+    },
+    {
+     "t": "Glaucoma",
+     "st": "Angle closure",
+     "txt": "Acute angle closure; drugs to avoid",
+     "src": []
+    },
+    {
+     "t": "Uvea",
+     "st": "Uveitis",
+     "txt": "Anterior uveitis signs; HLA-B27",
+     "src": []
+    },
+    {
+     "t": "Neuro-ophthalmology",
+     "st": "Visual pathway",
+     "txt": "Field defects by lesion site",
+     "src": []
+    },
+    {
+     "t": "Neuro-ophthalmology",
+     "st": "Pupil",
+     "txt": "RAPD, Argyll Robertson, Horner",
+     "src": []
+    },
+    {
+     "t": "Conjunctiva & Cornea",
+     "st": "Keratitis",
+     "txt": "Fungal vs bacterial keratitis",
+     "src": []
+    },
+    {
+     "t": "Lens",
+     "st": "Cataract",
+     "txt": "Types and surgery",
+     "src": []
+    }
+   ],
+   "how": "Image-driven subject: learn the classic fundus and slit-lamp pictures. Draw the visual pathway with each lesion's field defect.",
+   "skip": "Detailed optics calculations beyond the basics.",
+   "imgSrc": []
+  },
+  "me": {
+   "bp": "27 incl. Derm and Psych (Blueprint)",
+   "rr": "25-30 (PL)",
+   "pri": 3,
+   "img": "ECGs, chest X-rays, peripheral smears, CT brain, clinical signs",
+   "hot": [
+    {
+     "t": "Cardiology",
+     "st": "Arrhythmias",
+     "txt": "ECG diagnosis; AF, heart blocks, SVT management",
+     "src": [
+      "PL2026"
+     ]
+    },
+    {
+     "t": "Cardiology",
+     "st": "Ischaemic heart disease",
+     "txt": "STEMI recognition and management",
+     "src": []
+    },
+    {
+     "t": "Cardiology",
+     "st": "Heart failure",
+     "txt": "Guideline-directed medical therapy",
+     "src": []
+    },
+    {
+     "t": "Respiratory",
+     "st": "Pneumonia",
+     "txt": "CURB-65, CAP antibiotics; ARDS ventilation",
+     "src": [
+      "MEP2025",
+      "PL2026"
+     ]
+    },
+    {
+     "t": "Gastroenterology & Hepatology",
+     "st": "Liver",
+     "txt": "Cirrhosis scoring, variceal bleeding, SAAG",
+     "src": [
+      "PL2026"
+     ]
+    },
+    {
+     "t": "Nephrology",
+     "st": "Electrolytes",
+     "txt": "Hyponatraemia algorithm, hyperkalaemia",
+     "src": [
+      "PL2026"
+     ]
+    },
+    {
+     "t": "Endocrinology",
+     "st": "Adrenal",
+     "txt": "Addison disease, Cushing, phaeochromocytoma",
+     "src": [
+      "MEP2025"
+     ]
+    },
+    {
+     "t": "Endocrinology",
+     "st": "Diabetes",
+     "txt": "DKA management",
+     "src": []
+    },
+    {
+     "t": "Infectious Diseases",
+     "st": "HIV & opportunistic",
+     "txt": "IRIS, ART timing in TB",
+     "src": [
+      "MEP2025",
+      "PL2026"
+     ]
+    },
+    {
+     "t": "Infectious Diseases",
+     "st": "Tropical infections",
+     "txt": "Dengue warning signs, malaria",
+     "src": [
+      "PL2026"
+     ]
+    },
+    {
+     "t": "Haematology",
+     "st": "Anaemia",
+     "txt": "Smear-based diagnosis",
+     "src": [
+      "PL2026"
+     ]
+    },
+    {
+     "t": "Rheumatology",
+     "st": "Arthritis",
+     "txt": "RA, gout, spondyloarthritis",
+     "src": []
+    },
+    {
+     "t": "Rheumatology",
+     "st": "Arthritis",
+     "txt": "Pannus in rheumatoid arthritis",
+     "src": [
+      "MEP2025"
+     ]
+    },
+    {
+     "t": "Rheumatology",
+     "st": "Arthritis",
+     "txt": "Paget's disease of bone",
+     "src": [
+      "MEP2025"
+     ]
+    }
+   ],
+   "how": "Think in management algorithms (first step, drug of choice, next best step). Learn ECG and X-ray patterns from images. Follow the current guideline versions.",
+   "skip": "Rare syndromes with no exam history, and outdated treatment regimens.",
+   "imgSrc": [
+    "PL2026"
+   ]
+  },
+  "su": {
+   "bp": "27 incl. Ortho, Anaes and Radio (Blueprint)",
+   "rr": "18 (MEP 2025)",
+   "pri": 3,
+   "img": "Abdominal X-rays, CT abdomen, clinical photos (swellings, ulcers), instruments",
+   "hot": [
+    {
+     "t": "GI Surgery",
+     "st": "Small & large bowel",
+     "txt": "Intestinal obstruction on X-ray; volvulus",
+     "src": [
+      "PL2026"
+     ]
+    },
+    {
+     "t": "Hepatobiliary & Pancreas",
+     "st": "Gallbladder & biliary",
+     "txt": "Cholecystitis, cholangitis, Courvoisier law",
+     "src": [
+      "MEP2025",
+      "PL2026"
+     ]
+    },
+    {
+     "t": "Trauma",
+     "st": "Head injury",
+     "txt": "GCS; EDH vs SDH; diffuse axonal injury",
+     "src": [
+      "MEP2025",
+      "PL2026"
+     ]
+    },
+    {
+     "t": "Trauma",
+     "st": "Abdominal trauma",
+     "txt": "FAST vs CT; organ injury",
+     "src": []
+    },
+    {
+     "t": "GI Surgery",
+     "st": "Anorectal",
+     "txt": "Fistula-in-ano (Parks, Goodsall), fissure, haemorrhoids",
+     "src": [
+      "MEP2025"
+     ]
+    },
+    {
+     "t": "GI Surgery",
+     "st": "Hernia",
+     "txt": "Types and repairs",
+     "src": [
+      "PL2026"
+     ]
+    },
+    {
+     "t": "Breast & Endocrine",
+     "st": "Breast",
+     "txt": "Triple assessment; breast cancer management",
+     "src": [
+      "PL2026"
+     ]
+    },
+    {
+     "t": "Breast & Endocrine",
+     "st": "Thyroid",
+     "txt": "Thyroid cancers and surgery complications",
+     "src": []
+    },
+    {
+     "t": "General Surgery",
+     "st": "Burns",
+     "txt": "Parkland formula; rule of nines",
+     "src": []
+    },
+    {
+     "t": "Urology",
+     "st": "Testis",
+     "txt": "Torsion and other urological emergencies",
+     "src": [
+      "PL2026"
+     ]
+    },
+    {
+     "t": "GI Surgery",
+     "st": "Oesophagus & stomach",
+     "txt": "Achalasia cardia: manometry",
+     "src": [
+      "MEP2025"
+     ]
+    },
+    {
+     "t": "Trauma",
+     "st": "Chest trauma",
+     "txt": "Fat embolism syndrome",
+     "src": [
+      "MEP2025"
+     ]
+    }
+   ],
+   "how": "Combine anatomy, imaging and the decision (operate or not). Learn named signs and laws with their meaning. Practise X-ray and CT recognition.",
+   "skip": "Detailed operative steps of rarely asked procedures, and instrument trivia beyond the common ones.",
+   "imgSrc": [
+    "PL2026"
+   ]
+  },
+  "ob": {
+   "bp": "18",
+   "rr": "25-30 (PL); 20 (MEP 2025)",
+   "pri": 3,
+   "img": "CTG traces, obstetric USG, partograph, instruments, specimens",
+   "hot": [
+    {
+     "t": "Obstetrics",
+     "st": "Postpartum haemorrhage",
+     "txt": "Atonic PPH steps; uterotonics; Bakri balloon",
+     "src": [
+      "MEP2025",
+      "PL2026"
+     ]
+    },
+    {
+     "t": "Obstetrics",
+     "st": "Hypertensive disorders",
+     "txt": "Pre-eclampsia criteria, HELLP, MgSO4 regimens",
+     "src": [
+      "MEP2025",
+      "PL2026"
+     ]
+    },
+    {
+     "t": "Obstetrics",
+     "st": "Labour",
+     "txt": "Partograph, shoulder dystocia (McRoberts), cord prolapse, CTG",
+     "src": [
+      "MEP2025"
+     ]
+    },
+    {
+     "t": "Obstetrics",
+     "st": "Antenatal care",
+     "txt": "IUGR, Doppler, screening tests",
+     "src": [
+      "PL2026"
+     ]
+    },
+    {
+     "t": "Obstetrics",
+     "st": "Ectopic & abortion",
+     "txt": "Ectopic diagnosis and methotrexate criteria",
+     "src": []
+    },
+    {
+     "t": "Gynaecology",
+     "st": "Menstrual disorders & PCOS",
+     "txt": "AUB evaluation, PCOS, POI (high FSH, low AMH)",
+     "src": [
+      "MEP2025"
+     ]
+    },
+    {
+     "t": "Gynaecology",
+     "st": "Contraception",
+     "txt": "Methods, contraindications, emergency contraception",
+     "src": [
+      "PL2026"
+     ]
+    },
+    {
+     "t": "Gynaecology",
+     "st": "Gynae oncology",
+     "txt": "Cervical screening, staging, ovarian tumour markers",
+     "src": []
+    },
+    {
+     "t": "Gynaecology",
+     "st": "Fibroids & endometriosis",
+     "txt": "Adenomyosis on MRI; fibroid management",
+     "src": [
+      "MEP2025"
+     ]
+    },
+    {
+     "t": "Obstetrics",
+     "st": "Labour",
+     "txt": "Episiotomy closure sequence",
+     "src": [
+      "MEP2025"
+     ]
+    }
+   ],
+   "how": "Learn emergencies as stepwise algorithms. CTG and USG images are frequent. One of the highest-weight subjects in recent recalls.",
+   "skip": "Rare congenital anomalies of the genital tract beyond the classic ones.",
+   "imgSrc": [
+    "PL2026"
+   ]
+  },
+  "pe": {
+   "bp": "6",
+   "rr": "5 (MEP 2025)",
+   "pri": 2,
+   "img": "Clinical photos of syndromes and rashes, growth charts, X-rays (e.g. rickets)",
+   "hot": [
+    {
+     "t": "Growth & Development",
+     "st": "Milestones",
+     "txt": "Milestones by age",
+     "src": [
+      "PL2026"
+     ]
+    },
+    {
+     "t": "Infections & Immunisation",
+     "st": "Immunisation",
+     "txt": "National schedule",
+     "src": [
+      "PL2026"
+     ]
+    },
+    {
+     "t": "Neonatology",
+     "st": "Neonatal resuscitation & sepsis",
+     "txt": "Apgar, NRP, early vs late-onset sepsis",
+     "src": [
+      "PL2026"
+     ]
+    },
+    {
+     "t": "Neonatology",
+     "st": "Neonatal jaundice",
+     "txt": "Physiological vs pathological",
+     "src": []
+    },
+    {
+     "t": "Infections & Immunisation",
+     "st": "Exanthems",
+     "txt": "Measles, rubella and other rash illnesses",
+     "src": [
+      "PL2026"
+     ]
+    },
+    {
+     "t": "Nutrition",
+     "st": "Malnutrition",
+     "txt": "SAM criteria and management",
+     "src": []
+    },
+    {
+     "t": "Paediatric Cardiology",
+     "st": "Congenital heart disease",
+     "txt": "TOF, VSD, PDA features",
+     "src": []
+    },
+    {
+     "t": "Genetics & Syndromes",
+     "st": "Chromosomal disorders",
+     "txt": "Down, Turner, Klinefelter",
+     "src": []
+    }
+   ],
+   "how": "Milestones and the immunisation schedule appear almost every year: learn them cold. Use photos for syndromes and rashes.",
+   "skip": "Rare inborn errors already covered in Biochemistry.",
+   "imgSrc": []
+  },
+  "or": {
+   "bp": "(within Surgery group)",
+   "rr": "8-10 (PL)",
+   "pri": 2,
+   "img": "Fracture X-rays, bone-tumour X-rays, clinical deformity photos",
+   "hot": [
+    {
+     "t": "Upper Limb Trauma",
+     "st": "Elbow & forearm",
+     "txt": "Supracondylar fracture; Monteggia vs Galeazzi",
+     "src": []
+    },
+    {
+     "t": "Lower Limb Trauma",
+     "st": "Hip & femur",
+     "txt": "Neck of femur fractures, Garden classification",
+     "src": []
+    },
+    {
+     "t": "Bone Tumours",
+     "st": "Benign",
+     "txt": "GCT, osteochondroma, osteoid osteoma",
+     "src": []
+    },
+    {
+     "t": "Bone Tumours",
+     "st": "Malignant",
+     "txt": "Osteosarcoma vs Ewing on X-ray",
+     "src": []
+    },
+    {
+     "t": "Peripheral Nerve Injuries",
+     "st": "Upper limb nerves",
+     "txt": "Nerve injury with fracture",
+     "src": []
+    },
+    {
+     "t": "Paediatric Orthopaedics",
+     "st": "CTEV & DDH",
+     "txt": "Ponseti method; DDH tests",
+     "src": []
+    },
+    {
+     "t": "Infections & Spine",
+     "st": "Tuberculosis of spine",
+     "txt": "Pott spine",
+     "src": []
+    }
+   ],
+   "how": "X-ray recognition is key: learn the classic fracture and tumour images. Use eponyms with their pictures.",
+   "skip": "Implant brand details and complex fixation techniques.",
+   "imgSrc": []
+  },
+  "de": {
+   "bp": "(within Medicine group)",
+   "rr": "8-10 (PL); 8 (MEP 2025)",
+   "pri": 2,
+   "img": "Clinical photographs of classic lesions (per PL)",
+   "hot": [
+    {
+     "t": "Papulosquamous Disorders",
+     "st": "Psoriasis",
+     "txt": "Signs (Auspitz, Koebner) and treatment",
+     "src": []
+    },
+    {
+     "t": "Papulosquamous Disorders",
+     "st": "Lichen planus",
+     "txt": "6 Ps; Wickham striae",
+     "src": []
+    },
+    {
+     "t": "Vesiculobullous Disorders",
+     "st": "Pemphigus & pemphigoid",
+     "txt": "Antigens and immunofluorescence",
+     "src": []
+    },
+    {
+     "t": "Infections & Infestations",
+     "st": "Fungal",
+     "txt": "Tinea types and treatment",
+     "src": []
+    },
+    {
+     "t": "Infections & Infestations",
+     "st": "Scabies & lice",
+     "txt": "Scabies treatment",
+     "src": []
+    },
+    {
+     "t": "Leprosy",
+     "st": "Classification & treatment",
+     "txt": "Cardinal signs; WHO MDT",
+     "src": []
+    },
+    {
+     "t": "STIs",
+     "st": "Syphilis",
+     "txt": "Stages and tests",
+     "src": []
+    }
+   ],
+   "how": "Almost entirely photo recognition: go through a good image atlas repeatedly. Pair each lesion with one sign and one drug.",
+   "skip": "Rare genodermatoses.",
+   "imgSrc": [
+    "PL2026"
+   ]
+  },
+  "ps": {
+   "bp": "(within Medicine group)",
+   "rr": "5-8 (PL)",
+   "pri": 1,
+   "img": "Rarely image-based",
+   "hot": [
+    {
+     "t": "Psychotic Disorders",
+     "st": "Schizophrenia",
+     "txt": "Schneider first-rank symptoms; treatment",
+     "src": []
+    },
+    {
+     "t": "Mood Disorders",
+     "st": "Bipolar disorder",
+     "txt": "Lithium and its toxicity",
+     "src": []
+    },
+    {
+     "t": "Psychopharmacology & Therapies",
+     "st": "Antipsychotics",
+     "txt": "Clozapine monitoring; NMS vs serotonin syndrome",
+     "src": []
+    },
+    {
+     "t": "Substance Use",
+     "st": "Alcohol",
+     "txt": "Withdrawal timeline; Wernicke-Korsakoff",
+     "src": []
+    },
+    {
+     "t": "Anxiety & Related",
+     "st": "OCD",
+     "txt": "Treatment (SSRIs, ERP)",
+     "src": []
+    },
+    {
+     "t": "Child Psychiatry",
+     "st": "ADHD & autism",
+     "txt": "Diagnosis and drugs",
+     "src": []
+    }
+   ],
+   "how": "Short subject: drug side effects and defence mechanisms are classic. Learn DSM-5/ICD-11 key criteria only.",
+   "skip": "Psychoanalytic theory detail.",
+   "imgSrc": []
+  },
+  "as": {
+   "bp": "(within Surgery group)",
+   "rr": "5-8 (PL)",
+   "pri": 1,
+   "img": "Airway equipment, laryngoscopy views, capnography traces, circuits",
+   "hot": [
+    {
+     "t": "Inhalational Agents",
+     "st": "Pharmacology",
+     "txt": "Blood:gas coefficients; MAC; agent of choice",
+     "src": []
+    },
+    {
+     "t": "IV Agents & Muscle Relaxants",
+     "st": "Muscle relaxants",
+     "txt": "Succinylcholine contraindications; reversal",
+     "src": []
+    },
+    {
+     "t": "IV Agents & Muscle Relaxants",
+     "st": "Induction agents",
+     "txt": "Ketamine, propofol, etomidate uses",
+     "src": []
+    },
+    {
+     "t": "Local & Regional",
+     "st": "Local anaesthetics",
+     "txt": "LA toxicity and lipid emulsion",
+     "src": []
+    },
+    {
+     "t": "Monitoring & Complications",
+     "st": "Malignant hyperthermia",
+     "txt": "Dantrolene",
+     "src": []
+    },
+    {
+     "t": "Airway & Pre-op",
+     "st": "Airway assessment",
+     "txt": "Mallampati, Cormack-Lehane",
+     "src": []
+    },
+    {
+     "t": "CPR",
+     "st": "Basic & advanced life support",
+     "txt": "Compression rate and depth; shockable rhythms",
+     "src": []
+    }
+   ],
+   "how": "Learn equipment images and capnography patterns. Most questions are drug comparisons.",
+   "skip": "Vaporiser engineering details.",
+   "imgSrc": []
+  },
+  "ra": {
+   "bp": "(within Surgery group)",
+   "rr": "5-8 (PL)",
+   "pri": 1,
+   "img": "X-ray, CT and MRI signs (the subject itself is images)",
+   "hot": [
+    {
+     "t": "Chest Imaging",
+     "st": "Chest X-ray signs",
+     "txt": "Classic CXR signs (bat wing, silhouette)",
+     "src": []
+    },
+    {
+     "t": "Abdominal Imaging",
+     "st": "GI signs",
+     "txt": "Pneumoperitoneum, obstruction, volvulus signs",
+     "src": []
+    },
+    {
+     "t": "Neuroimaging",
+     "st": "Brain",
+     "txt": "SAH, EDH vs SDH on CT",
+     "src": []
+    },
+    {
+     "t": "Physics & Radiation Protection",
+     "st": "Units & protection",
+     "txt": "Units, dose limits, most radiosensitive tissues",
+     "src": []
+    },
+    {
+     "t": "Nuclear Medicine",
+     "st": "Isotopes & scans",
+     "txt": "Isotopes and their uses",
+     "src": []
+    }
+   ],
+   "how": "Learn named signs with an image beside each. Radiation units and limits are easy marks.",
+   "skip": "Detailed physics of MRI sequences.",
+   "imgSrc": []
+  }
+ }
 }
