@@ -9,6 +9,9 @@
   before counting (lesson 16).
 - Docs: BIDPILOT_ARCHITECTURE.md section.
 
-Next: founder's go-ahead to commit and deploy (no migration). After deploy:
-check the live page, JSON-LD and `.md`, then mark items 1–2 done in
-`marketing/seo/technical-audit.md`.
+- 28 Oct: committed 936aee8, pushed, deployed (no tender ANALYZING; no
+  migration). Live: 12/12 server checks (page, title, H1, WebPage +
+  BreadcrumbList + FAQPage with 9 entries and "first 3 tenders", /faq
+  FAQPage 21, /about Organization, Maharashtra list breadcrumbs, `.md`,
+  sitemap, llms.txt, home and features links) and a browser check at 390 px
+  (one H1, 6 cards, 9 questions, no sideways scroll, no errors or CSP blocks).

@@ -69,10 +69,10 @@ from this cloud session (not from India; timings indicative).
 
 ### Still open (proposals for the founder)
 
-1. `/tender-consultants` page (draft P3 in `pages/`): the use-case page for
-   the segment all current outreach targets.
-2. Small structured-data additions: FAQPage on `/faq` (from the rendered
-   answers), Organization on `/about`, BreadcrumbList on the tender lists.
+1. ~~`/tender-consultants` page (draft P3 in `pages/`)~~ **Live 28 Oct 2026.**
+2. ~~Structured data: FAQPage on `/faq`, Organization on `/about`,
+   BreadcrumbList on the tender lists~~ **Live 28 Oct 2026** (FAQPage also on
+   `/tender-consultants`).
 3. A short server-rendered explainer on `/government-tenders` (how the lists
    work, CPPP credit, not every tender) to lift it above 250 words.
 4. Comparison pages P1 (`/ai-tender-analysis-tools`) and P2
