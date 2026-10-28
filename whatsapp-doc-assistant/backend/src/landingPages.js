@@ -15,7 +15,7 @@
 // pages. The browser app then takes over the same URL
 // (GovernmentTendersPage reads the filter from GET /public/tenders/landing).
 
-import { publicPageHead } from './seo.js';
+import { publicPageHead, breadcrumbs } from './seo.js';
 import { STATE_ALIASES, searchFeed } from './bidpilot/repo/publicTenders.js';
 import { escapeMd, link, list, mdPage, todayInIndia } from './md/format.js';
 
@@ -108,8 +108,10 @@ export function searchUrlFor(page) {
  * inside #root (the app replaces it when it starts).
  */
 export function renderLandingHtml(indexHtml, page, tenders, baseUrl, allPages) {
-  const head = publicPageHead({ title: landingTitle(page), description: landingDescription(page) }, `${baseUrl}${page.path}`, baseUrl);
   const heading = page.kind === 'gem' ? 'GeM bids open now' : `${page.label} government tenders`;
+  // The list links to the search it comes from, so: Home > Find government tenders > this list.
+  const crumbs = breadcrumbs(baseUrl, [['Find government tenders', '/government-tenders'], [heading, page.path]]);
+  const head = publicPageHead({ title: landingTitle(page), description: landingDescription(page) }, `${baseUrl}${page.path}`, baseUrl, [crumbs]);
   const rows = tenders.map((t) => {
     const who = [t.organisation, t.department && t.department !== t.organisation ? t.department : null, t.state].filter(Boolean).join(' · ');
     const closes = istDate(t.closingAt);

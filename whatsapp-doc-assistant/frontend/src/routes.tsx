@@ -24,6 +24,7 @@ import { GuidesPage } from './pages/guides/Guides';
 import { EligibilityGuidePage } from './pages/guides/EligibilityGuide';
 import { EmdGuidePage } from './pages/guides/EmdGuide';
 import { CorrigendumGuidePage } from './pages/guides/CorrigendumGuide';
+import { TenderConsultantsPage } from './pages/TenderConsultants';
 
 // M5d added /tenders/:id. /company-profile added Beta Readiness — the
 // eligibility engine's other required input had a working API client
@@ -65,6 +66,7 @@ export function AppRoutes() {
       <Route path="/pricing" element={<PricingPage />} />
       <Route path="/faq" element={<FaqPage />} />
       <Route path="/about" element={<AboutPage />} />
+      <Route path="/tender-consultants" element={<TenderConsultantsPage />} />
       <Route path="/privacy-policy" element={<PrivacyPage />} />
       <Route path="/guides" element={<GuidesPage />} />
       <Route path="/guides/tender-eligibility-check" element={<EligibilityGuidePage />} />

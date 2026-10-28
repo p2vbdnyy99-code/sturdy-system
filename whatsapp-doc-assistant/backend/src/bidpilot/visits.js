@@ -33,6 +33,7 @@ const ROUTES = [
   [/^\/pricing$/, '/pricing'],
   [/^\/faq$/, '/faq'],
   [/^\/about$/, '/about'],
+  [/^\/tender-consultants$/, '/tender-consultants'],
   [/^\/privacy-policy$/, '/privacy-policy'],
   [/^\/register$/, '/register'],
   [/^\/guides$/, '/guides'],

@@ -66,6 +66,7 @@ export function PublicLayout({ children }: { children: ReactNode }) {
               <Link to="/pricing">Pricing</Link>
               <Link to="/faq">FAQ</Link>
               <Link to="/guides">Guides</Link>
+              <Link to="/tender-consultants">For consultants</Link>
             </div>
             <div>
               <p className="public-footer-heading">Company</p>

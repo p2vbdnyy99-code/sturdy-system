@@ -4701,3 +4701,61 @@ the free trial to show the eligibility check, which needs the profile.
 
 **Reverse:** `git revert`. There is no migration; companies created
 automatically keep working like any other.
+
+# A page for tender consultants, and structured data (28 Oct 2026)
+
+**What changed**
+- New public page `/tender-consultants` (`frontend/src/pages/TenderConsultants.tsx`),
+  from the reviewed draft `marketing/seo/pages/P3-tender-consultants.md`.
+  Every feature it names was re-checked against the code: client
+  workspaces, per-client eligibility (meets / doesn't appear to meet / can't
+  tell), checklist with Excel download, corrigendum check, annexure drafts
+  (no price bids or BOQs), bid tracker with guarantees expiring in 30 days,
+  one plan shared by all clients. It states there is no bid/no-bid verdict.
+  The free-tender and plan numbers come from `config/site.ts` and
+  `shell/profileGate.ts`, so they can't drift (the draft still said 2 free
+  tenders before the profile; the page says 3).
+- Registered like the other public pages: `PUBLIC_PAGES` (title,
+  description, ai-summary), `PRERENDER_PATHS` (server HTML, 864 words),
+  the markdown registry (`/tender-consultants.md`, llms.txt, llms-full.txt),
+  the visit counter route and the sitemap.
+- Links in: the home page's "Client workspaces" card, the clients section of
+  /features ("TenderTez for tender consultants") and the footer ("For
+  consultants").
+- Structured data (`seo.js`):
+  - **FAQPage** on `/faq` and `/tender-consultants`, read by `faqFromHtml`
+    from the page's own server-rendered `<details class="faq-item">` blocks,
+    so the JSON-LD can only repeat questions and answers the page shows.
+    `structuredData(path, baseUrl, bodyHtml)` now takes the body HTML;
+    `renderIndexHtml` renders the body first and passes it.
+  - **Organization** on `/about` (the same object as on the home page).
+  - **WebPage** and **BreadcrumbList** on `/tender-consultants`.
+  - **BreadcrumbList** on every tender list (Home > Find government tenders >
+    the list's own heading), in `renderLandingHtml`. The guides' breadcrumbs
+    use the same `breadcrumbs()` helper.
+
+**Why**
+The founder approved items 1 and 2 of the 27 Oct SEO re-audit: a page for
+the segment all current outreach targets (consultants who bid for several
+firms), and markup that helps search and AI answers read the FAQ, the
+company and the site's structure without stating anything new.
+
+**Verification**
+- `test/structured-data.test.js`: FAQ text extraction (entities, React
+  comments, links); FAQPage on `/faq` (21 questions) and `/tender-consultants`
+  (9) equals the page's FAQ items, as plain text; the consultants FAQ states
+  3 free tenders; Organization on /about equals the home page's; WebPage and
+  breadcrumbs on the new page; a landing page's breadcrumb ends with its H1.
+- Updated: `geo.test.js` (the server-rendered page list) and
+  `landing-pages.test.js` (/about now has Organization; /features has none).
+  `md.test.js` passes with the new page in the registry.
+- verify.sh: backend 687/434/353, frontend build (check-prerender: 864 words
+  for the new page), lint 0 errors, 57 unit tests, secret scan clean.
+- Browser on a local server, 390 and 1366 px, 26 checks: server HTML has the
+  H1, title and the three JSON-LD types; /faq FAQPage and /about Organization
+  present; `.md`, sitemap and llms.txt list the page; after the app loads,
+  one H1, 6 feature cards, 6 steps, 9 questions; the profile answer says 3;
+  "no bid/no-bid verdict" stated; no sideways scroll; home and features links
+  open the page; no page errors or CSP blocks.
+
+**Reverse:** `git revert`. No migration.

@@ -9,6 +9,7 @@
 // The descriptions only state what the public pages themselves say.
 
 import { PLANS } from './bidpilot/plans.js';
+import { decodeEntities } from './md/htmlToMd.js';
 
 const SITE_NAME = 'TenderTez';
 const CONTACT_EMAIL = 'advayaicopilot@gmail.com';
@@ -65,6 +66,14 @@ export const PUBLIC_PAGES = {
     title: 'About TenderTez: AI tender reading, built in Mumbai',
     description: 'TenderTez is an AI tender-reading tool built in Mumbai by Sayali Londhe for Indian contractors, '
       + 'suppliers and tender consultants.',
+  },
+  '/tender-consultants': {
+    aiSummary: 'TenderTez for tender consultants: a profile per client firm, each tender checked against the right client, '
+      + 'every condition with its page, a checklist to send the client, corrigendum checks and annexure drafts. '
+      + 'All clients share one plan; the first 5 tenders are free.',
+    title: 'Tender analysis software for tender consultants | TenderTez',
+    description: 'Keep each client\u2019s profile separate, check every tender against the right client, and hand over a '
+      + 'page-referenced checklist. First 5 tenders free.',
   },
   '/privacy-policy': {
     title: 'Privacy policy | TenderTez',
@@ -130,13 +139,65 @@ function normalizePath(path) {
   return path.length > 1 ? path.replace(/\/+$/, '') : path;
 }
 
+const plainText = (html) => decodeEntities(html.replace(/<!--[\s\S]*?-->/g, '').replace(/<[^>]+>/g, ' '))
+  .replace(/\s+/g, ' ').replace(/\s+([.,;:!?)])/g, '$1').trim();
+
 /**
- * Structured data (schema.org JSON-LD) for the home and pricing pages: who
- * runs the site, and the product with its published plans. Only facts the
- * site itself states. A JSON-LD block is data, not a script, so the strict
- * Content-Security-Policy doesn't block it.
+ * The questions and answers in a page's server-rendered HTML (its
+ * <details class="faq-item"> blocks), so FAQPage JSON-LD can only ever repeat
+ * what the page itself shows.
  */
-export function structuredData(path, baseUrl) {
+export function faqFromHtml(html) {
+  const items = [];
+  for (const m of String(html || '').matchAll(/<details[^>]*class="faq-item"[^>]*>\s*<summary[^>]*>([\s\S]*?)<\/summary>([\s\S]*?)<\/details>/g)) {
+    const q = plainText(m[1]);
+    const a = plainText(m[2]);
+    if (q && a) items.push({ q, a });
+  }
+  return items;
+}
+
+const organization = (baseUrl) => ({
+  '@context': 'https://schema.org',
+  '@type': 'Organization',
+  name: SITE_NAME,
+  url: `${baseUrl}/`,
+  logo: `${baseUrl}/og-image.png`,
+  email: CONTACT_EMAIL,
+  founder: { '@type': 'Person', name: 'Sayali Londhe' },
+  address: { '@type': 'PostalAddress', addressLocality: 'Mumbai', addressCountry: 'IN' },
+  sameAs: [`https://x.com/${X_HANDLE}`],
+});
+
+/** Home > … breadcrumbs as BreadcrumbList JSON-LD; `crumbs` is [[name, path], …]. */
+export function breadcrumbs(baseUrl, crumbs) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [['Home', '/'], ...crumbs].map(([name, p], i) => ({
+      '@type': 'ListItem', position: i + 1, name, item: `${baseUrl}${p === '/' ? '/' : p}`,
+    })),
+  };
+}
+
+/**
+ * Structured data (schema.org JSON-LD) for the public pages: who runs the
+ * site, the product with its published plans, articles, breadcrumbs and FAQs.
+ * Only facts the site itself states; FAQPage is read from the page's own
+ * server-rendered `bodyHtml`. A JSON-LD block is data, not a script, so the
+ * strict Content-Security-Policy doesn't block it.
+ */
+export function structuredData(path, baseUrl, bodyHtml = '') {
+  const faq = faqFromHtml(bodyHtml);
+  const faqPage = faq.length ? [{
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faq.map(({ q, a }) => ({ '@type': 'Question', name: q, acceptedAnswer: { '@type': 'Answer', text: a } })),
+  }] : [];
+  return [...pageData(path, baseUrl), ...faqPage];
+}
+
+function pageData(path, baseUrl) {
   const guide = GUIDES.find((g) => g.path === path);
   if (guide) {
     const publisher = { '@type': 'Organization', name: SITE_NAME, url: `${baseUrl}/` };
@@ -150,33 +211,26 @@ export function structuredData(path, baseUrl) {
       publisher,
       mainEntityOfPage: `${baseUrl}${guide.path}`,
       citation: guide.citations,
-    }, {
-      '@context': 'https://schema.org',
-      '@type': 'BreadcrumbList',
-      itemListElement: [
-        { '@type': 'ListItem', position: 1, name: 'Home', item: `${baseUrl}/` },
-        { '@type': 'ListItem', position: 2, name: 'Guides', item: `${baseUrl}/guides` },
-        { '@type': 'ListItem', position: 3, name: guide.headline, item: `${baseUrl}${guide.path}` },
-      ],
-    }];
+    }, breadcrumbs(baseUrl, [['Guides', '/guides'], [guide.headline, guide.path]])];
   }
   if (path === '/') {
-    return [{
-      '@context': 'https://schema.org',
-      '@type': 'Organization',
-      name: SITE_NAME,
-      url: `${baseUrl}/`,
-      logo: `${baseUrl}/og-image.png`,
-      email: CONTACT_EMAIL,
-      founder: { '@type': 'Person', name: 'Sayali Londhe' },
-      address: { '@type': 'PostalAddress', addressLocality: 'Mumbai', addressCountry: 'IN' },
-      sameAs: [`https://x.com/${X_HANDLE}`],
-    }, {
+    return [organization(baseUrl), {
       '@context': 'https://schema.org',
       '@type': 'WebSite',
       name: SITE_NAME,
       url: `${baseUrl}/`,
     }];
+  }
+  if (path === '/about') return [organization(baseUrl)];
+  if (path === '/tender-consultants') {
+    return [{
+      '@context': 'https://schema.org',
+      '@type': 'WebPage',
+      name: 'Tender analysis software for tender consultants',
+      url: `${baseUrl}/tender-consultants`,
+      about: { '@type': 'SoftwareApplication', name: SITE_NAME, applicationCategory: 'BusinessApplication', operatingSystem: 'Web browser' },
+      publisher: { '@type': 'Organization', name: SITE_NAME, url: `${baseUrl}/` },
+    }, breadcrumbs(baseUrl, [['For tender consultants', '/tender-consultants']])];
   }
   if (path === '/pricing') {
     return [{
@@ -243,8 +297,8 @@ export function renderIndexHtml(indexHtml, path, baseUrl, bodyFor = () => null) 
     return indexHtml.replace('</title>', '</title>\n    <meta name="robots" content="noindex" />');
   }
   const url = `${baseUrl}${p === '/' ? '/' : p}`;
-  const tags = publicPageHead(page, url, baseUrl, structuredData(p, baseUrl));
   const body = bodyFor(p);
+  const tags = publicPageHead(page, url, baseUrl, structuredData(p, baseUrl, body || ''));
   const html = indexHtml.replace(/<title>[^<]*<\/title>/, tags);
   return body ? html.replace('<div id="root"></div>', `<div id="root">${body}</div>`) : html;
 }

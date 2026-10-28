@@ -21,7 +21,7 @@ const SEARCH_PATH = '/government-tenders';
 
 /** Pages rendered from their React server render, in llms.txt order. */
 const COMPONENT_PAGES = {
-  core: ['/', '/features', '/pricing', '/faq', '/about'],
+  core: ['/', '/features', '/pricing', '/faq', '/about', '/tender-consultants'],
   guides: ['/guides', ...GUIDES.map((g) => g.path)],
   legal: ['/privacy-policy'],
 };

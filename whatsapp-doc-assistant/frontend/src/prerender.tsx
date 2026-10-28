@@ -18,7 +18,7 @@ import { GUIDES, guidePath } from './guides/guides';
 /** The public pages whose HTML is rendered on the server. /sample-analysis
  *  and the tender landing pages have their own server HTML. */
 export const PRERENDER_PATHS = [
-  '/', '/government-tenders', '/features', '/pricing', '/faq', '/about', '/privacy-policy',
+  '/', '/government-tenders', '/features', '/pricing', '/faq', '/about', '/privacy-policy', '/tender-consultants',
   '/guides', ...GUIDES.map((g) => guidePath(g.slug)),
 ];
 

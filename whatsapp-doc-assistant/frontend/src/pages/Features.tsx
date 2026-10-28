@@ -89,6 +89,7 @@ const FEATURE_GROUPS: Array<{ id: string; icon: IconName; title: string; lead: s
     title: 'Client workspaces for consultants',
     lead: 'Bid for several firms? Keep a profile for each client and check every tender against the right one.',
     points: ['Mark a tender for a client; filter the dashboard by client', 'All clients share your one plan'],
+    link: { to: '/tender-consultants', label: 'TenderTez for tender consultants' },
   },
 ];
 

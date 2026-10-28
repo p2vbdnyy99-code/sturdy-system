@@ -77,7 +77,7 @@ export function render(p) { if (p === '/faq') throw new Error('boom'); n += 1; r
 test('the real frontend bundle renders every public page with its H1 and text', { skip: !fs.existsSync(new URL('../../frontend/dist-ssr/prerender.js', import.meta.url)) && 'frontend not built' }, async () => {
   const pre = createPrerender(new URL('../../frontend/dist-ssr/prerender.js', import.meta.url).pathname);
   await pre.ready;
-  const expected = ['/', '/government-tenders', '/features', '/pricing', '/faq', '/about', '/privacy-policy', '/guides', ...GUIDES.map((g) => g.path)];
+  const expected = ['/', '/government-tenders', '/features', '/pricing', '/faq', '/about', '/privacy-policy', '/tender-consultants', '/guides', ...GUIDES.map((g) => g.path)];
   assert.deepEqual([...pre.paths()].sort(), expected.sort());
   for (const p of expected) {
     const html = pre.html(p);

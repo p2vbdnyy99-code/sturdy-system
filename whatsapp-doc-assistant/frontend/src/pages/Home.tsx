@@ -18,7 +18,7 @@ const FEATURES: Array<{ icon: IconName; title: string; body: string; to: string 
   { icon: 'flag', title: 'Bid tracker', body: 'Every tender from first look to result: stages, your internal deadline, notes and the portal ID.', to: '/features#tracker' },
   { icon: 'check', title: 'Submission checklist', body: 'The documents and proofs the tender asks for, with page numbers. Tick them off; download as Excel.', to: '/features#checklist' },
   { icon: 'history', title: 'Corrigendum check', body: 'Upload an amendment and see what changed in the deadline, EMD or dates, quoted with its page.', to: '/features#corrigendum' },
-  { icon: 'users', title: 'Client workspaces', body: 'For consultants: a profile per client, and each tender checked against the right one.', to: '/features#clients' },
+  { icon: 'users', title: 'Client workspaces', body: 'For consultants: a profile per client, and each tender checked against the right one.', to: '/tender-consultants' },
   { icon: 'search', title: 'Every answer has a source', body: 'Each point shows the page it came from, with the quoted text, so you can verify in seconds.', to: '/features#read' },
 ];
 

@@ -93,7 +93,9 @@ test('structured data states only published facts; llms.txt matches the plans', 
   assert.deepEqual(structuredData('/faq', BASE), []);
   const html = renderIndexHtml(INDEX, '/pricing', BASE);
   assert.match(html, /<script type="application\/ld\+json">\{"@context":"https:\/\/schema.org","@type":"SoftwareApplication"/);
-  assert.doesNotMatch(renderIndexHtml(INDEX, '/about', BASE), /ld\+json/);
+  // /about repeats the home page's Organization (28 Oct 2026); /features has none.
+  assert.match(renderIndexHtml(INDEX, '/about', BASE), /"@type":"Organization"/);
+  assert.doesNotMatch(renderIndexHtml(INDEX, '/features', BASE), /ld\+json/);
   const txt = llmsTxt(BASE);
   for (const p of Object.values(PLANS)) assert.ok(txt.includes(`Rs ${p.pricePerMonth.toLocaleString('en-IN')} a month for ${p.tendersPerMonth} tenders`));
   assert.match(txt, /no bid\/no-bid verdict/);
