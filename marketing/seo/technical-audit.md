@@ -44,3 +44,38 @@ indicative only). Nothing here is estimated. Re-run any time:
 5. A few sourced explainer articles for learning-intent questions
    (`keyword-research.md`); needs an articles section (founder approval).
 6. Connect Search Console data after 4 weeks and decide from real queries.
+
+
+## Re-audit, 27 Oct 2026
+
+Measured with `python3 -m ttm seo-audit` and a page-by-page read of every
+sitemap URL's server HTML (title, description, H1, words, JSON-LD, time),
+from this cloud session (not from India; timings indicative).
+
+| Check | 16 Oct | 27 Oct |
+|---|---|---|
+| Sitemap URLs | 52 | 58 (3 guides, `/guides`, Kerala merged), with `<lastmod>` |
+| Issues found by `seo-audit` | landing descriptions long | none |
+| Broken internal links | 0 | 0 |
+| H1 in server HTML | landing pages only | 57 of 58 (all but `/register`, a form) |
+| Titles | unique, ≤60 | unique, 26–60 (`/privacy-policy` is the short one) |
+| Descriptions | some >160 | all 70–160, all unique |
+| Pages under 250 words of server text | most app pages | `/government-tenders` (212), `/guides` (238), `/register` (6) |
+| Structured data | `/`, `/pricing` | `/`, `/pricing`, the 3 guides (Article, BreadcrumbList) |
+| Server response | 0.66–0.92 s | median 476 ms, slowest 895 ms; HTML at most 22 KB |
+| Images without alt | 0 | 0 |
+| Search Console / Bing | verified, sitemap not submitted | sitemap submitted by the founder (27 Oct); no query data connected here |
+| Markdown versions, llms.txt, ai.txt | llms.txt only | every public page has a `.md` version; llms-full.txt and ai.txt live |
+
+### Still open (proposals for the founder)
+
+1. `/tender-consultants` page (draft P3 in `pages/`): the use-case page for
+   the segment all current outreach targets.
+2. Small structured-data additions: FAQPage on `/faq` (from the rendered
+   answers), Organization on `/about`, BreadcrumbList on the tender lists.
+3. A short server-rendered explainer on `/government-tenders` (how the lists
+   work, CPPP credit, not every tender) to lift it above 250 words.
+4. Comparison pages P1 (`/ai-tender-analysis-tools`) and P2
+   (`/chatgpt-vs-tendertez`): every claim about another product must be
+   checked on its own public page first.
+5. Leave `/register` out of the sitemap (a form with no content to rank).
