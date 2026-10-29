@@ -11,6 +11,10 @@
   precaution and fixes `next` being ignored.
 - verify.sh all pass (checks.md); browser redirect check passes.
 
-Next: founder's go-ahead to commit and deploy (no migration). After deploy:
-live check that an unsigned POST /webhook answers 401 and the three headers
-are present.
+- 29 Oct: committed ac15e45, pushed, deployed (no tender ANALYZING; no
+  migration). Live: unsigned POST /webhook answers 401 and the log shows
+  the new "refused until it is set" warning; nosniff, referrer policy and
+  HSTS (max-age=31536000) present with the CSP; public pages, sitemap and
+  llms.txt answer 200; a wrong-password login answers 401 (not 429); Google
+  sign-in still opens Google's sign-in page. The login `next` redirect was
+  checked on the local server only (no test account in production).
