@@ -55,3 +55,13 @@
   shown on the dashboard with the current allowance and Analyze.
 - All checks pass (checks.md "boundary" rows). Not committed.
 - Next: founder reviews the diff, then "commit"; deploy separately.
+
+## Release (29–30 Oct)
+- Pushed 8db33f9 (fast-forward of db73b7f). Deployed as Fly release v52
+  (rollback target v51). Public pages 200; live bundle carries the new text.
+- Smoke test on the tester account (read-only checks): 270-page tender read
+  with OCR; `bidpilot_auto_analysis outcome=started`; analysis COMPLETED
+  (14 sections, 0 failures); database: 1 trial slot tied to that tender,
+  0 plan slots, 14 AI calls; events: auto_analysis_requested {expected:
+  trial} then analysis_completed. Dashboard showed "(4 now)".
+- Used-up-trial test skipped in production (covered by tests). Release verified.
