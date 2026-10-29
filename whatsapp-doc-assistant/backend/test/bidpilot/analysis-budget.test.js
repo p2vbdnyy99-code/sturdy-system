@@ -59,6 +59,25 @@ test('analysis budget guard', { skip: !dbAvailable() && 'DATABASE_URL not set â€
     await assert.doesNotReject(() => assertAnalysisBudget(db, companyB.id, 1));
   });
 
+  await t.test('a site-wide daily ceiling stops analysis across all companies', async () => {
+    const saved = config.bidpilot.analysis.maxCallsPerDayGlobal;
+    config.bidpilot.analysis.maxCallsPerDayGlobal = 5;
+    try {
+      const a = await createCompanyWithOwner(db, { companyName: 'GA', userEmail: 'ga@example.com', userName: 'A' });
+      const b = await createCompanyWithOwner(db, { companyName: 'GB', userEmail: 'gb@example.com', userName: 'B' });
+      for (let i = 0; i < 3; i++) await recordChunkUsage(db, { companyId: a.company.id, tenderId: null, metadata: null });
+      await assert.doesNotReject(() => assertAnalysisBudget(db, b.company.id, 2), 'exactly at the ceiling is allowed');
+      await assert.rejects(() => assertAnalysisBudget(db, b.company.id, 3), (err) => {
+        assert.ok(err instanceof AnalysisBudgetError);
+        assert.equal(err.reason, 'global_daily_cap');
+        assert.match(err.message, /try again/);
+        return true;
+      }, "company B is stopped by company A's usage once the site-wide ceiling is reached");
+    } finally {
+      config.bidpilot.analysis.maxCallsPerDayGlobal = saved;
+    }
+  });
+
   await t.test('usage older than 24h does not count against the rolling window', async () => {
     const { company } = await createCompanyWithOwner(db, { companyName: 'C', userEmail: 'g@example.com', userName: 'G' });
     const { usageRecords } = await import('../../src/db/schema/index.js');

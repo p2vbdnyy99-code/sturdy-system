@@ -37,9 +37,9 @@ test('same-origin static serving + SPA fallback (server.js)', { skip: SKIP_REASO
     await new Promise((resolve) => server.close(resolve));
   });
 
-  function req(path) {
+  function req(path, headers = {}) {
     return new Promise((resolve, reject) => {
-      http.get(`${baseUrl}${path}`, (res) => {
+      http.get(`${baseUrl}${path}`, { headers }, (res) => {
         const chunks = [];
         res.on('data', (c) => chunks.push(c));
         res.on('end', () => resolve({
@@ -151,5 +151,15 @@ test('same-origin static serving + SPA fallback (server.js)', { skip: SKIP_REASO
     assert.ok(csp, 'expected a Content-Security-Policy header');
     assert.match(csp, /default-src 'self'/);
     assert.doesNotMatch(csp, /unsafe-inline/, 'no unsafe-inline — the frontend uses plain CSS classes, not inline styles');
+  });
+
+  await t.test('nosniff and referrer policy on every response; HSTS only over HTTPS', async () => {
+    const plain = await req('/pricing');
+    assert.equal(plain.headers['x-content-type-options'], 'nosniff');
+    assert.equal(plain.headers['referrer-policy'], 'strict-origin-when-cross-origin');
+    assert.equal(plain.headers['strict-transport-security'], undefined, 'not on plain http (local development)');
+    // Behind Fly's proxy the original scheme arrives in X-Forwarded-Proto.
+    const https = await req('/pricing', { 'x-forwarded-proto': 'https' });
+    assert.equal(https.headers['strict-transport-security'], 'max-age=31536000');
   });
 });

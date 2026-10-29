@@ -362,6 +362,10 @@ export function buildBidpilotConfig(env = {}) {
       chunkChars: Math.max(2000, Number(env.BIDPILOT_ANALYSIS_CHUNK_CHARS) || 40_000),
       maxChunksPerTender: Math.max(1, Number(env.BIDPILOT_ANALYSIS_MAX_CHUNKS_PER_TENDER) || 60),
       maxCallsPerCompanyPerDay: Math.max(1, Number(env.BIDPILOT_ANALYSIS_MAX_CALLS_PER_COMPANY_PER_DAY) || 200),
+      // Site-wide ceiling on analysis calls in any 24 hours, across every
+      // company: free trials need no email check, so many accounts must not
+      // be able to spend without limit.
+      maxCallsPerDayGlobal: Math.max(1, Number(env.BIDPILOT_ANALYSIS_MAX_CALLS_PER_DAY_GLOBAL) || 1500),
       concurrency: Math.max(1, Number(env.BIDPILOT_ANALYSIS_CONCURRENCY) || 4),
       globalConcurrency: Math.max(1, Number(env.BIDPILOT_ANALYSIS_GLOBAL_CONCURRENCY) || 4),
       aiTimeoutMs: Math.max(1000, Number(env.BIDPILOT_ANALYSIS_AI_TIMEOUT_MS) || 180_000),
@@ -499,8 +503,9 @@ export function warnOnMissingConfig(log) {
   }
   if (!config.whatsapp.appSecret) {
     log.warn(
-      'WHATSAPP_APP_SECRET is not set — incoming webhook signatures will NOT be ' +
-        'verified. Set it before exposing this server publicly.',
+      process.env.NODE_ENV === 'production'
+        ? 'WHATSAPP_APP_SECRET is not set — every incoming webhook message is refused until it is.'
+        : 'WHATSAPP_APP_SECRET is not set — incoming webhook signatures will NOT be verified (development only).',
     );
   }
   if (config.db.url && !config.bidpilot.csrfSecret) {

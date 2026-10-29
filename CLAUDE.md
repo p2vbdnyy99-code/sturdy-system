@@ -257,6 +257,9 @@ was blocked and why.
     `bidpilot_dev`. Set the password, run `createdb bidpilot_dev`, then
     `npx drizzle-kit migrate` with that `DATABASE_URL`. Otherwise
     verify.sh's database runs fail on TRUNCATE.
+29. Count requests to another site by their hostname, not by a substring of
+    the URL. A redirect check counted "example.com" inside the login page's
+    own `?next=` and reported an off-site redirect that wasn't happening.
 
 ## Parallel work
 

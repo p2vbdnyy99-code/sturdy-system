@@ -6,6 +6,7 @@ import { useSession } from '../../auth/SessionProvider';
 import { AuthLayout } from '../../components/AuthLayout';
 import { PRODUCT_NAME } from '../../config/product';
 import { OtherSignIn } from '../../components/OtherSignIn';
+import { safeNextPath } from '../../auth/safeNext';
 
 const SIGNIN_MESSAGES: Record<string, string> = {
   google_failed: 'Google sign-in didn’t work. Please try again, or use another way to log in.',
@@ -31,8 +32,7 @@ export function LoginPage() {
       // Company-count-based routing (onboarding vs. dashboard vs. selector)
       // is CompanyGate's job, not this page's — always land on the
       // requested route (or /dashboard), let the gate redirect from there.
-      const next = params.get('next') || '/dashboard';
-      navigate(next, { replace: true });
+      navigate(safeNextPath(`?${params.toString()}`), { replace: true });
     } catch (err) {
       // Deliberately echo the backend's own message verbatim — it's already
       // generic ("Invalid email or password") to avoid enumeration; the

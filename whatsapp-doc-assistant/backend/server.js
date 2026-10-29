@@ -68,7 +68,7 @@ app.set('trust proxy', 1);
 // the frontend has no inline <script> and uses plain CSS classes rather
 // than React style={{}} props specifically so this can stay strict — see
 // frontend/src/index.css's header comment.
-app.use((_req, res, next) => {
+app.use((req, res, next) => {
   res.setHeader(
     'Content-Security-Policy',
     [
@@ -83,6 +83,12 @@ app.use((_req, res, next) => {
       "frame-ancestors 'none'",
     ].join('; '),
   );
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  // HTTPS only from now on, for a year (on HTTPS responses only, so local
+  // http:// development is unaffected). No includeSubDomains or preload:
+  // they are hard to undo and every subdomain would have to be HTTPS.
+  if (req.secure) res.setHeader('Strict-Transport-Security', 'max-age=31536000');
   next();
 });
 

@@ -27,6 +27,12 @@ import { verifyPassword } from '../auth/passwordHash.js';
 import { createSession, getSessionByToken, destroySessionByToken } from '../auth/sessionService.js';
 import { createApiToken, getApiTokenByToken, destroyApiToken } from '../auth/apiTokenService.js';
 import { allowLoginAttempt, clearLoginAttempts } from '../auth/loginRateLimit.js';
+
+const HOUR_MS = 60 * 60 * 1000;
+export const REGISTER_PER_IP_PER_HOUR = 10;
+export const GOOGLE_STARTS_PER_IP_PER_HOUR = 20;
+// Failed or not, per 15 minutes (loginRateLimit.js's window), from one address.
+export const LOGIN_PER_IP = 30;
 import { csrfTokenFor, requireCsrf } from '../auth/csrf.js';
 import {
   SESSION_COOKIE_NAME, CSRF_COOKIE_NAME,
@@ -139,6 +145,11 @@ export function createAuthRouter() {
 
   router.post('/register', async (req, res) => {
     try {
+      // Sign-ups from one address are limited: every account gets free
+      // AI analyses, so scripted mass sign-up would spend real money.
+      if (!allowLoginAttempt(`register:${req.ip}`, { limit: REGISTER_PER_IP_PER_HOUR, windowMs: HOUR_MS })) {
+        return res.status(429).json({ error: 'Too many sign-ups from this network. Try again later.' });
+      }
       const db = getDb();
       const { email, password, name } = req.body || {};
       if (!email || typeof email !== 'string' || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
@@ -187,7 +198,9 @@ export function createAuthRouter() {
         return res.status(400).json({ error: 'Email and password are required.' });
       }
       const rateKey = String(email).toLowerCase();
-      if (!allowLoginAttempt(rateKey)) {
+      // Per email (guessing one account's password) and per address
+      // (trying one password across many accounts).
+      if (!allowLoginAttempt(rateKey) || !allowLoginAttempt(`ip:${req.ip}`, { limit: LOGIN_PER_IP })) {
         return res.status(429).json({ error: 'Too many login attempts. Try again later.' });
       }
 
@@ -240,8 +253,11 @@ export function createAuthRouter() {
   });
 
   // ── Continue with Google (see auth/google.js) ──
-  router.get('/auth/google/start', (_req, res) => {
+  router.get('/auth/google/start', (req, res) => {
     if (!googleEnabled()) return res.status(404).json({ error: 'Google sign-in is not available.' });
+    if (!allowLoginAttempt(`google:${req.ip}`, { limit: GOOGLE_STARTS_PER_IP_PER_HOUR, windowMs: HOUR_MS })) {
+      return res.redirect(302, '/login?signin=google_failed');
+    }
     const { url, cookieValue } = startGoogleSignIn();
     res.cookie(OAUTH_COOKIE_NAME, cookieValue, {
       httpOnly: true, secure: cookiesShouldBeSecure(), sameSite: 'lax', path: OAUTH_COOKIE_PATH, maxAge: 10 * 60 * 1000,

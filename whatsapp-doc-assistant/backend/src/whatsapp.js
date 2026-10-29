@@ -51,8 +51,11 @@ export function verifyWebhook(query) {
  * bypass). A missing body or malformed header returns `false` — never throws.
  * Uses a constant-time comparison. Exported so it can be unit-tested directly.
  */
-export function signaturesMatch(rawBody, signatureHeader, secret) {
-  if (!secret) return true; // dev only — warned about at startup
+export function signaturesMatch(rawBody, signatureHeader, secret, { production = process.env.NODE_ENV === 'production' } = {}) {
+  // Without an app secret nothing can be verified: accepted in development
+  // only (warned about at startup). In production an unconfigured secret
+  // must not mean "accept everything", so every message is refused.
+  if (!secret) return !production;
   if (!rawBody || !signatureHeader || !signatureHeader.startsWith('sha256=')) return false;
 
   let expected;

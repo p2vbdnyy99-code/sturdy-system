@@ -12,6 +12,7 @@ import { and, desc, eq, gte, inArray, lt, sql } from 'drizzle-orm';
 import { config } from '../../config.js';
 import { subscriptions, usageRecords } from '../../db/schema/index.js';
 import { planFor, UNLIMITED_PLAN } from '../plans.js';
+import { log } from '../../logger.js';
 
 export const USAGE_KIND = 'tender_analysis_chunk';
 
@@ -19,7 +20,7 @@ export class AnalysisBudgetError extends Error {
   constructor(message, reason) {
     super(message);
     this.name = 'AnalysisBudgetError';
-    this.reason = reason; // 'tender_too_large' | 'company_daily_cap' | 'trial_exhausted' | 'plan_exhausted' | 'plan_expired'
+    this.reason = reason; // 'tender_too_large' | 'company_daily_cap' | 'global_daily_cap' | 'trial_exhausted' | 'plan_exhausted' | 'plan_expired'
   }
 }
 
@@ -30,7 +31,7 @@ export class AnalysisBudgetError extends Error {
  * actual AI call as analysis proceeds).
  */
 export async function assertAnalysisBudget(db, companyId, chunkCount) {
-  const { maxChunksPerTender, maxCallsPerCompanyPerDay } = config.bidpilot.analysis;
+  const { maxChunksPerTender, maxCallsPerCompanyPerDay, maxCallsPerDayGlobal } = config.bidpilot.analysis;
 
   if (chunkCount > maxChunksPerTender) {
     throw new AnalysisBudgetError(
@@ -56,6 +57,19 @@ export async function assertAnalysisBudget(db, companyId, chunkCount) {
       `This company has used ${used}/${maxCallsPerCompanyPerDay} analysis calls in the last 24h. ` +
         `This analysis (${chunkCount} calls) would exceed that limit.`,
       'company_daily_cap',
+    );
+  }
+
+  const [all] = await db
+    .select({ used: sql`coalesce(sum(${usageRecords.quantity}), 0)` })
+    .from(usageRecords)
+    .where(and(eq(usageRecords.kind, USAGE_KIND), gte(usageRecords.createdAt, since)));
+  const usedAll = Number(all?.used || 0);
+  if (usedAll + chunkCount > maxCallsPerDayGlobal) {
+    log.warn(`metric bidpilot_global_ai_cap used=${usedAll} cap=${maxCallsPerDayGlobal} requested=${chunkCount}`);
+    throw new AnalysisBudgetError(
+      'TenderTez has reached today\u2019s analysis limit. Please try again in a few hours.',
+      'global_daily_cap',
     );
   }
 }

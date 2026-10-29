@@ -15,7 +15,7 @@ import { dbAvailable, DB_URL, testDb, closeTestDb, truncateAll } from '../db/hel
 import { setDb, closeDb } from '../../src/db/client.js';
 import { cookieParserMiddleware } from '../../src/bidpilot/auth/cookies.js';
 import { bidpilotCors } from '../../src/bidpilot/auth/cors.js';
-import { createAuthRouter } from '../../src/bidpilot/routes/auth.js';
+import { createAuthRouter, REGISTER_PER_IP_PER_HOUR, LOGIN_PER_IP } from '../../src/bidpilot/routes/auth.js';
 import { registerUser, verifyEmail, findUserByEmail, RegistrationError } from '../../src/bidpilot/repo/users.js';
 import { hashPassword, verifyPassword, isPasswordAcceptable } from '../../src/bidpilot/auth/passwordHash.js';
 import { generateToken, hashToken } from '../../src/bidpilot/auth/tokens.js';
@@ -552,5 +552,24 @@ test('BidPilot authentication (full HTTP integration)', { skip: SKIP_REASON, tim
     await req('POST', '/bidpilot/register', { body: { email: 'onlyone@example.com', password: 'a-real-password-123' } });
     const second = await req('POST', '/bidpilot/register', { body: { email: 'onlyone@example.com', password: 'another-real-pw-1' } });
     assert.equal(second.status, 409);
+  });
+
+  await t.test('sign-ups from one address are limited per hour', async () => {
+    for (let i = 0; i < REGISTER_PER_IP_PER_HOUR; i++) {
+      const r = await req('POST', '/bidpilot/register', { body: { email: `many${i}@example.com`, password: 'a-real-password-123' } });
+      assert.equal(r.status, 201, `sign-up ${i + 1}`);
+    }
+    const over = await req('POST', '/bidpilot/register', { body: { email: 'one-more@example.com', password: 'a-real-password-123' } });
+    assert.equal(over.status, 429);
+    assert.match(over.json.error, /Too many sign-ups/);
+  });
+
+  await t.test('logins from one address are limited across different emails', async () => {
+    for (let i = 0; i < LOGIN_PER_IP; i++) {
+      const r = await req('POST', '/bidpilot/login', { body: { email: `nobody${i}@example.com`, password: 'wrong-password-1' } });
+      assert.equal(r.status, 401, `attempt ${i + 1}`);
+    }
+    const over = await req('POST', '/bidpilot/login', { body: { email: 'someone-else@example.com', password: 'wrong-password-1' } });
+    assert.equal(over.status, 429);
   });
 });

@@ -89,7 +89,13 @@ sibling of `backend/`/`frontend/`, since the Docker build needs both).
   24 hours (set to 40 on Fly, about 5–8 tenders). Each company without an
   ACTIVE subscription may analyse `BIDPILOT_TRIAL_TENDERS` different tenders
   (default 5, the free trial); re-running a counted tender is free, and `0`
-  switches the trial limit off.
+  switches the trial limit off. Across all companies together, at most
+  `BIDPILOT_ANALYSIS_MAX_CALLS_PER_DAY_GLOBAL` analysis calls run in any
+  24 hours (default 1,500, about 200 tenders): past it, analyses answer
+  429 `global_daily_cap` ("try again in a few hours") and the log shows
+  `metric bidpilot_global_ai_cap`. Sign-ups are limited to 10 an hour and
+  Google sign-in starts to 20 an hour per IP address; logins to 10 per email
+  and 30 per IP address in 15 minutes.
 - **Search and link previews.** Each public page's title and description
   live in `backend/src/seo.js`. `BIDPILOT_REDIRECT_HOSTS` (comma-separated)
   sends www and .com page loads to `BIDPILOT_PUBLIC_BASE_URL`.
@@ -342,6 +348,8 @@ and fixes. Diagnose by sending `hi` and watching the logs at that moment.
 Core (required):
 - `WHATSAPP_TOKEN` — permanent System User token (see §1)
 - `WHATSAPP_PHONE_NUMBER_ID`, `WHATSAPP_VERIFY_TOKEN`, `WHATSAPP_APP_SECRET`
+  (in production, without `WHATSAPP_APP_SECRET` every webhook message is
+  refused with 401; only development accepts unsigned messages)
 - `AI_PROVIDER` (`openai`), `OPENAI_API_KEY`, `AI_MODEL` (`gpt-5.6-terra`)
 
 Guards / tuning (safe defaults in `.env.example`):

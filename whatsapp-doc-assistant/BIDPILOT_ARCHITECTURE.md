@@ -4759,3 +4759,51 @@ company and the site's structure without stating anything new.
   open the page; no page errors or CSP blocks.
 
 **Reverse:** `git revert`. No migration.
+
+# Security hardening (28 Oct 2026)
+
+From a review of the code and the live site; the founder approved fixes 1–6.
+
+**What changed**
+1. **Webhook signatures fail closed.** `signaturesMatch` (`src/whatsapp.js`)
+   accepted every message when `WHATSAPP_APP_SECRET` was unset. In
+   production it now refuses every message until the secret is set;
+   development still accepts unsigned messages. The startup warning says so.
+2. **Server libraries updated** within their major versions (proxy-addr,
+   body-parser, multer, brace-expansion, qs): `npm audit --omit=dev` reports
+   0. One moderate advisory remains in a development-only tool (drizzle-kit's
+   bundled esbuild), which doesn't run in production.
+3. **Spend and sign-up limits.** `assertAnalysisBudget` also checks a
+   site-wide ceiling, `BIDPILOT_ANALYSIS_MAX_CALLS_PER_DAY_GLOBAL` (default
+   1,500 calls in any 24 hours), refusing with reason `global_daily_cap` and
+   logging `metric bidpilot_global_ai_cap`. `/register` allows 10 sign-ups an
+   hour per IP address and `/auth/google/start` 20 an hour (the in-memory
+   limiter in `auth/loginRateLimit.js`, with prefixed keys).
+4. **Login `?next=`** goes through `safeNextPath` (`frontend/src/auth/safeNext.ts`):
+   only a path on this site (one leading `/`, no `//`, `/\` or control
+   characters). `RedirectIfAuthenticated` uses it too, so a signed-in user
+   now lands on the `next` path; before, it was always replaced by
+   /dashboard.
+5. **Logins** are limited per IP address (30 per 15 minutes) as well as per
+   email (10).
+6. **Headers** on every response: `X-Content-Type-Options: nosniff`,
+   `Referrer-Policy: strict-origin-when-cross-origin`, and on HTTPS
+   `Strict-Transport-Security: max-age=31536000` (no includeSubDomains or
+   preload).
+
+**Verification**
+- Tests: `security-signature.test.js` (production without a secret refuses
+  signed and unsigned messages; development accepts), `analysis-budget.test.js`
+  (the site-wide ceiling stops a second company once the first used it up),
+  `auth.test.js` (the 11th sign-up from one address answers 429; the 31st
+  login from one address across different emails answers 429),
+  `spa-fallback.test.js` (nosniff and referrer policy; HSTS only with
+  `X-Forwarded-Proto: https`), `frontend/src/auth/safeNext.test.ts`.
+- verify.sh: backend 692/437/355, frontend build, lint 0 errors, 59 unit
+  tests, secret scan clean.
+- Browser on a local server: `?next=` set to `https://example.com`,
+  `//example.com`, `/\example.com` and `javascript:` all land on /dashboard
+  with no request to another host; `/company-profile` and
+  `/tenders/x?y=1` land on those paths.
+
+**Reverse:** `git revert`. No migration.

@@ -35,6 +35,12 @@ test('rejects when the raw body is missing (does not throw)', () => {
 });
 
 test('dev bypass: no app secret configured → accepts (documented dev behavior)', () => {
-  assert.equal(signaturesMatch(body, null, ''), true);
-  assert.equal(signaturesMatch(body, 'anything', ''), true);
+  assert.equal(signaturesMatch(body, null, '', { production: false }), true);
+  assert.equal(signaturesMatch(body, 'anything', '', { production: false }), true);
+});
+
+test('production without an app secret refuses everything, signed or not', () => {
+  assert.equal(signaturesMatch(body, null, '', { production: true }), false);
+  assert.equal(signaturesMatch(body, sigFor(body), '', { production: true }), false);
+  assert.equal(signaturesMatch(body, sigFor(body), SECRET, { production: true }), true, 'a configured secret still works');
 });
