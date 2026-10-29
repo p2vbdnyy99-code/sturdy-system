@@ -93,7 +93,14 @@ sibling of `backend/`/`frontend/`, since the Docker build needs both).
   `BIDPILOT_ANALYSIS_MAX_CALLS_PER_DAY_GLOBAL` analysis calls run in any
   24 hours (default 1,500, about 200 tenders): past it, analyses answer
   429 `global_daily_cap` ("try again in a few hours") and the log shows
-  `metric bidpilot_global_ai_cap`. Sign-ups are limited to 10 an hour and
+  `metric bidpilot_global_ai_cap`. When an uploaded PDF has been read, its
+  analysis starts by itself (all the same limits apply; a refusal leaves the
+  tender ready to analyse) and the log shows `metric bidpilot_auto_analysis
+  outcome=started` or the reason (`profile_incomplete`, `trial_exhausted`,
+  `company_daily_cap`, `allowance_changed` when the trial or plan changed
+  between upload and reading, `no_request`, …). To go back to the Analyze click without a
+  deploy, set the Fly secret `BIDPILOT_AUTO_ANALYZE=off` (`false`, `0`
+  and `no` work too; unset means on). Sign-ups are limited to 10 an hour and
   Google sign-in starts to 20 an hour per IP address; logins to 10 per email
   and 30 per IP address in 15 minutes.
 - **Search and link previews.** Each public page's title and description

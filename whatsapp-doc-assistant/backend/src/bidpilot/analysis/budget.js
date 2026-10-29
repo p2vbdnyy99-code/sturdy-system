@@ -20,7 +20,7 @@ export class AnalysisBudgetError extends Error {
   constructor(message, reason) {
     super(message);
     this.name = 'AnalysisBudgetError';
-    this.reason = reason; // 'tender_too_large' | 'company_daily_cap' | 'global_daily_cap' | 'trial_exhausted' | 'plan_exhausted' | 'plan_expired'
+    this.reason = reason; // 'tender_too_large' | 'company_daily_cap' | 'global_daily_cap' | 'trial_exhausted' | 'plan_exhausted' | 'plan_expired' | 'allowance_changed'
   }
 }
 
@@ -35,8 +35,8 @@ export async function assertAnalysisBudget(db, companyId, chunkCount) {
 
   if (chunkCount > maxChunksPerTender) {
     throw new AnalysisBudgetError(
-      `This tender would require ${chunkCount} analysis calls, over the limit of ${maxChunksPerTender}. ` +
-        'It is too large to analyze in this beta.',
+      'This document is too long to analyse in one go. Try uploading only the main tender document, '
+        + 'without drawings or long annexures.',
       'tender_too_large',
     );
   }
@@ -53,9 +53,10 @@ export async function assertAnalysisBudget(db, companyId, chunkCount) {
   const used = Number(row?.used || 0);
 
   if (used + chunkCount > maxCallsPerCompanyPerDay) {
+    log.info(`metric bidpilot_company_ai_cap company=${companyId} used=${used} cap=${maxCallsPerCompanyPerDay} requested=${chunkCount}`);
     throw new AnalysisBudgetError(
-      `This company has used ${used}/${maxCallsPerCompanyPerDay} analysis calls in the last 24h. ` +
-        `This analysis (${chunkCount} calls) would exceed that limit.`,
+      'Your company has reached today’s analysis limit. Please try again in a few hours; '
+        + 'the tender stays ready to analyse.',
       'company_daily_cap',
     );
   }
@@ -68,7 +69,8 @@ export async function assertAnalysisBudget(db, companyId, chunkCount) {
   if (usedAll + chunkCount > maxCallsPerDayGlobal) {
     log.warn(`metric bidpilot_global_ai_cap used=${usedAll} cap=${maxCallsPerDayGlobal} requested=${chunkCount}`);
     throw new AnalysisBudgetError(
-      'TenderTez has reached today\u2019s analysis limit. Please try again in a few hours.',
+      'TenderTez has reached today\u2019s analysis limit. Please try again in a few hours; '
+        + 'the tender stays ready to analyse.',
       'global_daily_cap',
     );
   }
@@ -169,26 +171,55 @@ export async function getAllowance(db, companyId) {
 }
 
 /**
+ * The kind of allowance an entitlement is, as a short token: 'trial',
+ * 'plan:<Plan name>', 'unlimited', or 'plan_expired:<Plan name>'. The
+ * automatic analysis start compares the token the user's upload notice was
+ * built from with this, always derived here from the company's own
+ * subscription rows (analysis/start.js).
+ */
+export function entitlementKey(ent) {
+  if (ent.kind === 'trial' || ent.kind === 'unlimited') return ent.kind;
+  return `${ent.kind}:${ent.planName}`;
+}
+
+/** Whether this tender already holds a trial or plan slot (re-runs are free). */
+export async function tenderHasSlot(db, companyId, tenderId) {
+  const [already] = await db
+    .select({ id: usageRecords.id })
+    .from(usageRecords)
+    .where(and(
+      eq(usageRecords.companyId, companyId),
+      inArray(usageRecords.kind, [TRIAL_USAGE_KIND, PLAN_USAGE_KIND]),
+      eq(usageRecords.tenderId, tenderId),
+    ))
+    .limit(1);
+  return Boolean(already);
+}
+
+/**
  * Takes a slot (trial or this month's plan) for this tender, or confirms it
  * already has one. Throws AnalysisBudgetError with reason 'trial_exhausted',
  * 'plan_exhausted' or 'plan_expired'. Runs under a row lock on the company,
  * so two Analyze clicks on different tenders can't both take the last slot.
+ *
+ * `expectedAllowance` (the automatic start only): the entitlementKey the
+ * user's upload notice described. If the company's entitlement, read here
+ * inside the lock, is a different kind, nothing is claimed and it throws
+ * 'allowance_changed'. Never passed for an Analyze click.
  */
-export async function claimTenderSlot(db, companyId, tenderId) {
+export async function claimTenderSlot(db, companyId, tenderId, { expectedAllowance } = {}) {
   await db.transaction(async (tx) => {
     await tx.execute(sql`select id from companies where id = ${companyId} for update`);
     const ent = await getEntitlement(tx, companyId);
+    if (expectedAllowance !== undefined && entitlementKey(ent) !== expectedAllowance) {
+      throw new AnalysisBudgetError(
+        'Your free trial or plan changed after you uploaded this tender, so it wasn\u2019t analysed automatically. '
+          + 'Check your current plan, then click Analyze.',
+        'allowance_changed',
+      );
+    }
     if (ent.kind === 'unlimited') return;
-    const [already] = await tx
-      .select({ id: usageRecords.id })
-      .from(usageRecords)
-      .where(and(
-        eq(usageRecords.companyId, companyId),
-        inArray(usageRecords.kind, [TRIAL_USAGE_KIND, PLAN_USAGE_KIND]),
-        eq(usageRecords.tenderId, tenderId),
-      ))
-      .limit(1);
-    if (already) return;
+    if (await tenderHasSlot(tx, companyId, tenderId)) return;
     const rerun = 'Tenders you have already analysed can still be re-run.';
     if (ent.kind === 'plan_expired') {
       throw new AnalysisBudgetError(

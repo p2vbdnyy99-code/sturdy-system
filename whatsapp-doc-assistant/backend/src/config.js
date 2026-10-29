@@ -331,6 +331,12 @@ export function buildDbConfig(env = {}) {
  *                                 5, the "first 5 tenders free" trial). Re-
  *                                 running a tender already counted is free.
  *                                 "0" switches the limit off.
+ *   BIDPILOT_AUTO_ANALYZE        "off" (or "false", "0", "no"; any case)
+ *                                 stops analysis starting by itself when an
+ *                                 uploaded PDF has been read (users then
+ *                                 click Analyze, as before 29 Oct 2026).
+ *                                 Unset or anything else: on. Every check
+ *                                 still applies either way.
  */
 export function buildBidpilotConfig(env = {}) {
   return {
@@ -375,6 +381,7 @@ export function buildBidpilotConfig(env = {}) {
       trialTenders: String(env.BIDPILOT_TRIAL_TENDERS ?? '').trim() === '0'
         ? 0
         : Math.max(1, Math.floor(Number(env.BIDPILOT_TRIAL_TENDERS)) || 5),
+      autoStart: !['off', 'false', '0', 'no'].includes(String(env.BIDPILOT_AUTO_ANALYZE ?? 'on').trim().toLowerCase()),
     },
     eligibility: {
       maxCallsPerCompanyPerDay: Math.max(1, Number(env.BIDPILOT_ELIGIBILITY_MAX_CALLS_PER_COMPANY_PER_DAY) || 100),

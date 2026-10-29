@@ -5,22 +5,20 @@
 // SSE, per the standing M5 decision.
 import { useEffect, useState } from 'react';
 import { getTender, type TenderDetail } from '../api/tenders';
+import { isSettled } from './firstRun';
 
 const POLL_INTERVAL_MS = 2000;
 const POLL_TIMEOUT_MS = 120_000;
 
-export type PollTarget = 'processing' | 'analysis';
+export type { PollTarget } from './firstRun';
+import type { PollTarget } from './firstRun';
 
 export type PollState =
   | { status: 'polling' }
   | { status: 'settled'; tender: TenderDetail }
   | { status: 'timeout' };
 
-function isSettled(target: PollTarget, tender: TenderDetail): boolean {
-  return target === 'processing'
-    ? tender.processingStatus === 'COMPLETED' || tender.processingStatus === 'FAILED'
-    : tender.analysisStatus === 'COMPLETED' || tender.analysisStatus === 'FAILED';
-}
+
 
 /**
  * Polls GET /tenders/:id until `target`'s phase settles or 120s elapses.
@@ -44,13 +42,15 @@ export function useTenderPolling(
     let cancelled = false;
     let timer: ReturnType<typeof setInterval> | undefined;
     const startedAt = Date.now();
+    let readAt: number | null = null; // first seen read but not analysed
     setState({ status: 'polling' });
 
     async function tick() {
       try {
         const tender = await getTender(tenderId as string, companyId);
         if (cancelled) return;
-        if (isSettled(target, tender)) {
+        if (tender.processingStatus === 'COMPLETED' && readAt === null) readAt = Date.now();
+        if (isSettled(target, tender, readAt === null ? 0 : Date.now() - readAt)) {
           setState({ status: 'settled', tender });
           clearInterval(timer);
           return;

@@ -8,6 +8,8 @@ import { requireSession } from './auth.js';
 import { requireCompanyAccess, TenantAccessError } from '../repo/tenants.js';
 import { getDashboardSummary } from '../repo/tenders.js';
 import { getAllowance } from '../analysis/budget.js';
+import { startBlockers } from '../analysis/start.js';
+import { config } from '../../config.js';
 import { securitiesOverview } from '../repo/securities.js';
 import { unseenCount } from '../repo/savedSearches.js';
 
@@ -23,7 +25,21 @@ export function createDashboardRouter() {
         companyId: req.query.companyId,
       });
       const summary = await getDashboardSummary(scope);
-      return res.json({ ...summary, allowance: await getAllowance(db, scope.companyId), newAlerts: await unseenCount(scope) });
+      const allowance = await getAllowance(db, scope.companyId);
+      // Why a ready tender would not start now (profile, trial, plan), so
+      // the dashboard can offer the next step instead of a button that fails.
+      const blocked = await startBlockers(db, scope.companyId, summary.readyToAnalyse.map((t) => t.id), allowance);
+      return res.json({
+        ...summary,
+        readyToAnalyse: summary.readyToAnalyse.map((t) => ({ ...t, blockedBy: blocked[t.id] ?? null })),
+        allowance,
+        // What the upload button tells the user before they choose a file.
+        upload: {
+          maxMb: Math.round(config.bidpilot.maxUploadBytes / (1024 * 1024)),
+          autoAnalyze: config.bidpilot.analysis.autoStart,
+        },
+        newAlerts: await unseenCount(scope),
+      });
     } catch (err) {
       if (err instanceof TenantAccessError) {
         return res.status(403).json({ error: 'Not authorized for this company.' });

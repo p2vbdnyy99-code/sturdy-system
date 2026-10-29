@@ -4,6 +4,7 @@
 import { request } from './client';
 import type { ProcessingStatus, AnalysisStatus } from './tenders';
 import type { Allowance } from '../allowance';
+import type { BlockedBy } from '../dashboard/firstRun';
 
 export type DashboardSummary = {
   totalTenders: number;
@@ -18,12 +19,15 @@ export type DashboardSummary = {
     processingStatus: ProcessingStatus;
     analysisStatus: AnalysisStatus;
   }>;
-  /** Extracted tenders with a PDF that were never analysed, newest first (up to 3). */
-  readyToAnalyse: Array<{ id: string; title: string | null; clientId: string | null }>;
+  /** Extracted tenders with a PDF that were never analysed, newest first (up to
+   *  3), with why each wouldn't start now (null: the Analyze button works). */
+  readyToAnalyse: Array<{ id: string; title: string | null; clientId: string | null; blockedBy: BlockedBy }>;
   /** Free trial or monthly plan; null when the company has no limit. */
   allowance: Allowance | null;
   /** New tenders for the company's saved searches, not yet seen. */
   newAlerts: number;
+  /** The upload limit, and whether analysis starts by itself after upload. */
+  upload?: { maxMb: number; autoAnalyze: boolean };
 };
 
 export function getDashboardSummary(companyId: string) {

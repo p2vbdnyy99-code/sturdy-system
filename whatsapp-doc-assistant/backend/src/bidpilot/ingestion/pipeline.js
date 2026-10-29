@@ -99,9 +99,15 @@ export async function ingestUpload(scope, { buffer, mimeType, filename, uploaded
  * runs in-process via setImmediate) and would require a generic "read bytes"
  * method on the storage interface that the S3 backend otherwise has no
  * reason to expose (see storage/index.js — keep the interface small).
+ *
+ * `onCompleted(scope, tenderId)` runs once the pages are saved and the tender
+ * is COMPLETED (never after a failure): the upload routes pass the automatic
+ * analysis start (analysis/start.js) when the upload asked for it. Its own
+ * errors are logged and never change the extraction result.
  */
-export async function processExtraction(scope, tenderId, buffer) {
+export async function processExtraction(scope, tenderId, buffer, { onCompleted } = {}) {
   const start = Date.now();
+  let completed = false;
   try {
     await updateProcessingStatus(scope, tenderId, 'PROCESSING');
     await updateProcessingStatus(scope, tenderId, 'EXTRACTING');
@@ -120,6 +126,7 @@ export async function processExtraction(scope, tenderId, buffer) {
       `metric bidpilot_ingest company=${scope.companyId} tender=${tenderId} ` +
         `pages=${pages.length} ocr=${result.ocrUsed} ms=${Date.now() - start} status=COMPLETED`,
     );
+    completed = true;
   } catch (err) {
     const message = safeErrorMessage(err);
     await updateProcessingStatus(scope, tenderId, 'FAILED', message).catch((persistErr) => {
@@ -134,5 +141,12 @@ export async function processExtraction(scope, tenderId, buffer) {
       `metric bidpilot_error company=${scope.companyId} tender=${tenderId} ` +
         `kind=${err?.name || 'Error'} ms=${Date.now() - start}`,
     );
+  }
+  if (completed && onCompleted) {
+    try {
+      await onCompleted(scope, tenderId);
+    } catch (err) {
+      log.error(`bidpilot: after-extraction step failed for tender=${tenderId}:`, err);
+    }
   }
 }

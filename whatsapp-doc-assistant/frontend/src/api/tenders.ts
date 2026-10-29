@@ -88,12 +88,19 @@ export type UploadTenderResult = {
   status: TenderStatus;
   processingStatus: ProcessingStatus;
   duplicate: boolean;
+  /** Whether the analysis will start by itself once the PDF has been read. */
+  autoAnalyze?: boolean;
 };
 
-export function uploadTender(file: File, companyId: string) {
+/** `autoAnalyze` asks the server to start the analysis by itself once the PDF
+ *  has been read: the kind of allowance the notice on screen was built from
+ *  (dashboard/firstRun.ts allowanceToken). Send it only while that notice
+ *  says so (shouldRequestAutoAnalysis); null asks for nothing. */
+export function uploadTender(file: File, companyId: string, { autoAnalyze = null }: { autoAnalyze?: string | null } = {}) {
   const form = new FormData();
-  form.append('file', file);
   form.append('companyId', companyId);
+  if (autoAnalyze) form.append('autoAnalyze', autoAnalyze);
+  form.append('file', file);
   return request<UploadTenderResult>('/bidpilot/tenders/upload', { method: 'POST', body: form });
 }
 

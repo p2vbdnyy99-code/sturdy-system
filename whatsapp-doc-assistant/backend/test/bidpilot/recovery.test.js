@@ -95,3 +95,12 @@ test('recoverInterruptedWork', { skip: !dbAvailable() && 'DATABASE_URL not set â
     assert.equal((await db.select().from(tenderEvents)).length, 2, 'second pass writes nothing');
   });
 });
+
+// The tender page shows this message as it is (frontend
+// tenderDetail/processingFailure.ts keeps a copy), so a read interrupted by a
+// restart isn't reported as an unreadable PDF.
+test('the tender page knows the restart message word for word', async () => {
+  const fs = await import('node:fs/promises');
+  const src = await fs.readFile(new URL('../../../frontend/src/tenderDetail/processingFailure.ts', import.meta.url), 'utf8');
+  assert.ok(src.includes(`'${INTERRUPTED_PROCESSING_MESSAGE}'`), 'frontend copy differs from recovery.js');
+});

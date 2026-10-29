@@ -4807,3 +4807,170 @@ From a review of the code and the live site; the founder approved fixes 1–6.
   `/tenders/x?y=1` land on those paths.
 
 **Reverse:** `git revert`. No migration.
+
+# Analysis starts by itself after upload, and a first-run dashboard (29 Oct 2026)
+
+Founder-approved items 1 and 2 of the 29 Oct growth audit. In the 30 days to
+29 Oct, 2 of 5 uploaded tenders sat at the Analyze click (production
+`visits-report.mjs`, read-only).
+
+**What changed**
+1. **One start operation** (`backend/src/bidpilot/analysis/start.js`):
+   `startTenderAnalysis(db, scope, tenderId)` holds the checks the analyze
+   route had, in the same order: tender in this company (404), its PDF (409
+   `no_document`), the profile past the free tenders (409
+   `profile_incomplete`), PDF read (409 `not_ready` / `not_readable`), size
+   and daily caps (413 / 429), the trial or plan slot (402,
+   `claimTenderSlot`, idempotent per tender under a company row lock), then
+   the compare-and-set to ANALYZING (409 `already_running`). It throws
+   `AnalysisStartRefusal` (status, code, message). `POST
+   /tenders/:id/analyze` is now a thin wrapper around it.
+2. **Automatic start** (`autoStartAnalysis`): `processExtraction` takes an
+   `onCompleted` hook that runs after the tender is COMPLETED (never after a
+   failure). Only the dashboard upload route passes it, and only when the
+   request carries `autoAnalyze=1` and `BIDPILOT_AUTO_ANALYZE` isn't off.
+   The attach-document route (a tracked tender's page, which shows no
+   notice) ignores the flag and always keeps the Analyze click.
+   It starts only a tender still NOT_STARTED (a FAILED one is the user's to
+   retry; a COMPLETED one is never re-run by itself), always through
+   `startTenderAnalysis`. A refusal leaves the tender ready to analyse with
+   nothing claimed, logs `metric bidpilot_auto_analysis outcome=<code>`, and
+   never throws into extraction.
+3. **Consent:** next to both upload buttons the dashboard shows a notice
+   built from the allowance (`frontend/src/dashboard/firstRun.ts`
+   `uploadNotice`): "…its analysis starts automatically if you still have a
+   free tender left (N now), and uses one. Re-running a tender is free."
+   (plan wording for plans; "will be read but not analysed until …" when
+   nothing is left). Just before sending the file the app re-reads the
+   allowance (`GET /dashboard/summary`) and asks for the automatic start
+   only if `shouldRequestAutoAnalysis` holds: the setting is on, the notice
+   was shown from a loaded allowance that isn't used up, and the re-read
+   allowance isn't used up and is the same kind (a free-tender notice never
+   covers a plan slot; a failed re-read means no request). The message after
+   upload (`afterUploadMessage`) follows what was actually sent: "will be
+   read but not analysed" when nothing was asked for because the allowance
+   is used up, and, when it was asked for, "starts by itself if your
+   allowance and today's limits allow … or with the next step if it
+   couldn't start", because the server checks again when reading finishes.
+   API callers keep the Analyze click unless they send the flag; the server
+   applies every check either way. (Pre-release review 29 Oct: the first
+   version sent the flag even under a "will not be analysed" notice and then
+   said the analysis would start.)
+4. **Dashboard summary** adds `readyToAnalyse[].blockedBy` (profile, trial,
+   plan, from `startBlockers`, the same rules) and `upload: { maxMb,
+   autoAnalyze }` from config. The ready box shows the reason and the next
+   step (Complete profile / See the plans / Contact us) instead of a button
+   that would fail. `budget.js` gains `tenderHasSlot` (shared with
+   `claimTenderSlot`).
+5. **First-run panel** (`frontend/src/dashboard/FirstRun.tsx`) while the
+   company has no tenders (`isFirstRun`): what to upload, the size limit
+   from the server, the three steps without a promised time, the notice, a
+   link to `/sample-analysis`, and what to do if reading or analysis fails.
+   The zero-count panels and the list's "No tenders yet" box are hidden then.
+   Returning users see only the notice under the Upload button.
+6. **Status and errors in plain words:** file over the limit (413
+   `file_too_large`, "larger than the 50 MB limit", also checked in the
+   browser before sending), still being read, PDF unreadable, already being
+   analysed, daily limits ("the tender stays ready to analyse"), too long,
+   and the analysis failure messages (no "chunk" wording). The tender page
+   no longer shows raw extraction errors. Polling waits up to 4 s after a
+   tender is read before showing it as not analysed, so a row doesn't flash
+   an Analyze button for a tender that is already starting
+   (`AUTO_START_GRACE_MS`); an Analyze click that meets `already_running`
+   shows the progress instead of an error.
+
+**Verification**
+- `test/bidpilot/auto-analysis.test.js` (13): upload with consent →
+  analysed, one trial slot; upload without it waits for Analyze; switch off
+  ignores the flag; three simultaneous automatic starts and a later one →
+  one run, one slot, one AI call; automatic start and Analyze click at once
+  → one run, one slot, the click gets `already_running`; past the free
+  tenders without a profile → not started, `blockedBy`, analysable once the
+  profile is complete; trial used → not started, no slot, 402 on click;
+  plan → `plan_tender` slot, trial untouched, full plan refused; AI failure
+  → FAILED with a plain message, not retried by itself, retry takes no
+  second slot; company daily cap → not started, 429 with the plain message;
+  not-ready, unreadable and over-size messages.
+- Existing analysis, profile-gate, feed, upload and budget tests pass
+  unchanged (109).
+- `frontend/src/dashboard/firstRun.test.ts` (7): first-run rule, notice
+  wording for trial, plan, used-up and switched-off, blocked reasons, size
+  check, polling grace.
+- verify.sh: backend 705/438/356, frontend build, lint 0 errors (19
+  warnings, all in lines this change didn't touch), 66 unit tests, secret
+  scan clean.
+- Browser on a local server with a stand-in AI answer, at 390 and 1366 px
+  (32/32): sign-up → first-run panel with the 50 MB limit, sample link and
+  the notice under both upload buttons; upload → the server confirms
+  `autoAnalyze`; the row reaches Ready with no click and no Analyze button
+  on the way; the tender page shows the result; returning dashboard shows
+  "4 free tenders left". Trial used up (5/5): notice says the upload will be
+  read but not analysed; the ready box says why and links the plans; the
+  tender stays NOT_STARTED.
+
+**Review fixes (29 Oct):**
+- Consent and wording as in point 3; the full-list row of a never-analysed
+  tender offers See the plans / Contact us instead of Analyze once the
+  allowance is used up (`rowBlockedBy`).
+- The tender page shows the stored restart-recovery message ("Processing was
+  interrupted by a server restart. The PDF itself may be fine: please upload
+  it again") instead of "could not be read"
+  (`frontend/src/tenderDetail/processingFailure.ts`; `recovery.test.js`
+  checks the copy matches `recovery.js`).
+- `BIDPILOT_AUTO_ANALYZE` is off for `off`, `false`, `0` or `no` (any case,
+  trimmed); on when unset.
+- Tests added: exhausted trial and exhausted plan uploads are read, not
+  started, no slot, also when a stale page still sends the flag; the attach
+  route keeps the Analyze click with or without the flag and refuses another
+  company (403 naming the other company, 404 from its own); the switch
+  values; `firstRun.test.ts` (request rule, stale and changed allowances,
+  messages, row step); `processingFailure.test.ts`.
+- verify.sh: backend 710/439/357, frontend build, lint 0 errors (19
+  warnings, unchanged), 73 unit tests, secret scan clean. Browser (local,
+  stand-in AI, 390 px): trial used up, page loaded with 5 left then used up
+  before upload, eligible upload then refused by today's company limit, and
+  a read interrupted by a restart: 16/16; the end-to-end check 32/32.
+
+**Consent boundary (29 Oct, after the review):** a notice describes one kind
+of allowance; the start must not use another kind.
+- The upload sends that kind instead of a bare flag:
+  `autoAnalyze=trial | plan:<Plan name> | unlimited` (`allowanceToken`,
+  matching the server's `entitlementKey` in `budget.js`). Anything else
+  (`1`, `true`, an unknown plan) is not a request (`parseExpectedAllowance`).
+- Before reading starts, the upload route stores it as a
+  `tender_events` row (`auto_analysis_requested`, `metadata.expected`).
+  Existing table with a text type and JSON metadata: no migration. If it
+  can't be stored, the tender is still read and the user clicks Analyze.
+- When reading finishes, `autoStartAnalysis` reads that row and passes the
+  kind to `startTenderAnalysis` → `claimTenderSlot`, which compares it with
+  the company's entitlement, derived from its own subscription rows inside
+  the company row lock, before claiming anything. A different kind throws
+  `allowance_changed` (nothing claimed). A missing or invalid row is
+  `no_request`. The client's value only ever narrows: it never grants.
+- A refusal is recorded (`auto_analysis_skipped`, `metadata.reason`). For
+  `allowance_changed` the dashboard's ready box says "Not analysed
+  automatically: your free trial or plan changed after you uploaded it.
+  Check what you have now, then click Analyze. Now: <current allowance>",
+  with the Analyze button; the click runs under the usual checks.
+- Restarts: reading is in-process, so a restart mid-read marks the tender
+  FAILED (recovery) and nothing starts by itself; a restart between reading
+  and the start leaves it ready for Analyze. The stored request is never
+  replayed later (fail closed).
+- Tests (`auto-analysis.test.js`, 24): unchanged allowance → analysed;
+  trial → plan, Starter → Pro: `allowance_changed`, no slot of either kind,
+  dashboard reason, then a click analyses it with the current plan;
+  trial runs out: `trial_exhausted`, no slot; no request, `plan:Platinum`,
+  and a trial company claiming `unlimited`: nothing starts; bare `1`, `true`
+  and an unknown plan over HTTP are not requests; two automatic starts and a
+  click against a changed allowance: one slot, from the click; restart
+  mid-read: FAILED, nothing starts. `firstRun.test.ts`: `allowanceToken`
+  and the new step.
+- verify.sh: backend 717/439/357, build, lint 0 errors (19 warnings), unit
+  75, secret scan clean. Browser (local, 390 px): plan started after the
+  trial notice was shown → no request, "click Analyze", no slot; the
+  `allowance_changed` ready box shows the current allowance and Analyze,
+  which analyses with a plan slot (6/6); consent cases 16/16; end to end
+  32/32.
+
+**Reverse:** set `BIDPILOT_AUTO_ANALYZE=off` (no code change) or
+`git revert`. No migration.

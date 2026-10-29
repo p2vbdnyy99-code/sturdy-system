@@ -138,6 +138,18 @@ Follow `harness/README.md`. In short:
   replacing it.
 - A "try" for the profile rule is a tender with a document; a tender tracked
   from the feed is analysed only after its PDF is attached.
+- Analysis starts by itself after a dashboard upload only when the upload
+  sends `autoAnalyze=<allowance kind>` (`trial`, `plan:<name>`,
+  `unlimited`). The app sends it only under a notice that says so and what
+  it uses, from an allowance that isn't used up and still matches when
+  re-read just before upload (`shouldRequestAutoAnalysis`), and the message
+  after upload must follow what was sent. The kind is stored as a
+  `tender_events` row and compared with the company's own entitlement
+  inside the slot lock; a different kind starts nothing and claims nothing. The attach-document route
+  never starts analysis by itself. Every start, by click or by itself, goes
+  through `startTenderAnalysis` (`analysis/start.js`); never add a second
+  path that claims slots or sets ANALYZING. `BIDPILOT_AUTO_ANALYZE=off`
+  (or false/0/no) turns the automatic start off.
 - Sign-in with Google and with a WhatsApp code each stay hidden until their
   Fly secrets are set (`BIDPILOT_GOOGLE_*`, `BIDPILOT_WHATSAPP_*`; see
   `OPERATIONS.md`). Never log an OTP code in production. A user may have no
@@ -260,6 +272,13 @@ was blocked and why.
 29. Count requests to another site by their hostname, not by a substring of
     the URL. A redirect check counted "example.com" inside the login page's
     own `?next=` and reported an off-site redirect that wasn't happening.
+30. `cd dir && nohup node x &` puts the subshell's PID in `$!`, not node's:
+    killing it left the old test server running, and a browser check ran
+    against stale assets. Find the server's own PID (`ps`) and kill that.
+31. A notice and the request it governs must come from one tested rule. The
+    dashboard once showed "will be read but not analysed" yet still asked
+    for the automatic analysis, then said it would start; a pre-release
+    review caught it from a screenshot, not from the green tests.
 
 ## Parallel work
 

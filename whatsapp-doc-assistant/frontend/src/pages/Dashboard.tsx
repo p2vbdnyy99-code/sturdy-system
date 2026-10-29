@@ -13,6 +13,11 @@ import { deriveAttentionState } from '../dashboard/attentionState';
 import { daysUntil, displayTitle, formatDate, humanizeEnum } from '../format';
 import { TenderRow } from '../dashboard/TenderRow';
 import { ReadyToAnalyse } from '../dashboard/ReadyToAnalyse';
+import { FirstRunPanel } from '../dashboard/FirstRun';
+import {
+  afterUploadMessage, allowanceToken, fileTooLarge, isFirstRun, shouldRequestAutoAnalysis, uploadNotice, type KnownAllowance,
+} from '../dashboard/firstRun';
+import { getDashboardSummary } from '../api/dashboard';
 import { useSession } from '../auth/SessionProvider';
 import { ApiError } from '../api/client';
 import { CONTACT_EMAIL } from '../config/site';
@@ -69,9 +74,17 @@ export function DashboardPage() {
 
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  // What happens next, after a successful upload.
+  const [uploadInfo, setUploadInfo] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const fetchSummary = shell.reload;
+
+  const autoAnalyze = Boolean(summary?.upload?.autoAnalyze);
+  // Shown before a file is chosen: whether the analysis starts by itself and
+  // what it uses. null until the summary (and so the allowance) has loaded.
+  const notice = summary ? uploadNotice(summary.allowance, autoAnalyze) : null;
+  const firstRun = isFirstRun(summary);
 
   const fetchList = useCallback(async () => {
     setListLoading(true);
@@ -114,9 +127,33 @@ export function DashboardPage() {
     e.target.value = ''; // allow re-selecting the same file again later
     if (!file) return;
     setUploadError(null);
+    setUploadInfo(null);
+    const tooLarge = fileTooLarge(file.size, summary?.upload?.maxMb);
+    if (tooLarge) {
+      setUploadError(tooLarge);
+      return;
+    }
     setUploading(true);
     try {
-      await uploadTender(file, companyId);
+      // The automatic start is asked for only if the notice on screen said
+      // so, and the allowance re-read now still agrees with it (it may have
+      // changed in another tab, or a plan may have started). If the re-read
+      // fails, nothing is asked for and the user clicks Analyze. The server
+      // checks everything again when it starts (backend analysis/start.js).
+      const shown: KnownAllowance = summary ? summary.allowance : undefined;
+      let fresh: KnownAllowance;
+      if (autoAnalyze && shown !== undefined) {
+        fresh = await getDashboardSummary(companyId).then((s) => s.allowance, () => undefined);
+      }
+      const requested = shouldRequestAutoAnalysis(autoAnalyze, shown, fresh);
+      // The request names the allowance kind the notice described; the server
+      // starts nothing if the company's entitlement is another kind by then.
+      const result = await uploadTender(file, companyId, { autoAnalyze: requested && fresh !== undefined ? allowanceToken(fresh) : null });
+      setUploadInfo(afterUploadMessage({
+        duplicate: result.duplicate,
+        requested: requested && result.autoAnalyze === true,
+        allowance: fresh !== undefined ? fresh : shown,
+      }));
       await Promise.all([fetchList(), fetchSummary()]);
     } catch (err) {
       if (err instanceof ApiError && err.code === 'profile_incomplete') {
@@ -194,16 +231,27 @@ export function DashboardPage() {
             <Icon name="upload" />
             {uploading ? 'Uploading…' : 'Upload tender'}
           </button>
+          {notice && <p className="muted upload-notice">{notice}</p>}
         </div>
       </header>
       {uploadError && <p role="alert" className="error-text">{uploadError}</p>}
+      {uploadInfo && (
+        <div className="notice notice-info" role="status">
+          <Icon name="info" />
+          <span className="notice-text">{uploadInfo}</span>
+        </div>
+      )}
+      {firstRun && (
+        <FirstRunPanel onUpload={onUploadClick} uploading={uploading} notice={notice}
+          maxMb={summary?.upload?.maxMb ?? null} autoAnalyze={autoAnalyze} />
+      )}
       <ReadyToAnalyse tenders={summary?.readyToAnalyse ?? []} companyId={companyId} clientNames={clientNames} />
 
       {summaryError && <p role="alert" className="error-text">{summaryError}</p>}
       <ProfileReminder left={shell.profile.freeLeft} />
       {summary?.allowance && allowanceNotice(summary.allowance).tone === 'warning' && <AllowanceBanner allowance={summary.allowance} />}
 
-      <div className="grid-main-side">
+      {!firstRun && <div className="grid-main-side">
         <Panel id="glance" title="Your tenders at a glance" aside={<span className="muted">{summaryLoading ? 'Loading…' : 'Live from your account'}</span>}>
           <div className="card">
             <dl className="fact-rows">
@@ -222,7 +270,7 @@ export function DashboardPage() {
           </div>
         </Panel>
         <NextDeadlineCard tender={next} loading={shell.loading} onUpload={onUploadClick} />
-      </div>
+      </div>}
 
       <SecuritiesSummary companyId={companyId} reloadKey={summary} />
 
@@ -285,7 +333,7 @@ export function DashboardPage() {
 
         {!listError && listLoading && <p className="muted">Loading tenders…</p>}
 
-        {!listError && !listLoading && total === 0 && !hasActiveFilters && (
+        {!listError && !listLoading && total === 0 && !hasActiveFilters && !firstRun && (
           <EmptyState
             title="No tenders yet"
             message="Upload your first tender to get started."

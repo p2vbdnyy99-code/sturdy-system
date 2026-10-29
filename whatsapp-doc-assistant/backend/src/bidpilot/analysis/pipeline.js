@@ -155,8 +155,12 @@ export async function runAnalysis(scope, tenderId, { isReanalysis } = {}) {
     }
 
     if (!chunkResults.length) {
+      // These messages are shown on the tender page, so no internal terms.
+      log.warn(`bidpilot analysis: all ${chunks.length} chunk(s) failed for tender=${tenderId}`);
       throw new Error(
-        chunks.length ? `All ${chunks.length} analysis chunk(s) failed.` : 'Tender has no extracted pages to analyze.',
+        chunks.length
+          ? 'The analysis could not be completed this time. Please try again; re-running this tender is free.'
+          : 'No readable text was found in this PDF. If it is a scan or a photo, try the original file from the tender portal.',
       );
     }
 

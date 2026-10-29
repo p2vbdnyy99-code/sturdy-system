@@ -557,6 +557,24 @@ a:hover {
   font-weight: 600;
 }
 
+/* A ready tender's name with, when it can't start, the reason under it. */
+.ready-analyse-item {
+  flex: 1 1 12rem;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.ready-analyse-item .ready-analyse-name {
+  flex: none;
+}
+
+.ready-analyse-why {
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+}
+
 .notice-spinner {
   width: 1rem;
   height: 1rem;
@@ -3389,6 +3407,42 @@ a:hover {
 .page-head-text {
   flex: 1 1 26rem;
   min-width: 0;
+}
+
+/* What an upload will do, under the Upload button (dashboard/firstRun.ts). */
+.upload-notice {
+  max-width: 22rem;
+  margin: 0.4rem 0 0;
+  font-size: 0.85rem;
+}
+
+/* The dashboard's first-run panel (dashboard/FirstRun.tsx). */
+.first-run-lead {
+  margin: 0 0 0.75rem;
+}
+
+.first-run-steps {
+  margin: 0 0 1rem;
+  padding-left: 1.25rem;
+  display: grid;
+  gap: 0.4rem;
+}
+
+.first-run-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem 1.25rem;
+}
+
+.first-run-notice {
+  margin: 0 0 0.75rem;
+  font-size: 0.875rem;
+}
+
+.first-run-help {
+  margin: 0.75rem 0 0;
+  font-size: 0.875rem;
 }
 
 .page-title {

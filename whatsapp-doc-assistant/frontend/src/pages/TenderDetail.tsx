@@ -22,6 +22,7 @@ import { SecuritiesPanel } from '../tenderDetail/SecuritiesPanel';
 import { ChecklistTab } from '../tenderDetail/ChecklistTab';
 import { CorrigendaTab } from '../tenderDetail/CorrigendaTab';
 import { AnnexuresTab } from '../tenderDetail/AnnexuresTab';
+import { processingFailureText } from '../tenderDetail/processingFailure';
 import { STAGE_LABEL } from '../tenderDetail/stages';
 import { biddingStatus } from '../tenderDetail/biddingStatus';
 import { AttachDocumentNotice } from '../tenderDetail/AttachDocumentNotice';
@@ -128,15 +129,15 @@ export function TenderDetailPage() {
 // count (see the Beta Readiness milestone's "no fake progress" rule). Each
 // label states exactly what processingStatus/analysisStatus already is.
 const PROCESSING_STAGE_LABELS: Record<TenderDetailType['processingStatus'], string> = {
-  UPLOADED: 'Upload received, queued for processing.',
-  PROCESSING: 'Extracting pages from the document…',
-  EXTRACTING: 'Extracting pages from the document…',
+  UPLOADED: 'Upload received. Reading starts in a moment.',
+  PROCESSING: 'Reading the document page by page…',
+  EXTRACTING: 'Reading the document page by page…',
   // ANALYZING is a deprecated processingStatus value the backend never
   // actually sets (see dashboard/attentionState.ts) — covered only so this
   // Record's type checks against the full enum.
-  ANALYZING: 'Extracting pages from the document…',
-  COMPLETED: 'Document processed.',
-  FAILED: 'Document processing failed.',
+  ANALYZING: 'Reading the document page by page…',
+  COMPLETED: 'Document read.',
+  FAILED: 'This PDF could not be read.',
 };
 
 function TenderDetailBody({
@@ -166,6 +167,8 @@ function TenderDetailBody({
       shell.reload(); // the queue and the plan allowance change too
     } catch (err) {
       if (err instanceof ApiError && err.code === 'profile_incomplete') shell.profile.openDialog();
+      // It started a moment ago (by itself after upload, or in another tab).
+      else if (err instanceof ApiError && err.code === 'already_running') onRefetch();
       else setAnalysisStartError(err instanceof ApiError ? err.message : 'Could not start analysis.');
     } finally {
       setStartingAnalysis(false);
@@ -283,15 +286,17 @@ function TenderDetailBody({
         <div className="notice notice-danger">
           <Icon name="alert" />
           <span className="notice-text">
-            {tender.processingError || PROCESSING_STAGE_LABELS.FAILED} To try again, upload the PDF again
-            from the dashboard.
+            {processingFailureText(tender.processingError)}
           </span>
         </div>
       )}
       {tender.processingStatus === 'COMPLETED' && tender.analysisStatus === 'ANALYZING' && (
         <div className="notice notice-info notice-progress">
           <span className="notice-spinner" aria-hidden="true" />
-          <span className="notice-text">Analyzing the document against your requirements checklist…</span>
+          <span className="notice-text">
+            Analysing the tender: finding the deadline, EMD, eligibility conditions and documents, with their pages.
+            You can leave this page; the result is saved here.
+          </span>
         </div>
       )}
       {!tender.document && <AttachDocumentNotice tender={tender} companyId={companyId} onAttached={onRefetch} />}
@@ -299,8 +304,8 @@ function TenderDetailBody({
         <div className="notice notice-info">
           <Icon name="info" />
           <span className="notice-text">
-            Extraction is done, but analysis hasn't been run yet — the tabs below have nothing to show
-            until it is.
+            The document has been read but not analysed yet. Analyse it to list the deadline, EMD, eligibility
+            and documents, each with its page number.
           </span>
           {runAnalysisButton('Analyze')}
         </div>

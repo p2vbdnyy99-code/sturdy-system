@@ -8,6 +8,8 @@ import { AttentionBadge } from '../components/AttentionBadge';
 import { useShellData } from '../shell/ShellData';
 import { STAGE_LABEL } from '../tenderDetail/stages';
 import { daysUntil, displayTitle, formatDate, relativeDays } from '../format';
+import { CONTACT_EMAIL } from '../config/site';
+import { blockedText, rowBlockedBy } from './firstRun';
 
 type TenderRowProps = {
   tender: TenderListItem;
@@ -34,7 +36,10 @@ export function TenderRow({ tender, companyId, onUpdate, clientName = null }: Te
   const [analyzing, setAnalyzing] = useState(false);
   const [analyzeError, setAnalyzeError] = useState<string | null>(null);
   const [retryKey, setRetryKey] = useState(0);
-  const { profile } = useShellData();
+  const { profile, summary } = useShellData();
+  // A never-analysed tender can't start once the free or plan tenders are
+  // used: offer the plans instead of an Analyze button that would answer 402.
+  const blocked = attention === 'ANALYSIS_REQUIRED' ? blockedText(rowBlockedBy(summary?.allowance)) : null;
 
   const pollTarget: PollTarget = attention === 'ANALYSIS_IN_PROGRESS' ? 'analysis' : 'processing';
   const shouldPoll = attention === 'PROCESSING' || attention === 'ANALYSIS_IN_PROGRESS';
@@ -66,6 +71,8 @@ export function TenderRow({ tender, companyId, onUpdate, clientName = null }: Te
       onUpdate(tender.id, { analysisStatus: 'ANALYZING' });
     } catch (err) {
       if (err instanceof ApiError && err.code === 'profile_incomplete') profile.openDialog();
+      // It started a moment ago (by itself after upload, or in another tab).
+      else if (err instanceof ApiError && err.code === 'already_running') onUpdate(tender.id, { analysisStatus: 'ANALYZING' });
       else setAnalyzeError(err instanceof ApiError ? err.message : 'Could not start analysis.');
     } finally {
       setAnalyzing(false);
@@ -96,7 +103,14 @@ export function TenderRow({ tender, companyId, onUpdate, clientName = null }: Te
         : <AttentionBadge state={attention} />}</td>
       <td><span className={`stage-label stage-${tender.status.toLowerCase()}`}>{STAGE_LABEL[tender.status]}</span></td>
       <td className="tender-cell-actions">
-        {tender.hasDocument !== false && (attention === 'ANALYSIS_REQUIRED' || attention === 'ANALYSIS_FAILED') && (
+        {tender.hasDocument !== false && blocked?.next === 'pricing' && (
+          <Link to="/pricing" className="btn-link btn-primary" title={blocked.text}>See the plans</Link>
+        )}
+        {tender.hasDocument !== false && blocked?.next === 'contact' && CONTACT_EMAIL && (
+          <a className="btn-link btn-primary" title={blocked.text}
+            href={`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent('TenderTez plan')}`}>Contact us</a>
+        )}
+        {tender.hasDocument !== false && !blocked?.next && (attention === 'ANALYSIS_REQUIRED' || attention === 'ANALYSIS_FAILED') && (
           <button type="button" className="btn-primary" onClick={onAnalyzeClick} disabled={analyzing}>
             {analyzing ? 'Starting…' : attention === 'ANALYSIS_FAILED' ? 'Retry analysis' : 'Analyze'}
           </button>

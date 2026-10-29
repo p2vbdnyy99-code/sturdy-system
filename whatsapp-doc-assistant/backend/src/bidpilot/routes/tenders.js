@@ -9,7 +9,7 @@ import { log } from '../../logger.js';
 import { requireSession } from './auth.js';
 import { requireCsrf } from '../auth/csrf.js';
 import { requireCompanyAccess, TenantAccessError } from '../repo/tenants.js';
-import { getTender, startAnalysis, listTendersPaginated, updateTenderTracking, updateProcessingStatus, NOTES_MAX } from '../repo/tenders.js';
+import { getTender, listTendersPaginated, updateTenderTracking, updateProcessingStatus, NOTES_MAX } from '../repo/tenders.js';
 import {
   getChecklist, setRequirementDone, addCustomItem, setCustomDone, deleteCustomItem, CUSTOM_LABEL_MAX,
 } from '../repo/checklist.js';
@@ -44,9 +44,10 @@ import { listEvents, getLatestAnalysisEvent } from '../repo/events.js';
 import { ingestUpload, processExtraction } from '../ingestion/pipeline.js';
 import { ValidationError } from '../ingestion/validate.js';
 import { getStorage } from '../storage/index.js';
-import { chunkPages } from '../analysis/chunker.js';
-import { assertAnalysisBudget, AnalysisBudgetError, claimTenderSlot } from '../analysis/budget.js';
-import { runAnalysis } from '../analysis/pipeline.js';
+import { assertAnalysisBudget, AnalysisBudgetError } from '../analysis/budget.js';
+import {
+  startTenderAnalysis, autoStartAnalysis, AnalysisStartRefusal, parseExpectedAllowance, recordAutoAnalysisRequest,
+} from '../analysis/start.js';
 import { runEligibility, EligibilityError } from '../analysis/eligibilityPipeline.js';
 import { config } from '../../config.js';
 import { tenderStatus, tenderAnalysisStatus } from '../../db/schema/enums.js';
@@ -77,10 +78,7 @@ export function createTendersRouter() {
 
   router.post('/tenders/upload', (req, res) => {
     upload.single('file')(req, res, async (multerErr) => {
-      if (multerErr) {
-        // multer's own errors (e.g. LIMIT_FILE_SIZE) — never leak internals.
-        return res.status(413).json({ error: 'Upload rejected (file too large or malformed).' });
-      }
+      if (multerErr) return rejectUpload(res, multerErr);
       try {
         await handleUpload(req, res);
       } catch (err) {
@@ -247,54 +245,12 @@ export function createTendersRouter() {
         userId: req.bidpilotUserId,
         companyId: req.body?.companyId,
       });
-      const tender = await getTender(scope, req.params.id);
-      if (!tender) return res.status(404).json({ error: 'Not found.' });
-      // A tender tracked from the feed has no document until one is attached.
-      if ((await listDocumentsForTender(scope, tender.id)).length === 0) {
-        return res.status(409).json({ error: 'Attach the tender document first, then analyse it.', code: 'no_document' });
-      }
-      if (await refuseIfProfileNeeded(db, scope.companyId, res, tender.id)) return;
-
-      // Analysis needs completed extraction text to work from — cannot run
-      // on a tender that's still UPLOADED/PROCESSING/EXTRACTING, or that
-      // failed extraction entirely.
-      if (tender.processingStatus !== 'COMPLETED') {
-        return res.status(409).json({
-          error: `Tender processing is ${tender.processingStatus}, not COMPLETED — cannot analyze yet.`,
-        });
-      }
-
-      const pages = await listPages(scope, tender.id);
-      const chunks = chunkPages(pages, { maxChars: config.bidpilot.analysis.chunkChars });
-      try {
-        await assertAnalysisBudget(db, scope.companyId, chunks.length);
-        // Last, so a tender refused by the checks above never uses a slot.
-        await claimTenderSlot(db, scope.companyId, tender.id);
-      } catch (err) {
-        if (err instanceof AnalysisBudgetError) {
-          const status = { tender_too_large: 413, trial_exhausted: 402, plan_exhausted: 402, plan_expired: 402 }[err.reason] ?? 429;
-          return res.status(status).json({ error: err.message, code: err.reason });
-        }
-        throw err;
-      }
-
-      // Atomic compare-and-set — see startAnalysis()'s docblock. A row is
-      // only returned to the request that actually won the race.
-      const isReanalysis = tender.analysisStatus === 'COMPLETED';
-      const started = await startAnalysis(scope, tender.id);
-      if (!started) {
-        return res.status(409).json({ error: 'Analysis is already in progress for this tender.' });
-      }
-
-      res.status(202).json({ tenderId: tender.id, analysisStatus: 'ANALYZING' });
-
-      // Off the request path — same idiom as upload's extraction trigger.
-      setImmediate(() => {
-        runAnalysis(scope, tender.id, { isReanalysis }).catch((err) => {
-          log.error(`bidpilot: unhandled analysis failure for tender=${tender.id}:`, err);
-        });
-      });
+      // Every check (document, profile, size, caps, trial or plan slot, and
+      // the compare-and-set against a second start) lives in
+      // analysis/start.js, shared with the automatic start after upload.
+      res.status(202).json(await startTenderAnalysis(db, scope, req.params.id));
     } catch (err) {
+      if (err instanceof AnalysisStartRefusal) return res.status(err.status).json(err.toJson());
       handleError(res, err);
     }
   });
@@ -611,7 +567,7 @@ export function createTendersRouter() {
   // document), then the usual extraction in the background.
   router.post('/tenders/:id/document', (req, res) => {
     upload.single('file')(req, res, async (multerErr) => {
-      if (multerErr) return res.status(413).json({ error: 'Upload rejected (file too large or malformed).' });
+      if (multerErr) return rejectUpload(res, multerErr);
       try {
         const ctx = await checklistScope(req, res, req.body?.companyId);
         if (!ctx) return;
@@ -629,7 +585,10 @@ export function createTendersRouter() {
           contentHash: sha256(req.file.buffer), uploadedBy: req.bidpilotUserId,
         });
         await updateProcessingStatus(ctx.scope, ctx.tender.id, 'UPLOADED');
-        res.status(201).json({ tenderId: ctx.tender.id, processingStatus: 'UPLOADED' });
+        // Never started by itself: this form (a tracked tender's page) shows
+        // no notice about the analysis or what it uses, so the user clicks
+        // Analyze once the PDF has been read. An autoAnalyze field is ignored.
+        res.status(201).json({ tenderId: ctx.tender.id, processingStatus: 'UPLOADED', autoAnalyze: false });
         setImmediate(() => {
           processExtraction(ctx.scope, ctx.tender.id, req.file.buffer).catch((err) => {
             log.error(`bidpilot: unhandled extraction failure for tender=${ctx.tender.id}:`, err);
@@ -867,11 +826,24 @@ async function handleUpload(req, res) {
       `bytes=${req.file.buffer.length} duplicate=${duplicate} ms=${Date.now() - uploadStart}`,
   );
 
+  // The allowance kind the upload notice described, stored before reading
+  // starts; the automatic start compares it with the company's entitlement.
+  // If it can't be stored, the tender is still read, just not analysed by
+  // itself (fail closed: the user clicks Analyze).
+  let expected = duplicate ? null : autoAnalysisRequested(req);
+  if (expected) {
+    await recordAutoAnalysisRequest(scope, tender.id, expected, req.bidpilotUserId).catch((err) => {
+      log.error(`bidpilot: could not record the automatic-analysis request for tender=${tender.id}:`, err);
+      expected = null;
+    });
+  }
+  const autoAnalyze = Boolean(expected);
   res.status(duplicate ? 200 : 201).json({
     tenderId: tender.id,
     status: tender.status,
     processingStatus: tender.processingStatus,
     duplicate,
+    autoAnalyze,
   });
 
   if (!duplicate) {
@@ -879,11 +851,38 @@ async function handleUpload(req, res) {
     // acknowledge first, do the real work after. See pipeline.js's header for
     // why this is fire-and-forget rather than a durable queue at this stage.
     setImmediate(() => {
-      processExtraction(scope, tender.id, req.file.buffer).catch((err) => {
+      processExtraction(scope, tender.id, req.file.buffer, afterExtraction(autoAnalyze)).catch((err) => {
         log.error(`bidpilot: unhandled extraction failure for tender=${tender.id}:`, err);
       });
     });
   }
+}
+
+/** multer's own errors: the size limit in plain words, anything else
+ *  generic (never multer's internals). */
+function rejectUpload(res, multerErr) {
+  if (multerErr?.code === 'LIMIT_FILE_SIZE') {
+    const mb = Math.round(config.bidpilot.maxUploadBytes / (1024 * 1024));
+    return res.status(413).json({ error: `This file is larger than the ${mb} MB limit.`, code: 'file_too_large' });
+  }
+  return res.status(400).json({ error: 'The upload could not be read. Please choose the PDF file again.' });
+}
+
+/** The automatic analysis start happens only when a dashboard upload asks
+ *  for it: the app sends autoAnalyze=<allowance kind> ('trial', 'plan:<name>'
+ *  or 'unlimited') only while the notice next to the upload button says the
+ *  tender will be analysed and what it uses, from that allowance. Returns
+ *  the kind, or null (no valid kind, e.g. a bare "1", or the setting is off):
+ *  then the user clicks Analyze. The kind grants nothing; analysis/start.js
+ *  compares it with the company's own entitlement. The attach-document route
+ *  never asks. Off entirely with BIDPILOT_AUTO_ANALYZE=off. */
+function autoAnalysisRequested(req) {
+  if (!config.bidpilot.analysis.autoStart) return null;
+  return parseExpectedAllowance(req.body?.autoAnalyze);
+}
+
+function afterExtraction(autoAnalyze) {
+  return autoAnalyze ? { onCompleted: (scope, tenderId) => autoStartAnalysis(getDb(), scope, tenderId) } : {};
 }
 
 function handleError(res, err) {
