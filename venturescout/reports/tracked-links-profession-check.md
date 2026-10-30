@@ -48,3 +48,21 @@ Pass rule (set before the check): one vertical with **≥10 independent requests
 2. Intuit App Store: does an app already do "estimate viewed / accepted" alerts? Pass = none, or only full quoting suites.
 3. Intuit developer terms: can an individual publish, what fees apply to API use, and can an app email estimates
    on the user's behalf? Pass = allowed with costs known.
+
+---
+
+## Addendum 2026-10-30: QuickBooks checks run. **Lead REJECTED.**
+
+Stopped early: a finding made checks 1–3 moot.
+
+- **Intuit has shipped the feature (US).** Official help article "Create and send estimates" (updated 2026-08-03):
+  "In the Customer Hub list under the Estimates tab, you'll be able to see when your customer has viewed, accepted, or
+  declined the estimate." Also: "QuickBooks Online automatically updates an estimate's status if a customer accepts or
+  declines it directly from their email."
+- The community threads that showed the gap (2021–2025) **predate** that article.
+- **What may be left:** the US article doesn't cover other regions; a user reported QBO doesn't show *which* recipient
+  viewed (2025-09); acceptance alerts to the business owner reportedly don't exist (2026-04). These are small features
+  Intuit can close the same way. Not a business.
+- The largest named risk ("Intuit can ship it") **has already happened**.
+
+Source: https://quickbooks.intuit.com/learn-support/en-us/help-article/job-estimates/create-send-estimates-quickbooks-online/L0kOXRjoP_US_en_US
