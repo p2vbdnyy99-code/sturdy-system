@@ -1,0 +1,27 @@
+{
+"_about": "Categories A and C are EDUCATIONAL RECOMMENDATIONS written by Claude (AI) from general medical knowledge and the NEET-PG syllabus areas; they are not derived from exam counts. Category B is computed by analyze.py from observations.json and is not listed here. Nothing here is a probability of appearance.",
+"A": [
+ {"id":"A1","name":"Acid-base and electrolyte disorders","subjects":["ph","me","bc"],"concepts":[],"rationale":"Underpins nephrology, critical care, endocrinology and toxicology; the same reasoning (anion gap, compensation, sodium/potassium algorithms) recurs across subjects and question formats."},
+ {"id":"A2","name":"Shock, resuscitation and trauma assessment","subjects":["su","as","me"],"concepts":["gcs","trauma-primary-survey","diffuse-axonal-injury"],"rationale":"Primary survey, GCS and shock physiology link surgery, anaesthesia and medicine; two related concepts appear in this dataset (NEET-PG 2025, INI-CET May 2026)."},
+ {"id":"A3","name":"Antimicrobial choice, toxicity and resistance","subjects":["pm","mi","me"],"concepts":[],"rationale":"Drug-bug matching and signature toxicities connect pharmacology, microbiology and clinical medicine."},
+ {"id":"A4","name":"Cell injury, inflammation and neoplasia (including translocations)","subjects":["pa"],"concepts":["apl-t1517","follicular-lymphoma"],"rationale":"General pathology is the base for systemic pathology and haematology; two translocation concepts appear in the 2025 recall list."},
+ {"id":"A5","name":"Autonomic pharmacology and toxidromes","subjects":["pm","fm","me"],"concepts":["pheo-phenoxybenzamine"],"rationale":"Receptor pharmacology explains drug effects, poisoning syndromes and perioperative care."},
+ {"id":"A6","name":"ECG and arrhythmias","subjects":["ph","me"],"concepts":[],"rationale":"Physiology of conduction to bedside ECG diagnosis and management; image-based in many formats."},
+ {"id":"A7","name":"Screening tests, biases and study designs","subjects":["cm"],"concepts":["lead-time-bias","cluster-rct"],"rationale":"Needed to read any evidence and frequently calculation-based; two related concepts appear in the 2025 recall list."},
+ {"id":"A8","name":"Obstetric emergencies (PPH, eclampsia, shoulder dystocia, cord prolapse)","subjects":["ob","pm"],"concepts":["atonic-pph","mgso4-pritchard","shoulder-dystocia","cord-prolapse"],"rationale":"Time-critical algorithms with high clinical stakes; four related concepts appear in the 2025 recall list."},
+ {"id":"A9","name":"HIV and tuberculosis","subjects":["me","mi","pm","cm"],"concepts":["hiv-tb-iris","hiv-tb-art-timing"],"rationale":"Spans microbiology, pharmacology, medicine and national programmes; two related concepts appear in the 2025 recall list."},
+ {"id":"A10","name":"Endocrine emergencies (DKA, adrenal crisis)","subjects":["me","ph"],"concepts":["adrenal-insufficiency"],"rationale":"Physiology-driven management with clear algorithms; adrenal insufficiency appears in the 2025 recall list."}
+],
+"C": [
+ {"id":"C1","name":"Sepsis and septic shock: recognition and first-hour care","subjects":["me","mi","as"],"rationale":"High clinical importance; no observation in this dataset, which says more about the dataset's size than about the exam."},
+ {"id":"C2","name":"Anaphylaxis","subjects":["me","pm","as"],"rationale":"Life-threatening emergency with a single first-line drug and dose; not observed in this dataset."},
+ {"id":"C3","name":"Acute ischaemic stroke: thrombolysis eligibility and time windows","subjects":["me","ra"],"rationale":"Guideline-dependent and clinically critical; not observed in this dataset."},
+ {"id":"C4","name":"Neonatal resuscitation and newborn care","subjects":["pe","ob"],"rationale":"Algorithmic and important; appears only as a coaching forecast (S03), not as an observation."},
+ {"id":"C5","name":"Medical ethics, consent and the 2024 criminal laws (BNS, BNSS, BSA)","subjects":["fm"],"rationale":"India's criminal laws changed on 1 July 2024, so older section numbers in books are outdated; syllabus relevance is high and historical data cannot reflect it yet."},
+ {"id":"C6","name":"Snakebite and common poisonings","subjects":["fm","me","pm"],"rationale":"Common in India with specific antidotes and protocols; not observed in this dataset."},
+ {"id":"C7","name":"National health programme updates (e.g. TB elimination, NCD screening)","subjects":["cm"],"rationale":"Programmes change often; current versions matter more than historical frequency."},
+ {"id":"C8","name":"Video-assessable clinical skills (gait, movement disorders, examination signs)","subjects":["me","or","ps"],"rationale":"FMGE introduced video questions in June 2026 (S12). No NEET-PG video questions are reported, so this is a hypothesis about format spread, not a finding."}
+],
+"revision_intervals_days":[1,3,7,21,60],
+"revision_note":"Expanding-interval review (a common spaced-repetition schedule). The app adapts it per question from your answers."
+}

@@ -1,0 +1,37 @@
+# Lawful-utility hypotheses: customer-supplied data, official APIs, open data, customer-owned files
+email verification
+phone number validation
+VAT number validation
+IBAN validation
+address validation
+PDF to text
+PDF to markdown
+OCR
+document parser
+invoice extraction
+HTML to markdown
+JSON CSV converter
+Excel converter
+image resize compress
+website screenshot
+sitemap generator
+broken link checker
+SSL certificate checker
+DNS lookup
+accessibility checker
+lighthouse pagespeed
+SEO audit
+RSS feed
+text to speech
+audio transcription
+translation
+deduplication
+companies house
+SEC EDGAR
+GLEIF LEI
+sanctions screening
+OpenAlex
+patent search
+barcode GTIN
+JSON schema validation
+MCP server

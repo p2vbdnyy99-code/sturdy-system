@@ -1,0 +1,231 @@
+{
+ "doc": "S18",
+ "family": 4,
+ "scanned": false,
+ "opening_balance": 6294.3,
+ "closing_balance": 21874.06,
+ "transactions": [
+  {
+   "date": "2026-09-04",
+   "description": "CUSTOMER PAYMENT INVOICE",
+   "amount": 2361.96,
+   "balance": 8656.26
+  },
+  {
+   "date": "2026-09-07",
+   "description": "ONLINE TRANSFER TO SAVINGS",
+   "amount": -1089.2,
+   "balance": 7567.06
+  },
+  {
+   "date": "2026-09-07",
+   "description": "CARD PURCHASE FUEL STOP",
+   "amount": -56.8,
+   "balance": 7510.26
+  },
+  {
+   "date": "2026-09-09",
+   "description": "SUBSCRIPTION STREAMING SERVICE",
+   "amount": -47.03,
+   "balance": 7463.23
+  },
+  {
+   "date": "2026-09-10",
+   "description": "DIRECT DEBIT MOBILE PHONE",
+   "amount": -97.19,
+   "balance": 7366.04
+  },
+  {
+   "date": "2026-09-10",
+   "description": "CARD PURCHASE COFFEE HOUSE",
+   "amount": -67.32,
+   "balance": 7298.72
+  },
+  {
+   "date": "2026-09-10",
+   "description": "CARD PURCHASE FUEL STOP",
+   "amount": -54.15,
+   "balance": 7244.57
+  },
+  {
+   "date": "2026-09-10",
+   "description": "CUSTOMER PAYMENT INVOICE",
+   "amount": 2779.5,
+   "balance": 10024.07
+  },
+  {
+   "date": "2026-09-10",
+   "description": "CUSTOMER PAYMENT INVOICE",
+   "amount": 2779.5,
+   "balance": 12803.57
+  },
+  {
+   "date": "2026-09-13",
+   "description": "ONLINE TRANSFER TO SAVINGS",
+   "amount": -1034.89,
+   "balance": 11768.68
+  },
+  {
+   "date": "2026-09-16",
+   "description": "PAYMENT TO SUPPLIER ACME PARTS LTD INVOICE 4471 REF Q3 MATERIALS ORDER",
+   "amount": -26.69,
+   "balance": 11741.99
+  },
+  {
+   "date": "2026-09-17",
+   "description": "REFUND CARD PURCHASE",
+   "amount": 275.75,
+   "balance": 12017.74
+  },
+  {
+   "date": "2026-09-20",
+   "description": "DIRECT DEBIT CITY WATER",
+   "amount": -72.33,
+   "balance": 11945.41
+  },
+  {
+   "date": "2026-09-20",
+   "description": "DIRECT DEBIT MOBILE PHONE",
+   "amount": -30.94,
+   "balance": 11914.47
+  },
+  {
+   "date": "2026-09-21",
+   "description": "REFUND CARD PURCHASE",
+   "amount": 2610.31,
+   "balance": 14524.78
+  },
+  {
+   "date": "2026-09-22",
+   "description": "STANDING ORDER RENT",
+   "amount": -21.77,
+   "balance": 14503.01
+  },
+  {
+   "date": "2026-09-23",
+   "description": "DIRECT DEBIT CITY WATER",
+   "amount": -1081.19,
+   "balance": 13421.82
+  },
+  {
+   "date": "2026-09-26",
+   "description": "SALARY PAYROLL",
+   "amount": 2626.87,
+   "balance": 16048.69
+  },
+  {
+   "date": "2026-09-27",
+   "description": "INSURANCE PREMIUM HOME AND CONTENTS POLICY 88-2231",
+   "amount": -72.08,
+   "balance": 15976.61
+  },
+  {
+   "date": "2026-09-28",
+   "description": "PAYMENT TO SUPPLIER ACME PARTS LTD INVOICE 4471 REF Q3 MATERIALS ORDER",
+   "amount": -67.2,
+   "balance": 15909.41
+  },
+  {
+   "date": "2026-10-01",
+   "description": "STANDING ORDER RENT",
+   "amount": -54.6,
+   "balance": 15854.81
+  },
+  {
+   "date": "2026-10-02",
+   "description": "CARD PURCHASE COFFEE HOUSE",
+   "amount": -404.85,
+   "balance": 15449.96
+  },
+  {
+   "date": "2026-10-02",
+   "description": "TRANSFER FROM SAVINGS",
+   "amount": 2612.16,
+   "balance": 18062.12
+  },
+  {
+   "date": "2026-10-02",
+   "description": "SUBSCRIPTION STREAMING SERVICE",
+   "amount": -717.25,
+   "balance": 17344.87
+  },
+  {
+   "date": "2026-10-03",
+   "description": "CUSTOMER PAYMENT INVOICE",
+   "amount": 3667.76,
+   "balance": 21012.63
+  },
+  {
+   "date": "2026-10-03",
+   "description": "DIRECT DEBIT MOBILE PHONE",
+   "amount": -5.7,
+   "balance": 21006.93
+  },
+  {
+   "date": "2026-10-03",
+   "description": "CUSTOMER PAYMENT INVOICE",
+   "amount": 1057.1,
+   "balance": 22064.03
+  },
+  {
+   "date": "2026-10-03",
+   "description": "CUSTOMER PAYMENT INVOICE",
+   "amount": 1057.1,
+   "balance": 23121.13
+  },
+  {
+   "date": "2026-10-04",
+   "description": "DIRECT DEBIT CITY WATER",
+   "amount": -16.47,
+   "balance": 23104.66
+  },
+  {
+   "date": "2026-10-07",
+   "description": "SUBSCRIPTION STREAMING SERVICE",
+   "amount": -68.59,
+   "balance": 23036.07
+  },
+  {
+   "date": "2026-10-07",
+   "description": "ATM WITHDRAWAL",
+   "amount": -74.02,
+   "balance": 22962.05
+  },
+  {
+   "date": "2026-10-07",
+   "description": "DIRECT DEBIT MOBILE PHONE",
+   "amount": -570.19,
+   "balance": 22391.86
+  },
+  {
+   "date": "2026-10-08",
+   "description": "DIRECT DEBIT MOBILE PHONE",
+   "amount": -22.84,
+   "balance": 22369.02
+  },
+  {
+   "date": "2026-10-10",
+   "description": "CARD PURCHASE GROCERY MART",
+   "amount": -364.07,
+   "balance": 22004.95
+  },
+  {
+   "date": "2026-10-10",
+   "description": "SUBSCRIPTION STREAMING SERVICE",
+   "amount": -29.05,
+   "balance": 21975.9
+  },
+  {
+   "date": "2026-10-11",
+   "description": "CARD PURCHASE HARDWARE DEPOT",
+   "amount": -50.92,
+   "balance": 21924.98
+  },
+  {
+   "date": "2026-10-11",
+   "description": "CARD PURCHASE HARDWARE DEPOT",
+   "amount": -50.92,
+   "balance": 21874.06
+  }
+ ]
+}

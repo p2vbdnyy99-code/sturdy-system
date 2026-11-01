@@ -1,0 +1,177 @@
+{
+ "doc": "S15",
+ "family": 3,
+ "scanned": true,
+ "opening_balance": 7857.68,
+ "closing_balance": 16576.07,
+ "transactions": [
+  {
+   "date": "2026-06-02",
+   "description": "ATM WITHDRAWAL",
+   "amount": -1018.73,
+   "balance": 6838.95
+  },
+  {
+   "date": "2026-06-04",
+   "description": "SUBSCRIPTION STREAMING SERVICE",
+   "amount": -25.22,
+   "balance": 6813.73
+  },
+  {
+   "date": "2026-06-07",
+   "description": "INTEREST PAID",
+   "amount": 1651.91,
+   "balance": 8465.64
+  },
+  {
+   "date": "2026-06-07",
+   "description": "INTEREST PAID",
+   "amount": 1651.91,
+   "balance": 10117.55
+  },
+  {
+   "date": "2026-06-09",
+   "description": "ATM WITHDRAWAL",
+   "amount": -190.78,
+   "balance": 9926.77
+  },
+  {
+   "date": "2026-06-10",
+   "description": "ATM WITHDRAWAL",
+   "amount": -47.08,
+   "balance": 9879.69
+  },
+  {
+   "date": "2026-06-10",
+   "description": "ATM WITHDRAWAL",
+   "amount": -47.08,
+   "balance": 9832.61
+  },
+  {
+   "date": "2026-06-10",
+   "description": "ATM WITHDRAWAL",
+   "amount": -47.08,
+   "balance": 9785.53
+  },
+  {
+   "date": "2026-06-11",
+   "description": "ATM WITHDRAWAL",
+   "amount": -322.76,
+   "balance": 9462.77
+  },
+  {
+   "date": "2026-06-13",
+   "description": "BANK FEE MONTHLY",
+   "amount": -45.42,
+   "balance": 9417.35
+  },
+  {
+   "date": "2026-06-14",
+   "description": "SALARY PAYROLL",
+   "amount": 220.51,
+   "balance": 9637.86
+  },
+  {
+   "date": "2026-06-14",
+   "description": "CARD PURCHASE FUEL STOP",
+   "amount": -42.44,
+   "balance": 9595.42
+  },
+  {
+   "date": "2026-06-14",
+   "description": "SALARY PAYROLL",
+   "amount": 3070.05,
+   "balance": 12665.47
+  },
+  {
+   "date": "2026-06-17",
+   "description": "BANK FEE MONTHLY",
+   "amount": -70.04,
+   "balance": 12595.43
+  },
+  {
+   "date": "2026-06-17",
+   "description": "BANK FEE MONTHLY",
+   "amount": -70.04,
+   "balance": 12525.39
+  },
+  {
+   "date": "2026-06-17",
+   "description": "TRANSFER FROM SAVINGS",
+   "amount": 1248.43,
+   "balance": 13773.82
+  },
+  {
+   "date": "2026-06-20",
+   "description": "CARD PURCHASE COFFEE HOUSE",
+   "amount": -1011.27,
+   "balance": 12762.55
+  },
+  {
+   "date": "2026-06-22",
+   "description": "CARD PURCHASE GROCERY MART",
+   "amount": -38.77,
+   "balance": 12723.78
+  },
+  {
+   "date": "2026-06-22",
+   "description": "CARD PURCHASE HARDWARE DEPOT",
+   "amount": -76.15,
+   "balance": 12647.63
+  },
+  {
+   "date": "2026-06-23",
+   "description": "CARD PURCHASE PHARMACY",
+   "amount": -53.61,
+   "balance": 12594.02
+  },
+  {
+   "date": "2026-06-25",
+   "description": "TRANSFER FROM SAVINGS",
+   "amount": 2564.53,
+   "balance": 15158.55
+  },
+  {
+   "date": "2026-06-27",
+   "description": "BANK FEE MONTHLY",
+   "amount": -59.43,
+   "balance": 15099.12
+  },
+  {
+   "date": "2026-06-28",
+   "description": "CARD PURCHASE FUEL STOP",
+   "amount": -1139.73,
+   "balance": 13959.39
+  },
+  {
+   "date": "2026-07-01",
+   "description": "CASH DEPOSIT BRANCH",
+   "amount": 661.92,
+   "balance": 14621.31
+  },
+  {
+   "date": "2026-07-01",
+   "description": "DIRECT DEBIT MOBILE PHONE",
+   "amount": -696.18,
+   "balance": 13925.13
+  },
+  {
+   "date": "2026-07-03",
+   "description": "DIRECT DEBIT MOBILE PHONE",
+   "amount": -59.44,
+   "balance": 13865.69
+  },
+  {
+   "date": "2026-07-04",
+   "description": "CARD PURCHASE GROCERY MART",
+   "amount": -51.15,
+   "balance": 13814.54
+  },
+  {
+   "date": "2026-07-07",
+   "description": "INTEREST PAID",
+   "amount": 2761.53,
+   "balance": 16576.07
+  }
+ ]
+}

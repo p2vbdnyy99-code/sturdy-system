@@ -1,0 +1,57 @@
+{
+ "doc": "S27",
+ "family": 6,
+ "scanned": false,
+ "opening_balance": 8130.19,
+ "closing_balance": 12520.83,
+ "transactions": [
+  {
+   "date": "2026-01-03",
+   "description": "CARD PURCHASE GROCERY MART",
+   "amount": -78.52,
+   "balance": 8051.67
+  },
+  {
+   "date": "2026-01-05",
+   "description": "CARD PURCHASE HARDWARE DEPOT",
+   "amount": -33.46,
+   "balance": 8018.21
+  },
+  {
+   "date": "2026-01-07",
+   "description": "TRANSFER FROM SAVINGS",
+   "amount": 2279.85,
+   "balance": 10298.06
+  },
+  {
+   "date": "2026-01-10",
+   "description": "INTEREST PAID",
+   "amount": 2953.03,
+   "balance": 13251.09
+  },
+  {
+   "date": "2026-01-11",
+   "description": "CARD PURCHASE HARDWARE DEPOT",
+   "amount": -7.88,
+   "balance": 13243.21
+  },
+  {
+   "date": "2026-01-13",
+   "description": "ONLINE TRANSFER TO SAVINGS",
+   "amount": -571.73,
+   "balance": 12671.48
+  },
+  {
+   "date": "2026-01-15",
+   "description": "INSURANCE PREMIUM HOME AND CONTENTS POLICY 88-2231",
+   "amount": -73.06,
+   "balance": 12598.42
+  },
+  {
+   "date": "2026-01-18",
+   "description": "ATM WITHDRAWAL",
+   "amount": -77.59,
+   "balance": 12520.83
+  }
+ ]
+}

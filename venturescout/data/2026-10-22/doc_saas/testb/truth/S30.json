@@ -1,0 +1,165 @@
+{
+ "doc": "S30",
+ "family": 6,
+ "scanned": true,
+ "opening_balance": 6854.73,
+ "closing_balance": 13856.61,
+ "transactions": [
+  {
+   "date": "2026-09-01",
+   "description": "PAYMENT TO SUPPLIER ACME PARTS LTD INVOICE 4471 REF Q3 MATERIALS ORDER",
+   "amount": -1424.48,
+   "balance": 5430.25
+  },
+  {
+   "date": "2026-09-01",
+   "description": "CARD PURCHASE FUEL STOP",
+   "amount": -12.27,
+   "balance": 5417.98
+  },
+  {
+   "date": "2026-09-01",
+   "description": "ATM WITHDRAWAL",
+   "amount": -1270.35,
+   "balance": 4147.63
+  },
+  {
+   "date": "2026-09-04",
+   "description": "REFUND CARD PURCHASE",
+   "amount": 204.66,
+   "balance": 4352.29
+  },
+  {
+   "date": "2026-09-04",
+   "description": "INTEREST PAID",
+   "amount": 516.97,
+   "balance": 4869.26
+  },
+  {
+   "date": "2026-09-05",
+   "description": "PAYMENT TO SUPPLIER ACME PARTS LTD INVOICE 4471 REF Q3 MATERIALS ORDER",
+   "amount": -31.51,
+   "balance": 4837.75
+  },
+  {
+   "date": "2026-09-06",
+   "description": "REFUND CARD PURCHASE",
+   "amount": 3807.09,
+   "balance": 8644.84
+  },
+  {
+   "date": "2026-09-08",
+   "description": "ATM WITHDRAWAL",
+   "amount": -4.46,
+   "balance": 8640.38
+  },
+  {
+   "date": "2026-09-09",
+   "description": "ATM WITHDRAWAL",
+   "amount": -45.95,
+   "balance": 8594.43
+  },
+  {
+   "date": "2026-09-11",
+   "description": "CASH DEPOSIT BRANCH",
+   "amount": 72.91,
+   "balance": 8667.34
+  },
+  {
+   "date": "2026-09-11",
+   "description": "PAYMENT TO SUPPLIER ACME PARTS LTD INVOICE 4471 REF Q3 MATERIALS ORDER",
+   "amount": -1433.48,
+   "balance": 7233.86
+  },
+  {
+   "date": "2026-09-14",
+   "description": "CARD PURCHASE COFFEE HOUSE",
+   "amount": -933.56,
+   "balance": 6300.3
+  },
+  {
+   "date": "2026-09-17",
+   "description": "BANK FEE MONTHLY",
+   "amount": -29.68,
+   "balance": 6270.62
+  },
+  {
+   "date": "2026-09-19",
+   "description": "CARD PURCHASE GROCERY MART",
+   "amount": -32.98,
+   "balance": 6237.64
+  },
+  {
+   "date": "2026-09-21",
+   "description": "CUSTOMER PAYMENT INVOICE",
+   "amount": 2862.66,
+   "balance": 9100.3
+  },
+  {
+   "date": "2026-09-22",
+   "description": "CARD PURCHASE COFFEE HOUSE",
+   "amount": -264.74,
+   "balance": 8835.56
+  },
+  {
+   "date": "2026-09-23",
+   "description": "CARD PURCHASE COFFEE HOUSE",
+   "amount": -217.7,
+   "balance": 8617.86
+  },
+  {
+   "date": "2026-09-24",
+   "description": "CARD PURCHASE PHARMACY",
+   "amount": -28.34,
+   "balance": 8589.52
+  },
+  {
+   "date": "2026-09-25",
+   "description": "CARD PURCHASE GROCERY MART",
+   "amount": -22.22,
+   "balance": 8567.3
+  },
+  {
+   "date": "2026-09-25",
+   "description": "CASH DEPOSIT BRANCH",
+   "amount": 3591.19,
+   "balance": 12158.49
+  },
+  {
+   "date": "2026-09-26",
+   "description": "DIRECT DEBIT MOBILE PHONE",
+   "amount": -1461.97,
+   "balance": 10696.52
+  },
+  {
+   "date": "2026-09-26",
+   "description": "CASH DEPOSIT BRANCH",
+   "amount": 89.28,
+   "balance": 10785.8
+  },
+  {
+   "date": "2026-09-28",
+   "description": "SUBSCRIPTION STREAMING SERVICE",
+   "amount": -402.52,
+   "balance": 10383.28
+  },
+  {
+   "date": "2026-09-30",
+   "description": "CLIENT REMITTANCE CONSULTING SERVICES PROJECT ALPHA MILESTONE 2",
+   "amount": 1659.61,
+   "balance": 12042.89
+  },
+  {
+   "date": "2026-10-01",
+   "description": "CUSTOMER PAYMENT INVOICE",
+   "amount": 234.64,
+   "balance": 12277.53
+  },
+  {
+   "date": "2026-10-02",
+   "description": "TRANSFER FROM SAVINGS",
+   "amount": 1579.08,
+   "balance": 13856.61
+  }
+ ]
+}

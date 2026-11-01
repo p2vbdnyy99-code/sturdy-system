@@ -1,0 +1,237 @@
+{
+ "doc": "S04",
+ "family": 1,
+ "scanned": false,
+ "opening_balance": 8777.8,
+ "closing_balance": 29990.56,
+ "transactions": [
+  {
+   "date": "2026-01-03",
+   "description": "CARD PURCHASE COFFEE HOUSE",
+   "amount": -53.86,
+   "balance": 8723.94
+  },
+  {
+   "date": "2026-01-06",
+   "description": "CLIENT REMITTANCE CONSULTING SERVICES PROJECT ALPHA MILESTONE 2",
+   "amount": 3077.2,
+   "balance": 11801.14
+  },
+  {
+   "date": "2026-01-06",
+   "description": "CARD PURCHASE FUEL STOP",
+   "amount": -30.2,
+   "balance": 11770.94
+  },
+  {
+   "date": "2026-01-09",
+   "description": "CLIENT REMITTANCE CONSULTING SERVICES PROJECT ALPHA MILESTONE 2",
+   "amount": 617.9,
+   "balance": 12388.84
+  },
+  {
+   "date": "2026-01-10",
+   "description": "INSURANCE PREMIUM HOME AND CONTENTS POLICY 88-2231",
+   "amount": -10.31,
+   "balance": 12378.53
+  },
+  {
+   "date": "2026-01-12",
+   "description": "CLIENT REMITTANCE CONSULTING SERVICES PROJECT ALPHA MILESTONE 2",
+   "amount": 3581.39,
+   "balance": 15959.92
+  },
+  {
+   "date": "2026-01-13",
+   "description": "CASH DEPOSIT BRANCH",
+   "amount": 1778.97,
+   "balance": 17738.89
+  },
+  {
+   "date": "2026-01-16",
+   "description": "DIRECT DEBIT MOBILE PHONE",
+   "amount": -1207.04,
+   "balance": 16531.85
+  },
+  {
+   "date": "2026-01-17",
+   "description": "CASH DEPOSIT BRANCH",
+   "amount": 1892.06,
+   "balance": 18423.91
+  },
+  {
+   "date": "2026-01-18",
+   "description": "TRANSFER FROM SAVINGS",
+   "amount": 3674.86,
+   "balance": 22098.77
+  },
+  {
+   "date": "2026-01-18",
+   "description": "CARD PURCHASE PHARMACY",
+   "amount": -671.84,
+   "balance": 21426.93
+  },
+  {
+   "date": "2026-01-19",
+   "description": "SUBSCRIPTION STREAMING SERVICE",
+   "amount": -740.13,
+   "balance": 20686.8
+  },
+  {
+   "date": "2026-01-20",
+   "description": "CARD PURCHASE FUEL STOP",
+   "amount": -20.65,
+   "balance": 20666.15
+  },
+  {
+   "date": "2026-01-21",
+   "description": "CARD PURCHASE PHARMACY",
+   "amount": -9.08,
+   "balance": 20657.07
+  },
+  {
+   "date": "2026-01-23",
+   "description": "CARD PURCHASE FUEL STOP",
+   "amount": -520.75,
+   "balance": 20136.32
+  },
+  {
+   "date": "2026-01-23",
+   "description": "CUSTOMER PAYMENT INVOICE",
+   "amount": 1310.71,
+   "balance": 21447.03
+  },
+  {
+   "date": "2026-01-25",
+   "description": "REFUND CARD PURCHASE",
+   "amount": 3151.71,
+   "balance": 24598.74
+  },
+  {
+   "date": "2026-01-28",
+   "description": "CARD PURCHASE PHARMACY",
+   "amount": -1221.77,
+   "balance": 23376.97
+  },
+  {
+   "date": "2026-01-28",
+   "description": "CARD PURCHASE PHARMACY",
+   "amount": -1221.77,
+   "balance": 22155.2
+  },
+  {
+   "date": "2026-01-28",
+   "description": "TRANSFER FROM SAVINGS",
+   "amount": 2519.44,
+   "balance": 24674.64
+  },
+  {
+   "date": "2026-01-30",
+   "description": "ONLINE TRANSFER TO SAVINGS",
+   "amount": -1159.04,
+   "balance": 23515.6
+  },
+  {
+   "date": "2026-02-02",
+   "description": "TRANSFER FROM SAVINGS",
+   "amount": 3271.7,
+   "balance": 26787.3
+  },
+  {
+   "date": "2026-02-03",
+   "description": "CARD PURCHASE COFFEE HOUSE",
+   "amount": -50.41,
+   "balance": 26736.89
+  },
+  {
+   "date": "2026-02-04",
+   "description": "INSURANCE PREMIUM HOME AND CONTENTS POLICY 88-2231",
+   "amount": -7.15,
+   "balance": 26729.74
+  },
+  {
+   "date": "2026-02-06",
+   "description": "DIRECT DEBIT MOBILE PHONE",
+   "amount": -36.62,
+   "balance": 26693.12
+  },
+  {
+   "date": "2026-02-07",
+   "description": "SUBSCRIPTION STREAMING SERVICE",
+   "amount": -53.46,
+   "balance": 26639.66
+  },
+  {
+   "date": "2026-02-08",
+   "description": "INSURANCE PREMIUM HOME AND CONTENTS POLICY 88-2231",
+   "amount": -66.18,
+   "balance": 26573.48
+  },
+  {
+   "date": "2026-02-08",
+   "description": "INSURANCE PREMIUM HOME AND CONTENTS POLICY 88-2231",
+   "amount": -66.18,
+   "balance": 26507.3
+  },
+  {
+   "date": "2026-02-09",
+   "description": "CARD PURCHASE GROCERY MART",
+   "amount": -572.92,
+   "balance": 25934.38
+  },
+  {
+   "date": "2026-02-11",
+   "description": "CASH DEPOSIT BRANCH",
+   "amount": 1543.07,
+   "balance": 27477.45
+  },
+  {
+   "date": "2026-02-11",
+   "description": "CARD PURCHASE PHARMACY",
+   "amount": -72.11,
+   "balance": 27405.34
+  },
+  {
+   "date": "2026-02-12",
+   "description": "CARD PURCHASE COFFEE HOUSE",
+   "amount": -55.24,
+   "balance": 27350.1
+  },
+  {
+   "date": "2026-02-15",
+   "description": "ONLINE TRANSFER TO SAVINGS",
+   "amount": -1441.69,
+   "balance": 25908.41
+  },
+  {
+   "date": "2026-02-18",
+   "description": "CUSTOMER PAYMENT INVOICE",
+   "amount": 2288.21,
+   "balance": 28196.62
+  },
+  {
+   "date": "2026-02-20",
+   "description": "STANDING ORDER RENT",
+   "amount": -664.61,
+   "balance": 27532.01
+  },
+  {
+   "date": "2026-02-21",
+   "description": "CLIENT REMITTANCE CONSULTING SERVICES PROJECT ALPHA MILESTONE 2",
+   "amount": 3110.92,
+   "balance": 30642.93
+  },
+  {
+   "date": "2026-02-21",
+   "description": "SUBSCRIPTION STREAMING SERVICE",
+   "amount": -44.61,
+   "balance": 30598.32
+  },
+  {
+   "date": "2026-02-21",
+   "description": "INSURANCE PREMIUM HOME AND CONTENTS POLICY 88-2231",
+   "amount": -607.76,
+   "balance": 29990.56
+  }
+ ]
+}

@@ -1,0 +1,249 @@
+{
+ "doc": "S05",
+ "family": 1,
+ "scanned": true,
+ "opening_balance": 4698.35,
+ "closing_balance": 17614.13,
+ "transactions": [
+  {
+   "date": "2026-09-03",
+   "description": "DIRECT DEBIT MOBILE PHONE",
+   "amount": -24.73,
+   "balance": 4673.62
+  },
+  {
+   "date": "2026-09-03",
+   "description": "BANK FEE MONTHLY",
+   "amount": -26.59,
+   "balance": 4647.03
+  },
+  {
+   "date": "2026-09-06",
+   "description": "DIRECT DEBIT MOBILE PHONE",
+   "amount": -1163.39,
+   "balance": 3483.64
+  },
+  {
+   "date": "2026-09-06",
+   "description": "CASH DEPOSIT BRANCH",
+   "amount": 352.15,
+   "balance": 3835.79
+  },
+  {
+   "date": "2026-09-07",
+   "description": "INTEREST PAID",
+   "amount": 3008.53,
+   "balance": 6844.32
+  },
+  {
+   "date": "2026-09-10",
+   "description": "INSURANCE PREMIUM HOME AND CONTENTS POLICY 88-2231",
+   "amount": -1191.81,
+   "balance": 5652.51
+  },
+  {
+   "date": "2026-09-11",
+   "description": "SUBSCRIPTION STREAMING SERVICE",
+   "amount": -511.56,
+   "balance": 5140.95
+  },
+  {
+   "date": "2026-09-11",
+   "description": "INSURANCE PREMIUM HOME AND CONTENTS POLICY 88-2231",
+   "amount": -836.98,
+   "balance": 4303.97
+  },
+  {
+   "date": "2026-09-13",
+   "description": "CARD PURCHASE GROCERY MART",
+   "amount": -43.45,
+   "balance": 4260.52
+  },
+  {
+   "date": "2026-09-14",
+   "description": "INTEREST PAID",
+   "amount": 850.86,
+   "balance": 5111.38
+  },
+  {
+   "date": "2026-09-15",
+   "description": "CARD PURCHASE FUEL STOP",
+   "amount": -16.01,
+   "balance": 5095.37
+  },
+  {
+   "date": "2026-09-16",
+   "description": "ATM WITHDRAWAL",
+   "amount": -28.7,
+   "balance": 5066.67
+  },
+  {
+   "date": "2026-09-16",
+   "description": "REFUND CARD PURCHASE",
+   "amount": 1847.01,
+   "balance": 6913.68
+  },
+  {
+   "date": "2026-09-18",
+   "description": "CASH DEPOSIT BRANCH",
+   "amount": 2399.07,
+   "balance": 9312.75
+  },
+  {
+   "date": "2026-09-20",
+   "description": "SUBSCRIPTION STREAMING SERVICE",
+   "amount": -50.68,
+   "balance": 9262.07
+  },
+  {
+   "date": "2026-09-20",
+   "description": "SUBSCRIPTION STREAMING SERVICE",
+   "amount": -50.68,
+   "balance": 9211.39
+  },
+  {
+   "date": "2026-09-23",
+   "description": "ATM WITHDRAWAL",
+   "amount": -214.74,
+   "balance": 8996.65
+  },
+  {
+   "date": "2026-09-23",
+   "description": "BANK FEE MONTHLY",
+   "amount": -1307.81,
+   "balance": 7688.84
+  },
+  {
+   "date": "2026-09-26",
+   "description": "DIRECT DEBIT CITY WATER",
+   "amount": -74.58,
+   "balance": 7614.26
+  },
+  {
+   "date": "2026-09-29",
+   "description": "CARD PURCHASE COFFEE HOUSE",
+   "amount": -48.33,
+   "balance": 7565.93
+  },
+  {
+   "date": "2026-09-29",
+   "description": "INTEREST PAID",
+   "amount": 3878.51,
+   "balance": 11444.44
+  },
+  {
+   "date": "2026-10-02",
+   "description": "INTEREST PAID",
+   "amount": 627.43,
+   "balance": 12071.87
+  },
+  {
+   "date": "2026-10-04",
+   "description": "DIRECT DEBIT CITY WATER",
+   "amount": -623.19,
+   "balance": 11448.68
+  },
+  {
+   "date": "2026-10-04",
+   "description": "ATM WITHDRAWAL",
+   "amount": -52.05,
+   "balance": 11396.63
+  },
+  {
+   "date": "2026-10-05",
+   "description": "INTEREST PAID",
+   "amount": 1343.06,
+   "balance": 12739.69
+  },
+  {
+   "date": "2026-10-08",
+   "description": "DIRECT DEBIT CITY WATER",
+   "amount": -764.81,
+   "balance": 11974.88
+  },
+  {
+   "date": "2026-10-11",
+   "description": "SALARY PAYROLL",
+   "amount": 3330.84,
+   "balance": 15305.72
+  },
+  {
+   "date": "2026-10-12",
+   "description": "CARD PURCHASE COFFEE HOUSE",
+   "amount": -70.62,
+   "balance": 15235.1
+  },
+  {
+   "date": "2026-10-13",
+   "description": "DIRECT DEBIT MOBILE PHONE",
+   "amount": -279.37,
+   "balance": 14955.73
+  },
+  {
+   "date": "2026-10-16",
+   "description": "INSURANCE PREMIUM HOME AND CONTENTS POLICY 88-2231",
+   "amount": -54.9,
+   "balance": 14900.83
+  },
+  {
+   "date": "2026-10-19",
+   "description": "ONLINE TRANSFER TO SAVINGS",
+   "amount": -1067.59,
+   "balance": 13833.24
+  },
+  {
+   "date": "2026-10-22",
+   "description": "ONLINE TRANSFER TO SAVINGS",
+   "amount": -44.73,
+   "balance": 13788.51
+  },
+  {
+   "date": "2026-10-25",
+   "description": "ATM WITHDRAWAL",
+   "amount": -1024.43,
+   "balance": 12764.08
+  },
+  {
+   "date": "2026-10-26",
+   "description": "SALARY PAYROLL",
+   "amount": 2981.38,
+   "balance": 15745.46
+  },
+  {
+   "date": "2026-10-27",
+   "description": "CARD PURCHASE PHARMACY",
+   "amount": -8.95,
+   "balance": 15736.51
+  },
+  {
+   "date": "2026-10-27",
+   "description": "STANDING ORDER RENT",
+   "amount": -75.83,
+   "balance": 15660.68
+  },
+  {
+   "date": "2026-10-28",
+   "description": "CASH DEPOSIT BRANCH",
+   "amount": 1389.27,
+   "balance": 17049.95
+  },
+  {
+   "date": "2026-10-31",
+   "description": "CASH DEPOSIT BRANCH",
+   "amount": 583.92,
+   "balance": 17633.87
+  },
+  {
+   "date": "2026-10-31",
+   "description": "CARD PURCHASE COFFEE HOUSE",
+   "amount": -5.88,
+   "balance": 17627.99
+  },
+  {
+   "date": "2026-11-02",
+   "description": "SUBSCRIPTION STREAMING SERVICE",
+   "amount": -13.86,
+   "balance": 17614.13
+  }
+ ]
+}

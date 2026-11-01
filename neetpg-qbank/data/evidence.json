@@ -1,0 +1,4017 @@
+{
+ "generated": "2026-10-27",
+ "method": "Third-party recall observations deduplicated by exam + session + canonical concept; subject tables normalised within each table with 95% Wilson intervals; trend tests gated by a minimum-sample rule. Source: pipeline/analyze.py.",
+ "headline": {
+  "official_question_text_available": false,
+  "sessions_with_topic_data": [
+   "NEET-PG 2025",
+   "INI-CET May 2026"
+  ],
+  "concepts_observed": 38,
+  "concepts_in_2plus_sessions": 1,
+  "max_sessions_for_any_concept": 2
+ },
+ "sources": [
+  {
+   "id": "S01",
+   "name": "NBEMS NEET-PG 2026 Information Bulletin v2.1",
+   "publisher": "National Board of Examinations in Medical Sciences",
+   "category": "OFFICIAL_NOTICE",
+   "exam": "NEET-PG",
+   "session": "2026",
+   "published": "2026-07-01",
+   "confidence": "high (content); medium (mirror, not the official URL)",
+   "url": "https://cdn.testbook.com/1782913030888-NEET-PG%202026%20Information%20Bulletin%2001-07-2026_v2.1_final.pdf/1782913032.pdf",
+   "notes": "Gives pattern (180 MCQs, 5 x 36, 42 min per section, locked sections) and marking (+4/-1/0). Contains no questions.",
+   "licence": "Government notice; reuse terms not stated"
+  },
+  {
+   "id": "S02",
+   "name": "MedExamsPrep: NEET PG 2025 Paper Analysis",
+   "publisher": "MedExamsPrep (coaching/publisher)",
+   "category": "THIRD_PARTY_RECALL",
+   "exam": "NEET-PG",
+   "session": "2025",
+   "published": "2025-08-05",
+   "confidence": "low",
+   "url": "https://www.medexamsprep.com/blog/neet-pg-2025-paper-analysis-complete-recall-highyield-topics-strategy-for-neet-pg-2026",
+   "notes": "Claims recall of all 200 questions but publishes only a subject table and a topic list, not the questions. Its subject table totals 195 of 200 and has no Psychiatry row (folded into Medicine). Also claims ~50% image-based, ~70% clinical vignettes, ~30% repeats. Single source; not independently confirmed. The page promotes the publisher's own books.",
+   "licence": "All rights reserved (assumed); facts only recorded"
+  },
+  {
+   "id": "S03",
+   "name": "PrepLadder: Most Expected Topics for NEET PG 2026",
+   "publisher": "PrepLadder (coaching platform)",
+   "category": "THIRD_PARTY_FORECAST",
+   "exam": "NEET-PG",
+   "session": "forecast for 2026; analysis of 2023-2025",
+   "published": "2026-01 (approx., image dated 21 Jan 2026)",
+   "confidence": "low (forecast, not observation)",
+   "url": "https://www.prepladder.com/neet-pg-study-material/preparation-strategy/most-expected-topics-neet-pg-2026",
+   "notes": "States it examined 600+ questions from 2023-2025. Claims ~30% repeats and 18-25% image questions in 2025. Topic lists are expectations; they are NOT used as historical observations here.",
+   "licence": "All rights reserved (assumed)"
+  },
+  {
+   "id": "S04",
+   "name": "Fornix Academy: NEET PG 2026 Exam Analysis",
+   "publisher": "Fornix Academy",
+   "category": "THIRD_PARTY_REPORT",
+   "exam": "NEET-PG",
+   "session": "2026 (30 Aug 2026)",
+   "published": "2026-08-31",
+   "confidence": "medium for pattern facts; low for question-type claims",
+   "url": "https://fornixacademy.com/blogs/neet-pg-2026-exam-analysis",
+   "notes": "Explicitly declines to give subject counts because NBEMS publishes none. Reports very few image questions and no video questions (candidate reports). Gives appeared count 2,65,980 and Jaipur re-exam for 2,445 candidates (cites PIB).",
+   "licence": "All rights reserved (assumed)"
+  },
+  {
+   "id": "S05",
+   "name": "PrepLadder: NEET PG 2026 Detailed Exam Analysis (candidate survey)",
+   "publisher": "PrepLadder",
+   "category": "THIRD_PARTY_SURVEY",
+   "exam": "NEET-PG",
+   "session": "2026",
+   "published": "2026-09 (approx.)",
+   "confidence": "low",
+   "url": "https://www.prepladder.com/neet-pg-study-material/notifications/neet-pg-2026-detailed-exam-analysis",
+   "notes": "Reports perceived weightage by % of respondents (sample size not stated; ~129-133 implied by percentages). No question counts. 75.9% of respondents called clinical questions dominant; 10.5% named image-based; video negligible. Repeat estimates varied from 0 to 70+.",
+   "licence": "All rights reserved (assumed)"
+  },
+  {
+   "id": "S06",
+   "name": "DBMCI: NEET PG 2024 Exam Analysis & Recall",
+   "publisher": "DBMCI (coaching)",
+   "category": "THIRD_PARTY_RECALL",
+   "exam": "NEET-PG",
+   "session": "2024",
+   "published": "2024-08-12",
+   "confidence": "rejected",
+   "url": "https://blog.dbmci.com/neet-pg-2024-exam-analysis-recall/",
+   "notes": "Subject table sums to 200 but pairs are implausible (ENT 30, 'Surgery incl. Ortho/Anaes/Radio' 4, PSM 5, Paediatrics 3), so rows appear misaligned. REJECTED for subject distribution. Shift not stated.",
+   "licence": "All rights reserved (assumed)"
+  },
+  {
+   "id": "S07",
+   "name": "Cerebellum Academy: NEET PG 2024 Exam Analysis",
+   "publisher": "Cerebellum Academy",
+   "category": "THIRD_PARTY_REPORT",
+   "exam": "NEET-PG",
+   "session": "2024 (two shifts, 11 Aug 2024)",
+   "published": "2024-08-15",
+   "confidence": "low",
+   "url": "https://www.cerebellumacademy.com/neet-pg-2024-exam-analysis-question-paper-overview/",
+   "notes": "Only shift timings and attendance were extractable (2,28,540 appeared). No counts or topics usable.",
+   "licence": "All rights reserved (assumed)"
+  },
+  {
+   "id": "S08",
+   "name": "CoreBTR: INI-CET May 2026 Full Recall & Exam Analysis",
+   "publisher": "CoreBTR (coaching)",
+   "category": "THIRD_PARTY_RECALL",
+   "exam": "INI-CET",
+   "session": "May 2026",
+   "published": "2026 (date not captured)",
+   "confidence": "low",
+   "url": "https://corebtr.com/blog/ini-cet-may-2026-full-recall-and-exam-analysis-subject-wise-breakdown-by-dr-zainab-vora",
+   "notes": "Says ~200 questions were compiled from recall. Names specific concepts (Kawasaki disease, Rett syndrome, GCS calculation, congenital hypothyroidism, Courvoisier sign, trauma primary-survey sequence, Barrett oesophagus image). Claims image questions increased; surgery ~18-20 questions.",
+   "licence": "All rights reserved (assumed)"
+  },
+  {
+   "id": "S09",
+   "name": "Cerebellum Academy: INI-CET November 2025 Exam Analysis",
+   "publisher": "Cerebellum Academy",
+   "category": "THIRD_PARTY_REPORT",
+   "exam": "INI-CET",
+   "session": "November 2025",
+   "published": "2025-11-11",
+   "confidence": "low",
+   "url": "https://www.cerebellumacademy.com/ini-cet-november-2025-exam-analysis-you-need-to-know/",
+   "notes": "Student estimates: 70-75% clinical vignettes; pre-clinical ~20-25 Q; para-clinical ~35-40 Q; image questions focused on interpretation. No topics.",
+   "licence": "All rights reserved (assumed)"
+  },
+  {
+   "id": "S10",
+   "name": "DocTutorials: INI CET May 2025 Exam Analysis",
+   "publisher": "DocTutorials",
+   "category": "THIRD_PARTY_SURVEY",
+   "exam": "INI-CET",
+   "session": "May 2025",
+   "published": "2026-06-17 (last modified)",
+   "confidence": "low",
+   "url": "https://www.doctutorials.com/ini-cet/ini-cet-may-2025-exam-analysis",
+   "notes": "Reports a few image-based questions (radiology, histopathology); surgery perceived dominant. Survey percentages are of respondents, not of questions.",
+   "licence": "All rights reserved (assumed)"
+  },
+  {
+   "id": "S11",
+   "name": "PW MedEd: FMGE June 2026 Exam Analysis",
+   "publisher": "Physics Wallah (PW MedEd)",
+   "category": "THIRD_PARTY_REPORT",
+   "exam": "FMGE",
+   "session": "June 2026",
+   "published": "2026 (date not captured)",
+   "confidence": "low",
+   "url": "https://www.pw.live/neet-pg/exams/fmge-june-2026-exam-analysis",
+   "notes": "Claims 20+ video-based questions (clinical findings, movements, neurological signs, radiology) and more integrated questions (e.g. Medicine+Pharmacology). Conflicts with official figure reported by S12.",
+   "licence": "All rights reserved (assumed)"
+  },
+  {
+   "id": "S12",
+   "name": "The Indian Express: NMC defends video-based FMGE questions",
+   "publisher": "The Indian Express",
+   "category": "NEWS",
+   "exam": "FMGE",
+   "session": "June 2026",
+   "published": "2026-08-07",
+   "confidence": "medium",
+   "url": "https://indianexpress.com/article/education/fmge-june-2026-pass-rate-crashes-doctors-protest-demands-nmc-nbems-response-health-ministry-neet-pg-10817158/",
+   "notes": "NBEMS added video-based questions in June 2026 (real clinical recordings). Officials: 12-14 clips; SC petition: ~12; students: 12-28; NBEMS has not confirmed a number. Demo test included video questions. Pass rate 12.38% of 37,448.",
+   "licence": "All rights reserved"
+  },
+  {
+   "id": "S13",
+   "name": "MedMCQA dataset (Pal et al., 2022)",
+   "publisher": "Pal, Umapathi, Sankarasubbu; hosted by openlifescienceai on Hugging Face",
+   "category": "THIRD_PARTY_COMPILATION",
+   "exam": "AIIMS-PG and NEET-PG (as described by the authors)",
+   "session": "years not recorded per question",
+   "published": "2022",
+   "confidence": "low",
+   "url": "https://huggingface.co/datasets/openlifescienceai/medmcqa",
+   "notes": "Authors describe validation (4,183) as NEET-PG 2001-present and test (6,150) as AIIMS-PG 1991-present, collected 'from open websites and books'. Checks here found: 31.5% of 'NEET-PG' validation is Dental and 423 of its items are labelled 'AIIMS 2017-2020'; test has 682 'Unknown' subject; topic labels are empty; similar questions were removed across splits (hides repeats). No year/session field.",
+   "licence": "MIT (GitHub repository); dataset card says licence 'Needs More Information'"
+  },
+  {
+   "id": "S14",
+   "name": "Times of India: SC notice on NEET-PG 2026 answer-key disclosure mechanism",
+   "publisher": "Times of India (citing LiveLaw)",
+   "category": "NEWS",
+   "exam": "NEET-PG",
+   "session": "2026",
+   "published": "2026-10 (approx.)",
+   "confidence": "medium",
+   "url": "https://timesofindia.indiatimes.com/education/news/supreme-court-issues-notice-on-plea-challenging-neet-pg-2026-answer-key-disclosure-mechanism/articleshow/134964044.cms",
+   "notes": "NBEMS notice of 1 Oct 2026 gives candidates question IDs, numerical answer identifiers, their responses and marks in their own login; petition seeks the actual questions. Confirms question text is not released.",
+   "licence": "All rights reserved"
+  },
+  {
+   "id": "S15",
+   "name": "Medical Dialogues: SC to examine NBE's NEET PG non-disclosure policy",
+   "publisher": "Medical Dialogues",
+   "category": "NEWS",
+   "exam": "NEET-PG",
+   "session": "2025-2026",
+   "published": "2026 (approx.)",
+   "confidence": "medium",
+   "url": "https://medicaldialogues.in/news/education/whats-the-logic-supreme-court-to-examine-nbes-neet-pg-question-paper-answer-key-non-disclosure-policy-163520",
+   "notes": "NBEMS published the NEET PG 2025 answer key following Supreme Court orders of 29 Apr (2025) to publish raw scores and answer keys; questions themselves not disclosed.",
+   "licence": "All rights reserved"
+  },
+  {
+   "id": "S16",
+   "name": "Shiksha: INI CET Answer Key (memory based)",
+   "publisher": "Shiksha",
+   "category": "THIRD_PARTY_REPORT",
+   "exam": "INI-CET",
+   "session": "all",
+   "published": "2026 (approx.)",
+   "confidence": "medium",
+   "url": "https://www.shiksha.com/medicine-health-sciences/ini-cet-exam-answer-key",
+   "notes": "States AIIMS does not release an official or provisional INI-CET answer key; Collegedunia says the same.",
+   "licence": "All rights reserved"
+  },
+  {
+   "id": "S17",
+   "name": "Careers360 and Shiksha on FMGE answer key / question paper",
+   "publisher": "Careers360; Shiksha",
+   "category": "THIRD_PARTY_REPORT",
+   "exam": "FMGE",
+   "session": "2026",
+   "published": "2026 (approx.)",
+   "confidence": "medium",
+   "url": "https://medicine.careers360.com/articles/fmge-answer-key-2026",
+   "notes": "Say NBEMS did not release the FMGE question paper or answer key PDF; another site (fmgeprep.com) says a key is shown in candidate logins without the paper. Conflict recorded; no question text available either way.",
+   "licence": "All rights reserved"
+  },
+  {
+   "id": "S18",
+   "name": "Wikimedia Commons images (4 files)",
+   "publisher": "Wikimedia Commons contributors (CDC; Cerevisae; Mont4nha; Milorad Dimic MD)",
+   "category": "LICENSED_MEDIA",
+   "exam": "none",
+   "session": "none",
+   "published": "various",
+   "confidence": "high (licence); not exam material",
+   "url": "https://commons.wikimedia.org/",
+   "notes": "Used only for original practice questions. No exam provenance.",
+   "licence": "PD / CC0 / CC BY-SA"
+  }
+ ],
+ "official_facts": [
+  {
+   "id": "F01",
+   "source": "S01",
+   "fact": "NEET-PG 2026: 180 MCQs, 5 sections of 36, 42 minutes per section, sections lock, +4/-1/0."
+  },
+  {
+   "id": "F02",
+   "source": "S14",
+   "fact": "NEET-PG 2026: from 1 Oct 2026 candidates see question IDs, numerical answer identifiers, their responses and marks in their own login; question text is not published."
+  },
+  {
+   "id": "F03",
+   "source": "S15",
+   "fact": "NEET-PG 2025: NBEMS published the answer key after Supreme Court orders (29 Apr 2025); questions were not disclosed."
+  },
+  {
+   "id": "F04",
+   "source": "S16",
+   "fact": "INI-CET: AIIMS does not release an official or provisional answer key."
+  },
+  {
+   "id": "F05",
+   "source": "S17",
+   "fact": "FMGE: no official question paper PDF; sources conflict on whether an answer key is shown in candidate logins."
+  },
+  {
+   "id": "F06",
+   "source": "S12",
+   "fact": "FMGE June 2026: NBEMS introduced video-based questions (real clinical recordings); the demo test included them; NBEMS has not confirmed a count."
+  }
+ ],
+ "coverage": [
+  {
+   "exam": "NEET-PG",
+   "year": 2017,
+   "sources": [],
+   "topic_observations": 0,
+   "status": "no usable source found"
+  },
+  {
+   "exam": "NEET-PG",
+   "year": 2018,
+   "sources": [],
+   "topic_observations": 0,
+   "status": "no usable source found"
+  },
+  {
+   "exam": "NEET-PG",
+   "year": 2019,
+   "sources": [],
+   "topic_observations": 0,
+   "status": "no usable source found"
+  },
+  {
+   "exam": "NEET-PG",
+   "year": 2020,
+   "sources": [],
+   "topic_observations": 0,
+   "status": "no usable source found"
+  },
+  {
+   "exam": "NEET-PG",
+   "year": 2021,
+   "sources": [],
+   "topic_observations": 0,
+   "status": "no usable source found"
+  },
+  {
+   "exam": "NEET-PG",
+   "year": 2022,
+   "sources": [],
+   "topic_observations": 0,
+   "status": "no usable source found"
+  },
+  {
+   "exam": "NEET-PG",
+   "year": 2023,
+   "sources": [
+    "S03"
+   ],
+   "topic_observations": 0,
+   "status": "claims only (no topic list, no counts)"
+  },
+  {
+   "exam": "NEET-PG",
+   "year": 2024,
+   "sources": [
+    "S06"
+   ],
+   "topic_observations": 0,
+   "status": "subject table found but rejected"
+  },
+  {
+   "exam": "NEET-PG",
+   "year": 2025,
+   "sources": [
+    "S02",
+    "S03"
+   ],
+   "topic_observations": 32,
+   "status": "partial: topic list + partial subject counts (third-party)"
+  },
+  {
+   "exam": "NEET-PG",
+   "year": 2026,
+   "sources": [
+    "S04",
+    "S05"
+   ],
+   "topic_observations": 0,
+   "status": "claims only (no topic list, no counts)"
+  },
+  {
+   "exam": "INI-CET",
+   "year": 2017,
+   "sources": [],
+   "topic_observations": 0,
+   "status": "no usable source found"
+  },
+  {
+   "exam": "INI-CET",
+   "year": 2018,
+   "sources": [],
+   "topic_observations": 0,
+   "status": "no usable source found"
+  },
+  {
+   "exam": "INI-CET",
+   "year": 2019,
+   "sources": [],
+   "topic_observations": 0,
+   "status": "no usable source found"
+  },
+  {
+   "exam": "INI-CET",
+   "year": 2020,
+   "sources": [],
+   "topic_observations": 0,
+   "status": "no usable source found"
+  },
+  {
+   "exam": "INI-CET",
+   "year": 2021,
+   "sources": [],
+   "topic_observations": 0,
+   "status": "no usable source found"
+  },
+  {
+   "exam": "INI-CET",
+   "year": 2022,
+   "sources": [],
+   "topic_observations": 0,
+   "status": "no usable source found"
+  },
+  {
+   "exam": "INI-CET",
+   "year": 2023,
+   "sources": [],
+   "topic_observations": 0,
+   "status": "no usable source found"
+  },
+  {
+   "exam": "INI-CET",
+   "year": 2024,
+   "sources": [],
+   "topic_observations": 0,
+   "status": "no usable source found"
+  },
+  {
+   "exam": "INI-CET",
+   "year": 2025,
+   "sources": [
+    "S09",
+    "S10"
+   ],
+   "topic_observations": 0,
+   "status": "claims only (no topic list, no counts)"
+  },
+  {
+   "exam": "INI-CET",
+   "year": 2026,
+   "sources": [
+    "S08"
+   ],
+   "topic_observations": 7,
+   "status": "partial: topic list only (third-party)"
+  },
+  {
+   "exam": "FMGE",
+   "year": 2017,
+   "sources": [],
+   "topic_observations": 0,
+   "status": "no usable source found"
+  },
+  {
+   "exam": "FMGE",
+   "year": 2018,
+   "sources": [],
+   "topic_observations": 0,
+   "status": "no usable source found"
+  },
+  {
+   "exam": "FMGE",
+   "year": 2019,
+   "sources": [],
+   "topic_observations": 0,
+   "status": "no usable source found"
+  },
+  {
+   "exam": "FMGE",
+   "year": 2020,
+   "sources": [],
+   "topic_observations": 0,
+   "status": "no usable source found"
+  },
+  {
+   "exam": "FMGE",
+   "year": 2021,
+   "sources": [],
+   "topic_observations": 0,
+   "status": "no usable source found"
+  },
+  {
+   "exam": "FMGE",
+   "year": 2022,
+   "sources": [],
+   "topic_observations": 0,
+   "status": "no usable source found"
+  },
+  {
+   "exam": "FMGE",
+   "year": 2023,
+   "sources": [],
+   "topic_observations": 0,
+   "status": "no usable source found"
+  },
+  {
+   "exam": "FMGE",
+   "year": 2024,
+   "sources": [],
+   "topic_observations": 0,
+   "status": "no usable source found"
+  },
+  {
+   "exam": "FMGE",
+   "year": 2025,
+   "sources": [],
+   "topic_observations": 0,
+   "status": "no usable source found"
+  },
+  {
+   "exam": "FMGE",
+   "year": 2026,
+   "sources": [
+    "S11",
+    "S12"
+   ],
+   "topic_observations": 0,
+   "status": "claims only (no topic list, no counts)"
+  },
+  {
+   "exam": "AIIMS-PG",
+   "year": 2017,
+   "sources": [],
+   "topic_observations": 0,
+   "status": "no usable source found"
+  },
+  {
+   "exam": "AIIMS-PG",
+   "year": 2018,
+   "sources": [],
+   "topic_observations": 0,
+   "status": "no usable source found"
+  },
+  {
+   "exam": "AIIMS-PG",
+   "year": 2019,
+   "sources": [],
+   "topic_observations": 0,
+   "status": "no usable source found"
+  },
+  {
+   "exam": "AIIMS-PG",
+   "year": 2020,
+   "sources": [],
+   "topic_observations": 0,
+   "status": "no usable source found"
+  },
+  {
+   "exam": "AIIMS-PG",
+   "year": 2021,
+   "sources": [],
+   "topic_observations": 0,
+   "status": "no usable source found"
+  },
+  {
+   "exam": "AIIMS-PG",
+   "year": 2022,
+   "sources": [],
+   "topic_observations": 0,
+   "status": "no usable source found"
+  },
+  {
+   "exam": "AIIMS-PG",
+   "year": 2023,
+   "sources": [],
+   "topic_observations": 0,
+   "status": "no usable source found"
+  },
+  {
+   "exam": "AIIMS-PG",
+   "year": 2024,
+   "sources": [],
+   "topic_observations": 0,
+   "status": "no usable source found"
+  },
+  {
+   "exam": "AIIMS-PG",
+   "year": 2025,
+   "sources": [],
+   "topic_observations": 0,
+   "status": "no usable source found"
+  },
+  {
+   "exam": "AIIMS-PG",
+   "year": 2026,
+   "sources": [],
+   "topic_observations": 0,
+   "status": "no usable source found"
+  },
+  {
+   "exam": "JIPMER-PG",
+   "year": 2017,
+   "sources": [],
+   "topic_observations": 0,
+   "status": "no usable source found"
+  },
+  {
+   "exam": "JIPMER-PG",
+   "year": 2018,
+   "sources": [],
+   "topic_observations": 0,
+   "status": "no usable source found"
+  },
+  {
+   "exam": "JIPMER-PG",
+   "year": 2019,
+   "sources": [],
+   "topic_observations": 0,
+   "status": "no usable source found"
+  },
+  {
+   "exam": "JIPMER-PG",
+   "year": 2020,
+   "sources": [],
+   "topic_observations": 0,
+   "status": "no usable source found"
+  },
+  {
+   "exam": "JIPMER-PG",
+   "year": 2021,
+   "sources": [],
+   "topic_observations": 0,
+   "status": "no usable source found"
+  },
+  {
+   "exam": "JIPMER-PG",
+   "year": 2022,
+   "sources": [],
+   "topic_observations": 0,
+   "status": "no usable source found"
+  },
+  {
+   "exam": "JIPMER-PG",
+   "year": 2023,
+   "sources": [],
+   "topic_observations": 0,
+   "status": "no usable source found"
+  },
+  {
+   "exam": "JIPMER-PG",
+   "year": 2024,
+   "sources": [],
+   "topic_observations": 0,
+   "status": "no usable source found"
+  },
+  {
+   "exam": "JIPMER-PG",
+   "year": 2025,
+   "sources": [],
+   "topic_observations": 0,
+   "status": "no usable source found"
+  },
+  {
+   "exam": "JIPMER-PG",
+   "year": 2026,
+   "sources": [],
+   "topic_observations": 0,
+   "status": "no usable source found"
+  }
+ ],
+ "distributions": [
+  {
+   "source": "S02",
+   "exam": "NEET-PG",
+   "session": "2025",
+   "status": "partial",
+   "recorded_total": 195,
+   "paper_total": 200,
+   "completeness": 97.5,
+   "note": "Rows total 195 of 200; Psychiatry folded into Medicine; single source.",
+   "excluded": {},
+   "rows": [
+    {
+     "key": "me+ps",
+     "label": "Medicine + Psychiatry",
+     "n": 30,
+     "pct": 15.4,
+     "ci95": [
+      11.0,
+      21.1
+     ]
+    },
+    {
+     "key": "ob",
+     "label": "Obstetrics & Gynaecology",
+     "n": 20,
+     "pct": 10.3,
+     "ci95": [
+      6.7,
+      15.3
+     ]
+    },
+    {
+     "key": "su",
+     "label": "Surgery",
+     "n": 18,
+     "pct": 9.2,
+     "ci95": [
+      5.9,
+      14.1
+     ]
+    },
+    {
+     "key": "cm",
+     "label": "Community Medicine",
+     "n": 16,
+     "pct": 8.2,
+     "ci95": [
+      5.1,
+      12.9
+     ]
+    },
+    {
+     "key": "bc",
+     "label": "Biochemistry",
+     "n": 15,
+     "pct": 7.7,
+     "ci95": [
+      4.7,
+      12.3
+     ]
+    },
+    {
+     "key": "pm",
+     "label": "Pharmacology",
+     "n": 15,
+     "pct": 7.7,
+     "ci95": [
+      4.7,
+      12.3
+     ]
+    },
+    {
+     "key": "pa",
+     "label": "Pathology",
+     "n": 12,
+     "pct": 6.2,
+     "ci95": [
+      3.6,
+      10.4
+     ]
+    },
+    {
+     "key": "mi",
+     "label": "Microbiology",
+     "n": 12,
+     "pct": 6.2,
+     "ci95": [
+      3.6,
+      10.4
+     ]
+    },
+    {
+     "key": "an",
+     "label": "Anatomy",
+     "n": 9,
+     "pct": 4.6,
+     "ci95": [
+      2.4,
+      8.5
+     ]
+    },
+    {
+     "key": "de",
+     "label": "Dermatology",
+     "n": 8,
+     "pct": 4.1,
+     "ci95": [
+      2.1,
+      7.9
+     ]
+    },
+    {
+     "key": "fm",
+     "label": "Forensic Medicine",
+     "n": 6,
+     "pct": 3.1,
+     "ci95": [
+      1.4,
+      6.5
+     ]
+    },
+    {
+     "key": "ph",
+     "label": "Physiology",
+     "n": 5,
+     "pct": 2.6,
+     "ci95": [
+      1.1,
+      5.9
+     ]
+    },
+    {
+     "key": "pe",
+     "label": "Paediatrics",
+     "n": 5,
+     "pct": 2.6,
+     "ci95": [
+      1.1,
+      5.9
+     ]
+    },
+    {
+     "key": "or",
+     "label": "Orthopaedics",
+     "n": 5,
+     "pct": 2.6,
+     "ci95": [
+      1.1,
+      5.9
+     ]
+    },
+    {
+     "key": "op",
+     "label": "Ophthalmology",
+     "n": 5,
+     "pct": 2.6,
+     "ci95": [
+      1.1,
+      5.9
+     ]
+    },
+    {
+     "key": "en",
+     "label": "ENT",
+     "n": 5,
+     "pct": 2.6,
+     "ci95": [
+      1.1,
+      5.9
+     ]
+    },
+    {
+     "key": "ra",
+     "label": "Radiology",
+     "n": 5,
+     "pct": 2.6,
+     "ci95": [
+      1.1,
+      5.9
+     ]
+    },
+    {
+     "key": "as",
+     "label": "Anaesthesia",
+     "n": 4,
+     "pct": 2.1,
+     "ci95": [
+      0.8,
+      5.2
+     ]
+    }
+   ]
+  },
+  {
+   "source": "S06",
+   "exam": "NEET-PG",
+   "session": "2024",
+   "status": "rejected",
+   "recorded_total": 200,
+   "paper_total": 200,
+   "completeness": 100.0,
+   "note": "Implausible pairings (ENT 30, surgical group 4, PSM 5): rows likely misaligned.",
+   "excluded": {},
+   "rows": [
+    {
+     "key": "me+de+ps",
+     "label": "Medicine + Dermatology + Psychiatry",
+     "n": 30,
+     "pct": 15.0,
+     "ci95": [
+      10.7,
+      20.6
+     ]
+    },
+    {
+     "key": "en",
+     "label": "ENT",
+     "n": 30,
+     "pct": 15.0,
+     "ci95": [
+      10.7,
+      20.6
+     ]
+    },
+    {
+     "key": "ob",
+     "label": "Obstetrics & Gynaecology",
+     "n": 20,
+     "pct": 10.0,
+     "ci95": [
+      6.6,
+      14.9
+     ]
+    },
+    {
+     "key": "pa",
+     "label": "Pathology",
+     "n": 17,
+     "pct": 8.5,
+     "ci95": [
+      5.4,
+      13.2
+     ]
+    },
+    {
+     "key": "fm",
+     "label": "Forensic Medicine",
+     "n": 17,
+     "pct": 8.5,
+     "ci95": [
+      5.4,
+      13.2
+     ]
+    },
+    {
+     "key": "an",
+     "label": "Anatomy",
+     "n": 16,
+     "pct": 8.0,
+     "ci95": [
+      5.0,
+      12.6
+     ]
+    },
+    {
+     "key": "ph",
+     "label": "Physiology",
+     "n": 16,
+     "pct": 8.0,
+     "ci95": [
+      5.0,
+      12.6
+     ]
+    },
+    {
+     "key": "bc",
+     "label": "Biochemistry",
+     "n": 13,
+     "pct": 6.5,
+     "ci95": [
+      3.8,
+      10.8
+     ]
+    },
+    {
+     "key": "mi",
+     "label": "Microbiology",
+     "n": 13,
+     "pct": 6.5,
+     "ci95": [
+      3.8,
+      10.8
+     ]
+    },
+    {
+     "key": "pm",
+     "label": "Pharmacology",
+     "n": 13,
+     "pct": 6.5,
+     "ci95": [
+      3.8,
+      10.8
+     ]
+    },
+    {
+     "key": "cm",
+     "label": "Community Medicine",
+     "n": 5,
+     "pct": 2.5,
+     "ci95": [
+      1.1,
+      5.7
+     ]
+    },
+    {
+     "key": "su+or+as+ra",
+     "label": "Surgery + Orthopaedics + Anaesthesia + Radiology",
+     "n": 4,
+     "pct": 2.0,
+     "ci95": [
+      0.8,
+      5.0
+     ]
+    },
+    {
+     "key": "pe",
+     "label": "Paediatrics",
+     "n": 3,
+     "pct": 1.5,
+     "ci95": [
+      0.5,
+      4.3
+     ]
+    },
+    {
+     "key": "op",
+     "label": "Ophthalmology",
+     "n": 3,
+     "pct": 1.5,
+     "ci95": [
+      0.5,
+      4.3
+     ]
+    }
+   ]
+  },
+  {
+   "source": "S13",
+   "exam": "NEET-PG (as labelled by MedMCQA validation split)",
+   "session": "years unknown (described as 2001-present)",
+   "status": "compilation",
+   "recorded_total": 2863,
+   "paper_total": null,
+   "completeness": null,
+   "note": "Aggregate subject labels for 4,183 items; Dental 1,318 and Unknown 2 excluded below.",
+   "excluded": {
+    "Dental": 1318,
+    "Unknown": 2
+   },
+   "rows": [
+    {
+     "key": "su",
+     "label": "Surgery",
+     "n": 369,
+     "pct": 12.9,
+     "ci95": [
+      11.7,
+      14.2
+     ]
+    },
+    {
+     "key": "pa",
+     "label": "Pathology",
+     "n": 337,
+     "pct": 11.8,
+     "ci95": [
+      10.6,
+      13.0
+     ]
+    },
+    {
+     "key": "me",
+     "label": "Medicine",
+     "n": 295,
+     "pct": 10.3,
+     "ci95": [
+      9.2,
+      11.5
+     ]
+    },
+    {
+     "key": "pm",
+     "label": "Pharmacology",
+     "n": 243,
+     "pct": 8.5,
+     "ci95": [
+      7.5,
+      9.6
+     ]
+    },
+    {
+     "key": "an",
+     "label": "Anatomy",
+     "n": 234,
+     "pct": 8.2,
+     "ci95": [
+      7.2,
+      9.2
+     ]
+    },
+    {
+     "key": "pe",
+     "label": "Paediatrics",
+     "n": 234,
+     "pct": 8.2,
+     "ci95": [
+      7.2,
+      9.2
+     ]
+    },
+    {
+     "key": "ob",
+     "label": "Obstetrics & Gynaecology",
+     "n": 224,
+     "pct": 7.8,
+     "ci95": [
+      6.9,
+      8.9
+     ]
+    },
+    {
+     "key": "bc",
+     "label": "Biochemistry",
+     "n": 171,
+     "pct": 6.0,
+     "ci95": [
+      5.2,
+      6.9
+     ]
+    },
+    {
+     "key": "ph",
+     "label": "Physiology",
+     "n": 171,
+     "pct": 6.0,
+     "ci95": [
+      5.2,
+      6.9
+     ]
+    },
+    {
+     "key": "cm",
+     "label": "Community Medicine",
+     "n": 129,
+     "pct": 4.5,
+     "ci95": [
+      3.8,
+      5.3
+     ]
+    },
+    {
+     "key": "mi",
+     "label": "Microbiology",
+     "n": 122,
+     "pct": 4.3,
+     "ci95": [
+      3.6,
+      5.1
+     ]
+    },
+    {
+     "key": "ra",
+     "label": "Radiology",
+     "n": 69,
+     "pct": 2.4,
+     "ci95": [
+      1.9,
+      3.0
+     ]
+    },
+    {
+     "key": "fm",
+     "label": "Forensic Medicine",
+     "n": 67,
+     "pct": 2.3,
+     "ci95": [
+      1.8,
+      3.0
+     ]
+    },
+    {
+     "key": "op",
+     "label": "Ophthalmology",
+     "n": 58,
+     "pct": 2.0,
+     "ci95": [
+      1.6,
+      2.6
+     ]
+    },
+    {
+     "key": "en",
+     "label": "ENT",
+     "n": 53,
+     "pct": 1.9,
+     "ci95": [
+      1.4,
+      2.4
+     ]
+    },
+    {
+     "key": "as",
+     "label": "Anaesthesia",
+     "n": 34,
+     "pct": 1.2,
+     "ci95": [
+      0.9,
+      1.7
+     ]
+    },
+    {
+     "key": "or",
+     "label": "Orthopaedics",
+     "n": 20,
+     "pct": 0.7,
+     "ci95": [
+      0.5,
+      1.1
+     ]
+    },
+    {
+     "key": "de",
+     "label": "Dermatology",
+     "n": 17,
+     "pct": 0.6,
+     "ci95": [
+      0.4,
+      0.9
+     ]
+    },
+    {
+     "key": "ps",
+     "label": "Psychiatry",
+     "n": 16,
+     "pct": 0.6,
+     "ci95": [
+      0.3,
+      0.9
+     ]
+    }
+   ]
+  },
+  {
+   "source": "S13",
+   "exam": "AIIMS-PG (as labelled by MedMCQA test split)",
+   "session": "years unknown (described as 1991-present)",
+   "status": "compilation",
+   "recorded_total": 4265,
+   "paper_total": null,
+   "completeness": null,
+   "note": "Aggregate subject labels for 6,150 items; Dental 1,203 and Unknown 682 excluded below.",
+   "excluded": {
+    "Dental": 1203,
+    "Unknown": 682
+   },
+   "rows": [
+    {
+     "key": "ob",
+     "label": "Obstetrics & Gynaecology",
+     "n": 532,
+     "pct": 12.5,
+     "ci95": [
+      11.5,
+      13.5
+     ]
+    },
+    {
+     "key": "su",
+     "label": "Surgery",
+     "n": 501,
+     "pct": 11.7,
+     "ci95": [
+      10.8,
+      12.7
+     ]
+    },
+    {
+     "key": "ph",
+     "label": "Physiology",
+     "n": 388,
+     "pct": 9.1,
+     "ci95": [
+      8.3,
+      10.0
+     ]
+    },
+    {
+     "key": "me",
+     "label": "Medicine",
+     "n": 372,
+     "pct": 8.7,
+     "ci95": [
+      7.9,
+      9.6
+     ]
+    },
+    {
+     "key": "bc",
+     "label": "Biochemistry",
+     "n": 352,
+     "pct": 8.3,
+     "ci95": [
+      7.5,
+      9.1
+     ]
+    },
+    {
+     "key": "pm",
+     "label": "Pharmacology",
+     "n": 317,
+     "pct": 7.4,
+     "ci95": [
+      6.7,
+      8.3
+     ]
+    },
+    {
+     "key": "pa",
+     "label": "Pathology",
+     "n": 305,
+     "pct": 7.2,
+     "ci95": [
+      6.4,
+      8.0
+     ]
+    },
+    {
+     "key": "an",
+     "label": "Anatomy",
+     "n": 259,
+     "pct": 6.1,
+     "ci95": [
+      5.4,
+      6.8
+     ]
+    },
+    {
+     "key": "cm",
+     "label": "Community Medicine",
+     "n": 243,
+     "pct": 5.7,
+     "ci95": [
+      5.0,
+      6.4
+     ]
+    },
+    {
+     "key": "pe",
+     "label": "Paediatrics",
+     "n": 190,
+     "pct": 4.5,
+     "ci95": [
+      3.9,
+      5.1
+     ]
+    },
+    {
+     "key": "op",
+     "label": "Ophthalmology",
+     "n": 177,
+     "pct": 4.2,
+     "ci95": [
+      3.6,
+      4.8
+     ]
+    },
+    {
+     "key": "mi",
+     "label": "Microbiology",
+     "n": 167,
+     "pct": 3.9,
+     "ci95": [
+      3.4,
+      4.5
+     ]
+    },
+    {
+     "key": "fm",
+     "label": "Forensic Medicine",
+     "n": 132,
+     "pct": 3.1,
+     "ci95": [
+      2.6,
+      3.7
+     ]
+    },
+    {
+     "key": "ra",
+     "label": "Radiology",
+     "n": 119,
+     "pct": 2.8,
+     "ci95": [
+      2.3,
+      3.3
+     ]
+    },
+    {
+     "key": "en",
+     "label": "ENT",
+     "n": 86,
+     "pct": 2.0,
+     "ci95": [
+      1.6,
+      2.5
+     ]
+    },
+    {
+     "key": "de",
+     "label": "Dermatology",
+     "n": 60,
+     "pct": 1.4,
+     "ci95": [
+      1.1,
+      1.8
+     ]
+    },
+    {
+     "key": "as",
+     "label": "Anaesthesia",
+     "n": 59,
+     "pct": 1.4,
+     "ci95": [
+      1.1,
+      1.8
+     ]
+    },
+    {
+     "key": "ps",
+     "label": "Psychiatry",
+     "n": 6,
+     "pct": 0.1,
+     "ci95": [
+      0.1,
+      0.3
+     ]
+    }
+   ]
+  }
+ ],
+ "concepts": [
+  {
+   "id": "courvoisier",
+   "name": "Courvoisier law: painless jaundice with palpable gallbladder",
+   "s": "su",
+   "t": "Hepatobiliary & Pancreas",
+   "st": "Gallbladder & biliary",
+   "mapping_note": "",
+   "mentions": 2,
+   "distinct_sessions": 2,
+   "distinct_years": 2,
+   "exam_families": [
+    "INI-CET",
+    "NEET-PG"
+   ],
+   "latest_year": 2026,
+   "sessions": [
+    {
+     "exam": "NEET-PG",
+     "session": "2025",
+     "year": 2025,
+     "sources": [
+      "S02"
+     ],
+     "observations": [
+      "O015"
+     ],
+     "image": "uncertain"
+    },
+    {
+     "exam": "INI-CET",
+     "session": "May 2026",
+     "year": 2026,
+     "sources": [
+      "S08"
+     ],
+     "observations": [
+      "O037"
+     ],
+     "image": "uncertain"
+    }
+   ],
+   "image_sessions": 0,
+   "provenance": "low: third-party memory-based recall"
+  },
+  {
+   "id": "barrett",
+   "name": "Barrett oesophagus (histology image)",
+   "s": "pa",
+   "t": "Systemic Pathology",
+   "st": "GIT & liver",
+   "mapping_note": "",
+   "mentions": 1,
+   "distinct_sessions": 1,
+   "distinct_years": 1,
+   "exam_families": [
+    "INI-CET"
+   ],
+   "latest_year": 2026,
+   "sessions": [
+    {
+     "exam": "INI-CET",
+     "session": "May 2026",
+     "year": 2026,
+     "sources": [
+      "S08"
+     ],
+     "observations": [
+      "O039"
+     ],
+     "image": "yes"
+    }
+   ],
+   "image_sessions": 1,
+   "provenance": "low: third-party memory-based recall"
+  },
+  {
+   "id": "congenital-hypothyroidism",
+   "name": "Congenital hypothyroidism",
+   "s": "pe",
+   "t": "Paediatric Endocrinology",
+   "st": "Thyroid & growth",
+   "mapping_note": "",
+   "mentions": 1,
+   "distinct_sessions": 1,
+   "distinct_years": 1,
+   "exam_families": [
+    "INI-CET"
+   ],
+   "latest_year": 2026,
+   "sessions": [
+    {
+     "exam": "INI-CET",
+     "session": "May 2026",
+     "year": 2026,
+     "sources": [
+      "S08"
+     ],
+     "observations": [
+      "O036"
+     ],
+     "image": "uncertain"
+    }
+   ],
+   "image_sessions": 0,
+   "provenance": "low: third-party memory-based recall"
+  },
+  {
+   "id": "gcs",
+   "name": "Glasgow Coma Scale scoring",
+   "s": "su",
+   "t": "Trauma",
+   "st": "Head injury",
+   "mapping_note": "",
+   "mentions": 1,
+   "distinct_sessions": 1,
+   "distinct_years": 1,
+   "exam_families": [
+    "INI-CET"
+   ],
+   "latest_year": 2026,
+   "sessions": [
+    {
+     "exam": "INI-CET",
+     "session": "May 2026",
+     "year": 2026,
+     "sources": [
+      "S08"
+     ],
+     "observations": [
+      "O035"
+     ],
+     "image": "no"
+    }
+   ],
+   "image_sessions": 0,
+   "provenance": "low: third-party memory-based recall"
+  },
+  {
+   "id": "kawasaki",
+   "name": "Kawasaki disease",
+   "s": "pe",
+   "t": "Paediatric Cardiology",
+   "st": "Acquired heart disease",
+   "mapping_note": "",
+   "mentions": 1,
+   "distinct_sessions": 1,
+   "distinct_years": 1,
+   "exam_families": [
+    "INI-CET"
+   ],
+   "latest_year": 2026,
+   "sessions": [
+    {
+     "exam": "INI-CET",
+     "session": "May 2026",
+     "year": 2026,
+     "sources": [
+      "S08"
+     ],
+     "observations": [
+      "O033"
+     ],
+     "image": "uncertain"
+    }
+   ],
+   "image_sessions": 0,
+   "provenance": "low: third-party memory-based recall"
+  },
+  {
+   "id": "rett",
+   "name": "Rett syndrome",
+   "s": "pe",
+   "t": "Paediatric Neurology & Nephrology",
+   "st": "Neurology",
+   "mapping_note": "",
+   "mentions": 1,
+   "distinct_sessions": 1,
+   "distinct_years": 1,
+   "exam_families": [
+    "INI-CET"
+   ],
+   "latest_year": 2026,
+   "sessions": [
+    {
+     "exam": "INI-CET",
+     "session": "May 2026",
+     "year": 2026,
+     "sources": [
+      "S08"
+     ],
+     "observations": [
+      "O034"
+     ],
+     "image": "uncertain"
+    }
+   ],
+   "image_sessions": 0,
+   "provenance": "low: third-party memory-based recall"
+  },
+  {
+   "id": "trauma-primary-survey",
+   "name": "Trauma primary survey sequence (catastrophic haemorrhage, ABCDE)",
+   "s": "su",
+   "t": "Trauma",
+   "st": "Primary survey",
+   "mapping_note": "",
+   "mentions": 1,
+   "distinct_sessions": 1,
+   "distinct_years": 1,
+   "exam_families": [
+    "INI-CET"
+   ],
+   "latest_year": 2026,
+   "sessions": [
+    {
+     "exam": "INI-CET",
+     "session": "May 2026",
+     "year": 2026,
+     "sources": [
+      "S08"
+     ],
+     "observations": [
+      "O038"
+     ],
+     "image": "no"
+    }
+   ],
+   "image_sessions": 0,
+   "provenance": "low: third-party memory-based recall"
+  },
+  {
+   "id": "ards-ventilation",
+   "name": "ARDS: lung-protective ventilation",
+   "s": "me",
+   "t": "Respiratory",
+   "st": "ARDS & respiratory failure",
+   "mapping_note": "",
+   "mentions": 1,
+   "distinct_sessions": 1,
+   "distinct_years": 1,
+   "exam_families": [
+    "NEET-PG"
+   ],
+   "latest_year": 2025,
+   "sessions": [
+    {
+     "exam": "NEET-PG",
+     "session": "2025",
+     "year": 2025,
+     "sources": [
+      "S02"
+     ],
+     "observations": [
+      "O001"
+     ],
+     "image": "uncertain"
+    }
+   ],
+   "image_sessions": 0,
+   "provenance": "low: third-party memory-based recall"
+  },
+  {
+   "id": "achalasia",
+   "name": "Achalasia cardia: manometry",
+   "s": "su",
+   "t": "GI Surgery",
+   "st": "Oesophagus & stomach",
+   "mapping_note": "",
+   "mentions": 1,
+   "distinct_sessions": 1,
+   "distinct_years": 1,
+   "exam_families": [
+    "NEET-PG"
+   ],
+   "latest_year": 2025,
+   "sessions": [
+    {
+     "exam": "NEET-PG",
+     "session": "2025",
+     "year": 2025,
+     "sources": [
+      "S02"
+     ],
+     "observations": [
+      "O017"
+     ],
+     "image": "uncertain"
+    }
+   ],
+   "image_sessions": 0,
+   "provenance": "low: third-party memory-based recall"
+  },
+  {
+   "id": "apl-t1517",
+   "name": "Acute promyelocytic leukaemia, t(15;17)",
+   "s": "pa",
+   "t": "Haematology",
+   "st": "Leukaemias",
+   "mapping_note": "",
+   "mentions": 1,
+   "distinct_sessions": 1,
+   "distinct_years": 1,
+   "exam_families": [
+    "NEET-PG"
+   ],
+   "latest_year": 2025,
+   "sessions": [
+    {
+     "exam": "NEET-PG",
+     "session": "2025",
+     "year": 2025,
+     "sources": [
+      "S02"
+     ],
+     "observations": [
+      "O018"
+     ],
+     "image": "uncertain"
+    }
+   ],
+   "image_sessions": 0,
+   "provenance": "low: third-party memory-based recall"
+  },
+  {
+   "id": "adenomyosis-mri",
+   "name": "Adenomyosis: MRI diagnosis",
+   "s": "ob",
+   "t": "Gynaecology",
+   "st": "Fibroids & endometriosis",
+   "mapping_note": "",
+   "mentions": 1,
+   "distinct_sessions": 1,
+   "distinct_years": 1,
+   "exam_families": [
+    "NEET-PG"
+   ],
+   "latest_year": 2025,
+   "sessions": [
+    {
+     "exam": "NEET-PG",
+     "session": "2025",
+     "year": 2025,
+     "sources": [
+      "S02"
+     ],
+     "observations": [
+      "O009"
+     ],
+     "image": "uncertain"
+    }
+   ],
+   "image_sessions": 0,
+   "provenance": "low: third-party memory-based recall"
+  },
+  {
+   "id": "adrenal-insufficiency",
+   "name": "Adrenal insufficiency (Addison disease)",
+   "s": "me",
+   "t": "Endocrinology",
+   "st": "Adrenal",
+   "mapping_note": "",
+   "mentions": 1,
+   "distinct_sessions": 1,
+   "distinct_years": 1,
+   "exam_families": [
+    "NEET-PG"
+   ],
+   "latest_year": 2025,
+   "sessions": [
+    {
+     "exam": "NEET-PG",
+     "session": "2025",
+     "year": 2025,
+     "sources": [
+      "S02"
+     ],
+     "observations": [
+      "O002"
+     ],
+     "image": "uncertain"
+    }
+   ],
+   "image_sessions": 0,
+   "provenance": "low: third-party memory-based recall"
+  },
+  {
+   "id": "aspergillus-hyphae",
+   "name": "Aspergillus: acute-angle septate hyphae",
+   "s": "mi",
+   "t": "Mycology",
+   "st": "Opportunistic mycoses",
+   "mapping_note": "",
+   "mentions": 1,
+   "distinct_sessions": 1,
+   "distinct_years": 1,
+   "exam_families": [
+    "NEET-PG"
+   ],
+   "latest_year": 2025,
+   "sessions": [
+    {
+     "exam": "NEET-PG",
+     "session": "2025",
+     "year": 2025,
+     "sources": [
+      "S02"
+     ],
+     "observations": [
+      "O021"
+     ],
+     "image": "uncertain"
+    }
+   ],
+   "image_sessions": 0,
+   "provenance": "low: third-party memory-based recall"
+  },
+  {
+   "id": "atonic-pph",
+   "name": "Atonic postpartum haemorrhage: stepwise management",
+   "s": "ob",
+   "t": "Obstetrics",
+   "st": "Postpartum haemorrhage",
+   "mapping_note": "",
+   "mentions": 1,
+   "distinct_sessions": 1,
+   "distinct_years": 1,
+   "exam_families": [
+    "NEET-PG"
+   ],
+   "latest_year": 2025,
+   "sessions": [
+    {
+     "exam": "NEET-PG",
+     "session": "2025",
+     "year": 2025,
+     "sources": [
+      "S02"
+     ],
+     "observations": [
+      "O007"
+     ],
+     "image": "uncertain"
+    }
+   ],
+   "image_sessions": 0,
+   "provenance": "low: third-party memory-based recall"
+  },
+  {
+   "id": "cluster-rct",
+   "name": "Cluster randomised trial",
+   "s": "cm",
+   "t": "Epidemiology",
+   "st": "Study designs",
+   "mapping_note": "",
+   "mentions": 1,
+   "distinct_sessions": 1,
+   "distinct_years": 1,
+   "exam_families": [
+    "NEET-PG"
+   ],
+   "latest_year": 2025,
+   "sessions": [
+    {
+     "exam": "NEET-PG",
+     "session": "2025",
+     "year": 2025,
+     "sources": [
+      "S02"
+     ],
+     "observations": [
+      "O032"
+     ],
+     "image": "no"
+    }
+   ],
+   "image_sessions": 0,
+   "provenance": "low: third-party memory-based recall"
+  },
+  {
+   "id": "cdh",
+   "name": "Congenital diaphragmatic hernia",
+   "s": "su",
+   "t": "Paediatric Surgery",
+   "st": "Congenital anomalies",
+   "mapping_note": "",
+   "mentions": 1,
+   "distinct_sessions": 1,
+   "distinct_years": 1,
+   "exam_families": [
+    "NEET-PG"
+   ],
+   "latest_year": 2025,
+   "sessions": [
+    {
+     "exam": "NEET-PG",
+     "session": "2025",
+     "year": 2025,
+     "sources": [
+      "S02"
+     ],
+     "observations": [
+      "O016"
+     ],
+     "image": "uncertain"
+    }
+   ],
+   "image_sessions": 0,
+   "provenance": "low: third-party memory-based recall"
+  },
+  {
+   "id": "diffuse-axonal-injury",
+   "name": "Diffuse axonal injury",
+   "s": "su",
+   "t": "Trauma",
+   "st": "Head injury",
+   "mapping_note": "",
+   "mentions": 1,
+   "distinct_sessions": 1,
+   "distinct_years": 1,
+   "exam_families": [
+    "NEET-PG"
+   ],
+   "latest_year": 2025,
+   "sessions": [
+    {
+     "exam": "NEET-PG",
+     "session": "2025",
+     "year": 2025,
+     "sources": [
+      "S02"
+     ],
+     "observations": [
+      "O013"
+     ],
+     "image": "uncertain"
+    }
+   ],
+   "image_sessions": 0,
+   "provenance": "low: third-party memory-based recall"
+  },
+  {
+   "id": "enterobius",
+   "name": "Enterobius vermicularis: perianal pruritus",
+   "s": "mi",
+   "t": "Parasitology",
+   "st": "Helminths",
+   "mapping_note": "",
+   "mentions": 1,
+   "distinct_sessions": 1,
+   "distinct_years": 1,
+   "exam_families": [
+    "NEET-PG"
+   ],
+   "latest_year": 2025,
+   "sessions": [
+    {
+     "exam": "NEET-PG",
+     "session": "2025",
+     "year": 2025,
+     "sources": [
+      "S02"
+     ],
+     "observations": [
+      "O023"
+     ],
+     "image": "uncertain"
+    }
+   ],
+   "image_sessions": 0,
+   "provenance": "low: third-party memory-based recall"
+  },
+  {
+   "id": "episiotomy-repair",
+   "name": "Episiotomy repair sequence",
+   "s": "ob",
+   "t": "Obstetrics",
+   "st": "Labour",
+   "mapping_note": "",
+   "mentions": 1,
+   "distinct_sessions": 1,
+   "distinct_years": 1,
+   "exam_families": [
+    "NEET-PG"
+   ],
+   "latest_year": 2025,
+   "sessions": [
+    {
+     "exam": "NEET-PG",
+     "session": "2025",
+     "year": 2025,
+     "sources": [
+      "S02"
+     ],
+     "observations": [
+      "O011"
+     ],
+     "image": "uncertain"
+    }
+   ],
+   "image_sessions": 0,
+   "provenance": "low: third-party memory-based recall"
+  },
+  {
+   "id": "fat-embolism",
+   "name": "Fat embolism syndrome",
+   "s": "or",
+   "t": "Lower Limb Trauma",
+   "st": "Hip & femur",
+   "mapping_note": "Long-bone fracture complication; source listed it under Medicine",
+   "mentions": 1,
+   "distinct_sessions": 1,
+   "distinct_years": 1,
+   "exam_families": [
+    "NEET-PG"
+   ],
+   "latest_year": 2025,
+   "sessions": [
+    {
+     "exam": "NEET-PG",
+     "session": "2025",
+     "year": 2025,
+     "sources": [
+      "S02"
+     ],
+     "observations": [
+      "O006"
+     ],
+     "image": "uncertain"
+    }
+   ],
+   "image_sessions": 0,
+   "provenance": "low: third-party memory-based recall"
+  },
+  {
+   "id": "fistula-parks",
+   "name": "Fistula-in-ano: Parks classification",
+   "s": "su",
+   "t": "GI Surgery",
+   "st": "Anorectal",
+   "mapping_note": "",
+   "mentions": 1,
+   "distinct_sessions": 1,
+   "distinct_years": 1,
+   "exam_families": [
+    "NEET-PG"
+   ],
+   "latest_year": 2025,
+   "sessions": [
+    {
+     "exam": "NEET-PG",
+     "session": "2025",
+     "year": 2025,
+     "sources": [
+      "S02"
+     ],
+     "observations": [
+      "O014"
+     ],
+     "image": "uncertain"
+    }
+   ],
+   "image_sessions": 0,
+   "provenance": "low: third-party memory-based recall"
+  },
+  {
+   "id": "follicular-lymphoma",
+   "name": "Follicular lymphoma, t(14;18)",
+   "s": "pa",
+   "t": "Haematology",
+   "st": "Lymphomas",
+   "mapping_note": "",
+   "mentions": 1,
+   "distinct_sessions": 1,
+   "distinct_years": 1,
+   "exam_families": [
+    "NEET-PG"
+   ],
+   "latest_year": 2025,
+   "sessions": [
+    {
+     "exam": "NEET-PG",
+     "session": "2025",
+     "year": 2025,
+     "sources": [
+      "S02"
+     ],
+     "observations": [
+      "O019"
+     ],
+     "image": "uncertain"
+    }
+   ],
+   "image_sessions": 0,
+   "provenance": "low: third-party memory-based recall"
+  },
+  {
+   "id": "lead-time-bias",
+   "name": "Lead-time bias in screening",
+   "s": "cm",
+   "t": "Epidemiology",
+   "st": "Screening",
+   "mapping_note": "",
+   "mentions": 1,
+   "distinct_sessions": 1,
+   "distinct_years": 1,
+   "exam_families": [
+    "NEET-PG"
+   ],
+   "latest_year": 2025,
+   "sessions": [
+    {
+     "exam": "NEET-PG",
+     "session": "2025",
+     "year": 2025,
+     "sources": [
+      "S02"
+     ],
+     "observations": [
+      "O029"
+     ],
+     "image": "no"
+    }
+   ],
+   "image_sessions": 0,
+   "provenance": "low: third-party memory-based recall"
+  },
+  {
+   "id": "mgso4-pritchard",
+   "name": "Magnesium sulphate: Pritchard regimen",
+   "s": "ob",
+   "t": "Obstetrics",
+   "st": "Hypertensive disorders",
+   "mapping_note": "Source listed under Pharmacology",
+   "mentions": 1,
+   "distinct_sessions": 1,
+   "distinct_years": 1,
+   "exam_families": [
+    "NEET-PG"
+   ],
+   "latest_year": 2025,
+   "sessions": [
+    {
+     "exam": "NEET-PG",
+     "session": "2025",
+     "year": 2025,
+     "sources": [
+      "S02"
+     ],
+     "observations": [
+      "O027"
+     ],
+     "image": "no"
+    }
+   ],
+   "image_sessions": 0,
+   "provenance": "low: third-party memory-based recall"
+  },
+  {
+   "id": "topiramate-migraine-cad",
+   "name": "Migraine prophylaxis choice (topiramate) in coronary artery disease",
+   "s": "pm",
+   "t": "CNS",
+   "st": "Antiepileptics",
+   "mapping_note": "",
+   "mentions": 1,
+   "distinct_sessions": 1,
+   "distinct_years": 1,
+   "exam_families": [
+    "NEET-PG"
+   ],
+   "latest_year": 2025,
+   "sessions": [
+    {
+     "exam": "NEET-PG",
+     "session": "2025",
+     "year": 2025,
+     "sources": [
+      "S02"
+     ],
+     "observations": [
+      "O024"
+     ],
+     "image": "no"
+    }
+   ],
+   "image_sessions": 0,
+   "provenance": "low: third-party memory-based recall"
+  },
+  {
+   "id": "nalgonda",
+   "name": "Nalgonda technique (defluoridation)",
+   "s": "cm",
+   "t": "Environment & Occupational Health",
+   "st": "Water & sanitation",
+   "mapping_note": "",
+   "mentions": 1,
+   "distinct_sessions": 1,
+   "distinct_years": 1,
+   "exam_families": [
+    "NEET-PG"
+   ],
+   "latest_year": 2025,
+   "sessions": [
+    {
+     "exam": "NEET-PG",
+     "session": "2025",
+     "year": 2025,
+     "sources": [
+      "S02"
+     ],
+     "observations": [
+      "O030"
+     ],
+     "image": "no"
+    }
+   ],
+   "image_sessions": 0,
+   "provenance": "low: third-party memory-based recall"
+  },
+  {
+   "id": "nocardia-paraffin",
+   "name": "Nocardia: paraffin bait technique",
+   "s": "mi",
+   "t": "Bacteriology",
+   "st": "Gram-positive bacilli",
+   "mapping_note": "",
+   "mentions": 1,
+   "distinct_sessions": 1,
+   "distinct_years": 1,
+   "exam_families": [
+    "NEET-PG"
+   ],
+   "latest_year": 2025,
+   "sessions": [
+    {
+     "exam": "NEET-PG",
+     "session": "2025",
+     "year": 2025,
+     "sources": [
+      "S02"
+     ],
+     "observations": [
+      "O022"
+     ],
+     "image": "uncertain"
+    }
+   ],
+   "image_sessions": 0,
+   "provenance": "low: third-party memory-based recall"
+  },
+  {
+   "id": "paget-bone",
+   "name": "Paget disease of bone",
+   "s": "me",
+   "t": "Rheumatology",
+   "st": "Metabolic bone disease",
+   "mapping_note": "",
+   "mentions": 1,
+   "distinct_sessions": 1,
+   "distinct_years": 1,
+   "exam_families": [
+    "NEET-PG"
+   ],
+   "latest_year": 2025,
+   "sessions": [
+    {
+     "exam": "NEET-PG",
+     "session": "2025",
+     "year": 2025,
+     "sources": [
+      "S02"
+     ],
+     "observations": [
+      "O005"
+     ],
+     "image": "uncertain"
+    }
+   ],
+   "image_sessions": 0,
+   "provenance": "low: third-party memory-based recall"
+  },
+  {
+   "id": "pheo-phenoxybenzamine",
+   "name": "Phaeochromocytoma: pre-operative alpha-blockade",
+   "s": "pm",
+   "t": "Autonomic Nervous System",
+   "st": "Adrenergic drugs",
+   "mapping_note": "",
+   "mentions": 1,
+   "distinct_sessions": 1,
+   "distinct_years": 1,
+   "exam_families": [
+    "NEET-PG"
+   ],
+   "latest_year": 2025,
+   "sessions": [
+    {
+     "exam": "NEET-PG",
+     "session": "2025",
+     "year": 2025,
+     "sources": [
+      "S02"
+     ],
+     "observations": [
+      "O025"
+     ],
+     "image": "no"
+    }
+   ],
+   "image_sessions": 0,
+   "provenance": "low: third-party memory-based recall"
+  },
+  {
+   "id": "poi",
+   "name": "Premature ovarian insufficiency",
+   "s": "ob",
+   "t": "Gynaecology",
+   "st": "Menstrual disorders & PCOS",
+   "mapping_note": "",
+   "mentions": 1,
+   "distinct_sessions": 1,
+   "distinct_years": 1,
+   "exam_families": [
+    "NEET-PG"
+   ],
+   "latest_year": 2025,
+   "sessions": [
+    {
+     "exam": "NEET-PG",
+     "session": "2025",
+     "year": 2025,
+     "sources": [
+      "S02"
+     ],
+     "observations": [
+      "O010"
+     ],
+     "image": "uncertain"
+    }
+   ],
+   "image_sessions": 0,
+   "provenance": "low: third-party memory-based recall"
+  },
+  {
+   "id": "pbc-ama",
+   "name": "Primary biliary cholangitis: anti-mitochondrial antibody",
+   "s": "pa",
+   "t": "Systemic Pathology",
+   "st": "GIT & liver",
+   "mapping_note": "",
+   "mentions": 1,
+   "distinct_sessions": 1,
+   "distinct_years": 1,
+   "exam_families": [
+    "NEET-PG"
+   ],
+   "latest_year": 2025,
+   "sessions": [
+    {
+     "exam": "NEET-PG",
+     "session": "2025",
+     "year": 2025,
+     "sources": [
+      "S02"
+     ],
+     "observations": [
+      "O020"
+     ],
+     "image": "uncertain"
+    }
+   ],
+   "image_sessions": 0,
+   "provenance": "low: third-party memory-based recall"
+  },
+  {
+   "id": "ra-pannus",
+   "name": "Rheumatoid arthritis: pannus",
+   "s": "me",
+   "t": "Rheumatology",
+   "st": "Arthritis",
+   "mapping_note": "",
+   "mentions": 1,
+   "distinct_sessions": 1,
+   "distinct_years": 1,
+   "exam_families": [
+    "NEET-PG"
+   ],
+   "latest_year": 2025,
+   "sessions": [
+    {
+     "exam": "NEET-PG",
+     "session": "2025",
+     "year": 2025,
+     "sources": [
+      "S02"
+     ],
+     "observations": [
+      "O003"
+     ],
+     "image": "uncertain"
+    }
+   ],
+   "image_sessions": 0,
+   "provenance": "low: third-party memory-based recall"
+  },
+  {
+   "id": "sglt2-hf",
+   "name": "SGLT2 inhibitor (empagliflozin) in heart failure with diabetes",
+   "s": "pm",
+   "t": "Cardiovascular & Renal",
+   "st": "Heart failure",
+   "mapping_note": "",
+   "mentions": 1,
+   "distinct_sessions": 1,
+   "distinct_years": 1,
+   "exam_families": [
+    "NEET-PG"
+   ],
+   "latest_year": 2025,
+   "sessions": [
+    {
+     "exam": "NEET-PG",
+     "session": "2025",
+     "year": 2025,
+     "sources": [
+      "S02"
+     ],
+     "observations": [
+      "O026"
+     ],
+     "image": "no"
+    }
+   ],
+   "image_sessions": 0,
+   "provenance": "low: third-party memory-based recall"
+  },
+  {
+   "id": "shoulder-dystocia",
+   "name": "Shoulder dystocia: McRoberts and manoeuvres",
+   "s": "ob",
+   "t": "Obstetrics",
+   "st": "Labour",
+   "mapping_note": "",
+   "mentions": 1,
+   "distinct_sessions": 1,
+   "distinct_years": 1,
+   "exam_families": [
+    "NEET-PG"
+   ],
+   "latest_year": 2025,
+   "sessions": [
+    {
+     "exam": "NEET-PG",
+     "session": "2025",
+     "year": 2025,
+     "sources": [
+      "S02"
+     ],
+     "observations": [
+      "O012"
+     ],
+     "image": "uncertain"
+    }
+   ],
+   "image_sessions": 0,
+   "provenance": "low: third-party memory-based recall"
+  },
+  {
+   "id": "hiv-tb-iris",
+   "name": "TB-IRIS in HIV-TB co-infection",
+   "s": "me",
+   "t": "Infectious Diseases",
+   "st": "HIV & opportunistic",
+   "mapping_note": "",
+   "mentions": 1,
+   "distinct_sessions": 1,
+   "distinct_years": 1,
+   "exam_families": [
+    "NEET-PG"
+   ],
+   "latest_year": 2025,
+   "sessions": [
+    {
+     "exam": "NEET-PG",
+     "session": "2025",
+     "year": 2025,
+     "sources": [
+      "S02"
+     ],
+     "observations": [
+      "O004"
+     ],
+     "image": "uncertain"
+    }
+   ],
+   "image_sessions": 0,
+   "provenance": "low: third-party memory-based recall"
+  },
+  {
+   "id": "hiv-tb-art-timing",
+   "name": "Timing of ART in HIV-TB co-infection",
+   "s": "me",
+   "t": "Infectious Diseases",
+   "st": "HIV & opportunistic",
+   "mapping_note": "",
+   "mentions": 1,
+   "distinct_sessions": 1,
+   "distinct_years": 1,
+   "exam_families": [
+    "NEET-PG"
+   ],
+   "latest_year": 2025,
+   "sessions": [
+    {
+     "exam": "NEET-PG",
+     "session": "2025",
+     "year": 2025,
+     "sources": [
+      "S02"
+     ],
+     "observations": [
+      "O031"
+     ],
+     "image": "no"
+    }
+   ],
+   "image_sessions": 0,
+   "provenance": "low: third-party memory-based recall"
+  },
+  {
+   "id": "cord-prolapse",
+   "name": "Umbilical cord prolapse: management",
+   "s": "ob",
+   "t": "Obstetrics",
+   "st": "Labour",
+   "mapping_note": "",
+   "mentions": 1,
+   "distinct_sessions": 1,
+   "distinct_years": 1,
+   "exam_families": [
+    "NEET-PG"
+   ],
+   "latest_year": 2025,
+   "sessions": [
+    {
+     "exam": "NEET-PG",
+     "session": "2025",
+     "year": 2025,
+     "sources": [
+      "S02"
+     ],
+     "observations": [
+      "O008"
+     ],
+     "image": "uncertain"
+    }
+   ],
+   "image_sessions": 0,
+   "provenance": "low: third-party memory-based recall"
+  },
+  {
+   "id": "vvm",
+   "name": "Vaccine vial monitor interpretation",
+   "s": "cm",
+   "t": "Immunisation & Cold Chain",
+   "st": "Cold chain",
+   "mapping_note": "",
+   "mentions": 1,
+   "distinct_sessions": 1,
+   "distinct_years": 1,
+   "exam_families": [
+    "NEET-PG"
+   ],
+   "latest_year": 2025,
+   "sessions": [
+    {
+     "exam": "NEET-PG",
+     "session": "2025",
+     "year": 2025,
+     "sources": [
+      "S02"
+     ],
+     "observations": [
+      "O028"
+     ],
+     "image": "uncertain"
+    }
+   ],
+   "image_sessions": 0,
+   "provenance": "low: third-party memory-based recall"
+  }
+ ],
+ "subtopics": [
+  {
+   "s": "pa",
+   "t": "Systemic Pathology",
+   "st": "GIT & liver",
+   "concepts": [
+    "barrett",
+    "pbc-ama"
+   ],
+   "distinct_sessions": 2,
+   "exam_families": [
+    "INI-CET",
+    "NEET-PG"
+   ],
+   "years": [
+    2025,
+    2026
+   ]
+  },
+  {
+   "s": "su",
+   "t": "Trauma",
+   "st": "Head injury",
+   "concepts": [
+    "diffuse-axonal-injury",
+    "gcs"
+   ],
+   "distinct_sessions": 2,
+   "exam_families": [
+    "INI-CET",
+    "NEET-PG"
+   ],
+   "years": [
+    2025,
+    2026
+   ]
+  },
+  {
+   "s": "su",
+   "t": "Hepatobiliary & Pancreas",
+   "st": "Gallbladder & biliary",
+   "concepts": [
+    "courvoisier"
+   ],
+   "distinct_sessions": 2,
+   "exam_families": [
+    "INI-CET",
+    "NEET-PG"
+   ],
+   "years": [
+    2025,
+    2026
+   ]
+  },
+  {
+   "s": "ob",
+   "t": "Obstetrics",
+   "st": "Labour",
+   "concepts": [
+    "cord-prolapse",
+    "episiotomy-repair",
+    "shoulder-dystocia"
+   ],
+   "distinct_sessions": 1,
+   "exam_families": [
+    "NEET-PG"
+   ],
+   "years": [
+    2025
+   ]
+  },
+  {
+   "s": "me",
+   "t": "Infectious Diseases",
+   "st": "HIV & opportunistic",
+   "concepts": [
+    "hiv-tb-art-timing",
+    "hiv-tb-iris"
+   ],
+   "distinct_sessions": 1,
+   "exam_families": [
+    "NEET-PG"
+   ],
+   "years": [
+    2025
+   ]
+  },
+  {
+   "s": "cm",
+   "t": "Immunisation & Cold Chain",
+   "st": "Cold chain",
+   "concepts": [
+    "vvm"
+   ],
+   "distinct_sessions": 1,
+   "exam_families": [
+    "NEET-PG"
+   ],
+   "years": [
+    2025
+   ]
+  },
+  {
+   "s": "cm",
+   "t": "Epidemiology",
+   "st": "Screening",
+   "concepts": [
+    "lead-time-bias"
+   ],
+   "distinct_sessions": 1,
+   "exam_families": [
+    "NEET-PG"
+   ],
+   "years": [
+    2025
+   ]
+  },
+  {
+   "s": "cm",
+   "t": "Epidemiology",
+   "st": "Study designs",
+   "concepts": [
+    "cluster-rct"
+   ],
+   "distinct_sessions": 1,
+   "exam_families": [
+    "NEET-PG"
+   ],
+   "years": [
+    2025
+   ]
+  },
+  {
+   "s": "cm",
+   "t": "Environment & Occupational Health",
+   "st": "Water & sanitation",
+   "concepts": [
+    "nalgonda"
+   ],
+   "distinct_sessions": 1,
+   "exam_families": [
+    "NEET-PG"
+   ],
+   "years": [
+    2025
+   ]
+  },
+  {
+   "s": "me",
+   "t": "Respiratory",
+   "st": "ARDS & respiratory failure",
+   "concepts": [
+    "ards-ventilation"
+   ],
+   "distinct_sessions": 1,
+   "exam_families": [
+    "NEET-PG"
+   ],
+   "years": [
+    2025
+   ]
+  },
+  {
+   "s": "me",
+   "t": "Endocrinology",
+   "st": "Adrenal",
+   "concepts": [
+    "adrenal-insufficiency"
+   ],
+   "distinct_sessions": 1,
+   "exam_families": [
+    "NEET-PG"
+   ],
+   "years": [
+    2025
+   ]
+  },
+  {
+   "s": "me",
+   "t": "Rheumatology",
+   "st": "Arthritis",
+   "concepts": [
+    "ra-pannus"
+   ],
+   "distinct_sessions": 1,
+   "exam_families": [
+    "NEET-PG"
+   ],
+   "years": [
+    2025
+   ]
+  },
+  {
+   "s": "me",
+   "t": "Rheumatology",
+   "st": "Metabolic bone disease",
+   "concepts": [
+    "paget-bone"
+   ],
+   "distinct_sessions": 1,
+   "exam_families": [
+    "NEET-PG"
+   ],
+   "years": [
+    2025
+   ]
+  },
+  {
+   "s": "mi",
+   "t": "Bacteriology",
+   "st": "Gram-positive bacilli",
+   "concepts": [
+    "nocardia-paraffin"
+   ],
+   "distinct_sessions": 1,
+   "exam_families": [
+    "NEET-PG"
+   ],
+   "years": [
+    2025
+   ]
+  },
+  {
+   "s": "mi",
+   "t": "Parasitology",
+   "st": "Helminths",
+   "concepts": [
+    "enterobius"
+   ],
+   "distinct_sessions": 1,
+   "exam_families": [
+    "NEET-PG"
+   ],
+   "years": [
+    2025
+   ]
+  },
+  {
+   "s": "mi",
+   "t": "Mycology",
+   "st": "Opportunistic mycoses",
+   "concepts": [
+    "aspergillus-hyphae"
+   ],
+   "distinct_sessions": 1,
+   "exam_families": [
+    "NEET-PG"
+   ],
+   "years": [
+    2025
+   ]
+  },
+  {
+   "s": "ob",
+   "t": "Gynaecology",
+   "st": "Fibroids & endometriosis",
+   "concepts": [
+    "adenomyosis-mri"
+   ],
+   "distinct_sessions": 1,
+   "exam_families": [
+    "NEET-PG"
+   ],
+   "years": [
+    2025
+   ]
+  },
+  {
+   "s": "ob",
+   "t": "Obstetrics",
+   "st": "Hypertensive disorders",
+   "concepts": [
+    "mgso4-pritchard"
+   ],
+   "distinct_sessions": 1,
+   "exam_families": [
+    "NEET-PG"
+   ],
+   "years": [
+    2025
+   ]
+  },
+  {
+   "s": "ob",
+   "t": "Gynaecology",
+   "st": "Menstrual disorders & PCOS",
+   "concepts": [
+    "poi"
+   ],
+   "distinct_sessions": 1,
+   "exam_families": [
+    "NEET-PG"
+   ],
+   "years": [
+    2025
+   ]
+  },
+  {
+   "s": "ob",
+   "t": "Obstetrics",
+   "st": "Postpartum haemorrhage",
+   "concepts": [
+    "atonic-pph"
+   ],
+   "distinct_sessions": 1,
+   "exam_families": [
+    "NEET-PG"
+   ],
+   "years": [
+    2025
+   ]
+  },
+  {
+   "s": "or",
+   "t": "Lower Limb Trauma",
+   "st": "Hip & femur",
+   "concepts": [
+    "fat-embolism"
+   ],
+   "distinct_sessions": 1,
+   "exam_families": [
+    "NEET-PG"
+   ],
+   "years": [
+    2025
+   ]
+  },
+  {
+   "s": "pa",
+   "t": "Haematology",
+   "st": "Leukaemias",
+   "concepts": [
+    "apl-t1517"
+   ],
+   "distinct_sessions": 1,
+   "exam_families": [
+    "NEET-PG"
+   ],
+   "years": [
+    2025
+   ]
+  },
+  {
+   "s": "pa",
+   "t": "Haematology",
+   "st": "Lymphomas",
+   "concepts": [
+    "follicular-lymphoma"
+   ],
+   "distinct_sessions": 1,
+   "exam_families": [
+    "NEET-PG"
+   ],
+   "years": [
+    2025
+   ]
+  },
+  {
+   "s": "pe",
+   "t": "Paediatric Cardiology",
+   "st": "Acquired heart disease",
+   "concepts": [
+    "kawasaki"
+   ],
+   "distinct_sessions": 1,
+   "exam_families": [
+    "INI-CET"
+   ],
+   "years": [
+    2026
+   ]
+  },
+  {
+   "s": "pe",
+   "t": "Paediatric Neurology & Nephrology",
+   "st": "Neurology",
+   "concepts": [
+    "rett"
+   ],
+   "distinct_sessions": 1,
+   "exam_families": [
+    "INI-CET"
+   ],
+   "years": [
+    2026
+   ]
+  },
+  {
+   "s": "pe",
+   "t": "Paediatric Endocrinology",
+   "st": "Thyroid & growth",
+   "concepts": [
+    "congenital-hypothyroidism"
+   ],
+   "distinct_sessions": 1,
+   "exam_families": [
+    "INI-CET"
+   ],
+   "years": [
+    2026
+   ]
+  },
+  {
+   "s": "pm",
+   "t": "Autonomic Nervous System",
+   "st": "Adrenergic drugs",
+   "concepts": [
+    "pheo-phenoxybenzamine"
+   ],
+   "distinct_sessions": 1,
+   "exam_families": [
+    "NEET-PG"
+   ],
+   "years": [
+    2025
+   ]
+  },
+  {
+   "s": "pm",
+   "t": "CNS",
+   "st": "Antiepileptics",
+   "concepts": [
+    "topiramate-migraine-cad"
+   ],
+   "distinct_sessions": 1,
+   "exam_families": [
+    "NEET-PG"
+   ],
+   "years": [
+    2025
+   ]
+  },
+  {
+   "s": "pm",
+   "t": "Cardiovascular & Renal",
+   "st": "Heart failure",
+   "concepts": [
+    "sglt2-hf"
+   ],
+   "distinct_sessions": 1,
+   "exam_families": [
+    "NEET-PG"
+   ],
+   "years": [
+    2025
+   ]
+  },
+  {
+   "s": "su",
+   "t": "GI Surgery",
+   "st": "Anorectal",
+   "concepts": [
+    "fistula-parks"
+   ],
+   "distinct_sessions": 1,
+   "exam_families": [
+    "NEET-PG"
+   ],
+   "years": [
+    2025
+   ]
+  },
+  {
+   "s": "su",
+   "t": "Paediatric Surgery",
+   "st": "Congenital anomalies",
+   "concepts": [
+    "cdh"
+   ],
+   "distinct_sessions": 1,
+   "exam_families": [
+    "NEET-PG"
+   ],
+   "years": [
+    2025
+   ]
+  },
+  {
+   "s": "su",
+   "t": "GI Surgery",
+   "st": "Oesophagus & stomach",
+   "concepts": [
+    "achalasia"
+   ],
+   "distinct_sessions": 1,
+   "exam_families": [
+    "NEET-PG"
+   ],
+   "years": [
+    2025
+   ]
+  },
+  {
+   "s": "su",
+   "t": "Trauma",
+   "st": "Primary survey",
+   "concepts": [
+    "trauma-primary-survey"
+   ],
+   "distinct_sessions": 1,
+   "exam_families": [
+    "INI-CET"
+   ],
+   "years": [
+    2026
+   ]
+  }
+ ],
+ "claims": [
+  {
+   "id": "C01",
+   "source": "S02",
+   "exam": "NEET-PG",
+   "session": "2025",
+   "metric": "image_share",
+   "value": "~50%",
+   "note": "single source"
+  },
+  {
+   "id": "C02",
+   "source": "S03",
+   "exam": "NEET-PG",
+   "session": "2025",
+   "metric": "image_share",
+   "value": "18-25%",
+   "note": "coaching estimate"
+  },
+  {
+   "id": "C03",
+   "source": "S04",
+   "exam": "NEET-PG",
+   "session": "2026",
+   "metric": "image_share",
+   "value": "very few",
+   "note": "candidate/expert feedback"
+  },
+  {
+   "id": "C04",
+   "source": "S05",
+   "exam": "NEET-PG",
+   "session": "2026",
+   "metric": "image_share",
+   "value": "'significant presence'; 10.5% of respondents named image questions the dominant pattern",
+   "note": "survey of respondents, not of questions"
+  },
+  {
+   "id": "C05",
+   "source": "S04",
+   "exam": "NEET-PG",
+   "session": "2026",
+   "metric": "video_questions",
+   "value": "none reported",
+   "note": "candidate reports"
+  },
+  {
+   "id": "C06",
+   "source": "S05",
+   "exam": "NEET-PG",
+   "session": "2026",
+   "metric": "video_questions",
+   "value": "negligible share of responses",
+   "note": "survey"
+  },
+  {
+   "id": "C07",
+   "source": "S12",
+   "exam": "FMGE",
+   "session": "June 2026",
+   "metric": "video_questions",
+   "value": "12-14 (officials); ~12 (SC petition); 12-28 (students); no official NBEMS count",
+   "note": "news report"
+  },
+  {
+   "id": "C08",
+   "source": "S11",
+   "exam": "FMGE",
+   "session": "June 2026",
+   "metric": "video_questions",
+   "value": "20+",
+   "note": "coaching report; conflicts with C07"
+  },
+  {
+   "id": "C09",
+   "source": "S02",
+   "exam": "NEET-PG",
+   "session": "2025",
+   "metric": "clinical_vignette_share",
+   "value": "~70%",
+   "note": "single source"
+  },
+  {
+   "id": "C10",
+   "source": "S05",
+   "exam": "NEET-PG",
+   "session": "2026",
+   "metric": "clinical_vignette_share",
+   "value": "75.9% of respondents called clinical questions dominant",
+   "note": "survey of respondents"
+  },
+  {
+   "id": "C11",
+   "source": "S09",
+   "exam": "INI-CET",
+   "session": "November 2025",
+   "metric": "clinical_vignette_share",
+   "value": "70-75%",
+   "note": "student estimate"
+  },
+  {
+   "id": "C12",
+   "source": "S02",
+   "exam": "NEET-PG",
+   "session": "2025",
+   "metric": "repeat_share",
+   "value": "~30% repeats from PYQs and FMGE recalls",
+   "note": "single source"
+  },
+  {
+   "id": "C13",
+   "source": "S03",
+   "exam": "NEET-PG",
+   "session": "2023-2025",
+   "metric": "repeat_share",
+   "value": "~30% direct or modified repeats",
+   "note": "coaching estimate"
+  },
+  {
+   "id": "C14",
+   "source": "S05",
+   "exam": "NEET-PG",
+   "session": "2026",
+   "metric": "repeat_share",
+   "value": "respondent estimates from 0 to 70+ questions; many said 5-20",
+   "note": "survey"
+  },
+  {
+   "id": "C15",
+   "source": "S10",
+   "exam": "INI-CET",
+   "session": "May 2025",
+   "metric": "image_share",
+   "value": "a few (radiology, histopathology)",
+   "note": "survey summary"
+  },
+  {
+   "id": "C16",
+   "source": "S09",
+   "exam": "INI-CET",
+   "session": "November 2025",
+   "metric": "image_share",
+   "value": "present; interpretation-focused",
+   "note": "student feedback"
+  },
+  {
+   "id": "C17",
+   "source": "S08",
+   "exam": "INI-CET",
+   "session": "May 2026",
+   "metric": "image_share",
+   "value": "increased (histology, surgical, anatomy images)",
+   "note": "coaching recall"
+  },
+  {
+   "id": "C18",
+   "source": "S11",
+   "exam": "FMGE",
+   "session": "June 2026",
+   "metric": "integrated_questions",
+   "value": "increasing; e.g. Medicine+Pharmacology, Pathology+Surgery",
+   "note": "coaching report"
+  },
+  {
+   "id": "C19",
+   "source": "S09",
+   "exam": "INI-CET",
+   "session": "November 2025",
+   "metric": "preclinical_count",
+   "value": "~20-25 pre-clinical; ~35-40 para-clinical",
+   "note": "student estimate"
+  },
+  {
+   "id": "C20",
+   "source": "S08",
+   "exam": "INI-CET",
+   "session": "May 2026",
+   "metric": "subject_count",
+   "value": "Surgery ~18-20",
+   "note": "coaching recall"
+  },
+  {
+   "id": "C21",
+   "source": "S08",
+   "exam": "INI-CET",
+   "session": "May 2026",
+   "metric": "repeat_claim",
+   "value": "named concepts described as repeated from previous years",
+   "note": "claim; prior years not identified"
+  }
+ ],
+ "trend": {
+  "run": false,
+  "periods": {
+   "earlier": "2017-2021",
+   "recent": "2022-2026"
+  },
+  "sessions_with_topic_data": {
+   "earlier": [],
+   "recent": [
+    "NEET-PG 2025",
+    "INI-CET May 2026"
+   ]
+  },
+  "max_sessions_for_any_concept": 2,
+  "rule": "Compare earlier vs recent proportions (Fisher exact test) only when each period has at least 3 sessions with topic-level data and a concept appears in at least 3 sessions.",
+  "verdict": "Not run: the data does not meet the minimum sample rule, so no topic can be called rising, falling or persistent."
+ },
+ "rankings": {
+  "historical_frequency": [
+   {
+    "id": "courvoisier",
+    "name": "Courvoisier law: painless jaundice with palpable gallbladder",
+    "distinct_sessions": 2,
+    "exam_families": [
+     "INI-CET",
+     "NEET-PG"
+    ],
+    "mentions": 2
+   },
+   {
+    "id": "barrett",
+    "name": "Barrett oesophagus (histology image)",
+    "distinct_sessions": 1,
+    "exam_families": [
+     "INI-CET"
+    ],
+    "mentions": 1
+   },
+   {
+    "id": "congenital-hypothyroidism",
+    "name": "Congenital hypothyroidism",
+    "distinct_sessions": 1,
+    "exam_families": [
+     "INI-CET"
+    ],
+    "mentions": 1
+   },
+   {
+    "id": "gcs",
+    "name": "Glasgow Coma Scale scoring",
+    "distinct_sessions": 1,
+    "exam_families": [
+     "INI-CET"
+    ],
+    "mentions": 1
+   },
+   {
+    "id": "kawasaki",
+    "name": "Kawasaki disease",
+    "distinct_sessions": 1,
+    "exam_families": [
+     "INI-CET"
+    ],
+    "mentions": 1
+   },
+   {
+    "id": "rett",
+    "name": "Rett syndrome",
+    "distinct_sessions": 1,
+    "exam_families": [
+     "INI-CET"
+    ],
+    "mentions": 1
+   },
+   {
+    "id": "trauma-primary-survey",
+    "name": "Trauma primary survey sequence (catastrophic haemorrhage, ABCDE)",
+    "distinct_sessions": 1,
+    "exam_families": [
+     "INI-CET"
+    ],
+    "mentions": 1
+   },
+   {
+    "id": "ards-ventilation",
+    "name": "ARDS: lung-protective ventilation",
+    "distinct_sessions": 1,
+    "exam_families": [
+     "NEET-PG"
+    ],
+    "mentions": 1
+   },
+   {
+    "id": "achalasia",
+    "name": "Achalasia cardia: manometry",
+    "distinct_sessions": 1,
+    "exam_families": [
+     "NEET-PG"
+    ],
+    "mentions": 1
+   },
+   {
+    "id": "apl-t1517",
+    "name": "Acute promyelocytic leukaemia, t(15;17)",
+    "distinct_sessions": 1,
+    "exam_families": [
+     "NEET-PG"
+    ],
+    "mentions": 1
+   },
+   {
+    "id": "adenomyosis-mri",
+    "name": "Adenomyosis: MRI diagnosis",
+    "distinct_sessions": 1,
+    "exam_families": [
+     "NEET-PG"
+    ],
+    "mentions": 1
+   },
+   {
+    "id": "adrenal-insufficiency",
+    "name": "Adrenal insufficiency (Addison disease)",
+    "distinct_sessions": 1,
+    "exam_families": [
+     "NEET-PG"
+    ],
+    "mentions": 1
+   },
+   {
+    "id": "aspergillus-hyphae",
+    "name": "Aspergillus: acute-angle septate hyphae",
+    "distinct_sessions": 1,
+    "exam_families": [
+     "NEET-PG"
+    ],
+    "mentions": 1
+   },
+   {
+    "id": "atonic-pph",
+    "name": "Atonic postpartum haemorrhage: stepwise management",
+    "distinct_sessions": 1,
+    "exam_families": [
+     "NEET-PG"
+    ],
+    "mentions": 1
+   },
+   {
+    "id": "cluster-rct",
+    "name": "Cluster randomised trial",
+    "distinct_sessions": 1,
+    "exam_families": [
+     "NEET-PG"
+    ],
+    "mentions": 1
+   },
+   {
+    "id": "cdh",
+    "name": "Congenital diaphragmatic hernia",
+    "distinct_sessions": 1,
+    "exam_families": [
+     "NEET-PG"
+    ],
+    "mentions": 1
+   },
+   {
+    "id": "diffuse-axonal-injury",
+    "name": "Diffuse axonal injury",
+    "distinct_sessions": 1,
+    "exam_families": [
+     "NEET-PG"
+    ],
+    "mentions": 1
+   },
+   {
+    "id": "enterobius",
+    "name": "Enterobius vermicularis: perianal pruritus",
+    "distinct_sessions": 1,
+    "exam_families": [
+     "NEET-PG"
+    ],
+    "mentions": 1
+   },
+   {
+    "id": "episiotomy-repair",
+    "name": "Episiotomy repair sequence",
+    "distinct_sessions": 1,
+    "exam_families": [
+     "NEET-PG"
+    ],
+    "mentions": 1
+   },
+   {
+    "id": "fat-embolism",
+    "name": "Fat embolism syndrome",
+    "distinct_sessions": 1,
+    "exam_families": [
+     "NEET-PG"
+    ],
+    "mentions": 1
+   },
+   {
+    "id": "fistula-parks",
+    "name": "Fistula-in-ano: Parks classification",
+    "distinct_sessions": 1,
+    "exam_families": [
+     "NEET-PG"
+    ],
+    "mentions": 1
+   },
+   {
+    "id": "follicular-lymphoma",
+    "name": "Follicular lymphoma, t(14;18)",
+    "distinct_sessions": 1,
+    "exam_families": [
+     "NEET-PG"
+    ],
+    "mentions": 1
+   },
+   {
+    "id": "lead-time-bias",
+    "name": "Lead-time bias in screening",
+    "distinct_sessions": 1,
+    "exam_families": [
+     "NEET-PG"
+    ],
+    "mentions": 1
+   },
+   {
+    "id": "mgso4-pritchard",
+    "name": "Magnesium sulphate: Pritchard regimen",
+    "distinct_sessions": 1,
+    "exam_families": [
+     "NEET-PG"
+    ],
+    "mentions": 1
+   },
+   {
+    "id": "topiramate-migraine-cad",
+    "name": "Migraine prophylaxis choice (topiramate) in coronary artery disease",
+    "distinct_sessions": 1,
+    "exam_families": [
+     "NEET-PG"
+    ],
+    "mentions": 1
+   },
+   {
+    "id": "nalgonda",
+    "name": "Nalgonda technique (defluoridation)",
+    "distinct_sessions": 1,
+    "exam_families": [
+     "NEET-PG"
+    ],
+    "mentions": 1
+   },
+   {
+    "id": "nocardia-paraffin",
+    "name": "Nocardia: paraffin bait technique",
+    "distinct_sessions": 1,
+    "exam_families": [
+     "NEET-PG"
+    ],
+    "mentions": 1
+   },
+   {
+    "id": "paget-bone",
+    "name": "Paget disease of bone",
+    "distinct_sessions": 1,
+    "exam_families": [
+     "NEET-PG"
+    ],
+    "mentions": 1
+   },
+   {
+    "id": "pheo-phenoxybenzamine",
+    "name": "Phaeochromocytoma: pre-operative alpha-blockade",
+    "distinct_sessions": 1,
+    "exam_families": [
+     "NEET-PG"
+    ],
+    "mentions": 1
+   },
+   {
+    "id": "poi",
+    "name": "Premature ovarian insufficiency",
+    "distinct_sessions": 1,
+    "exam_families": [
+     "NEET-PG"
+    ],
+    "mentions": 1
+   },
+   {
+    "id": "pbc-ama",
+    "name": "Primary biliary cholangitis: anti-mitochondrial antibody",
+    "distinct_sessions": 1,
+    "exam_families": [
+     "NEET-PG"
+    ],
+    "mentions": 1
+   },
+   {
+    "id": "ra-pannus",
+    "name": "Rheumatoid arthritis: pannus",
+    "distinct_sessions": 1,
+    "exam_families": [
+     "NEET-PG"
+    ],
+    "mentions": 1
+   },
+   {
+    "id": "sglt2-hf",
+    "name": "SGLT2 inhibitor (empagliflozin) in heart failure with diabetes",
+    "distinct_sessions": 1,
+    "exam_families": [
+     "NEET-PG"
+    ],
+    "mentions": 1
+   },
+   {
+    "id": "shoulder-dystocia",
+    "name": "Shoulder dystocia: McRoberts and manoeuvres",
+    "distinct_sessions": 1,
+    "exam_families": [
+     "NEET-PG"
+    ],
+    "mentions": 1
+   },
+   {
+    "id": "hiv-tb-iris",
+    "name": "TB-IRIS in HIV-TB co-infection",
+    "distinct_sessions": 1,
+    "exam_families": [
+     "NEET-PG"
+    ],
+    "mentions": 1
+   },
+   {
+    "id": "hiv-tb-art-timing",
+    "name": "Timing of ART in HIV-TB co-infection",
+    "distinct_sessions": 1,
+    "exam_families": [
+     "NEET-PG"
+    ],
+    "mentions": 1
+   },
+   {
+    "id": "cord-prolapse",
+    "name": "Umbilical cord prolapse: management",
+    "distinct_sessions": 1,
+    "exam_families": [
+     "NEET-PG"
+    ],
+    "mentions": 1
+   },
+   {
+    "id": "vvm",
+    "name": "Vaccine vial monitor interpretation",
+    "distinct_sessions": 1,
+    "exam_families": [
+     "NEET-PG"
+    ],
+    "mentions": 1
+   }
+  ],
+  "B_recurrence": [
+   {
+    "id": "courvoisier",
+    "name": "Courvoisier law: painless jaundice with palpable gallbladder",
+    "distinct_sessions": 2,
+    "exam_families": [
+     "INI-CET",
+     "NEET-PG"
+    ],
+    "sessions": [
+     "NEET-PG 2025",
+     "INI-CET May 2026"
+    ]
+   }
+  ],
+  "A_foundational": [
+   {
+    "id": "A1",
+    "name": "Acid-base and electrolyte disorders",
+    "subjects": [
+     "ph",
+     "me",
+     "bc"
+    ],
+    "concepts": [],
+    "rationale": "Underpins nephrology, critical care, endocrinology and toxicology; the same reasoning (anion gap, compensation, sodium/potassium algorithms) recurs across subjects and question formats."
+   },
+   {
+    "id": "A2",
+    "name": "Shock, resuscitation and trauma assessment",
+    "subjects": [
+     "su",
+     "as",
+     "me"
+    ],
+    "concepts": [
+     "gcs",
+     "trauma-primary-survey",
+     "diffuse-axonal-injury"
+    ],
+    "rationale": "Primary survey, GCS and shock physiology link surgery, anaesthesia and medicine; two related concepts appear in this dataset (NEET-PG 2025, INI-CET May 2026)."
+   },
+   {
+    "id": "A3",
+    "name": "Antimicrobial choice, toxicity and resistance",
+    "subjects": [
+     "pm",
+     "mi",
+     "me"
+    ],
+    "concepts": [],
+    "rationale": "Drug-bug matching and signature toxicities connect pharmacology, microbiology and clinical medicine."
+   },
+   {
+    "id": "A4",
+    "name": "Cell injury, inflammation and neoplasia (including translocations)",
+    "subjects": [
+     "pa"
+    ],
+    "concepts": [
+     "apl-t1517",
+     "follicular-lymphoma"
+    ],
+    "rationale": "General pathology is the base for systemic pathology and haematology; two translocation concepts appear in the 2025 recall list."
+   },
+   {
+    "id": "A5",
+    "name": "Autonomic pharmacology and toxidromes",
+    "subjects": [
+     "pm",
+     "fm",
+     "me"
+    ],
+    "concepts": [
+     "pheo-phenoxybenzamine"
+    ],
+    "rationale": "Receptor pharmacology explains drug effects, poisoning syndromes and perioperative care."
+   },
+   {
+    "id": "A6",
+    "name": "ECG and arrhythmias",
+    "subjects": [
+     "ph",
+     "me"
+    ],
+    "concepts": [],
+    "rationale": "Physiology of conduction to bedside ECG diagnosis and management; image-based in many formats."
+   },
+   {
+    "id": "A7",
+    "name": "Screening tests, biases and study designs",
+    "subjects": [
+     "cm"
+    ],
+    "concepts": [
+     "lead-time-bias",
+     "cluster-rct"
+    ],
+    "rationale": "Needed to read any evidence and frequently calculation-based; two related concepts appear in the 2025 recall list."
+   },
+   {
+    "id": "A8",
+    "name": "Obstetric emergencies (PPH, eclampsia, shoulder dystocia, cord prolapse)",
+    "subjects": [
+     "ob",
+     "pm"
+    ],
+    "concepts": [
+     "atonic-pph",
+     "mgso4-pritchard",
+     "shoulder-dystocia",
+     "cord-prolapse"
+    ],
+    "rationale": "Time-critical algorithms with high clinical stakes; four related concepts appear in the 2025 recall list."
+   },
+   {
+    "id": "A9",
+    "name": "HIV and tuberculosis",
+    "subjects": [
+     "me",
+     "mi",
+     "pm",
+     "cm"
+    ],
+    "concepts": [
+     "hiv-tb-iris",
+     "hiv-tb-art-timing"
+    ],
+    "rationale": "Spans microbiology, pharmacology, medicine and national programmes; two related concepts appear in the 2025 recall list."
+   },
+   {
+    "id": "A10",
+    "name": "Endocrine emergencies (DKA, adrenal crisis)",
+    "subjects": [
+     "me",
+     "ph"
+    ],
+    "concepts": [
+     "adrenal-insufficiency"
+    ],
+    "rationale": "Physiology-driven management with clear algorithms; adrenal insufficiency appears in the 2025 recall list."
+   }
+  ],
+  "C_underrepresented": [
+   {
+    "id": "C1",
+    "name": "Sepsis and septic shock: recognition and first-hour care",
+    "subjects": [
+     "me",
+     "mi",
+     "as"
+    ],
+    "rationale": "High clinical importance; no observation in this dataset, which says more about the dataset's size than about the exam."
+   },
+   {
+    "id": "C2",
+    "name": "Anaphylaxis",
+    "subjects": [
+     "me",
+     "pm",
+     "as"
+    ],
+    "rationale": "Life-threatening emergency with a single first-line drug and dose; not observed in this dataset."
+   },
+   {
+    "id": "C3",
+    "name": "Acute ischaemic stroke: thrombolysis eligibility and time windows",
+    "subjects": [
+     "me",
+     "ra"
+    ],
+    "rationale": "Guideline-dependent and clinically critical; not observed in this dataset."
+   },
+   {
+    "id": "C4",
+    "name": "Neonatal resuscitation and newborn care",
+    "subjects": [
+     "pe",
+     "ob"
+    ],
+    "rationale": "Algorithmic and important; appears only as a coaching forecast (S03), not as an observation."
+   },
+   {
+    "id": "C5",
+    "name": "Medical ethics, consent and the 2024 criminal laws (BNS, BNSS, BSA)",
+    "subjects": [
+     "fm"
+    ],
+    "rationale": "India's criminal laws changed on 1 July 2024, so older section numbers in books are outdated; syllabus relevance is high and historical data cannot reflect it yet."
+   },
+   {
+    "id": "C6",
+    "name": "Snakebite and common poisonings",
+    "subjects": [
+     "fm",
+     "me",
+     "pm"
+    ],
+    "rationale": "Common in India with specific antidotes and protocols; not observed in this dataset."
+   },
+   {
+    "id": "C7",
+    "name": "National health programme updates (e.g. TB elimination, NCD screening)",
+    "subjects": [
+     "cm"
+    ],
+    "rationale": "Programmes change often; current versions matter more than historical frequency."
+   },
+   {
+    "id": "C8",
+    "name": "Video-assessable clinical skills (gait, movement disorders, examination signs)",
+    "subjects": [
+     "me",
+     "or",
+     "ps"
+    ],
+    "rationale": "FMGE introduced video questions in June 2026 (S12). No NEET-PG video questions are reported, so this is a hypothesis about format spread, not a finding."
+   }
+  ]
+ },
+ "image": {
+  "observed_image_concepts": [
+   {
+    "concept": "barrett",
+    "name": "Barrett oesophagus (histology image)",
+    "sessions": [
+     "INI-CET May 2026"
+    ]
+   }
+  ],
+  "uncertain_image_observations": 28,
+  "claims": [
+   {
+    "id": "C01",
+    "source": "S02",
+    "exam": "NEET-PG",
+    "session": "2025",
+    "metric": "image_share",
+    "value": "~50%",
+    "note": "single source"
+   },
+   {
+    "id": "C02",
+    "source": "S03",
+    "exam": "NEET-PG",
+    "session": "2025",
+    "metric": "image_share",
+    "value": "18-25%",
+    "note": "coaching estimate"
+   },
+   {
+    "id": "C03",
+    "source": "S04",
+    "exam": "NEET-PG",
+    "session": "2026",
+    "metric": "image_share",
+    "value": "very few",
+    "note": "candidate/expert feedback"
+   },
+   {
+    "id": "C04",
+    "source": "S05",
+    "exam": "NEET-PG",
+    "session": "2026",
+    "metric": "image_share",
+    "value": "'significant presence'; 10.5% of respondents named image questions the dominant pattern",
+    "note": "survey of respondents, not of questions"
+   },
+   {
+    "id": "C15",
+    "source": "S10",
+    "exam": "INI-CET",
+    "session": "May 2025",
+    "metric": "image_share",
+    "value": "a few (radiology, histopathology)",
+    "note": "survey summary"
+   },
+   {
+    "id": "C16",
+    "source": "S09",
+    "exam": "INI-CET",
+    "session": "November 2025",
+    "metric": "image_share",
+    "value": "present; interpretation-focused",
+    "note": "student feedback"
+   },
+   {
+    "id": "C17",
+    "source": "S08",
+    "exam": "INI-CET",
+    "session": "May 2026",
+    "metric": "image_share",
+    "value": "increased (histology, surgical, anatomy images)",
+    "note": "coaching recall"
+   }
+  ],
+  "verdict": "Only one observation is explicitly image-based (Barrett oesophagus histology, INI-CET May 2026, single coaching source); the image itself is not available. Image-share claims conflict (from 'very few' to '~50%'), so no modality frequency can be estimated."
+ },
+ "video": {
+  "claims": [
+   {
+    "id": "C05",
+    "source": "S04",
+    "exam": "NEET-PG",
+    "session": "2026",
+    "metric": "video_questions",
+    "value": "none reported",
+    "note": "candidate reports"
+   },
+   {
+    "id": "C06",
+    "source": "S05",
+    "exam": "NEET-PG",
+    "session": "2026",
+    "metric": "video_questions",
+    "value": "negligible share of responses",
+    "note": "survey"
+   },
+   {
+    "id": "C07",
+    "source": "S12",
+    "exam": "FMGE",
+    "session": "June 2026",
+    "metric": "video_questions",
+    "value": "12-14 (officials); ~12 (SC petition); 12-28 (students); no official NBEMS count",
+    "note": "news report"
+   },
+   {
+    "id": "C08",
+    "source": "S11",
+    "exam": "FMGE",
+    "session": "June 2026",
+    "metric": "video_questions",
+    "value": "20+",
+    "note": "coaching report; conflicts with C07"
+   }
+  ],
+  "by_exam": {
+   "FMGE": "Documented: video-based questions introduced in June 2026 (news report citing officials; count disputed, 12-28).",
+   "NEET-PG": "No video-based questions reported for 2026 (candidate reports); nothing documented for earlier sessions in this registry.",
+   "INI-CET": "No evidence collected about video-based questions."
+  }
+ },
+ "revision_intervals_days": [
+  1,
+  3,
+  7,
+  21,
+  60
+ ],
+ "validation": {
+  "observations": 39,
+  "dedup_events": 39,
+  "events_check": true,
+  "concepts_observed": 38,
+  "mentions_sum_matches": true,
+  "distribution_totals_match": true,
+  "no_forecast_observations": true,
+  "rejected_tables_excluded_from_priorities": true
+ }
+}

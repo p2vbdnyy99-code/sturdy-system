@@ -1,0 +1,255 @@
+{
+ "doc": "S14",
+ "family": 3,
+ "scanned": false,
+ "opening_balance": 1925.18,
+ "closing_balance": 12251.69,
+ "transactions": [
+  {
+   "date": "2025-12-01",
+   "description": "DIRECT DEBIT MOBILE PHONE",
+   "amount": -54.4,
+   "balance": 1870.78
+  },
+  {
+   "date": "2025-12-03",
+   "description": "DIRECT DEBIT CITY WATER",
+   "amount": -637.15,
+   "balance": 1233.63
+  },
+  {
+   "date": "2025-12-03",
+   "description": "CARD PURCHASE HARDWARE DEPOT",
+   "amount": -60.42,
+   "balance": 1173.21
+  },
+  {
+   "date": "2025-12-03",
+   "description": "CARD PURCHASE FUEL STOP",
+   "amount": -27.16,
+   "balance": 1146.05
+  },
+  {
+   "date": "2025-12-03",
+   "description": "CARD PURCHASE FUEL STOP",
+   "amount": -27.16,
+   "balance": 1118.89
+  },
+  {
+   "date": "2025-12-05",
+   "description": "CARD PURCHASE PHARMACY",
+   "amount": -886.46,
+   "balance": 232.43
+  },
+  {
+   "date": "2025-12-05",
+   "description": "INSURANCE PREMIUM HOME AND CONTENTS POLICY 88-2231",
+   "amount": -1314.3,
+   "balance": -1081.87
+  },
+  {
+   "date": "2025-12-06",
+   "description": "SALARY PAYROLL",
+   "amount": 860.32,
+   "balance": -221.55
+  },
+  {
+   "date": "2025-12-07",
+   "description": "BANK FEE MONTHLY",
+   "amount": -73.5,
+   "balance": -295.05
+  },
+  {
+   "date": "2025-12-07",
+   "description": "SUBSCRIPTION STREAMING SERVICE",
+   "amount": -1460.24,
+   "balance": -1755.29
+  },
+  {
+   "date": "2025-12-07",
+   "description": "CARD PURCHASE GROCERY MART",
+   "amount": -674.17,
+   "balance": -2429.46
+  },
+  {
+   "date": "2025-12-09",
+   "description": "REFUND CARD PURCHASE",
+   "amount": 3001.24,
+   "balance": 571.78
+  },
+  {
+   "date": "2025-12-09",
+   "description": "CARD PURCHASE PHARMACY",
+   "amount": -62.49,
+   "balance": 509.29
+  },
+  {
+   "date": "2025-12-09",
+   "description": "SALARY PAYROLL",
+   "amount": 2335.69,
+   "balance": 2844.98
+  },
+  {
+   "date": "2025-12-09",
+   "description": "CARD PURCHASE FUEL STOP",
+   "amount": -78.48,
+   "balance": 2766.5
+  },
+  {
+   "date": "2025-12-10",
+   "description": "CUSTOMER PAYMENT INVOICE",
+   "amount": 1514.49,
+   "balance": 4280.99
+  },
+  {
+   "date": "2025-12-12",
+   "description": "ATM WITHDRAWAL",
+   "amount": -51.75,
+   "balance": 4229.24
+  },
+  {
+   "date": "2025-12-12",
+   "description": "CARD PURCHASE PHARMACY",
+   "amount": -26.83,
+   "balance": 4202.41
+  },
+  {
+   "date": "2025-12-13",
+   "description": "CARD PURCHASE HARDWARE DEPOT",
+   "amount": -38.83,
+   "balance": 4163.58
+  },
+  {
+   "date": "2025-12-14",
+   "description": "CARD PURCHASE GROCERY MART",
+   "amount": -77.72,
+   "balance": 4085.86
+  },
+  {
+   "date": "2025-12-17",
+   "description": "INTEREST PAID",
+   "amount": 3998.25,
+   "balance": 8084.11
+  },
+  {
+   "date": "2025-12-17",
+   "description": "CARD PURCHASE HARDWARE DEPOT",
+   "amount": -57.88,
+   "balance": 8026.23
+  },
+  {
+   "date": "2025-12-19",
+   "description": "DIRECT DEBIT CITY WATER",
+   "amount": -77.08,
+   "balance": 7949.15
+  },
+  {
+   "date": "2025-12-19",
+   "description": "DIRECT DEBIT CITY WATER",
+   "amount": -77.08,
+   "balance": 7872.07
+  },
+  {
+   "date": "2025-12-20",
+   "description": "INSURANCE PREMIUM HOME AND CONTENTS POLICY 88-2231",
+   "amount": -77.9,
+   "balance": 7794.17
+  },
+  {
+   "date": "2025-12-23",
+   "description": "SALARY PAYROLL",
+   "amount": 1348.89,
+   "balance": 9143.06
+  },
+  {
+   "date": "2025-12-24",
+   "description": "CARD PURCHASE FUEL STOP",
+   "amount": -39.59,
+   "balance": 9103.47
+  },
+  {
+   "date": "2025-12-25",
+   "description": "CARD PURCHASE HARDWARE DEPOT",
+   "amount": -86.37,
+   "balance": 9017.1
+  },
+  {
+   "date": "2025-12-25",
+   "description": "STANDING ORDER RENT",
+   "amount": -167.63,
+   "balance": 8849.47
+  },
+  {
+   "date": "2025-12-26",
+   "description": "ATM WITHDRAWAL",
+   "amount": -632.06,
+   "balance": 8217.41
+  },
+  {
+   "date": "2025-12-28",
+   "description": "CARD PURCHASE FUEL STOP",
+   "amount": -18.39,
+   "balance": 8199.02
+  },
+  {
+   "date": "2025-12-29",
+   "description": "REFUND CARD PURCHASE",
+   "amount": 2194.32,
+   "balance": 10393.34
+  },
+  {
+   "date": "2025-12-29",
+   "description": "DIRECT DEBIT CITY WATER",
+   "amount": -70.5,
+   "balance": 10322.84
+  },
+  {
+   "date": "2025-12-29",
+   "description": "DIRECT DEBIT CITY WATER",
+   "amount": -240.56,
+   "balance": 10082.28
+  },
+  {
+   "date": "2025-12-29",
+   "description": "CARD PURCHASE GROCERY MART",
+   "amount": -1465.27,
+   "balance": 8617.01
+  },
+  {
+   "date": "2026-01-01",
+   "description": "ONLINE TRANSFER TO SAVINGS",
+   "amount": -820.34,
+   "balance": 7796.67
+  },
+  {
+   "date": "2026-01-02",
+   "description": "CUSTOMER PAYMENT INVOICE",
+   "amount": 1168.31,
+   "balance": 8964.98
+  },
+  {
+   "date": "2026-01-02",
+   "description": "CARD PURCHASE HARDWARE DEPOT",
+   "amount": -49.9,
+   "balance": 8915.08
+  },
+  {
+   "date": "2026-01-03",
+   "description": "CUSTOMER PAYMENT INVOICE",
+   "amount": 3366.83,
+   "balance": 12281.91
+  },
+  {
+   "date": "2026-01-06",
+   "description": "CARD PURCHASE COFFEE HOUSE",
+   "amount": -17.35,
+   "balance": 12264.56
+  },
+  {
+   "date": "2026-01-09",
+   "description": "INSURANCE PREMIUM HOME AND CONTENTS POLICY 88-2231",
+   "amount": -12.87,
+   "balance": 12251.69
+  }
+ ]
+}

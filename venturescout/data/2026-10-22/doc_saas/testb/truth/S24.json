@@ -1,0 +1,159 @@
+{
+ "doc": "S24",
+ "family": 5,
+ "scanned": false,
+ "opening_balance": 7603.87,
+ "closing_balance": 16621.73,
+ "transactions": [
+  {
+   "date": "2026-09-02",
+   "description": "PAYMENT TO SUPPLIER ACME PARTS LTD INVOICE 4471 REF Q3 MATERIALS ORDER",
+   "amount": -168.64,
+   "balance": null
+  },
+  {
+   "date": "2026-09-05",
+   "description": "CARD PURCHASE PHARMACY",
+   "amount": -30.14,
+   "balance": null
+  },
+  {
+   "date": "2026-09-08",
+   "description": "ATM WITHDRAWAL",
+   "amount": -64.01,
+   "balance": null
+  },
+  {
+   "date": "2026-09-09",
+   "description": "CARD PURCHASE GROCERY MART",
+   "amount": -42.47,
+   "balance": null
+  },
+  {
+   "date": "2026-09-09",
+   "description": "CARD PURCHASE GROCERY MART",
+   "amount": -42.47,
+   "balance": null
+  },
+  {
+   "date": "2026-09-10",
+   "description": "INTEREST PAID",
+   "amount": 642.72,
+   "balance": null
+  },
+  {
+   "date": "2026-09-10",
+   "description": "INTEREST PAID",
+   "amount": 2332.5,
+   "balance": null
+  },
+  {
+   "date": "2026-09-10",
+   "description": "INTEREST PAID",
+   "amount": 2332.5,
+   "balance": null
+  },
+  {
+   "date": "2026-09-10",
+   "description": "CARD PURCHASE COFFEE HOUSE",
+   "amount": -20.51,
+   "balance": null
+  },
+  {
+   "date": "2026-09-12",
+   "description": "CLIENT REMITTANCE CONSULTING SERVICES PROJECT ALPHA MILESTONE 2",
+   "amount": 2767.99,
+   "balance": null
+  },
+  {
+   "date": "2026-09-12",
+   "description": "CARD PURCHASE FUEL STOP",
+   "amount": -165.61,
+   "balance": null
+  },
+  {
+   "date": "2026-09-15",
+   "description": "CLIENT REMITTANCE CONSULTING SERVICES PROJECT ALPHA MILESTONE 2",
+   "amount": 2473.68,
+   "balance": null
+  },
+  {
+   "date": "2026-09-16",
+   "description": "DIRECT DEBIT CITY WATER",
+   "amount": -141.54,
+   "balance": null
+  },
+  {
+   "date": "2026-09-16",
+   "description": "CARD PURCHASE FUEL STOP",
+   "amount": -61.58,
+   "balance": null
+  },
+  {
+   "date": "2026-09-17",
+   "description": "PAYMENT TO SUPPLIER ACME PARTS LTD INVOICE 4471 REF Q3 MATERIALS ORDER",
+   "amount": -879.4,
+   "balance": null
+  },
+  {
+   "date": "2026-09-19",
+   "description": "BANK FEE MONTHLY",
+   "amount": -382.86,
+   "balance": null
+  },
+  {
+   "date": "2026-09-20",
+   "description": "CARD PURCHASE PHARMACY",
+   "amount": -1.69,
+   "balance": null
+  },
+  {
+   "date": "2026-09-20",
+   "description": "CARD PURCHASE GROCERY MART",
+   "amount": -726.83,
+   "balance": null
+  },
+  {
+   "date": "2026-09-20",
+   "description": "SALARY PAYROLL",
+   "amount": 2989.3,
+   "balance": null
+  },
+  {
+   "date": "2026-09-20",
+   "description": "SUBSCRIPTION STREAMING SERVICE",
+   "amount": -5.97,
+   "balance": null
+  },
+  {
+   "date": "2026-09-21",
+   "description": "DIRECT DEBIT CITY WATER",
+   "amount": -604.87,
+   "balance": null
+  },
+  {
+   "date": "2026-09-21",
+   "description": "DIRECT DEBIT MOBILE PHONE",
+   "amount": -1015.28,
+   "balance": null
+  },
+  {
+   "date": "2026-09-24",
+   "description": "ATM WITHDRAWAL",
+   "amount": -75.14,
+   "balance": null
+  },
+  {
+   "date": "2026-09-24",
+   "description": "CARD PURCHASE HARDWARE DEPOT",
+   "amount": -28.11,
+   "balance": null
+  },
+  {
+   "date": "2026-09-25",
+   "description": "CARD PURCHASE FUEL STOP",
+   "amount": -63.71,
+   "balance": null
+  }
+ ]
+}

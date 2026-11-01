@@ -1,0 +1,249 @@
+{
+ "doc": "S23",
+ "family": 5,
+ "scanned": false,
+ "opening_balance": 4145.22,
+ "closing_balance": 14450.73,
+ "transactions": [
+  {
+   "date": "2026-09-01",
+   "description": "CARD PURCHASE COFFEE HOUSE",
+   "amount": -1419.05,
+   "balance": null
+  },
+  {
+   "date": "2026-09-02",
+   "description": "DIRECT DEBIT MOBILE PHONE",
+   "amount": -118.11,
+   "balance": null
+  },
+  {
+   "date": "2026-09-02",
+   "description": "DIRECT DEBIT CITY WATER",
+   "amount": -73.31,
+   "balance": null
+  },
+  {
+   "date": "2026-09-03",
+   "description": "CLIENT REMITTANCE CONSULTING SERVICES PROJECT ALPHA MILESTONE 2",
+   "amount": 3494.09,
+   "balance": null
+  },
+  {
+   "date": "2026-09-04",
+   "description": "DIRECT DEBIT MOBILE PHONE",
+   "amount": -41.85,
+   "balance": null
+  },
+  {
+   "date": "2026-09-05",
+   "description": "ONLINE TRANSFER TO SAVINGS",
+   "amount": -530.99,
+   "balance": null
+  },
+  {
+   "date": "2026-09-08",
+   "description": "ONLINE TRANSFER TO SAVINGS",
+   "amount": -60.36,
+   "balance": null
+  },
+  {
+   "date": "2026-09-08",
+   "description": "ATM WITHDRAWAL",
+   "amount": -50.03,
+   "balance": null
+  },
+  {
+   "date": "2026-09-09",
+   "description": "PAYMENT TO SUPPLIER ACME PARTS LTD INVOICE 4471 REF Q3 MATERIALS ORDER",
+   "amount": -415.71,
+   "balance": null
+  },
+  {
+   "date": "2026-09-11",
+   "description": "TRANSFER FROM SAVINGS",
+   "amount": 1732.92,
+   "balance": null
+  },
+  {
+   "date": "2026-09-11",
+   "description": "CARD PURCHASE HARDWARE DEPOT",
+   "amount": -353.37,
+   "balance": null
+  },
+  {
+   "date": "2026-09-11",
+   "description": "CARD PURCHASE HARDWARE DEPOT",
+   "amount": -353.37,
+   "balance": null
+  },
+  {
+   "date": "2026-09-11",
+   "description": "CARD PURCHASE HARDWARE DEPOT",
+   "amount": -353.37,
+   "balance": null
+  },
+  {
+   "date": "2026-09-11",
+   "description": "CARD PURCHASE HARDWARE DEPOT",
+   "amount": -63.32,
+   "balance": null
+  },
+  {
+   "date": "2026-09-13",
+   "description": "CARD PURCHASE GROCERY MART",
+   "amount": -215.93,
+   "balance": null
+  },
+  {
+   "date": "2026-09-13",
+   "description": "INTEREST PAID",
+   "amount": 2746.1,
+   "balance": null
+  },
+  {
+   "date": "2026-09-15",
+   "description": "REFUND CARD PURCHASE",
+   "amount": 3694.04,
+   "balance": null
+  },
+  {
+   "date": "2026-09-16",
+   "description": "CASH DEPOSIT BRANCH",
+   "amount": 1363.5,
+   "balance": null
+  },
+  {
+   "date": "2026-09-16",
+   "description": "CARD PURCHASE PHARMACY",
+   "amount": -171.49,
+   "balance": null
+  },
+  {
+   "date": "2026-09-18",
+   "description": "ATM WITHDRAWAL",
+   "amount": -985.5,
+   "balance": null
+  },
+  {
+   "date": "2026-09-19",
+   "description": "DIRECT DEBIT MOBILE PHONE",
+   "amount": -22.32,
+   "balance": null
+  },
+  {
+   "date": "2026-09-20",
+   "description": "CASH DEPOSIT BRANCH",
+   "amount": 2149.5,
+   "balance": null
+  },
+  {
+   "date": "2026-09-20",
+   "description": "STANDING ORDER RENT",
+   "amount": -649.61,
+   "balance": null
+  },
+  {
+   "date": "2026-09-22",
+   "description": "STANDING ORDER RENT",
+   "amount": -13.16,
+   "balance": null
+  },
+  {
+   "date": "2026-09-22",
+   "description": "PAYMENT TO SUPPLIER ACME PARTS LTD INVOICE 4471 REF Q3 MATERIALS ORDER",
+   "amount": -590.44,
+   "balance": null
+  },
+  {
+   "date": "2026-09-22",
+   "description": "PAYMENT TO SUPPLIER ACME PARTS LTD INVOICE 4471 REF Q3 MATERIALS ORDER",
+   "amount": -1406.23,
+   "balance": null
+  },
+  {
+   "date": "2026-09-22",
+   "description": "REFUND CARD PURCHASE",
+   "amount": 1260.22,
+   "balance": null
+  },
+  {
+   "date": "2026-09-24",
+   "description": "ATM WITHDRAWAL",
+   "amount": -39.88,
+   "balance": null
+  },
+  {
+   "date": "2026-09-24",
+   "description": "PAYMENT TO SUPPLIER ACME PARTS LTD INVOICE 4471 REF Q3 MATERIALS ORDER",
+   "amount": -397.64,
+   "balance": null
+  },
+  {
+   "date": "2026-09-25",
+   "description": "ATM WITHDRAWAL",
+   "amount": -70.97,
+   "balance": null
+  },
+  {
+   "date": "2026-09-26",
+   "description": "ONLINE TRANSFER TO SAVINGS",
+   "amount": -24.58,
+   "balance": null
+  },
+  {
+   "date": "2026-09-26",
+   "description": "REFUND CARD PURCHASE",
+   "amount": 1563.74,
+   "balance": null
+  },
+  {
+   "date": "2026-09-26",
+   "description": "PAYMENT TO SUPPLIER ACME PARTS LTD INVOICE 4471 REF Q3 MATERIALS ORDER",
+   "amount": -48.09,
+   "balance": null
+  },
+  {
+   "date": "2026-09-28",
+   "description": "CARD PURCHASE GROCERY MART",
+   "amount": -68.15,
+   "balance": null
+  },
+  {
+   "date": "2026-09-29",
+   "description": "ONLINE TRANSFER TO SAVINGS",
+   "amount": -59.59,
+   "balance": null
+  },
+  {
+   "date": "2026-09-29",
+   "description": "SALARY PAYROLL",
+   "amount": 3241.85,
+   "balance": null
+  },
+  {
+   "date": "2026-10-02",
+   "description": "ATM WITHDRAWAL",
+   "amount": -303.62,
+   "balance": null
+  },
+  {
+   "date": "2026-10-05",
+   "description": "DIRECT DEBIT CITY WATER",
+   "amount": -1286.14,
+   "balance": null
+  },
+  {
+   "date": "2026-10-08",
+   "description": "CARD PURCHASE COFFEE HOUSE",
+   "amount": -5.48,
+   "balance": null
+  },
+  {
+   "date": "2026-10-09",
+   "description": "CARD PURCHASE FUEL STOP",
+   "amount": -748.79,
+   "balance": null
+  }
+ ]
+}

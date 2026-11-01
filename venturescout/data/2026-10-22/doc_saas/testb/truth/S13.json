@@ -1,0 +1,249 @@
+{
+ "doc": "S13",
+ "family": 3,
+ "scanned": false,
+ "opening_balance": 6100.49,
+ "closing_balance": 19033.77,
+ "transactions": [
+  {
+   "date": "2026-06-04",
+   "description": "ATM WITHDRAWAL",
+   "amount": -69.33,
+   "balance": 6031.16
+  },
+  {
+   "date": "2026-06-04",
+   "description": "DIRECT DEBIT CITY WATER",
+   "amount": -22.08,
+   "balance": 6009.08
+  },
+  {
+   "date": "2026-06-06",
+   "description": "CARD PURCHASE PHARMACY",
+   "amount": -331.15,
+   "balance": 5677.93
+  },
+  {
+   "date": "2026-06-09",
+   "description": "REFUND CARD PURCHASE",
+   "amount": 3818.84,
+   "balance": 9496.77
+  },
+  {
+   "date": "2026-06-12",
+   "description": "DIRECT DEBIT CITY WATER",
+   "amount": -1013.14,
+   "balance": 8483.63
+  },
+  {
+   "date": "2026-06-13",
+   "description": "CARD PURCHASE COFFEE HOUSE",
+   "amount": -124.19,
+   "balance": 8359.44
+  },
+  {
+   "date": "2026-06-13",
+   "description": "DIRECT DEBIT MOBILE PHONE",
+   "amount": -1008.92,
+   "balance": 7350.52
+  },
+  {
+   "date": "2026-06-15",
+   "description": "INTEREST PAID",
+   "amount": 1030.14,
+   "balance": 8380.66
+  },
+  {
+   "date": "2026-06-16",
+   "description": "STANDING ORDER RENT",
+   "amount": -465.62,
+   "balance": 7915.04
+  },
+  {
+   "date": "2026-06-17",
+   "description": "INTEREST PAID",
+   "amount": 2193.19,
+   "balance": 10108.23
+  },
+  {
+   "date": "2026-06-19",
+   "description": "TRANSFER FROM SAVINGS",
+   "amount": 720.79,
+   "balance": 10829.02
+  },
+  {
+   "date": "2026-06-19",
+   "description": "CLIENT REMITTANCE CONSULTING SERVICES PROJECT ALPHA MILESTONE 2",
+   "amount": 860.38,
+   "balance": 11689.4
+  },
+  {
+   "date": "2026-06-22",
+   "description": "CARD PURCHASE PHARMACY",
+   "amount": -1397.52,
+   "balance": 10291.88
+  },
+  {
+   "date": "2026-06-25",
+   "description": "CARD PURCHASE FUEL STOP",
+   "amount": -1418.29,
+   "balance": 8873.59
+  },
+  {
+   "date": "2026-06-26",
+   "description": "BANK FEE MONTHLY",
+   "amount": -77.13,
+   "balance": 8796.46
+  },
+  {
+   "date": "2026-06-28",
+   "description": "STANDING ORDER RENT",
+   "amount": -169.14,
+   "balance": 8627.32
+  },
+  {
+   "date": "2026-06-28",
+   "description": "PAYMENT TO SUPPLIER ACME PARTS LTD INVOICE 4471 REF Q3 MATERIALS ORDER",
+   "amount": -1029.44,
+   "balance": 7597.88
+  },
+  {
+   "date": "2026-06-28",
+   "description": "INTEREST PAID",
+   "amount": 155.63,
+   "balance": 7753.51
+  },
+  {
+   "date": "2026-07-01",
+   "description": "REFUND CARD PURCHASE",
+   "amount": 3041.18,
+   "balance": 10794.69
+  },
+  {
+   "date": "2026-07-04",
+   "description": "PAYMENT TO SUPPLIER ACME PARTS LTD INVOICE 4471 REF Q3 MATERIALS ORDER",
+   "amount": -57.89,
+   "balance": 10736.8
+  },
+  {
+   "date": "2026-07-05",
+   "description": "CARD PURCHASE PHARMACY",
+   "amount": -19.78,
+   "balance": 10717.02
+  },
+  {
+   "date": "2026-07-06",
+   "description": "TRANSFER FROM SAVINGS",
+   "amount": 2773.24,
+   "balance": 13490.26
+  },
+  {
+   "date": "2026-07-08",
+   "description": "DIRECT DEBIT MOBILE PHONE",
+   "amount": -38.68,
+   "balance": 13451.58
+  },
+  {
+   "date": "2026-07-08",
+   "description": "CARD PURCHASE HARDWARE DEPOT",
+   "amount": -1392.25,
+   "balance": 12059.33
+  },
+  {
+   "date": "2026-07-08",
+   "description": "CUSTOMER PAYMENT INVOICE",
+   "amount": 718.55,
+   "balance": 12777.88
+  },
+  {
+   "date": "2026-07-09",
+   "description": "CASH DEPOSIT BRANCH",
+   "amount": 2308.64,
+   "balance": 15086.52
+  },
+  {
+   "date": "2026-07-10",
+   "description": "SUBSCRIPTION STREAMING SERVICE",
+   "amount": -796.14,
+   "balance": 14290.38
+  },
+  {
+   "date": "2026-07-12",
+   "description": "CARD PURCHASE COFFEE HOUSE",
+   "amount": -478.38,
+   "balance": 13812.0
+  },
+  {
+   "date": "2026-07-14",
+   "description": "DIRECT DEBIT MOBILE PHONE",
+   "amount": -540.59,
+   "balance": 13271.41
+  },
+  {
+   "date": "2026-07-14",
+   "description": "DIRECT DEBIT MOBILE PHONE",
+   "amount": -540.59,
+   "balance": 12730.82
+  },
+  {
+   "date": "2026-07-17",
+   "description": "REFUND CARD PURCHASE",
+   "amount": 2639.46,
+   "balance": 15370.28
+  },
+  {
+   "date": "2026-07-17",
+   "description": "REFUND CARD PURCHASE",
+   "amount": 2639.46,
+   "balance": 18009.74
+  },
+  {
+   "date": "2026-07-17",
+   "description": "DIRECT DEBIT MOBILE PHONE",
+   "amount": -1411.32,
+   "balance": 16598.42
+  },
+  {
+   "date": "2026-07-19",
+   "description": "INTEREST PAID",
+   "amount": 3386.47,
+   "balance": 19984.89
+  },
+  {
+   "date": "2026-07-19",
+   "description": "INSURANCE PREMIUM HOME AND CONTENTS POLICY 88-2231",
+   "amount": -166.14,
+   "balance": 19818.75
+  },
+  {
+   "date": "2026-07-19",
+   "description": "STANDING ORDER RENT",
+   "amount": -978.66,
+   "balance": 18840.09
+  },
+  {
+   "date": "2026-07-19",
+   "description": "SUBSCRIPTION STREAMING SERVICE",
+   "amount": -246.05,
+   "balance": 18594.04
+  },
+  {
+   "date": "2026-07-20",
+   "description": "INTEREST PAID",
+   "amount": 673.5,
+   "balance": 19267.54
+  },
+  {
+   "date": "2026-07-21",
+   "description": "CARD PURCHASE PHARMACY",
+   "amount": -216.12,
+   "balance": 19051.42
+  },
+  {
+   "date": "2026-07-22",
+   "description": "ATM WITHDRAWAL",
+   "amount": -17.65,
+   "balance": 19033.77
+  }
+ ]
+}

@@ -1,0 +1,255 @@
+{
+ "doc": "S08",
+ "family": 2,
+ "scanned": false,
+ "opening_balance": 2864.75,
+ "closing_balance": 13852.24,
+ "transactions": [
+  {
+   "date": "2026-09-04",
+   "description": "INSURANCE PREMIUM HOME AND CONTENTS POLICY 88-2231",
+   "amount": -9.09,
+   "balance": 2855.66
+  },
+  {
+   "date": "2026-09-07",
+   "description": "CARD PURCHASE HARDWARE DEPOT",
+   "amount": -9.9,
+   "balance": 2845.76
+  },
+  {
+   "date": "2026-09-08",
+   "description": "TRANSFER FROM SAVINGS",
+   "amount": 1943.29,
+   "balance": 4789.05
+  },
+  {
+   "date": "2026-09-08",
+   "description": "CUSTOMER PAYMENT INVOICE",
+   "amount": 2939.35,
+   "balance": 7728.4
+  },
+  {
+   "date": "2026-09-08",
+   "description": "ONLINE TRANSFER TO SAVINGS",
+   "amount": -12.66,
+   "balance": 7715.74
+  },
+  {
+   "date": "2026-09-08",
+   "description": "DIRECT DEBIT MOBILE PHONE",
+   "amount": -36.53,
+   "balance": 7679.21
+  },
+  {
+   "date": "2026-09-10",
+   "description": "SUBSCRIPTION STREAMING SERVICE",
+   "amount": -1287.73,
+   "balance": 6391.48
+  },
+  {
+   "date": "2026-09-11",
+   "description": "INTEREST PAID",
+   "amount": 2005.11,
+   "balance": 8396.59
+  },
+  {
+   "date": "2026-09-11",
+   "description": "INTEREST PAID",
+   "amount": 1113.43,
+   "balance": 9510.02
+  },
+  {
+   "date": "2026-09-12",
+   "description": "CARD PURCHASE PHARMACY",
+   "amount": -18.5,
+   "balance": 9491.52
+  },
+  {
+   "date": "2026-09-12",
+   "description": "CARD PURCHASE GROCERY MART",
+   "amount": -38.95,
+   "balance": 9452.57
+  },
+  {
+   "date": "2026-09-13",
+   "description": "BANK FEE MONTHLY",
+   "amount": -381.7,
+   "balance": 9070.87
+  },
+  {
+   "date": "2026-09-13",
+   "description": "CARD PURCHASE COFFEE HOUSE",
+   "amount": -25.82,
+   "balance": 9045.05
+  },
+  {
+   "date": "2026-09-16",
+   "description": "CARD PURCHASE FUEL STOP",
+   "amount": -69.4,
+   "balance": 8975.65
+  },
+  {
+   "date": "2026-09-17",
+   "description": "CARD PURCHASE GROCERY MART",
+   "amount": -816.34,
+   "balance": 8159.31
+  },
+  {
+   "date": "2026-09-20",
+   "description": "CARD PURCHASE HARDWARE DEPOT",
+   "amount": -58.76,
+   "balance": 8100.55
+  },
+  {
+   "date": "2026-09-21",
+   "description": "DIRECT DEBIT CITY WATER",
+   "amount": -707.92,
+   "balance": 7392.63
+  },
+  {
+   "date": "2026-09-21",
+   "description": "CARD PURCHASE GROCERY MART",
+   "amount": -21.0,
+   "balance": 7371.63
+  },
+  {
+   "date": "2026-09-21",
+   "description": "CARD PURCHASE PHARMACY",
+   "amount": -55.57,
+   "balance": 7316.06
+  },
+  {
+   "date": "2026-09-24",
+   "description": "PAYMENT TO SUPPLIER ACME PARTS LTD INVOICE 4471 REF Q3 MATERIALS ORDER",
+   "amount": -173.91,
+   "balance": 7142.15
+  },
+  {
+   "date": "2026-09-25",
+   "description": "INTEREST PAID",
+   "amount": 1806.36,
+   "balance": 8948.51
+  },
+  {
+   "date": "2026-09-25",
+   "description": "STANDING ORDER RENT",
+   "amount": -277.57,
+   "balance": 8670.94
+  },
+  {
+   "date": "2026-09-27",
+   "description": "CARD PURCHASE GROCERY MART",
+   "amount": -20.51,
+   "balance": 8650.43
+  },
+  {
+   "date": "2026-09-29",
+   "description": "STANDING ORDER RENT",
+   "amount": -9.47,
+   "balance": 8640.96
+  },
+  {
+   "date": "2026-10-01",
+   "description": "INTEREST PAID",
+   "amount": 197.89,
+   "balance": 8838.85
+  },
+  {
+   "date": "2026-10-03",
+   "description": "STANDING ORDER RENT",
+   "amount": -1075.78,
+   "balance": 7763.07
+  },
+  {
+   "date": "2026-10-03",
+   "description": "SUBSCRIPTION STREAMING SERVICE",
+   "amount": -11.88,
+   "balance": 7751.19
+  },
+  {
+   "date": "2026-10-04",
+   "description": "ONLINE TRANSFER TO SAVINGS",
+   "amount": -77.82,
+   "balance": 7673.37
+  },
+  {
+   "date": "2026-10-05",
+   "description": "CARD PURCHASE GROCERY MART",
+   "amount": -20.71,
+   "balance": 7652.66
+  },
+  {
+   "date": "2026-10-06",
+   "description": "REFUND CARD PURCHASE",
+   "amount": 3862.34,
+   "balance": 11515.0
+  },
+  {
+   "date": "2026-10-06",
+   "description": "DIRECT DEBIT MOBILE PHONE",
+   "amount": -37.1,
+   "balance": 11477.9
+  },
+  {
+   "date": "2026-10-06",
+   "description": "DIRECT DEBIT CITY WATER",
+   "amount": -900.98,
+   "balance": 10576.92
+  },
+  {
+   "date": "2026-10-09",
+   "description": "CUSTOMER PAYMENT INVOICE",
+   "amount": 1025.87,
+   "balance": 11602.79
+  },
+  {
+   "date": "2026-10-09",
+   "description": "CARD PURCHASE GROCERY MART",
+   "amount": -51.78,
+   "balance": 11551.01
+  },
+  {
+   "date": "2026-10-09",
+   "description": "CARD PURCHASE GROCERY MART",
+   "amount": -51.78,
+   "balance": 11499.23
+  },
+  {
+   "date": "2026-10-10",
+   "description": "CARD PURCHASE HARDWARE DEPOT",
+   "amount": -25.77,
+   "balance": 11473.46
+  },
+  {
+   "date": "2026-10-11",
+   "description": "CARD PURCHASE PHARMACY",
+   "amount": -42.74,
+   "balance": 11430.72
+  },
+  {
+   "date": "2026-10-11",
+   "description": "SALARY PAYROLL",
+   "amount": 1515.01,
+   "balance": 12945.73
+  },
+  {
+   "date": "2026-10-14",
+   "description": "CARD PURCHASE PHARMACY",
+   "amount": -71.59,
+   "balance": 12874.14
+  },
+  {
+   "date": "2026-10-15",
+   "description": "CASH DEPOSIT BRANCH",
+   "amount": 1041.56,
+   "balance": 13915.7
+  },
+  {
+   "date": "2026-10-17",
+   "description": "CARD PURCHASE GROCERY MART",
+   "amount": -63.46,
+   "balance": 13852.24
+  }
+ ]
+}

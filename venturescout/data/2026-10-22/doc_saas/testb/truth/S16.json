@@ -1,0 +1,87 @@
+{
+ "doc": "S16",
+ "family": 4,
+ "scanned": false,
+ "opening_balance": 4774.6,
+ "closing_balance": 6551.03,
+ "transactions": [
+  {
+   "date": "2026-09-04",
+   "description": "DIRECT DEBIT MOBILE PHONE",
+   "amount": -987.63,
+   "balance": 3786.97
+  },
+  {
+   "date": "2026-09-04",
+   "description": "SUBSCRIPTION STREAMING SERVICE",
+   "amount": -726.44,
+   "balance": 3060.53
+  },
+  {
+   "date": "2026-09-04",
+   "description": "CARD PURCHASE COFFEE HOUSE",
+   "amount": -888.28,
+   "balance": 2172.25
+  },
+  {
+   "date": "2026-09-05",
+   "description": "SUBSCRIPTION STREAMING SERVICE",
+   "amount": -67.84,
+   "balance": 2104.41
+  },
+  {
+   "date": "2026-09-06",
+   "description": "STANDING ORDER RENT",
+   "amount": -51.93,
+   "balance": 2052.48
+  },
+  {
+   "date": "2026-09-07",
+   "description": "PAYMENT TO SUPPLIER ACME PARTS LTD INVOICE 4471 REF Q3 MATERIALS ORDER",
+   "amount": -475.24,
+   "balance": 1577.24
+  },
+  {
+   "date": "2026-09-07",
+   "description": "PAYMENT TO SUPPLIER ACME PARTS LTD INVOICE 4471 REF Q3 MATERIALS ORDER",
+   "amount": -43.73,
+   "balance": 1533.51
+  },
+  {
+   "date": "2026-09-08",
+   "description": "CARD PURCHASE COFFEE HOUSE",
+   "amount": -129.22,
+   "balance": 1404.29
+  },
+  {
+   "date": "2026-09-09",
+   "description": "INTEREST PAID",
+   "amount": 3480.94,
+   "balance": 4885.23
+  },
+  {
+   "date": "2026-09-12",
+   "description": "ONLINE TRANSFER TO SAVINGS",
+   "amount": -52.02,
+   "balance": 4833.21
+  },
+  {
+   "date": "2026-09-12",
+   "description": "CLIENT REMITTANCE CONSULTING SERVICES PROJECT ALPHA MILESTONE 2",
+   "amount": 1876.89,
+   "balance": 6710.1
+  },
+  {
+   "date": "2026-09-13",
+   "description": "INSURANCE PREMIUM HOME AND CONTENTS POLICY 88-2231",
+   "amount": -89.12,
+   "balance": 6620.98
+  },
+  {
+   "date": "2026-09-14",
+   "description": "DIRECT DEBIT MOBILE PHONE",
+   "amount": -69.95,
+   "balance": 6551.03
+  }
+ ]
+}

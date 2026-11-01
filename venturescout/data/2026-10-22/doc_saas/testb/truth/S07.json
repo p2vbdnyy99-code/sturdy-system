@@ -1,0 +1,57 @@
+{
+ "doc": "S07",
+ "family": 2,
+ "scanned": false,
+ "opening_balance": 1318.54,
+ "closing_balance": 6151.79,
+ "transactions": [
+  {
+   "date": "2026-12-02",
+   "description": "BANK FEE MONTHLY",
+   "amount": -64.97,
+   "balance": 1253.57
+  },
+  {
+   "date": "2026-12-02",
+   "description": "CARD PURCHASE GROCERY MART",
+   "amount": -36.26,
+   "balance": 1217.31
+  },
+  {
+   "date": "2026-12-03",
+   "description": "DIRECT DEBIT CITY WATER",
+   "amount": -20.06,
+   "balance": 1197.25
+  },
+  {
+   "date": "2026-12-06",
+   "description": "STANDING ORDER RENT",
+   "amount": -1339.63,
+   "balance": -142.38
+  },
+  {
+   "date": "2026-12-09",
+   "description": "SALARY PAYROLL",
+   "amount": 2285.64,
+   "balance": 2143.26
+  },
+  {
+   "date": "2026-12-09",
+   "description": "SALARY PAYROLL",
+   "amount": 3266.14,
+   "balance": 5409.4
+  },
+  {
+   "date": "2026-12-10",
+   "description": "INSURANCE PREMIUM HOME AND CONTENTS POLICY 88-2231",
+   "amount": -67.85,
+   "balance": 5341.55
+  },
+  {
+   "date": "2026-12-11",
+   "description": "TRANSFER FROM SAVINGS",
+   "amount": 810.24,
+   "balance": 6151.79
+  }
+ ]
+}
