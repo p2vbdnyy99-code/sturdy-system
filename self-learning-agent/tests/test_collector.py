@@ -249,5 +249,29 @@ class CollectorTests(unittest.TestCase):
         self.assertFalse(col.accepting())
 
 
+class WatchdogTests(CollectorTests):
+    def test_silent_feed_drops_live_tokens_instead_of_labeling(self):
+        col = self.collector(max_live=3)
+        for i, m in enumerate(("A", "B", "C")):
+            self.feed(col, {**create_msg(), "mint": m}, float(i))
+        self.feed(col, {**trade_msg("w"), "mint": "A"}, 5.0)
+        self.now = 400.0                       # 5+ minutes with one trade message
+        col.check_silence(self.now)
+        self.assertTrue(col.feed_silent)
+        self.assertEqual(col.live, {})
+        self.assertFalse(col.accepting())
+        reasons = {r["reason"] for r in self.lines(self.out + ".skipped")}
+        self.assertEqual(reasons, {"feed silent"})
+
+    def test_busy_feed_not_flagged(self):
+        col = self.collector(max_live=3)
+        for i, m in enumerate(("A", "B", "C")):
+            self.feed(col, {**create_msg(), "mint": m}, float(i))
+        for k in range(10):
+            self.feed(col, {**trade_msg(f"w{k}"), "mint": "A"}, 300.0 + k)
+        col.check_silence(400.0)
+        self.assertFalse(col.feed_silent)
+
+
 if __name__ == "__main__":
     unittest.main()

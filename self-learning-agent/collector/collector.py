@@ -42,6 +42,13 @@ class CollectorConfig:
     prefilter_guard: bool = True          # drop guard-rejected launches at decision time
     trace_grace_s: float = 5.0
     max_trace_wallets: int = 30
+    # Watchdog: a feed that has run out of quota goes quiet without saying so, and quiet
+    # tokens would then be labeled "timeout" at a stale price. If at most silence_max_msgs
+    # trade messages arrive in silence_s while silence_min_live tokens are tracked, the
+    # live tokens are dropped as "feed silent" and collection stops.
+    silence_s: float = 300.0
+    silence_max_msgs: int = 5
+    silence_min_live: int = 3
     stats_every_s: float = 60.0
     tracker: TrackerConfig = field(default_factory=TrackerConfig)
 
@@ -63,6 +70,8 @@ class Collector:
         self.deciding = set()
         self.ws = None
         self.started = clock()
+        self.trade_times = []        # arrival times of recent trade messages (watchdog)
+        self.feed_silent = False
         self.stats = {"launches": 0, "tracked": 0, "labeled": 0, "skipped": 0,
                       "trade_msgs": 0, "slots_full": 0, "not_sampled": 0, "unpriceable": 0}
         self.outcomes = {c: 0 for c in CLASSES}
@@ -71,6 +80,8 @@ class Collector:
     # ---- policy ---------------------------------------------------------
     def accepting(self):
         c = self.cfg
+        if self.feed_silent:
+            return False
         if c.run_for_s is not None and self.clock() - self.started >= c.run_for_s:
             return False
         if c.max_trade_messages is not None and self.stats["trade_msgs"] >= c.max_trade_messages:
@@ -148,6 +159,7 @@ class Collector:
             self.on_create(ev, now)
         elif isinstance(ev, Trade):
             self.stats["trade_msgs"] += 1
+            self.trade_times.append(now)
             tr = self.live.get(ev.mint)
             if tr is None:
                 return
@@ -192,8 +204,24 @@ class Collector:
                 self.print_stats()
                 last_stats = self.clock()
 
+    def check_silence(self, now):
+        c = self.cfg
+        cutoff = now - c.silence_s
+        self.trade_times = [t for t in self.trade_times if t >= cutoff]
+        watched_long_enough = now - self.started >= c.silence_s
+        if (watched_long_enough and not self.feed_silent and len(self.live) >= c.silence_min_live
+                and len(self.trade_times) <= c.silence_max_msgs):
+            self.feed_silent = True
+            print(f"[watchdog] {len(self.trade_times)} trade msgs in {c.silence_s:.0f}s with "
+                  f"{len(self.live)} live tokens: feed likely throttled; dropping live tokens and stopping")
+            for mint in list(self.live):
+                self.live[mint].censor("feed silent")
+                if mint not in self.deciding:
+                    self.finish(mint)
+
     def tick(self):
         now = self.clock()
+        self.check_silence(now)
         for mint, tr in list(self.live.items()):
             if tr.decision_due(now) and mint not in self.deciding:
                 tr.freeze(now)
