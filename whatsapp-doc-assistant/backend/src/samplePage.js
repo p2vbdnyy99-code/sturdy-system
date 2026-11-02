@@ -74,12 +74,36 @@ export function sampleView(data = DATA) {
 
 const esc = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
-/** Server HTML for /sample-analysis: the page's text for crawlers and slow
- *  phones; the app replaces it when it loads. */
-export function renderSampleHtml(indexHtml, baseUrl, page) {
+// The id of the JSON block the app reads (frontend pages/sampleData.ts).
+export const SAMPLE_DATA_ID = 'sample-analysis-data';
+
+/** The data as a JSON block that can't end its <script> element early. */
+function dataBlock(v) {
+  const json = JSON.stringify(v).replace(/</g, '\\u003c').replace(/>/g, '\\u003e').replace(/&/g, '\\u0026');
+  return `<script type="application/json" id="${SAMPLE_DATA_ID}">${json}</script>`;
+}
+
+/** Server HTML for /sample-analysis. `renderApp(data)` is the app's own page
+ *  rendered with the data (src/prerender.js sample), so the HTML is what the
+ *  app shows and nothing moves when it starts; without it (the server bundle
+ *  not loaded yet) the page's text in plain HTML. Either way the data is in
+ *  the page, so the app's first render is the loaded page, not a loading
+ *  message that the content later pushes down. */
+export function renderSampleHtml(indexHtml, baseUrl, page, renderApp = () => null) {
   const v = sampleView();
+  const data = JSON.parse(JSON.stringify(v)); // exactly what the app reads
+  const app = renderApp(data);
+  const body = app ?? plainSampleBody(v);
+  const head = publicPageHead(page, `${baseUrl}${SAMPLE_PATH}`, baseUrl);
+  const html = indexHtml
+    .replace(/<title>[^<]*<\/title>/, head)
+    .replace('<div id="root"></div>', `<div id="root">${body}</div>${dataBlock(data)}`);
+  return { html, rendered: app !== null };
+}
+
+function plainSampleBody(v) {
   const pageLink = (n) => (n ? ` (<a href="${esc(`${v.sourceUrl}#page=${n}`)}" rel="noopener" target="_blank">page ${n}</a>)` : '');
-  const body = '<main><h1>Sample analysis: a real AIIMS Bhubaneswar tender</h1>'
+  return '<main><h1>Sample analysis: a real AIIMS Bhubaneswar tender</h1>'
     + `<p>This is TenderTez&rsquo;s analysis of a public tender: ${esc(v.about.tender)} (${v.pageCount} pages, `
     + `<a href="${esc(v.sourceUrl)}" rel="noopener" target="_blank">original PDF</a>). It is shown as produced, with the page each point came from. The tender closed on 30 May 2026.</p>`
     + `<h2>Key facts</h2><ul>${v.keyFacts.map((f) => `<li>${esc(f.label)}: ${esc(f.value)}${pageLink(f.page)}</li>`).join('')}</ul>`
@@ -87,10 +111,6 @@ export function renderSampleHtml(indexHtml, baseUrl, page) {
     + `<h2>Submission checklist (${v.checklistCount} items)</h2>`
     + v.checklist.map((g) => `<h3>${esc(g.label)}</h3><ul>${g.items.map((i) => `<li>${esc(i.label)}${pageLink(i.page)}</li>`).join('')}</ul>`).join('')
     + '<p><a href="/register">Try TenderTez on your own tender: the first 5 are free</a>.</p></main>';
-  const head = publicPageHead(page, `${baseUrl}${SAMPLE_PATH}`, baseUrl);
-  return indexHtml
-    .replace(/<title>[^<]*<\/title>/, head)
-    .replace('<div id="root"></div>', `<div id="root">${body}</div>`);
 }
 
 /** GET /public/sample-analysis: the page's data for the app. */

@@ -14,20 +14,31 @@ import { StaticRouter } from 'react-router-dom';
 import { SessionProvider } from './auth/SessionProvider';
 import { AppRoutes } from './routes';
 import { GUIDES, guidePath } from './guides/guides';
+import { SampleDataContext } from './pages/sampleData';
+import type { SampleAnalysis } from './api/sample';
 
 /** The public pages whose HTML is rendered on the server. /sample-analysis
- *  and the tender landing pages have their own server HTML. */
+ *  is rendered with its data by renderSample; the tender landing pages have
+ *  their own server HTML. */
 export const PRERENDER_PATHS = [
   '/', '/government-tenders', '/features', '/pricing', '/faq', '/about', '/privacy-policy', '/tender-consultants',
   '/guides', ...GUIDES.map((g) => guidePath(g.slug)),
 ];
 
-export function render(path: string): string {
+export function render(path: string, sample: SampleAnalysis | null = null): string {
   return renderToString(
     <StaticRouter location={path}>
       <SessionProvider>
-        <AppRoutes />
+        <SampleDataContext.Provider value={sample}>
+          <AppRoutes />
+        </SampleDataContext.Provider>
       </SessionProvider>
     </StaticRouter>,
   );
+}
+
+/** /sample-analysis as the app shows it once loaded (backend samplePage.js
+ *  passes sampleView()), so the HTML matches the app's first render. */
+export function renderSample(data: SampleAnalysis): string {
+  return render('/sample-analysis', data);
 }

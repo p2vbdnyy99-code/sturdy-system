@@ -1,0 +1,107 @@
+[
+  {
+    "shifts": [],
+    "lcp": {
+      "t": 596,
+      "node": "p \"This is what TenderTez produced for a public tende\"",
+      "size": 71690
+    },
+    "fcp": 596,
+    "scrollW": 390,
+    "clientW": 390,
+    "loading": false,
+    "h1": "A real government tender, analysed by TenderTez",
+    "boqAt": 207,
+    "jsonRequests": 0,
+    "cls": 0,
+    "total": 0,
+    "wallMs": 4592,
+    "console": [
+      "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    ]
+  },
+  {
+    "shifts": [],
+    "lcp": {
+      "t": 588,
+      "node": "p \"This is what TenderTez produced for a public tende\"",
+      "size": 71690
+    },
+    "fcp": 588,
+    "scrollW": 390,
+    "clientW": 390,
+    "loading": false,
+    "h1": "A real government tender, analysed by TenderTez",
+    "boqAt": 201,
+    "jsonRequests": 0,
+    "cls": 0,
+    "total": 0,
+    "wallMs": 4579,
+    "console": [
+      "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    ]
+  },
+  {
+    "shifts": [],
+    "lcp": {
+      "t": 580,
+      "node": "p \"This is what TenderTez produced for a public tende\"",
+      "size": 71690
+    },
+    "fcp": 580,
+    "scrollW": 390,
+    "clientW": 390,
+    "loading": false,
+    "h1": "A real government tender, analysed by TenderTez",
+    "boqAt": 203,
+    "jsonRequests": 0,
+    "cls": 0,
+    "total": 0,
+    "wallMs": 4584,
+    "console": [
+      "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    ]
+  },
+  {
+    "shifts": [],
+    "lcp": {
+      "t": 580,
+      "node": "p \"This is what TenderTez produced for a public tende\"",
+      "size": 71690
+    },
+    "fcp": 580,
+    "scrollW": 390,
+    "clientW": 390,
+    "loading": false,
+    "h1": "A real government tender, analysed by TenderTez",
+    "boqAt": 201,
+    "jsonRequests": 0,
+    "cls": 0,
+    "total": 0,
+    "wallMs": 4595,
+    "console": [
+      "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    ]
+  },
+  {
+    "shifts": [],
+    "lcp": {
+      "t": 580,
+      "node": "p \"This is what TenderTez produced for a public tende\"",
+      "size": 71690
+    },
+    "fcp": 580,
+    "scrollW": 390,
+    "clientW": 390,
+    "loading": false,
+    "h1": "A real government tender, analysed by TenderTez",
+    "boqAt": 201,
+    "jsonRequests": 0,
+    "cls": 0,
+    "total": 0,
+    "wallMs": 4596,
+    "console": [
+      "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    ]
+  }
+]

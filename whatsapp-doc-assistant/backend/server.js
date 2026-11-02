@@ -301,7 +301,11 @@ if (frontendDistExists) {
     db: config.db.url ? getDb : null,
     facets: async () => (config.db.url ? landingFacets(getDb()) : null),
   }));
-  let sampleHtml = null; // the sample analysis never changes while running
+  // The sample analysis never changes while running: cached once the server
+  // bundle has loaded or failed to (before that, its plain HTML, not cached).
+  let sampleHtml = null;
+  let prerenderSettled = false;
+  prerender.ready.then(() => { prerenderSettled = true; });
 
   async function sendLanding(req, res) {
     const cached = landingCache.get(req.path);
@@ -328,7 +332,11 @@ if (frontendDistExists) {
     // reference) — 404 it honestly rather than masking the problem as HTML.
     if (/\.[^/]+$/.test(req.path)) return next();
     if (req.path === SAMPLE_PATH) {
-      sampleHtml ??= renderSampleHtml(indexHtml, SITE_BASE_URL, PUBLIC_PAGES[SAMPLE_PATH]);
+      if (!sampleHtml) {
+        const { html, rendered } = renderSampleHtml(indexHtml, SITE_BASE_URL, PUBLIC_PAGES[SAMPLE_PATH], prerender.sample);
+        if (!rendered && !prerenderSettled) return res.type('html').send(html);
+        sampleHtml = html;
+      }
       return res.type('html').send(sampleHtml);
     }
     const moved = landingRedirect(req.path);

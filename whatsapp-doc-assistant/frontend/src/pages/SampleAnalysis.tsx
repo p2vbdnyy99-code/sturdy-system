@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { PageIntro, PublicLayout } from '../components/PublicLayout';
 import { Icon } from '../components/Icon';
@@ -6,6 +6,7 @@ import { PRODUCT_NAME } from '../config/product';
 import { FREE_TRIAL_TENDERS } from '../config/site';
 import { formatDate } from '../format';
 import { getSampleAnalysis, type SampleAnalysis } from '../api/sample';
+import { embeddedSample, SampleDataContext } from './sampleData';
 
 // A real analysis of one public tender (backend src/samplePage.js), so a
 // visitor can see the output before creating an account. Shown as produced:
@@ -37,9 +38,27 @@ function Cite({ page, quote, pdf }: { page: number | null; quote: string | null;
 }
 
 export function SampleAnalysisPage() {
-  const [data, setData] = useState<SampleAnalysis | null>(null);
+  // In the page from the start (sampleData.ts); fetched only when it isn't,
+  // for example when the page is opened from another page of the app.
+  const serverData = useContext(SampleDataContext);
+  const [data, setData] = useState<SampleAnalysis | null>(() => serverData ?? embeddedSample());
   const [failed, setFailed] = useState(false);
-  useEffect(() => { getSampleAnalysis().then(setData).catch(() => setFailed(true)); }, []);
+  const needsFetch = data === null;
+  useEffect(() => {
+    if (!needsFetch) return;
+    getSampleAnalysis().then(setData).catch(() => setFailed(true));
+  }, [needsFetch]);
+
+  // Only the loading message until the data is here: if the intro, the
+  // closing section and the footer were on screen, the content would push
+  // them down when it arrived (a layout shift).
+  if (!data && !failed) {
+    return (
+      <PublicLayout>
+        <section className="home-section sample-loading"><div className="home-container"><p className="muted">Loading the sample…</p></div></section>
+      </PublicLayout>
+    );
+  }
 
   return (
     <PublicLayout>
@@ -58,9 +77,6 @@ export function SampleAnalysisPage() {
 
       {failed && (
         <section className="home-section"><div className="home-container"><p className="error-text">The sample could not be loaded. Please refresh the page.</p></div></section>
-      )}
-      {!data && !failed && (
-        <section className="home-section"><div className="home-container"><p className="muted">Loading the sample…</p></div></section>
       )}
 
       {data && (

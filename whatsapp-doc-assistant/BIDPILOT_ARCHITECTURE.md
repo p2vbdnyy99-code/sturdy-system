@@ -4974,3 +4974,100 @@ of allowance; the start must not use another kind.
 
 **Reverse:** set `BIDPILOT_AUTO_ANALYZE=off` (no code change) or
 `git revert`. No migration.
+
+# The sample analysis page no longer jumps on phones (30 Oct 2026)
+
+PageSpeed Insights gave `/sample-analysis` a mobile CLS of 0.606
+(performance 75); the home page has 0. Run:
+`harness/runs/2026-10-30-sample-cls/`.
+
+**Cause.** The app starts with `createRoot`, so it replaces the server HTML.
+`SampleAnalysisPage` first rendered "Loading the sample…" and fetched
+`/bidpilot/public/sample-analysis`. That short loading page left the "Try it
+on a tender" section and the footer in the phone's viewport. When the data
+arrived (~3.9 s on a slow phone), the key facts, dates and the rest were
+inserted above them and pushed them off-screen: one layout shift of 0.652
+(sources: the intro text, `p.sample-note`, `section.home-cta`,
+`footer.home-footer`). The plain server HTML being replaced did not count,
+because removed nodes don't shift.
+
+**What changed**
+- `frontend/src/prerender.tsx`: `render(path, sample)` sets a
+  `SampleDataContext`; `renderSample(data)` renders `/sample-analysis` as the
+  app shows it once loaded. Other pages render exactly as before (their HTML
+  is byte-identical apart from the JS asset name).
+- `backend/src/prerender.js`: `sample(data)` calls it (null until the bundle
+  has loaded, or if the render fails).
+- `backend/src/samplePage.js`: `renderSampleHtml(indexHtml, baseUrl, page,
+  renderApp)` returns `{ html, rendered }`. The body is the app's render, or,
+  without it, the old plain HTML. Either way the same data follows `#root`
+  as `<script type="application/json" id="sample-analysis-data">`, with `<`,
+  `>` and `&` written as `<`, `>` and `&`. A JSON block is not
+  executed, so the CSP (`script-src 'self'`) allows it.
+- `server.js`: caches the page only once the app render worked, so a request
+  before the bundle loads isn't served plain HTML for the life of the
+  process.
+- `frontend/src/pages/sampleData.ts` (new) and `SampleAnalysis.tsx`: the
+  page starts with the server's data (context on the server, the JSON block
+  in the browser) and fetches only when there is none, for example when
+  opened from another page of the app.
+- Unchanged: the sample JSON, `sampleView()`, the head (title, description,
+  canonical, OG, markdown alternate), the `.md` version, the JSON API,
+  llms.txt and the sitemap; everything a visitor sees (loaded page text
+  identical old vs new at 360, 390, 768 and 1366 px).
+- Changed for crawlers that don't run JavaScript: the HTML is now the page
+  visitors see. The h1 is the app's ("A real government tender, analysed by
+  TenderTez", not "Sample analysis: a real AIIMS Bhubaneswar tender"), and
+  the text grew from 1,107 to 3,458 words (dates, BOQ and checklist details
+  added). PDF `#page=` links fell from 89 to 19: the app shows page numbers
+  as "p.N" buttons that open the quote and the link. The `.md` version
+  keeps 114 page links.
+- Cost: the HTML grows from 20 KB to 104 KB (3.7 → 22.8 KB gzipped; Fly's
+  edge gzips). The separate 12 KB (gzipped) JSON request is gone.
+
+**Verification**
+- Playwright, 390×844, DPR 3, touch, mobile UA, 4× CPU, slow 4G (150 ms,
+  1.6 Mb/s), fresh context, 5 runs (`cls-measure.cjs` in the run folder,
+  with `gzip-proxy.mjs`, `sample-browser-check.cjs` and `cls-inapp.cjs`): CLS 0.652 → 0.000
+  in every run. Behind a local gzip proxy: the same, with the full content
+  in the DOM at ~1.58 s → ~0.20 s and first paint ~0.53 → ~0.58 s.
+- Lighthouse 12.2.1 mobile, 3 runs each, old and new builds side by side
+  behind the gzip proxy: performance 75–77 → 98, CLS 0.606 → 0.000, FCP/LCP
+  ~1.66 → ~1.81 s. Without compression the HTML growth costs more (FCP
+  ~3.9 → ~4.3 s; performance 54–56 → 73–75).
+- `sample-page.test.js`: the fallback (plain HTML and data, not cached); the
+  app render with the same data and head; the data block can't close its
+  element; over HTTP, the loaded page with every key fact, point and
+  checklist item, data equal to the API, and the same response twice.
+- Browser checks (26/26): no horizontal scroll at the 4 widths; the page
+  number opens the quote with the PDF page link; checklist groups open;
+  in-app navigation fetches once; the fallback HTML shows the loaded page
+  with no shift; no CSP violations or page errors.
+- verify.sh before the revision: backend 719/441/359, build, lint 0 errors
+  (19 warnings), unit 75, secret scan clean.
+
+**Independent review, and the revision it led to.** A reviewer reading only
+the diff and the rules said "ship with changes":
+1. Opened from a link inside the app (home, pricing, guides, consultants,
+   first-run dashboard), the page has no data block and still loaded
+   with the closing section and footer on screen. Measured: on a slow
+   network (400 ms, 400 kb/s) the same 0.652 shift, counted against the page
+   the visitor came from. Now, while loading, the page shows only the
+   loading message in a section that fills the screen (`.sample-loading`,
+   `min-height: 100vh`); everything else appears with the content.
+   Result: 0.000 in 5/5, with no shifts at all.
+2. A server render that fails would be redone on every request. Now the
+   result is cached once the bundle has loaded or failed to.
+3. The block id is written in both server and app. A test now checks that
+   they match.
+Accepted: the plain HTML is served for a moment after a restart, before the
+bundle loads; the h1 change; the dates use the server's time zone in the
+HTML (the sample's date is the same day in UTC and IST).
+After the revision: direct load 0.000 (5/5), Lighthouse ×3 performance 98
+and CLS 0.000, browser checks 26/26, verify.sh backend 720/442/360, build,
+lint 0 errors (19 warnings), unit 75, secret scan clean.
+
+**Not measured:** a real phone, field data (CrUX is a 28-day window, so
+PageSpeed's field CLS lags a deploy by weeks), Safari and Firefox.
+
+**Reverse:** `git revert`. No migration, no setting.

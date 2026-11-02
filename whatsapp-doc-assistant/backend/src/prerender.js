@@ -34,5 +34,16 @@ export function createPrerender(bundlePath, { log = console, ttlMs = 6 * 60 * 60
         return null;
       }
     },
+    /** /sample-analysis rendered with its data (src/samplePage.js), or null
+     *  until the bundle has loaded or when the render fails. */
+    sample(data) {
+      if (!mod?.renderSample) return null;
+      try {
+        return mod.renderSample(data);
+      } catch (err) {
+        log.error('prerender: /sample-analysis failed:', err);
+        return null;
+      }
+    },
   };
 }

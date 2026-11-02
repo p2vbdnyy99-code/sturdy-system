@@ -1697,6 +1697,12 @@ a:hover {
   font-size: 0.9rem;
 }
 
+/* Fills the screen while the sample loads, so the page's sections and the
+   footer appear together below it instead of being pushed down. */
+.sample-loading {
+  min-height: 100vh;
+}
+
 .sample-heading {
   margin-top: 1.75rem;
 }
