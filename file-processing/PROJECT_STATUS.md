@@ -43,7 +43,18 @@ session but is **not yet in this repository** (see blocker 1).
    (for example: the Claude app session view, GitHub mobile PR review).
 5. **Persistence.** This file is uncommitted. It needs approval to commit and push, or it will be lost with the container.
 
+## Research completed
+
+- 2026-11-03: GitHub check. No image tool comes near 100k stars; the closest repos are free competitors, not proof of
+  revenue.
+- 2026-11-03: `reports/2026-11-03-paid-niche-scan.md`. Decision: **generic image converter NO-GO; PIVOT to a niche
+  image tool whose output feeds a paid workflow; HOLD on building** until one candidate niche passes the §6 check.
+
 ## Next proposed action
+
+Run the §6 check (SERP, pricing and AI-answer test) on the four candidate niches, about 30 minutes each.
+
+## Earlier proposed action (superseded)
 
 After the founder resolves blockers 1–3: write the Phase 1 research plan (sources, checked dates, which metrics can
 be measured for free and which cannot), then wait for approval to start Phase 1. No application code until a GO decision.
