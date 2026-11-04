@@ -1,0 +1,194 @@
+[
+  {
+    "shifts": [
+      {
+        "t": 3634,
+        "value": 0.04474266708407268,
+        "sources": [
+          {
+            "node": "section.home-section.tb-section \"Source: Central Public Procurement Portal (CPPP), \"",
+            "prev": [
+              0,
+              283,
+              390,
+              561
+            ],
+            "curr": [
+              0,
+              325,
+              390,
+              519
+            ]
+          }
+        ]
+      },
+      {
+        "t": 3749,
+        "value": 0.05714546117389719,
+        "sources": [
+          {
+            "node": "div.tb-cta \"Found one worth bidding for?Track it in TenderTez:\"",
+            "prev": [
+              24,
+              789,
+              342,
+              55
+            ],
+            "curr": [
+              0,
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    ],
+    "lcp": {
+      "t": 1180,
+      "node": "span.notice-text \"Source: Central Public Procurement Portal (CPPP), \"",
+      "size": 32760
+    },
+    "fcp": 1180,
+    "scrollW": 390,
+    "clientW": 390,
+    "loading": false,
+    "h1": "Find government tenders across India",
+    "boqAt": null,
+    "jsonRequests": 0,
+    "cls": 0.10188812825796986,
+    "total": 0.10188812825796986,
+    "wallMs": 6716,
+    "console": [
+      "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    ]
+  },
+  {
+    "shifts": [
+      {
+        "t": 3567,
+        "value": 0.04474266708407268,
+        "sources": [
+          {
+            "node": "section.home-section.tb-section \"Source: Central Public Procurement Portal (CPPP), \"",
+            "prev": [
+              0,
+              283,
+              390,
+              561
+            ],
+            "curr": [
+              0,
+              325,
+              390,
+              519
+            ]
+          }
+        ]
+      },
+      {
+        "t": 3698,
+        "value": 0.05714546117389719,
+        "sources": [
+          {
+            "node": "div.tb-cta \"Found one worth bidding for?Track it in TenderTez:\"",
+            "prev": [
+              24,
+              789,
+              342,
+              55
+            ],
+            "curr": [
+              0,
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    ],
+    "lcp": {
+      "t": 1180,
+      "node": "span.notice-text \"Source: Central Public Procurement Portal (CPPP), \"",
+      "size": 32760
+    },
+    "fcp": 1180,
+    "scrollW": 390,
+    "clientW": 390,
+    "loading": false,
+    "h1": "Find government tenders across India",
+    "boqAt": null,
+    "jsonRequests": 0,
+    "cls": 0.10188812825796986,
+    "total": 0.10188812825796986,
+    "wallMs": 6641,
+    "console": [
+      "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    ]
+  },
+  {
+    "shifts": [
+      {
+        "t": 3584,
+        "value": 0.04474266708407268,
+        "sources": [
+          {
+            "node": "section.home-section.tb-section \"Source: Central Public Procurement Portal (CPPP), \"",
+            "prev": [
+              0,
+              283,
+              390,
+              561
+            ],
+            "curr": [
+              0,
+              325,
+              390,
+              519
+            ]
+          }
+        ]
+      },
+      {
+        "t": 3763,
+        "value": 0.05714546117389719,
+        "sources": [
+          {
+            "node": "div.tb-cta \"Found one worth bidding for?Track it in TenderTez:\"",
+            "prev": [
+              24,
+              789,
+              342,
+              55
+            ],
+            "curr": [
+              0,
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    ],
+    "lcp": {
+      "t": 1192,
+      "node": "span.notice-text \"Source: Central Public Procurement Portal (CPPP), \"",
+      "size": 32760
+    },
+    "fcp": 1192,
+    "scrollW": 390,
+    "clientW": 390,
+    "loading": false,
+    "h1": "Find government tenders across India",
+    "boqAt": null,
+    "jsonRequests": 0,
+    "cls": 0.10188812825796986,
+    "total": 0.10188812825796986,
+    "wallMs": 6666,
+    "console": [
+      "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    ]
+  }
+]

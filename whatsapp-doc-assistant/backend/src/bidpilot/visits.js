@@ -22,6 +22,7 @@ import { getDb } from '../db/client.js';
 import { pageViews } from '../db/schema/index.js';
 import { log } from '../logger.js';
 import { isLandingPath } from '../landingPages.js';
+import { trackConversion } from './conversions.js';
 
 export const RETENTION_DAYS = 395; // about 13 months
 
@@ -43,6 +44,9 @@ const ROUTES = [
   [/^\/onboarding\/create-company$/, '/onboarding/create-company'],
   // Not a page: the app records it once when sign-up creates the account's company.
   [/^\/signed-up$/, '/signed-up'],
+  // Not a page: a "Choose <plan>" button (pricing) or a plan "Contact us"
+  // button (dashboard) was pressed. Counted here, and sent to GA4 as plan_click.
+  [/^\/plan-click\/(starter|growth|pro|contact)$/, null],
   [/^\/dashboard$/, '/dashboard'],
   [/^\/tenders\/[^/]+$/, '/tenders/:id'],
   [/^\/company-profile$/, '/company-profile'],
@@ -131,9 +135,10 @@ export function createVisitRateLimit({ max = 60, windowMs = 60_000 } = {}) {
 /**
  * `forward`, when given, also receives each counted visit (ga4.js sends the
  * public pages to Google Analytics). It runs after the 204 and never blocks
- * or fails the visit row.
+ * or fails the visit row. `isStaff(req)` (staff.js) leaves the TenderTez
+ * team's own visits out: neither recorded nor forwarded.
  */
-export function createVisitsRouter({ ownHosts = [], db: injectedDb, forward = null } = {}) {
+export function createVisitsRouter({ ownHosts = [], db: injectedDb, forward = null, isStaff = async () => false } = {}) {
   const router = express.Router();
   const hosts = new Set(ownHosts.map((h) => h.toLowerCase()));
   const allow = createVisitRateLimit();
@@ -145,6 +150,15 @@ export function createVisitsRouter({ ownHosts = [], db: injectedDb, forward = nu
     },
   });
 
+  /** This request's visitor for conversion events (conversions.js): the same
+   *  day and daily anonymous id its page views get, or null for a bot. */
+  router.visitorOf = (req) => {
+    const ua = String(req.get('user-agent') || '').slice(0, 500);
+    if (isBot(ua)) return null;
+    const day = istDay();
+    return { day, visitorId: visitorIdFor(saltFor(day), req.ip, ua) };
+  };
+
   router.post('/visit', async (req, res) => {
     res.status(204).end();
     try {
@@ -152,6 +166,7 @@ export function createVisitsRouter({ ownHosts = [], db: injectedDb, forward = nu
       if (isBot(ua) || !allow(req.ip)) return;
       const path = normalizePath(req.body?.path);
       if (!path) return;
+      if (await isStaff(req)) return;
       const day = istDay();
       const visit = {
         day,
@@ -164,6 +179,8 @@ export function createVisitsRouter({ ownHosts = [], db: injectedDb, forward = nu
       if (forward) {
         try { Promise.resolve(forward(visit)).catch(() => {}); } catch { /* never fails the visit */ }
       }
+      const plan = /^\/plan-click\/(.+)$/.exec(path)?.[1];
+      if (plan) trackConversion('plan_click', { req, params: { plan } });
       await dbFor().insert(pageViews).values(visit);
     } catch (err) {
       log.warn(`visits: could not record a page view: ${err.message}`);

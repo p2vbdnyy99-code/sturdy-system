@@ -44,6 +44,18 @@
 - Not measured on a real phone, Safari or Firefox; field CLS (CrUX) will lag
   any deploy by up to 28 days.
 
+## Release (2 Nov 2026)
+- Deployed `f90b98a` on the founder's "deploy" as Fly release v53 (rollback:
+  v52). Before: 0 tenders analysing or being read. Not pushed to GitHub.
+- Live: public pages, .md, data API, health, llms.txt and sitemap answer 200;
+  /sample-analysis has the data block, the app's h1, no loading text, the
+  same title and canonical; 32.9 KB gzipped.
+- Lighthouse mobile on the live page ×3: CLS 0.000 each (was 0.606);
+  performance 80 / 96 / 100 (was 75).
+- Live browser check (390 px): CLS 0, no CSP violations or errors, no
+  horizontal scroll, page-number popover opens, opening from the home page
+  link loads the sample.
+
 ## Next action
-Only on the founder's word: push; then deploy (check no tender is ANALYZING
-first) and re-run PageSpeed Insights on the live page.
+Push on the founder's word. Re-check PageSpeed Insights field data in about
+4 weeks (CrUX is a 28-day window).

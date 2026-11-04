@@ -12,6 +12,7 @@ import fs from 'node:fs';
 import express from 'express';
 import { CATEGORY_ORDER, labelFor, requirementKey } from './bidpilot/repo/checklist.js';
 import { publicPageHead } from './seo.js';
+import { jsonDataBlock } from './dataBlock.js';
 
 export const SAMPLE_PATH = '/sample-analysis';
 
@@ -77,11 +78,6 @@ const esc = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').
 // The id of the JSON block the app reads (frontend pages/sampleData.ts).
 export const SAMPLE_DATA_ID = 'sample-analysis-data';
 
-/** The data as a JSON block that can't end its <script> element early. */
-function dataBlock(v) {
-  const json = JSON.stringify(v).replace(/</g, '\\u003c').replace(/>/g, '\\u003e').replace(/&/g, '\\u0026');
-  return `<script type="application/json" id="${SAMPLE_DATA_ID}">${json}</script>`;
-}
 
 /** Server HTML for /sample-analysis. `renderApp(data)` is the app's own page
  *  rendered with the data (src/prerender.js sample), so the HTML is what the
@@ -97,7 +93,7 @@ export function renderSampleHtml(indexHtml, baseUrl, page, renderApp = () => nul
   const head = publicPageHead(page, `${baseUrl}${SAMPLE_PATH}`, baseUrl);
   const html = indexHtml
     .replace(/<title>[^<]*<\/title>/, head)
-    .replace('<div id="root"></div>', `<div id="root">${body}</div>${dataBlock(data)}`);
+    .replace('<div id="root"></div>', `<div id="root">${body}</div>${jsonDataBlock(SAMPLE_DATA_ID, data)}`);
   return { html, rendered: app !== null };
 }
 

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { ApiError } from '../api/client';
 import { getFeedFacets, type FeedFacets, type FeedQuery, type FeedResult, type FeedTender } from '../api/feed';
@@ -18,18 +18,30 @@ type Props = {
   load: (q: FeedQuery) => Promise<FeedResult>;
   /** In the app: add to my tenders. Signed out: undefined (the row offers sign-up instead). */
   onTrack?: (t: FeedTender) => Promise<void>;
+  /** The filters while the URL has none yet (a landing page's list). */
+  defaultQuery?: FeedQuery;
+  /** Data the page already has (tenders/landingData.ts): the list for `key`
+   *  and the facets, shown at once instead of fetched. */
+  initial?: { key: string; result: FeedResult; facets: FeedFacets };
 };
 
-export function TenderBrowser({ load, onTrack }: Props) {
+export function TenderBrowser({ load, onTrack, defaultQuery, initial }: Props) {
   const [params, setParams] = useSearchParams();
-  const query = useMemo(() => queryFromParams(params), [params]);
+  const query = useMemo(
+    () => (defaultQuery && params.toString() === '' ? defaultQuery : queryFromParams(params)),
+    [params, defaultQuery],
+  );
   const [searchInput, setSearchInput] = useState(query.search);
-  const [data, setData] = useState<FeedResult | null>(null);
+  const key = paramsFromQuery(query).toString();
+  const startsLoaded = initial?.key === key;
+  const [data, setData] = useState<FeedResult | null>(startsLoaded ? initial.result : null);
   // Which filters `data` belongs to: until the new list arrives, the old one
   // stays visible but is marked busy (and dimmed).
-  const [loadedKey, setLoadedKey] = useState<string | null>(null);
-  const key = paramsFromQuery(query).toString();
-  const [facets, setFacets] = useState<FeedFacets | null>(null);
+  const [loadedKey, setLoadedKey] = useState<string | null>(startsLoaded ? key : null);
+  // The list the page started with isn't fetched again.
+  const initialKey = useRef(startsLoaded ? key : null);
+  const [facets, setFacets] = useState<FeedFacets | null>(initial?.facets ?? null);
+  const hasFacets = useRef(Boolean(initial?.facets));
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
 
@@ -46,15 +58,21 @@ export function TenderBrowser({ load, onTrack }: Props) {
   }, [searchInput, query.search, update]);
 
   useEffect(() => {
+    // Only the first time: coming back to these filters later fetches them.
+    const skip = initialKey.current === key;
+    initialKey.current = null;
+    if (skip) return undefined;
     let cancelled = false;
     setError(null);
-    load(query)
+    // The key holds every filter, so the query is rebuilt from it.
+    load(queryFromParams(new URLSearchParams(key)))
       .then((r) => { if (!cancelled) { setData(r); setLoadedKey(key); } })
       .catch((err) => { if (!cancelled) { setError(err instanceof ApiError ? err.message : 'Could not load tenders.'); setLoadedKey(key); } });
     return () => { cancelled = true; };
-  }, [load, query, key]);
+  }, [load, key]);
 
   useEffect(() => {
+    if (hasFacets.current) return;
     getFeedFacets().then(setFacets).catch(() => setFacets(null));
   }, []);
 

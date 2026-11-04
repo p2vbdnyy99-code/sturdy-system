@@ -7,6 +7,7 @@ import { PublicLayout } from '../components/PublicLayout';
 import { Icon, type IconName } from '../components/Icon';
 import { PRODUCT_NAME } from '../config/product';
 import { FREE_TRIAL_TENDERS } from '../config/site';
+import { GUIDES, guidePath } from '../guides/guides';
 
 // Public homepage at "/". Signed-in users keep the old behaviour of "/"
 // (straight to the dashboard). Copy describes only what the product does
@@ -117,7 +118,26 @@ export function HomePage() {
         </div>
       </section>
 
-      <section className="home-section home-section-alt">
+      {/* The guides are the pages search engines send people to; linked here so
+          visitors and crawlers find them from the home page, not only the footer. */}
+      <section className="home-section home-section-alt" aria-labelledby="home-guides-title">
+        <div className="home-container">
+          <p className="home-kicker">Guides</p>
+          <h2 className="home-heading" id="home-guides-title">Before you bid: three questions answered</h2>
+          <div className="home-teasers home-teasers-3">
+            {GUIDES.map((g) => (
+              <Link key={g.slug} to={guidePath(g.slug)} className="home-teaser">
+                <h3>{g.title}</h3>
+                <p>{g.summary}</p>
+                <span className="home-teaser-link">Read the guide <Icon name="arrowRight" /></span>
+              </Link>
+            ))}
+          </div>
+          <p className="home-features-more"><Link to="/guides" className="home-teaser-link">All guides <Icon name="arrowRight" /></Link></p>
+        </div>
+      </section>
+
+      <section className="home-section">
         <div className="home-container home-teasers">
           <Link to="/pricing" className="home-teaser">
             <p className="home-kicker">Pricing</p>

@@ -25,6 +25,7 @@ import { aggregateResults } from './aggregate.js';
 import { recordChunkUsage } from './budget.js';
 import { listPages } from '../repo/pages.js';
 import { replaceAnalysis, markAnalysisFailed } from '../repo/analysis.js';
+import { trackCompanyConversion } from '../conversions.js';
 
 const MAX_ERROR_CHARS = 500;
 // The message is stored on the tender and shown on its page. A database
@@ -185,6 +186,9 @@ export async function runAnalysis(scope, tenderId, { isReanalysis } = {}) {
         `dropped=${aggregated.droppedCount} chunksMs=${chunksMs} avgChunkMs=${avgChunkMs} maxChunkMs=${maxChunkMs} ` +
         `aggregateMs=${aggregateMs} dbWriteMs=${dbWriteMs} ms=${Date.now() - start} status=COMPLETED`,
     );
+    // Google Analytics conversion (conversions.js); never for the team's own
+    // companies or for a tender the team uploaded or started.
+    void trackCompanyConversion(scope.db, scope.companyId, 'analysis_complete', { reanalysis: isReanalysis ? 'yes' : 'no' }, { tenderId });
   } catch (err) {
     if (isDatabaseError(err)) {
       log.error(`bidpilot analysis: saving results failed for tender=${tenderId}: ${err.cause?.message ?? 'unknown database error'}`);

@@ -1,0 +1,107 @@
+[
+  {
+    "shifts": [],
+    "lcp": {
+      "t": 532,
+      "node": "li \"Annual repair and maintenance of residential quart\"",
+      "size": 36848
+    },
+    "fcp": 532,
+    "scrollW": 390,
+    "clientW": 390,
+    "loading": false,
+    "h1": "Central Public Works Department (CPWD) government tenders",
+    "boqAt": null,
+    "jsonRequests": 0,
+    "cls": 0,
+    "total": 0,
+    "wallMs": 4630,
+    "console": [
+      "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    ]
+  },
+  {
+    "shifts": [],
+    "lcp": {
+      "t": 536,
+      "node": "li \"Annual repair and maintenance of residential quart\"",
+      "size": 36848
+    },
+    "fcp": 536,
+    "scrollW": 390,
+    "clientW": 390,
+    "loading": false,
+    "h1": "Central Public Works Department (CPWD) government tenders",
+    "boqAt": null,
+    "jsonRequests": 0,
+    "cls": 0,
+    "total": 0,
+    "wallMs": 4616,
+    "console": [
+      "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    ]
+  },
+  {
+    "shifts": [],
+    "lcp": {
+      "t": 524,
+      "node": "li \"Annual repair and maintenance of residential quart\"",
+      "size": 36848
+    },
+    "fcp": 524,
+    "scrollW": 390,
+    "clientW": 390,
+    "loading": false,
+    "h1": "Central Public Works Department (CPWD) government tenders",
+    "boqAt": null,
+    "jsonRequests": 0,
+    "cls": 0,
+    "total": 0,
+    "wallMs": 4599,
+    "console": [
+      "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    ]
+  },
+  {
+    "shifts": [],
+    "lcp": {
+      "t": 536,
+      "node": "li \"Annual repair and maintenance of residential quart\"",
+      "size": 36848
+    },
+    "fcp": 536,
+    "scrollW": 390,
+    "clientW": 390,
+    "loading": false,
+    "h1": "Central Public Works Department (CPWD) government tenders",
+    "boqAt": null,
+    "jsonRequests": 0,
+    "cls": 0,
+    "total": 0,
+    "wallMs": 4666,
+    "console": [
+      "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    ]
+  },
+  {
+    "shifts": [],
+    "lcp": {
+      "t": 516,
+      "node": "li \"Annual repair and maintenance of residential quart\"",
+      "size": 36848
+    },
+    "fcp": 516,
+    "scrollW": 390,
+    "clientW": 390,
+    "loading": false,
+    "h1": "Central Public Works Department (CPWD) government tenders",
+    "boqAt": null,
+    "jsonRequests": 0,
+    "cls": 0,
+    "total": 0,
+    "wallMs": 4649,
+    "console": [
+      "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    ]
+  }
+]

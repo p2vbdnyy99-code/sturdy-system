@@ -1,0 +1,65 @@
+[
+  {
+    "shifts": [],
+    "lcp": {
+      "t": 596,
+      "node": "p.home-hero-lead \"TenderTez is an AI tool that reads Indian governme\"",
+      "size": 56376
+    },
+    "fcp": 596,
+    "scrollW": 390,
+    "clientW": 390,
+    "loading": false,
+    "h1": "Understand a 150-page tender in minutes, not days",
+    "boqAt": null,
+    "jsonRequests": 0,
+    "cls": 0,
+    "total": 0,
+    "wallMs": 4580,
+    "console": [
+      "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    ]
+  },
+  {
+    "shifts": [],
+    "lcp": {
+      "t": 576,
+      "node": "p.home-hero-lead \"TenderTez is an AI tool that reads Indian governme\"",
+      "size": 56376
+    },
+    "fcp": 576,
+    "scrollW": 390,
+    "clientW": 390,
+    "loading": false,
+    "h1": "Understand a 150-page tender in minutes, not days",
+    "boqAt": null,
+    "jsonRequests": 0,
+    "cls": 0,
+    "total": 0,
+    "wallMs": 4595,
+    "console": [
+      "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    ]
+  },
+  {
+    "shifts": [],
+    "lcp": {
+      "t": 568,
+      "node": "p.home-hero-lead \"TenderTez is an AI tool that reads Indian governme\"",
+      "size": 56376
+    },
+    "fcp": 568,
+    "scrollW": 390,
+    "clientW": 390,
+    "loading": false,
+    "h1": "Understand a 150-page tender in minutes, not days",
+    "boqAt": null,
+    "jsonRequests": 0,
+    "cls": 0,
+    "total": 0,
+    "wallMs": 4627,
+    "console": [
+      "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    ]
+  }
+]

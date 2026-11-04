@@ -3,6 +3,7 @@ import { PublicLayout, PageIntro } from '../components/PublicLayout';
 import { Icon } from '../components/Icon';
 import { PRODUCT_NAME } from '../config/product';
 import { CONTACT_EMAIL, FREE_TRIAL_TENDERS, PLANS } from '../config/site';
+import { recordPlanClick } from '../api/visits';
 
 // A free trial, then monthly plans (enforced by the server, see
 // backend/src/bidpilot/plans.js). There is no online payment yet: a firm
@@ -57,6 +58,7 @@ export function PricingPage() {
                 <p className="muted">{plan.forWho}</p>
                 {CONTACT_EMAIL && (
                   <a className="btn-link btn-primary pricing-plan-cta"
+                    onClick={() => recordPlanClick(plan.name)}
                     href={`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(`Subscribe to the ${plan.name} plan`)}`}>
                     Choose {plan.name}
                   </a>

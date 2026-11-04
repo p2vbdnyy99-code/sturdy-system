@@ -44,6 +44,8 @@ import {
 } from '../auth/google.js';
 import { phoneSignInEnabled, startPhoneSignIn, verifyPhoneCode, PhoneOtpError, maskPhone } from '../auth/phoneOtp.js';
 import { signInWithGoogleProfile, signInWithPhone, SignInError } from '../auth/externalSignIn.js';
+import { STAFF_COOKIE_NAME, staffCookieOptions } from '../staff.js';
+import { trackConversion } from '../conversions.js';
 
 // ─── The real session-verifying middleware ──────────────────────────────────
 
@@ -156,6 +158,7 @@ export function createAuthRouter() {
         return res.status(400).json({ error: 'A valid email is required.' });
       }
       const { user, rawVerificationToken } = await registerUser(db, { email, password, name });
+      trackConversion('sign_up', { req, user, params: { method: 'password' } });
 
       const body = { userId: user.id, email: user.email, status: user.status };
       // The dev verification link is ONLY ever built, logged and returned
@@ -282,6 +285,7 @@ export function createAuthRouter() {
       const { user, created, linked } = await signInWithGoogleProfile(db, profile);
       await startBrowserSession(db, req, res, user.id);
       log.info(`metric bidpilot_signin method=google created=${created} linked=${linked}`);
+      if (created) trackConversion('sign_up', { req, user, params: { method: 'google' } });
       return res.redirect(302, '/dashboard');
     } catch (err) {
       return fail(err instanceof SignInError ? err.code : err.message);
@@ -309,6 +313,7 @@ export function createAuthRouter() {
       const { user, created } = await signInWithPhone(db, { phone, name: req.body?.name });
       await startBrowserSession(db, req, res, user.id);
       log.info(`metric bidpilot_signin method=phone created=${created} phone=${maskPhone(phone)}`);
+      if (created) trackConversion('sign_up', { req, user, params: { method: 'phone' } });
       return res.json({ userId: user.id, phone, created });
     } catch (err) {
       if (err instanceof PhoneOtpError) return res.status(OTP_STATUS[err.code] ?? 400).json({ error: err.message, code: err.code });
@@ -354,13 +359,18 @@ export function createAuthRouter() {
         return { ...m, profileComplete: missingProfileFields(profile).length === 0 };
       }));
 
+      const admin = isAdmin(req.bidpilotUser, config.bidpilot.adminEmails);
+      // Marks a team member's browser so its visits stay uncounted after
+      // signing out too (staff.js). The app calls /me on every load, so this
+      // covers every way of signing in.
+      if (admin) res.cookie(STAFF_COOKIE_NAME, '1', staffCookieOptions());
       return res.json({
         userId: req.bidpilotUser.id,
         email: req.bidpilotUser.email,
         phone: req.bidpilotUser.phone ?? null,
         name: req.bidpilotUser.name ?? null,
         status: req.bidpilotUser.status,
-        isAdmin: isAdmin(req.bidpilotUser, config.bidpilot.adminEmails),
+        isAdmin: admin,
         emailVerified: Boolean(req.bidpilotUser.emailVerifiedAt),
         companies: withProfile,
       });

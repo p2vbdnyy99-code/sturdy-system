@@ -1,0 +1,107 @@
+[
+  {
+    "shifts": [],
+    "lcp": {
+      "t": 524,
+      "node": "li \"Construction of drainage and road works, package 6\"",
+      "size": 38976
+    },
+    "fcp": 524,
+    "scrollW": 390,
+    "clientW": 390,
+    "loading": false,
+    "h1": "Maharashtra government tenders",
+    "boqAt": null,
+    "jsonRequests": 0,
+    "cls": 0,
+    "total": 0,
+    "wallMs": 4620,
+    "console": [
+      "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    ]
+  },
+  {
+    "shifts": [],
+    "lcp": {
+      "t": 524,
+      "node": "li \"Construction of drainage and road works, package 6\"",
+      "size": 38976
+    },
+    "fcp": 524,
+    "scrollW": 390,
+    "clientW": 390,
+    "loading": false,
+    "h1": "Maharashtra government tenders",
+    "boqAt": null,
+    "jsonRequests": 0,
+    "cls": 0,
+    "total": 0,
+    "wallMs": 4669,
+    "console": [
+      "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    ]
+  },
+  {
+    "shifts": [],
+    "lcp": {
+      "t": 520,
+      "node": "li \"Construction of drainage and road works, package 6\"",
+      "size": 38976
+    },
+    "fcp": 520,
+    "scrollW": 390,
+    "clientW": 390,
+    "loading": false,
+    "h1": "Maharashtra government tenders",
+    "boqAt": null,
+    "jsonRequests": 0,
+    "cls": 0,
+    "total": 0,
+    "wallMs": 4903,
+    "console": [
+      "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    ]
+  },
+  {
+    "shifts": [],
+    "lcp": {
+      "t": 524,
+      "node": "li \"Construction of drainage and road works, package 6\"",
+      "size": 38976
+    },
+    "fcp": 524,
+    "scrollW": 390,
+    "clientW": 390,
+    "loading": false,
+    "h1": "Maharashtra government tenders",
+    "boqAt": null,
+    "jsonRequests": 0,
+    "cls": 0,
+    "total": 0,
+    "wallMs": 4653,
+    "console": [
+      "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    ]
+  },
+  {
+    "shifts": [],
+    "lcp": {
+      "t": 536,
+      "node": "li \"Construction of drainage and road works, package 6\"",
+      "size": 38976
+    },
+    "fcp": 536,
+    "scrollW": 390,
+    "clientW": 390,
+    "loading": false,
+    "h1": "Maharashtra government tenders",
+    "boqAt": null,
+    "jsonRequests": 0,
+    "cls": 0,
+    "total": 0,
+    "wallMs": 4666,
+    "console": [
+      "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    ]
+  }
+]

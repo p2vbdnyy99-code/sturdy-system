@@ -1,0 +1,925 @@
+[
+  {
+    "shifts": [
+      {
+        "t": 2337,
+        "value": 0.03265870144145459,
+        "sources": [
+          {
+            "node": "section.home-section.tb-section \"Source: Central Public Procurement Portal (CPPP), \"",
+            "prev": [
+              0,
+              283,
+              390,
+              551
+            ],
+            "curr": [
+              0,
+              325,
+              390,
+              519
+            ]
+          },
+          {
+            "node": "footer.home-footer \"TenderTezFind government tenders, read their docum\"",
+            "prev": [
+              0,
+              834,
+              390,
+              10
+            ],
+            "curr": [
+              0,
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      },
+      {
+        "t": 2458,
+        "value": 0.10305498995828244,
+        "sources": [
+          {
+            "node": "#text \"open tenders right now\" in p.tb-intro-count \"60 open tenders right now\"",
+            "prev": [
+              24,
+              278,
+              342,
+              19
+            ],
+            "curr": [
+              24,
+              278,
+              342,
+              19
+            ]
+          },
+          {
+            "node": "div.tb-cta \"Found one worth bidding for?Track it in TenderTez:\"",
+            "prev": [
+              24,
+              526,
+              342,
+              303
+            ],
+            "curr": [
+              24,
+              774,
+              342,
+              70
+            ]
+          },
+          {
+            "node": "svg \"\"",
+            "prev": [
+              156,
+              762,
+              18,
+              18
+            ],
+            "curr": [
+              0,
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      },
+      {
+        "t": 2529,
+        "value": 0.01838954658713347,
+        "sources": [
+          {
+            "node": "label.tb-select \"StatusOpenClosing in 7 daysClosedAll\"",
+            "prev": [
+              24,
+              632,
+              167,
+              67
+            ],
+            "curr": [
+              24,
+              707,
+              167,
+              66
+            ]
+          },
+          {
+            "node": "label.tb-select \"SortNewest firstClosing soonest\"",
+            "prev": [
+              199,
+              632,
+              167,
+              67
+            ],
+            "curr": [
+              199,
+              707,
+              167,
+              66
+            ]
+          },
+          {
+            "node": "p.muted \"Loading tenders…\"",
+            "prev": [
+              24,
+              711,
+              342,
+              23
+            ],
+            "curr": [
+              24,
+              785,
+              342,
+              24
+            ]
+          },
+          {
+            "node": "div.tb-cta \"Found one worth bidding for?Track it in TenderTez:\"",
+            "prev": [
+              24,
+              774,
+              342,
+              70
+            ],
+            "curr": [
+              0,
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      },
+      {
+        "t": 2549,
+        "value": 0.004665573900518857,
+        "sources": [
+          {
+            "node": "div.tb-filters \"Search tendersStateAll statesMaharashtra (60)Statu\"",
+            "prev": [
+              24,
+              577,
+              342,
+              196
+            ],
+            "curr": [
+              24,
+              592,
+              342,
+              197
+            ]
+          },
+          {
+            "node": "p.muted \"Loading tenders…\"",
+            "prev": [
+              24,
+              785,
+              342,
+              24
+            ],
+            "curr": [
+              24,
+              801,
+              342,
+              23
+            ]
+          }
+        ]
+      }
+    ],
+    "lcp": {
+      "t": 1564,
+      "node": "li \"Construction of drainage and road works, package 6\"",
+      "size": 38976
+    },
+    "fcp": 1564,
+    "scrollW": 390,
+    "clientW": 390,
+    "loading": false,
+    "h1": "Maharashtra government tenders",
+    "boqAt": null,
+    "jsonRequests": 0,
+    "cls": 0.15876881188738937,
+    "total": 0.15876881188738937,
+    "wallMs": 4672,
+    "console": [
+      "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    ]
+  },
+  {
+    "shifts": [
+      {
+        "t": 1550,
+        "value": 0.03265870144145459,
+        "sources": [
+          {
+            "node": "section.home-section.tb-section \"Source: Central Public Procurement Portal (CPPP), \"",
+            "prev": [
+              0,
+              283,
+              390,
+              551
+            ],
+            "curr": [
+              0,
+              325,
+              390,
+              519
+            ]
+          },
+          {
+            "node": "footer.home-footer \"TenderTezFind government tenders, read their docum\"",
+            "prev": [
+              0,
+              834,
+              390,
+              10
+            ],
+            "curr": [
+              0,
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      },
+      {
+        "t": 1616,
+        "value": 0.10305498995828244,
+        "sources": [
+          {
+            "node": "#text \"open tenders right now\" in p.tb-intro-count \"60 open tenders right now\"",
+            "prev": [
+              24,
+              278,
+              342,
+              19
+            ],
+            "curr": [
+              24,
+              278,
+              342,
+              19
+            ]
+          },
+          {
+            "node": "div.tb-cta \"Found one worth bidding for?Track it in TenderTez:\"",
+            "prev": [
+              24,
+              526,
+              342,
+              303
+            ],
+            "curr": [
+              24,
+              774,
+              342,
+              70
+            ]
+          },
+          {
+            "node": "svg \"\"",
+            "prev": [
+              156,
+              762,
+              18,
+              18
+            ],
+            "curr": [
+              0,
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      },
+      {
+        "t": 1652,
+        "value": 0.01838954658713347,
+        "sources": [
+          {
+            "node": "label.tb-select \"StatusOpenClosing in 7 daysClosedAll\"",
+            "prev": [
+              24,
+              632,
+              167,
+              67
+            ],
+            "curr": [
+              24,
+              707,
+              167,
+              66
+            ]
+          },
+          {
+            "node": "label.tb-select \"SortNewest firstClosing soonest\"",
+            "prev": [
+              199,
+              632,
+              167,
+              67
+            ],
+            "curr": [
+              199,
+              707,
+              167,
+              66
+            ]
+          },
+          {
+            "node": "p.muted \"Loading tenders…\"",
+            "prev": [
+              24,
+              711,
+              342,
+              23
+            ],
+            "curr": [
+              24,
+              785,
+              342,
+              24
+            ]
+          },
+          {
+            "node": "div.tb-cta \"Found one worth bidding for?Track it in TenderTez:\"",
+            "prev": [
+              24,
+              774,
+              342,
+              70
+            ],
+            "curr": [
+              0,
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      },
+      {
+        "t": 1685,
+        "value": 0.004665573900518857,
+        "sources": [
+          {
+            "node": "div.tb-filters \"Search tendersStateAll statesMaharashtra (60)Statu\"",
+            "prev": [
+              24,
+              577,
+              342,
+              196
+            ],
+            "curr": [
+              24,
+              592,
+              342,
+              197
+            ]
+          },
+          {
+            "node": "p.muted \"Loading tenders…\"",
+            "prev": [
+              24,
+              785,
+              342,
+              24
+            ],
+            "curr": [
+              24,
+              801,
+              342,
+              23
+            ]
+          }
+        ]
+      }
+    ],
+    "lcp": {
+      "t": 528,
+      "node": "li \"Construction of drainage and road works, package 6\"",
+      "size": 38976
+    },
+    "fcp": 528,
+    "scrollW": 390,
+    "clientW": 390,
+    "loading": false,
+    "h1": "Maharashtra government tenders",
+    "boqAt": null,
+    "jsonRequests": 0,
+    "cls": 0.15876881188738937,
+    "total": 0.15876881188738937,
+    "wallMs": 4844,
+    "console": [
+      "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    ]
+  },
+  {
+    "shifts": [
+      {
+        "t": 1535,
+        "value": 0.03265870144145459,
+        "sources": [
+          {
+            "node": "section.home-section.tb-section \"Source: Central Public Procurement Portal (CPPP), \"",
+            "prev": [
+              0,
+              283,
+              390,
+              551
+            ],
+            "curr": [
+              0,
+              325,
+              390,
+              519
+            ]
+          },
+          {
+            "node": "footer.home-footer \"TenderTezFind government tenders, read their docum\"",
+            "prev": [
+              0,
+              834,
+              390,
+              10
+            ],
+            "curr": [
+              0,
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      },
+      {
+        "t": 1596,
+        "value": 0.10305498995828244,
+        "sources": [
+          {
+            "node": "#text \"open tenders right now\" in p.tb-intro-count \"60 open tenders right now\"",
+            "prev": [
+              24,
+              278,
+              342,
+              19
+            ],
+            "curr": [
+              24,
+              278,
+              342,
+              19
+            ]
+          },
+          {
+            "node": "div.tb-cta \"Found one worth bidding for?Track it in TenderTez:\"",
+            "prev": [
+              24,
+              526,
+              342,
+              303
+            ],
+            "curr": [
+              24,
+              774,
+              342,
+              70
+            ]
+          },
+          {
+            "node": "svg \"\"",
+            "prev": [
+              156,
+              762,
+              18,
+              18
+            ],
+            "curr": [
+              0,
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      },
+      {
+        "t": 1623,
+        "value": 0.029541107329643917,
+        "sources": [
+          {
+            "node": "div.tb-filters \"Search tendersStateAll statesMaharashtra (60)Statu\"",
+            "prev": [
+              24,
+              577,
+              342,
+              122
+            ],
+            "curr": [
+              24,
+              592,
+              342,
+              197
+            ]
+          },
+          {
+            "node": "p.muted \"Loading tenders…\"",
+            "prev": [
+              24,
+              711,
+              342,
+              23
+            ],
+            "curr": [
+              24,
+              801,
+              342,
+              23
+            ]
+          },
+          {
+            "node": "div.tb-cta \"Found one worth bidding for?Track it in TenderTez:\"",
+            "prev": [
+              24,
+              774,
+              342,
+              70
+            ],
+            "curr": [
+              0,
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    ],
+    "lcp": {
+      "t": 532,
+      "node": "li \"Construction of drainage and road works, package 6\"",
+      "size": 38976
+    },
+    "fcp": 532,
+    "scrollW": 390,
+    "clientW": 390,
+    "loading": false,
+    "h1": "Maharashtra government tenders",
+    "boqAt": null,
+    "jsonRequests": 0,
+    "cls": 0.16525479872938095,
+    "total": 0.16525479872938095,
+    "wallMs": 4799,
+    "console": [
+      "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    ]
+  },
+  {
+    "shifts": [
+      {
+        "t": 1517,
+        "value": 0.03265870144145459,
+        "sources": [
+          {
+            "node": "section.home-section.tb-section \"Source: Central Public Procurement Portal (CPPP), \"",
+            "prev": [
+              0,
+              283,
+              390,
+              551
+            ],
+            "curr": [
+              0,
+              325,
+              390,
+              519
+            ]
+          },
+          {
+            "node": "footer.home-footer \"TenderTezFind government tenders, read their docum\"",
+            "prev": [
+              0,
+              834,
+              390,
+              10
+            ],
+            "curr": [
+              0,
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      },
+      {
+        "t": 1584,
+        "value": 0.12801208062141806,
+        "sources": [
+          {
+            "node": "#text \"open tenders right now\" in p.tb-intro-count \"60 open tenders right now\"",
+            "prev": [
+              24,
+              278,
+              342,
+              19
+            ],
+            "curr": [
+              24,
+              278,
+              342,
+              19
+            ]
+          },
+          {
+            "node": "div.tb-cta \"Found one worth bidding for?Track it in TenderTez:\"",
+            "prev": [
+              24,
+              526,
+              342,
+              303
+            ],
+            "curr": [
+              0,
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      },
+      {
+        "t": 1607,
+        "value": 0.004665573900518857,
+        "sources": [
+          {
+            "node": "div.tb-filters \"Search tendersStateAll statesMaharashtra (60)Statu\"",
+            "prev": [
+              24,
+              577,
+              342,
+              196
+            ],
+            "curr": [
+              24,
+              592,
+              342,
+              197
+            ]
+          },
+          {
+            "node": "p.muted \"Loading tenders…\"",
+            "prev": [
+              24,
+              785,
+              342,
+              24
+            ],
+            "curr": [
+              24,
+              801,
+              342,
+              23
+            ]
+          }
+        ]
+      }
+    ],
+    "lcp": {
+      "t": 520,
+      "node": "li \"Construction of drainage and road works, package 6\"",
+      "size": 38976
+    },
+    "fcp": 520,
+    "scrollW": 390,
+    "clientW": 390,
+    "loading": false,
+    "h1": "Maharashtra government tenders",
+    "boqAt": null,
+    "jsonRequests": 0,
+    "cls": 0.16533635596339152,
+    "total": 0.16533635596339152,
+    "wallMs": 4750,
+    "console": [
+      "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    ]
+  },
+  {
+    "shifts": [
+      {
+        "t": 1557,
+        "value": 0.03265870144145459,
+        "sources": [
+          {
+            "node": "section.home-section.tb-section \"Source: Central Public Procurement Portal (CPPP), \"",
+            "prev": [
+              0,
+              283,
+              390,
+              551
+            ],
+            "curr": [
+              0,
+              325,
+              390,
+              519
+            ]
+          },
+          {
+            "node": "footer.home-footer \"TenderTezFind government tenders, read their docum\"",
+            "prev": [
+              0,
+              834,
+              390,
+              10
+            ],
+            "curr": [
+              0,
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      },
+      {
+        "t": 1611,
+        "value": 0.10305498995828244,
+        "sources": [
+          {
+            "node": "#text \"open tenders right now\" in p.tb-intro-count \"60 open tenders right now\"",
+            "prev": [
+              24,
+              278,
+              342,
+              19
+            ],
+            "curr": [
+              24,
+              278,
+              342,
+              19
+            ]
+          },
+          {
+            "node": "div.tb-cta \"Found one worth bidding for?Track it in TenderTez:\"",
+            "prev": [
+              24,
+              526,
+              342,
+              303
+            ],
+            "curr": [
+              24,
+              774,
+              342,
+              70
+            ]
+          },
+          {
+            "node": "svg \"\"",
+            "prev": [
+              156,
+              762,
+              18,
+              18
+            ],
+            "curr": [
+              0,
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      },
+      {
+        "t": 1641,
+        "value": 0.01838954658713347,
+        "sources": [
+          {
+            "node": "label.tb-select \"StatusOpenClosing in 7 daysClosedAll\"",
+            "prev": [
+              24,
+              632,
+              167,
+              67
+            ],
+            "curr": [
+              24,
+              707,
+              167,
+              66
+            ]
+          },
+          {
+            "node": "label.tb-select \"SortNewest firstClosing soonest\"",
+            "prev": [
+              199,
+              632,
+              167,
+              67
+            ],
+            "curr": [
+              199,
+              707,
+              167,
+              66
+            ]
+          },
+          {
+            "node": "p.muted \"Loading tenders…\"",
+            "prev": [
+              24,
+              711,
+              342,
+              23
+            ],
+            "curr": [
+              24,
+              785,
+              342,
+              24
+            ]
+          },
+          {
+            "node": "div.tb-cta \"Found one worth bidding for?Track it in TenderTez:\"",
+            "prev": [
+              24,
+              774,
+              342,
+              70
+            ],
+            "curr": [
+              0,
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      },
+      {
+        "t": 1658,
+        "value": 0.004665573900518857,
+        "sources": [
+          {
+            "node": "div.tb-filters \"Search tendersStateAll statesMaharashtra (60)Statu\"",
+            "prev": [
+              24,
+              577,
+              342,
+              196
+            ],
+            "curr": [
+              24,
+              592,
+              342,
+              197
+            ]
+          },
+          {
+            "node": "p.muted \"Loading tenders…\"",
+            "prev": [
+              24,
+              785,
+              342,
+              24
+            ],
+            "curr": [
+              24,
+              801,
+              342,
+              23
+            ]
+          }
+        ]
+      }
+    ],
+    "lcp": {
+      "t": 540,
+      "node": "li \"Construction of drainage and road works, package 6\"",
+      "size": 38976
+    },
+    "fcp": 540,
+    "scrollW": 390,
+    "clientW": 390,
+    "loading": false,
+    "h1": "Maharashtra government tenders",
+    "boqAt": null,
+    "jsonRequests": 0,
+    "cls": 0.15876881188738937,
+    "total": 0.15876881188738937,
+    "wallMs": 4826,
+    "console": [
+      "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    ]
+  }
+]

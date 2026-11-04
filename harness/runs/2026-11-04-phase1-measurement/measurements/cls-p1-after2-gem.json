@@ -1,0 +1,107 @@
+[
+  {
+    "shifts": [],
+    "lcp": {
+      "t": 528,
+      "node": "li \"Supply of office furniture lot 20Ministry of Defen\"",
+      "size": 34944
+    },
+    "fcp": 528,
+    "scrollW": 390,
+    "clientW": 390,
+    "loading": false,
+    "h1": "GeM bids open now",
+    "boqAt": null,
+    "jsonRequests": 0,
+    "cls": 0,
+    "total": 0,
+    "wallMs": 4630,
+    "console": [
+      "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    ]
+  },
+  {
+    "shifts": [],
+    "lcp": {
+      "t": 544,
+      "node": "li \"Supply of office furniture lot 20Ministry of Defen\"",
+      "size": 34944
+    },
+    "fcp": 544,
+    "scrollW": 390,
+    "clientW": 390,
+    "loading": false,
+    "h1": "GeM bids open now",
+    "boqAt": null,
+    "jsonRequests": 0,
+    "cls": 0,
+    "total": 0,
+    "wallMs": 4611,
+    "console": [
+      "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    ]
+  },
+  {
+    "shifts": [],
+    "lcp": {
+      "t": 516,
+      "node": "li \"Supply of office furniture lot 20Ministry of Defen\"",
+      "size": 34944
+    },
+    "fcp": 516,
+    "scrollW": 390,
+    "clientW": 390,
+    "loading": false,
+    "h1": "GeM bids open now",
+    "boqAt": null,
+    "jsonRequests": 0,
+    "cls": 0,
+    "total": 0,
+    "wallMs": 4665,
+    "console": [
+      "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    ]
+  },
+  {
+    "shifts": [],
+    "lcp": {
+      "t": 532,
+      "node": "li \"Supply of office furniture lot 20Ministry of Defen\"",
+      "size": 34944
+    },
+    "fcp": 532,
+    "scrollW": 390,
+    "clientW": 390,
+    "loading": false,
+    "h1": "GeM bids open now",
+    "boqAt": null,
+    "jsonRequests": 0,
+    "cls": 0,
+    "total": 0,
+    "wallMs": 4649,
+    "console": [
+      "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    ]
+  },
+  {
+    "shifts": [],
+    "lcp": {
+      "t": 528,
+      "node": "li \"Supply of office furniture lot 20Ministry of Defen\"",
+      "size": 34944
+    },
+    "fcp": 528,
+    "scrollW": 390,
+    "clientW": 390,
+    "loading": false,
+    "h1": "GeM bids open now",
+    "boqAt": null,
+    "jsonRequests": 0,
+    "cls": 0,
+    "total": 0,
+    "wallMs": 4689,
+    "console": [
+      "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    ]
+  }
+]

@@ -12,12 +12,18 @@
 //   tender;
 // - links to the other lists.
 // No page is made for a list below MIN_OPEN tenders, so there are no thin
-// pages. The browser app then takes over the same URL
-// (GovernmentTendersPage reads the filter from GET /public/tenders/landing).
+// pages. The browser app then takes over the same URL. The page carries the
+// app's own data for it (landingAppData: the page, the facets and the list's
+// first page, as the API would answer), so the app's first render is the
+// loaded list and nothing moves when the app starts.
 
 import { publicPageHead, breadcrumbs } from './seo.js';
-import { STATE_ALIASES, searchFeed } from './bidpilot/repo/publicTenders.js';
+import { STATE_ALIASES, searchFeed, parseFeedQuery } from './bidpilot/repo/publicTenders.js';
 import { escapeMd, link, list, mdPage, todayInIndia } from './md/format.js';
+import { jsonDataBlock } from './dataBlock.js';
+
+/** The id of the data block the app reads (frontend tenders/landingData.ts). */
+export const LANDING_DATA_ID = 'landing-data';
 
 export const MIN_OPEN = 20;
 export const MAX_ORGANISATIONS = 20;
@@ -103,11 +109,26 @@ export function searchUrlFor(page) {
   return `/government-tenders?${p.toString()}`;
 }
 
+/** The query the app opens a landing page with: its filter, then the
+ *  search's defaults (open, newest first), as frontend api/feed.ts sends it. */
+export function landingAppQuery(page) {
+  return { kind: page.kind, status: 'open', sort: 'newest', state: page.state || undefined, organisation: page.organisation || undefined };
+}
+
+/** What the app would fetch for this page: the page, the facets and the
+ *  list's first page, each as its API answers (JSON round trip). */
+export async function landingAppData(db, facets, page) {
+  const parsed = parseFeedQuery(landingAppQuery(page));
+  const result = await searchFeed(db, parsed.filters);
+  return JSON.parse(JSON.stringify({ page, facets, result }));
+}
+
 /**
  * index.html with this landing page's head tags and a server-rendered list
- * inside #root (the app replaces it when it starts).
+ * inside #root (the app replaces it when it starts), followed by the app's
+ * data for the page when given.
  */
-export function renderLandingHtml(indexHtml, page, tenders, baseUrl, allPages) {
+export function renderLandingHtml(indexHtml, page, tenders, baseUrl, allPages, appData = null) {
   const heading = page.kind === 'gem' ? 'GeM bids open now' : `${page.label} government tenders`;
   // The list links to the search it comes from, so: Home > Find government tenders > this list.
   const crumbs = breadcrumbs(baseUrl, [['Find government tenders', '/government-tenders'], [heading, page.path]]);
@@ -129,9 +150,10 @@ export function renderLandingHtml(indexHtml, page, tenders, baseUrl, allPages) {
     + '<p>Found one worth bidding for? Upload its PDF to TenderTez to see every eligibility condition, document, date and EMD with its page number. '
     + '<a href="/register">Your first 5 tenders are free</a>.</p>'
     + `<h2>Other lists</h2><ul>${others}</ul></main>`;
+  const data = appData ? jsonDataBlock(LANDING_DATA_ID, appData) : '';
   return indexHtml
     .replace(/<title>[^<]*<\/title>/, head)
-    .replace('<div id="root"></div>', `<div id="root">${body}</div>`);
+    .replace('<div id="root"></div>', `<div id="root">${body}</div>${data}`);
 }
 
 /**

@@ -1,0 +1,296 @@
+[
+  {
+    "shifts": [
+      {
+        "t": 3578,
+        "value": 0.005364465537438685,
+        "sources": [
+          {
+            "node": "div.tb-filters \"Search tendersStatusOpenClosing in 7 daysClosedAll\"",
+            "prev": [
+              24,
+              535,
+              342,
+              122
+            ],
+            "curr": [
+              24,
+              550,
+              342,
+              123
+            ]
+          },
+          {
+            "node": "p.muted \"Loading tenders…\"",
+            "prev": [
+              24,
+              669,
+              342,
+              24
+            ],
+            "curr": [
+              24,
+              685,
+              342,
+              23
+            ]
+          },
+          {
+            "node": "div.tb-cta \"Found one worth bidding for?Track it in TenderTez:\"",
+            "prev": [
+              24,
+              733,
+              342,
+              111
+            ],
+            "curr": [
+              24,
+              748,
+              342,
+              96
+            ]
+          }
+        ]
+      },
+      {
+        "t": 3600,
+        "value": 0.03265870144145459,
+        "sources": [
+          {
+            "node": "section.home-section.tb-section \"Source: Central Public Procurement Portal (CPPP), \"",
+            "prev": [
+              0,
+              283,
+              390,
+              561
+            ],
+            "curr": [
+              0,
+              325,
+              390,
+              519
+            ]
+          }
+        ]
+      },
+      {
+        "t": 3713,
+        "value": 0.05714546117389719,
+        "sources": [
+          {
+            "node": "div.tb-cta \"Found one worth bidding for?Track it in TenderTez:\"",
+            "prev": [
+              24,
+              789,
+              342,
+              55
+            ],
+            "curr": [
+              0,
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    ],
+    "lcp": {
+      "t": 1196,
+      "node": "span.notice-text \"Source: Central Public Procurement Portal (CPPP), \"",
+      "size": 32760
+    },
+    "fcp": 1196,
+    "scrollW": 390,
+    "clientW": 390,
+    "loading": false,
+    "h1": "Find government tenders across India",
+    "boqAt": null,
+    "jsonRequests": 0,
+    "cls": 0.09516862815279047,
+    "total": 0.09516862815279047,
+    "wallMs": 6663,
+    "console": [
+      "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    ]
+  },
+  {
+    "shifts": [
+      {
+        "t": 3601,
+        "value": 0.005364465537438685,
+        "sources": [
+          {
+            "node": "div.tb-filters \"Search tendersStatusOpenClosing in 7 daysClosedAll\"",
+            "prev": [
+              24,
+              535,
+              342,
+              122
+            ],
+            "curr": [
+              24,
+              550,
+              342,
+              123
+            ]
+          },
+          {
+            "node": "p.muted \"Loading tenders…\"",
+            "prev": [
+              24,
+              669,
+              342,
+              24
+            ],
+            "curr": [
+              24,
+              685,
+              342,
+              23
+            ]
+          },
+          {
+            "node": "div.tb-cta \"Found one worth bidding for?Track it in TenderTez:\"",
+            "prev": [
+              24,
+              733,
+              342,
+              111
+            ],
+            "curr": [
+              24,
+              748,
+              342,
+              96
+            ]
+          }
+        ]
+      },
+      {
+        "t": 3641,
+        "value": 0.03265870144145459,
+        "sources": [
+          {
+            "node": "section.home-section.tb-section \"Source: Central Public Procurement Portal (CPPP), \"",
+            "prev": [
+              0,
+              283,
+              390,
+              561
+            ],
+            "curr": [
+              0,
+              325,
+              390,
+              519
+            ]
+          }
+        ]
+      },
+      {
+        "t": 3733,
+        "value": 0.05714546117389719,
+        "sources": [
+          {
+            "node": "div.tb-cta \"Found one worth bidding for?Track it in TenderTez:\"",
+            "prev": [
+              24,
+              789,
+              342,
+              55
+            ],
+            "curr": [
+              0,
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    ],
+    "lcp": {
+      "t": 1188,
+      "node": "span.notice-text \"Source: Central Public Procurement Portal (CPPP), \"",
+      "size": 32760
+    },
+    "fcp": 1188,
+    "scrollW": 390,
+    "clientW": 390,
+    "loading": false,
+    "h1": "Find government tenders across India",
+    "boqAt": null,
+    "jsonRequests": 0,
+    "cls": 0.09516862815279047,
+    "total": 0.09516862815279047,
+    "wallMs": 6681,
+    "console": [
+      "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    ]
+  },
+  {
+    "shifts": [
+      {
+        "t": 3586,
+        "value": 0.04474266708407268,
+        "sources": [
+          {
+            "node": "section.home-section.tb-section \"Source: Central Public Procurement Portal (CPPP), \"",
+            "prev": [
+              0,
+              283,
+              390,
+              561
+            ],
+            "curr": [
+              0,
+              325,
+              390,
+              519
+            ]
+          }
+        ]
+      },
+      {
+        "t": 3718,
+        "value": 0.05714546117389719,
+        "sources": [
+          {
+            "node": "div.tb-cta \"Found one worth bidding for?Track it in TenderTez:\"",
+            "prev": [
+              24,
+              789,
+              342,
+              55
+            ],
+            "curr": [
+              0,
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    ],
+    "lcp": {
+      "t": 1196,
+      "node": "span.notice-text \"Source: Central Public Procurement Portal (CPPP), \"",
+      "size": 32760
+    },
+    "fcp": 1196,
+    "scrollW": 390,
+    "clientW": 390,
+    "loading": false,
+    "h1": "Find government tenders across India",
+    "boqAt": null,
+    "jsonRequests": 0,
+    "cls": 0.10188812825796986,
+    "total": 0.10188812825796986,
+    "wallMs": 6657,
+    "console": [
+      "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    ]
+  }
+]

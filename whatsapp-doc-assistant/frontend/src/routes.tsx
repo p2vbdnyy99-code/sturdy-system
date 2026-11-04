@@ -16,7 +16,7 @@ import { PricingPage } from './pages/Pricing';
 import { FaqPage } from './pages/Faq';
 import { AboutPage } from './pages/About';
 import { PrivacyPage } from './pages/Privacy';
-import { GovernmentTendersPage } from './pages/GovernmentTenders';
+import { GovernmentTendersRoute } from './pages/GovernmentTenders';
 import { FeaturesPage } from './pages/Features';
 import { SampleAnalysisPage } from './pages/SampleAnalysis';
 import { InsightsPage } from './pages/Insights';
@@ -59,8 +59,8 @@ export function AppRoutes() {
 
       {/* Public homepage; it sends signed-in users on to /dashboard itself. */}
       <Route path="/" element={<HomePage />} />
-      <Route path="/government-tenders" element={<GovernmentTendersPage />} />
-      <Route path="/government-tenders/:group/:slug" element={<GovernmentTendersPage />} />
+      <Route path="/government-tenders" element={<GovernmentTendersRoute />} />
+      <Route path="/government-tenders/:group/:slug" element={<GovernmentTendersRoute />} />
       <Route path="/features" element={<FeaturesPage />} />
       <Route path="/sample-analysis" element={<SampleAnalysisPage />} />
       <Route path="/pricing" element={<PricingPage />} />

@@ -69,7 +69,8 @@ const SECTIONS: Array<{ title: string; body: ReactNode }> = [
           and whether you&rsquo;re on a phone or a computer. To count unique visitors without cookies, we also
           store a short code made from your connection and browser that changes every day and can&rsquo;t be
           traced back to you. Your IP address is not stored, and visit counts aren&rsquo;t linked to your
-          account. For the public pages, our server also sends these details to Google Analytics (see
+          account. Visits by the {PRODUCT_NAME} team&rsquo;s own accounts aren&rsquo;t counted. For the public
+          pages, our server also sends these details to Google Analytics (see
           &ldquo;Who we share it with&rdquo;).</li>
         <li><strong>Emails you send us.</strong></li>
       </ul>
@@ -121,9 +122,14 @@ const SECTIONS: Array<{ title: string; body: ReactNode }> = [
           <li><strong>Google Analytics</strong> shows us how people find the website. Our server (not your
             browser) sends it the visit details for the public pages only (home, tender search, features,
             pricing, FAQ, about, this policy and sign-up): the page, the date, the website you came from, the
-            campaign name in the link, phone or computer, and the daily code described above. It gets no cookie,
-            no IP address, no account details and nothing from your tenders, and nothing from the pages you see
-            when signed in.</li>
+            campaign name in the link, phone or computer, and the daily code described above. It is never told
+            which pages you view while signed in. Separately, our server tells it when one of four things
+            happens, some of which you do while signed in: someone signs up (with how: email, Google or phone), a
+            tender is uploaded (from the dashboard or a tracked tender), an analysis finishes (and whether it was
+            a re-run), or a plan button is pressed (with the plan&rsquo;s name). Each of these says only that it
+            happened, with the same daily code where there is one. Google Analytics gets no cookie, no IP
+            address, no account details, nothing about which company or tender, and nothing from your
+            tenders.</li>
           <li><strong>Google sign-in:</strong> if you choose &ldquo;Continue with Google&rdquo;, Google confirms who
             you are and shares your name, email address and Google account ID with us.</li>
           <li><strong>Meta (WhatsApp)</strong> delivers sign-in codes: if you sign in with your mobile number, we
@@ -144,7 +150,7 @@ const SECTIONS: Array<{ title: string; body: ReactNode }> = [
       <p>
         Our servers are run by Fly.io, with the main server in Singapore, and OpenAI processes text on its own
         servers, which are also outside India. Google Analytics, which receives the visit counts for the public
-        pages, also stores them outside India. Google and Meta, when you use their sign-in or WhatsApp codes, may
+        pages and the four events described above, also stores them outside India. Google and Meta, when you use their sign-in or WhatsApp codes, may
         also process your details outside India. By using {PRODUCT_NAME} you agree to your data being stored and
         processed there.
       </p>
@@ -157,7 +163,10 @@ const SECTIONS: Array<{ title: string; body: ReactNode }> = [
         We use two cookies, and both are needed to sign in: one keeps you logged in (for up to 30 days, and page
         scripts can&rsquo;t read it), and one protects your account against forged requests from other websites.
         While you sign in with Google, a third cookie lasting at most 10 minutes protects that sign-in from being
-        hijacked. We use no other cookies.
+        hijacked. Only on the browsers of the {PRODUCT_NAME} team&rsquo;s own accounts, one more cookie marks the
+        browser so the team&rsquo;s own visits and actions are left out of the visit counts and of Google
+        Analytics. It lasts up to 400 days, renewed each time a team member opens the app signed in, stays
+        after signing out, holds nothing about anyone, and other users never get it. We use no other cookies.
       </p>
     ),
   },

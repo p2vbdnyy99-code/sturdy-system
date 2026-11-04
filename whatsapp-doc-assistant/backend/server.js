@@ -37,11 +37,13 @@ import { getDb } from './src/db/client.js';
 import { canonicalHostRedirect, renderIndexHtml, robotsTxt, sitemapXml, PUBLIC_PAGES } from './src/seo.js';
 import { createMarkdownRouter } from './src/md/router.js';
 import { createPrerender } from './src/prerender.js';
-import { landingPagesFrom, isLandingPath, landingRedirect, renderLandingHtml, createLandingCache, loadLandingPage } from './src/landingPages.js';
+import { landingPagesFrom, isLandingPath, landingRedirect, renderLandingHtml, createLandingCache, loadLandingPage, landingAppData } from './src/landingPages.js';
 import { cachedFacets } from './src/bidpilot/repo/publicTenders.js';
 import { createVisitsRouter } from './src/bidpilot/visits.js';
+import { createStaffCheck } from './src/bidpilot/staff.js';
 import { createCrawlerCounter } from './src/bidpilot/crawlers.js';
-import { createGa4Forwarder } from './src/bidpilot/ga4.js';
+import { createGa4Forwarder, createGa4EventSender } from './src/bidpilot/ga4.js';
+import { configureConversions } from './src/bidpilot/conversions.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 // Sibling of backend/, not inside it — verified against the actual
@@ -257,12 +259,21 @@ if (config.db.url) {
   app.use('/bidpilot', createDownloadRouter());
   const ga4Forward = createGa4Forwarder({ ...config.bidpilot.ga4, baseUrl: SITE_BASE_URL });
   log.info(ga4Forward
-    ? `Google Analytics: public page views sent by the server to ${config.bidpilot.ga4.measurementId}`
+    ? `Google Analytics: public page views and conversion events sent by the server to ${config.bidpilot.ga4.measurementId}`
     : 'Google Analytics: off (BIDPILOT_GA4_MEASUREMENT_ID / _API_SECRET not set)');
-  app.use('/bidpilot', createVisitsRouter({
+  const visitsRouter = createVisitsRouter({
     ownHosts: [SITE_HOSTNAME, ...config.bidpilot.redirectHosts],
     forward: ga4Forward,
-  }));
+    // The team's own visits aren't counted (src/bidpilot/staff.js).
+    isStaff: createStaffCheck({ db: getDb, adminEmails: config.bidpilot.adminEmails }),
+  });
+  app.use('/bidpilot', visitsRouter);
+  // GA4 conversion events (src/bidpilot/conversions.js), joined to the visitor's day.
+  configureConversions({
+    sender: createGa4EventSender(config.bidpilot.ga4),
+    visitorOfRequest: visitsRouter.visitorOf,
+    admins: config.bidpilot.adminEmails,
+  });
 } else {
   app.use('/bidpilot', (_req, res) => {
     res.status(503).json({ error: 'BidPilot is not configured on this deployment.' });
@@ -310,9 +321,12 @@ if (frontendDistExists) {
   async function sendLanding(req, res) {
     const cached = landingCache.get(req.path);
     if (cached) return res.type('html').send(cached);
-    const found = config.db.url ? await loadLandingPage(getDb(), await landingFacets(getDb()), req.path) : null;
+    const facets = config.db.url ? await landingFacets(getDb()) : null;
+    const found = facets ? await loadLandingPage(getDb(), facets, req.path) : null;
     if (!found) return res.status(404).type('html').send(renderIndexHtml(indexHtml, req.path, SITE_BASE_URL));
-    const html = renderLandingHtml(indexHtml, found.page, found.tenders, SITE_BASE_URL, found.pages);
+    // The app's data for this page, so its first render is the loaded list.
+    const appData = await landingAppData(getDb(), facets, found.page);
+    const html = renderLandingHtml(indexHtml, found.page, found.tenders, SITE_BASE_URL, found.pages, appData);
     landingCache.set(req.path, html);
     return res.type('html').send(html);
   }

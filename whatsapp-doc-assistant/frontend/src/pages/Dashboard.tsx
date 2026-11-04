@@ -21,6 +21,7 @@ import { getDashboardSummary } from '../api/dashboard';
 import { useSession } from '../auth/SessionProvider';
 import { ApiError } from '../api/client';
 import { CONTACT_EMAIL } from '../config/site';
+import { recordPlanClick } from '../api/visits';
 import { allowanceNotice, type Allowance } from '../allowance';
 import {
   listTenders, uploadTender, TENDER_STATUSES, ANALYSIS_STATUSES,
@@ -396,7 +397,8 @@ function AllowanceBanner({ allowance }: { allowance: Allowance }) {
         {n.before}<strong>{n.bold}</strong>{n.after}
         {n.next === 'pricing' && <> <Link to="/pricing">See the plans</Link>.</>}
         {n.next && CONTACT_EMAIL && (
-          <> Email <a href={`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(subject)}`}>{CONTACT_EMAIL}</a>.</>
+          <> Email <a onClick={() => recordPlanClick('contact')}
+            href={`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(subject)}`}>{CONTACT_EMAIL}</a>.</>
         )}
       </span>
     </div>

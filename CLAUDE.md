@@ -64,9 +64,15 @@ Follow `harness/README.md`. In short:
   every commit.
 - Never expose or log session tokens or verification links in production.
 - Company isolation is mandatory: every tender query is scoped to its company.
-- Analytics are sent by the server only (`bidpilot/ga4.js`, public pages
-  only, no IP or user agent); never add a Google tag or any browser analytics
-  script. A new public page goes in `PUBLIC_PAGES` (`backend/src/seo.js`), or
+- Analytics are sent by the server only (`bidpilot/ga4.js`): page views of
+  public pages, and four conversion events (`sign_up`, `upload`,
+  `analysis_complete`, `plan_click`, from `bidpilot/conversions.js`) with at
+  most one allowed parameter each; never an account, company or tender id,
+  a file name, tender content, an IP or a user agent. Never add a Google tag
+  or any browser analytics script. The team's own activity (accounts in
+  `BIDPILOT_ADMIN_EMAILS`, and browsers with the `bidpilot_staff` marker that
+  `/me` sets for them) is neither counted nor sent (`bidpilot/staff.js`).
+  A new public page goes in `PUBLIC_PAGES` (`backend/src/seo.js`), or
   it is served noindex, is left out of the sitemap and never reaches GA4. It
   also needs a markdown renderer in `backend/src/md/registry.js` (or a reason
   in `SKIPPED`); `test/md.test.js` fails otherwise.

@@ -16,6 +16,7 @@ import { useShellData } from '../shell/ShellData';
 import { CONTACT_EMAIL } from '../config/site';
 import { blockedText, type BlockedBy } from './firstRun';
 import { allowanceNotice } from '../allowance';
+import { recordPlanClick } from '../api/visits';
 
 export type ReadyTender = { id: string; title: string | null; clientId: string | null; blockedBy?: BlockedBy };
 
@@ -85,7 +86,8 @@ export function ReadyToAnalyse({ tenders, companyId, clientNames }: {
                 )}
                 {why.next === 'pricing' && <Link to="/pricing" className="btn-link btn-primary">See the plans</Link>}
                 {why.next === 'contact' && CONTACT_EMAIL && (
-                  <a className="btn-link btn-primary" href={`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent('TenderTez plan')}`}>Contact us</a>
+                  <a className="btn-link btn-primary" onClick={() => recordPlanClick('contact')}
+                    href={`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent('TenderTez plan')}`}>Contact us</a>
                 )}
               </li>
             );

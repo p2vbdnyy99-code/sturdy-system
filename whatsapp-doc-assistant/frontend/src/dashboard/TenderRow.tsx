@@ -9,6 +9,7 @@ import { useShellData } from '../shell/ShellData';
 import { STAGE_LABEL } from '../tenderDetail/stages';
 import { daysUntil, displayTitle, formatDate, relativeDays } from '../format';
 import { CONTACT_EMAIL } from '../config/site';
+import { recordPlanClick } from '../api/visits';
 import { blockedText, rowBlockedBy } from './firstRun';
 
 type TenderRowProps = {
@@ -107,7 +108,7 @@ export function TenderRow({ tender, companyId, onUpdate, clientName = null }: Te
           <Link to="/pricing" className="btn-link btn-primary" title={blocked.text}>See the plans</Link>
         )}
         {tender.hasDocument !== false && blocked?.next === 'contact' && CONTACT_EMAIL && (
-          <a className="btn-link btn-primary" title={blocked.text}
+          <a className="btn-link btn-primary" title={blocked.text} onClick={() => recordPlanClick('contact')}
             href={`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent('TenderTez plan')}`}>Contact us</a>
         )}
         {tender.hasDocument !== false && !blocked?.next && (attention === 'ANALYSIS_REQUIRED' || attention === 'ANALYSIS_FAILED') && (

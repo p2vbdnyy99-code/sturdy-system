@@ -5071,3 +5071,168 @@ lint 0 errors (19 warnings), unit 75, secret scan clean.
 PageSpeed's field CLS lags a deploy by weeks), Safari and Firefox.
 
 **Reverse:** `git revert`. No migration, no setting.
+
+# Growth Engine Phase 1: measurement and technical fixes (4 Nov 2026)
+
+Approved by the founder after the growth audit (`TENDERTEZ_GROWTH_AUDIT.md`).
+The run is in `harness/runs/2026-11-04-phase1-measurement/`. It has four
+stages; each was tested and `verify.sh` was run before the next.
+
+**A. Tender list pages no longer jump on phones**
+- **Problem.** `/government-tenders/state|organisation|list/*` had a live
+  mobile CLS of 0.308.
+  - The app replaced the server HTML, first rendered the page without its
+    list filter, count or list, then fetched them (landing pages, facets,
+    list).
+  - The count line and the list then pushed the source note, call to action
+    and footer.
+- **Fix.**
+  - The server adds the app's own data for the page as a JSON block after
+    `#root` (`landingAppData`: the landing page, the facets and the list's
+    first page, exactly as the API answers). It uses a shared
+    `src/dataBlock.js`, which `samplePage.js` now also uses.
+  - `GovernmentTendersPage` and `TenderBrowser` start from that data
+    (`tenders/landingData.ts`), so the first load makes no tender request.
+  - The server-rendered list for crawlers (other lists, CPPP credit, "not
+    every tender") is unchanged.
+- **Also fixed.** Both routes render the same page, so after a link from a
+  list page to the main search React kept the list's heading. This was
+  confirmed on the original code. `GovernmentTendersRoute` now keys the page
+  by path.
+- **Verification.**
+  - Local, seeded lists, 390 px, 4× CPU, slow 4G, 5 runs: state list 0.159–0.165 → 0.000; organisation and GeM lists 0.000.
+  - Browser checks 32/32 at 390 and 1366 px: no API request on first load; the filter, sort, paging and search work; navigation and the back button work; no CSP errors.
+  - Nine pages are byte-identical old vs new apart from asset names and the block.
+  - Not fixed (out of scope, pre-existing): the main search `/government-tenders` measures 0.095–0.10.
+
+**B. The team's own visits are left out** (`src/bidpilot/staff.js`)
+- **Rule.** A visit isn't counted (no `page_views` row, nothing to GA4) when:
+  - it carries a live session of an account in `BIDPILOT_ADMIN_EMAILS`, read without extending the session; or
+  - the browser has `bidpilot_staff=1`.
+- **The marker.** `GET /me` sets it for those accounts. It is HttpOnly,
+  SameSite=Lax, Secure in production and lasts 400 days, so a team browser
+  stays excluded after signing out.
+- **Change on the app side.** It now sends visits with `credentials:
+  'same-origin'` (it was `'omit'`, so the server could never see either
+  cookie). Nothing from the cookies is stored.
+- **Limit.** Pages a team member views on a new browser before first signing
+  in there are still counted.
+- **Verification.**
+  - `staff.test.js`.
+  - `insights.test.js`: the marker for the team only.
+  - Browser 9/9: the team signed in or out isn't counted; a visitor is.
+
+**C. Plan clicks and GA4 conversion events** (`src/bidpilot/conversions.js`, `ga4.js`)
+- **Plan clicks.**
+  - Covered: the pricing "Choose <plan>" buttons, the dashboard "Contact us"
+    plan buttons and the allowance banner's email link.
+  - They record `/plan-click/<starter|growth|pro|contact>` through the visit
+    counter, as `/signed-up` already was. There is no schema change, and the
+    mailto still opens.
+- **Events sent by the server.**
+  - `sign_up`: password, Google or phone; new accounts only.
+  - `upload`: from the dashboard or a tracked tender; not for duplicates.
+  - `analysis_complete`: whether it's a re-analysis.
+  - `plan_click`: the plan.
+- **What an event carries.** Only one allowed value; never an id, email, file
+  name or tender content.
+- **Linking to page views.** Request-bound events use the visitor's daily id,
+  so GA4 joins them to that day's page views and source.
+  `analysis_complete` runs in the background and gets a random id.
+- **Exclusions and failure.** Never sent for the team (account, marker, or a
+  company with a team member), and never blocks or fails what triggered it.
+- **Privacy.** The policy now lists the four events, the team cookie, and
+  that team visits aren't counted. **`LAST_UPDATED` must be set to the deploy
+  day.**
+- **Verification.**
+  - `conversions.test.js` (8): event bodies; real routes each fire once (not
+    for duplicates, a taken email or the team).
+  - End to end against a local GA4 capture, 13/13: the four events in order,
+    joined to the visitor's page views, with no identifiers; none for the
+    team.
+- **After deploy (founder).**
+  1. Check GA4 Realtime once.
+  2. Mark the four events as key events in GA4 Admin.
+
+**D. Home page links to the guides**
+- A "Guides" section lists the three guides (three cards; one column below
+  980 px) with "All guides".
+- The home page's server HTML now links each guide (638 → 746 words).
+- Verification: CLS 0.000 (3 runs); no horizontal scroll at 360, 390, 768
+  and 1366 px; the cards open their guides.
+
+**Unchanged:** prices, plans, payments, the database schema, hosting,
+`fly.toml`.
+
+**verify.sh after D:** backend 736/456/365, build, lint 0 errors (18
+warnings), unit 75, secret scan clean.
+
+**Reverse:** `git revert`. No migration, no setting. Without
+`BIDPILOT_GA4_*` no event is sent.
+
+**Review fixes (4 Nov 2026, after the final read-only review)**
+- **M1: no `analysis_complete` for a team test account on a marked browser.**
+  - The problem: sign-up and upload were already skipped for a browser with
+    the `bidpilot_staff` marker. But the analysis finishes in the
+    background with no request, and only checked whether the company had a
+    team member. A founder testing with an account outside
+    `BIDPILOT_ADMIN_EMAILS` could send `analysis_complete`.
+  - The fix (`conversions.js`):
+    - `noteTeamTender(tenderId, { req, user })` remembers, in memory, a
+      tender uploaded (`POST /tenders/upload`), given its document
+      (`POST /tenders/:id/document`) or sent to analysis
+      (`POST /tenders/:id/analyze`) from a team account or a marked
+      browser. It is called before reading or analysis can start.
+    - `trackCompanyConversion(..., { tenderId })` skips those tenders.
+    - `isTeamRequest` is the one rule both use.
+    - No schema change.
+  - Limit: a restart between such an upload and the end of its analysis
+    forgets the tender, so that one event would be sent. The set holds at
+    most 5000 ids, oldest dropped first, and only team tenders are added.
+- **M2: privacy policy.**
+  - It now separates the two things Google receives: page views, which are
+    public pages only and never the pages viewed while signed in, and the
+    four server-side events, some of which happen while signed in.
+  - It says the team cookie lasts up to 400 days, is renewed on each
+    signed-in app load and stays after signing out.
+  - "Data stored outside India" now mentions the events.
+  - `LAST_UPDATED` is unchanged (still 27 October 2026) until deploy day.
+- **L1: the list page's server data is used once.**
+  - `tenders/landingData.ts` now reads the block once and removes it from
+    the page.
+  - `GovernmentTendersPage` marks it used once a page has been shown.
+  - Going elsewhere in the app and back to the same list (back button or
+    link) fetches fresh data instead of showing the page-load list.
+- **Tests added.**
+  - `conversions.test.js` (+4 subtests):
+    - M1: sign-up, upload and the automatic analysis from a marked browser
+      send nothing, while the same journey unmarked sends `upload` and
+      `analysis_complete`;
+    - M1: an Analyze click from a marked browser, on a tender uploaded
+      unmarked, sends only the `upload`;
+    - `reanalysis` 'no' then 'yes';
+    - a tracked-tender upload sends `upload/tracked_tender` once (not
+      again, not for the team).
+    - Both M1 subtests fail with the fix removed.
+  - `external-signin.test.js` (+1): `sign_up` only for a new Google or phone
+    account. Nothing for a return visit, a linked account, a tampered or
+    unverified Google sign-in, a cancellation, a wrong code, the team, or a
+    marked browser.
+  - `staff.test.js` (+2): logout leaves the marker in place, and the
+    browser stays uncounted; in a production process the marker cookie is
+    Secure, like the session cookie.
+  - Frontend `tenders/landingData.test.ts` (3): read once and removed;
+    nothing after the page has been shown; another path, no block or a
+    broken block gives nothing.
+- **Browser checks (local harness with a GA4 capture).**
+  - `list-browser-check.cjs` 40/40 (was 32). It now also checks that the
+    block is removed, that the first load makes no request, and that coming
+    back to the list by the back button and by a link fetches it again.
+  - `staff-browser-check.cjs` 9/9.
+  - `conversions-browser-check.cjs` 16/16 (was 13). It now also runs a
+    non-team account on a marked browser through plan click, sign-up,
+    upload and analysis, with no events and no visits. The new check fails
+    with the fix removed.
+- **verify.sh:** backend 744/458/366 (1 skip, the Papyr sample-CV test
+  whose file isn't in this container), build, lint 0 errors (18 warnings),
+  unit 78, secret scan clean.

@@ -18,6 +18,7 @@ import {
   normalizePhone, maskPhone, whatsappTemplateRequest, setWhatsappFetch, verifyPhoneCode, phoneSignInEnabled, MAX_ATTEMPTS,
 } from '../../src/bidpilot/auth/phoneOtp.js';
 import { users, sessions, authIdentities, phoneOtps } from '../../src/db/schema/index.js';
+import { configureConversions } from '../../src/bidpilot/conversions.js';
 import { eq } from 'drizzle-orm';
 
 // ── units ──────────────────────────────────────────────────────────────────
@@ -231,6 +232,53 @@ test('sign-in with Google and with a WhatsApp code (HTTP + database)', { skip: S
     const again = await call('POST', '/bidpilot/auth/phone/verify', { body: { phone: '9876543210', code: lastCode() } });
     assert.equal(again.json.created, false);
     assert.equal((await db.select().from(users)).length, 1);
+  });
+
+  // GA4 sign_up (conversions.js): only when Google or a phone code creates
+  // an account; never for a return visit, a linked account, a refusal, the
+  // team or a browser with the staff marker.
+  await t.test('sign_up events: once per new Google or phone account, never on failure, return or for the team', async () => {
+    const sent = [];
+    configureConversions({ sender: (e) => { sent.push(e); }, admins: ['team@example.com'] });
+    try {
+      const settle = () => new Promise((r) => setTimeout(r, 50));
+      // Google: new account, then a return visit.
+      await googleRoundTrip();
+      await googleRoundTrip();
+      // Google: refused (tampered state, unverified email) and cancelled.
+      await googleRoundTrip({ tamperState: true });
+      googleClaims = { ...googleClaims, sub: 'g-456', email: 'other@example.com', email_verified: false };
+      await googleRoundTrip();
+      const start = await call('GET', '/bidpilot/auth/google/start');
+      await call('GET', '/bidpilot/auth/google/callback?error=access_denied', { cookie: cookiesFrom(start) });
+      // Google: an existing email/password account linked, not created.
+      await registerUser(db, { email: 'link@example.com', password: 'Linking12345', name: null });
+      googleClaims = { ...googleClaims, sub: 'g-789', email: 'link@example.com', email_verified: true };
+      await googleRoundTrip();
+      // Google: the team's own new account.
+      googleClaims = { ...googleClaims, sub: 'g-team', email: 'team@example.com' };
+      await googleRoundTrip();
+      await settle();
+      assert.deepEqual(sent.map((e) => [e.name, e.params.method]), [['sign_up', 'google']], 'Google: only the new account');
+
+      sent.length = 0;
+      // Phone: a wrong code, then a new account, then the same number again.
+      await call('POST', '/bidpilot/auth/phone/start', { body: { phone: '9876543210' } });
+      const right = lastCode();
+      const wrong = right === '000000' ? '111111' : '000000';
+      assert.equal((await call('POST', '/bidpilot/auth/phone/verify', { body: { phone: '9876543210', code: wrong } })).status, 401);
+      assert.equal((await call('POST', '/bidpilot/auth/phone/verify', { body: { phone: '9876543210', code: right } })).json.created, true);
+      await call('POST', '/bidpilot/auth/phone/start', { body: { phone: '9876543210' } });
+      assert.equal((await call('POST', '/bidpilot/auth/phone/verify', { body: { phone: '9876543210', code: lastCode() } })).json.created, false);
+      // Phone: a new number from a browser with the staff marker.
+      await call('POST', '/bidpilot/auth/phone/start', { body: { phone: '9123456789' } });
+      const marked = await call('POST', '/bidpilot/auth/phone/verify', { body: { phone: '9123456789', code: lastCode() }, cookie: 'bidpilot_staff=1' });
+      assert.equal(marked.json.created, true);
+      await settle();
+      assert.deepEqual(sent.map((e) => [e.name, e.params.method]), [['sign_up', 'phone']], 'phone: only the new, unmarked account');
+    } finally {
+      configureConversions({});
+    }
   });
 
   await t.test(`phone: ${MAX_ATTEMPTS} wrong codes lock it, even for the right code`, async () => {

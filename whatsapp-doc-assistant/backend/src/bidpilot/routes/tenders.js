@@ -53,6 +53,7 @@ import { config } from '../../config.js';
 import { tenderStatus, tenderAnalysisStatus } from '../../db/schema/enums.js';
 import { OVERVIEW_FIELDS } from '../analysis/schema.js';
 import { profileNeededFor, PROFILE_REQUIRED_MESSAGE, FREE_TENDERS_WITHOUT_PROFILE } from '../profileGate.js';
+import { trackConversion, noteTeamTender } from '../conversions.js';
 
 // multer buffers the upload in memory (never touches disk itself) — fine at
 // this size ceiling (BIDPILOT_MAX_UPLOAD_MB, default 50MB); a much larger
@@ -248,6 +249,8 @@ export function createTendersRouter() {
       // Every check (document, profile, size, caps, trial or plan slot, and
       // the compare-and-set against a second start) lives in
       // analysis/start.js, shared with the automatic start after upload.
+      // Before the start: a team member's analysis never sends analysis_complete.
+      noteTeamTender(req.params.id, { req, user: req.bidpilotUser });
       res.status(202).json(await startTenderAnalysis(db, scope, req.params.id));
     } catch (err) {
       if (err instanceof AnalysisStartRefusal) return res.status(err.status).json(err.toJson());
@@ -585,10 +588,12 @@ export function createTendersRouter() {
           contentHash: sha256(req.file.buffer), uploadedBy: req.bidpilotUserId,
         });
         await updateProcessingStatus(ctx.scope, ctx.tender.id, 'UPLOADED');
+        noteTeamTender(ctx.tender.id, { req, user: req.bidpilotUser });
         // Never started by itself: this form (a tracked tender's page) shows
         // no notice about the analysis or what it uses, so the user clicks
         // Analyze once the PDF has been read. An autoAnalyze field is ignored.
         res.status(201).json({ tenderId: ctx.tender.id, processingStatus: 'UPLOADED', autoAnalyze: false });
+        trackConversion('upload', { req, user: req.bidpilotUser, params: { from: 'tracked_tender' } });
         setImmediate(() => {
           processExtraction(ctx.scope, ctx.tender.id, req.file.buffer).catch((err) => {
             log.error(`bidpilot: unhandled extraction failure for tender=${ctx.tender.id}:`, err);
@@ -821,6 +826,9 @@ async function handleUpload(req, res) {
     filename: req.file.originalname,
     uploadedBy: req.bidpilotUserId,
   });
+  // Before reading (and any automatic analysis) starts: a team member's
+  // tender never sends analysis_complete (conversions.js).
+  noteTeamTender(tender.id, { req, user: req.bidpilotUser });
   log.info(
     `metric bidpilot_upload company=${companyId} tender=${tender.id} ` +
       `bytes=${req.file.buffer.length} duplicate=${duplicate} ms=${Date.now() - uploadStart}`,
@@ -847,6 +855,7 @@ async function handleUpload(req, res) {
   });
 
   if (!duplicate) {
+    trackConversion('upload', { req, user: req.bidpilotUser, params: { from: 'dashboard' } });
     // Off the request path, same idiom as server.js's processWebhook —
     // acknowledge first, do the real work after. See pipeline.js's header for
     // why this is fire-and-forget rather than a durable queue at this stage.

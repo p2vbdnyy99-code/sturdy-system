@@ -175,7 +175,19 @@ test('GET /bidpilot/insights (HTTP)', { skip: SKIP_REASON }, async (t) => {
 
   await t.test('a customer gets 404, and /me says they are not an admin', async () => {
     assert.equal((await get('/bidpilot/insights', customerAuth)).status, 404);
-    assert.equal((await get('/bidpilot/me', customerAuth)).json.isAdmin, false);
+    const me = await get('/bidpilot/me', customerAuth);
+    assert.equal(me.json.isAdmin, false);
+    assert.ok(!(me.headers['set-cookie'] || []).some((c) => c.startsWith('bidpilot_staff=')), 'a customer never gets the staff marker');
+  });
+
+  await t.test('/me marks a team member\'s browser so its visits stay uncounted (staff.js)', async () => {
+    const cookies = (await get('/bidpilot/me', founderAuth)).headers['set-cookie'] || [];
+    const marker = cookies.find((c) => c.startsWith('bidpilot_staff='));
+    assert.ok(marker, 'staff marker set');
+    assert.match(marker, /^bidpilot_staff=1;/);
+    assert.match(marker, /HttpOnly/);
+    assert.match(marker, /SameSite=Lax/);
+    assert.match(marker, /Max-Age=34560000/, '400 days');
   });
 
   await t.test('the founder gets the dashboard, never cached', async () => {

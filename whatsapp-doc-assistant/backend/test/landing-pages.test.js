@@ -7,6 +7,7 @@ import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import {
   landingSlug, landingPagesFrom, isLandingPath, renderLandingHtml, landingTitle, landingDescription, searchUrlFor, MIN_OPEN,
+  landingAppQuery, LANDING_DATA_ID,
 } from '../src/landingPages.js';
 import { structuredData, llmsTxt, sitemapXml, renderIndexHtml } from '../src/seo.js';
 import { PLANS } from '../src/bidpilot/plans.js';
@@ -76,9 +77,28 @@ test('a landing page: its own head, the real list, the source and links to the o
     assert.ok(landingTitle(p).length <= 60, landingTitle(p));
     assert.ok(landingDescription(p).length <= 200, landingDescription(p));
   }
+  assert.doesNotMatch(html, /landing-data/, 'no data block unless given');
   const longOrg = { kind: 'central', label: 'Bharat Sanchar Nigam Limited (A Govt. of India Enterprise) Corporate Office', count: 1234 };
   assert.ok(landingDescription(longOrg).length < 200, 'a long organisation name keeps the description short');
   assert.match(landingDescription(longOrg), /portal links\.$/);
+});
+
+// The app's data for the page follows #root, so its first render is the
+// loaded list (no loading message the list later pushes down).
+test('a landing page carries the app\'s data for it, after the crawlable list', () => {
+  const pages = landingPagesFrom(FACETS);
+  const page = pages[2];
+  assert.deepEqual(landingAppQuery(page), { kind: 'state', status: 'open', sort: 'newest', state: 'Maharashtra', organisation: undefined });
+  assert.deepEqual(landingAppQuery(pages[4]), { kind: 'central', status: 'open', sort: 'newest', state: undefined, organisation: 'Ministry of Railways' });
+  const appData = { page, facets: FACETS, result: { tenders: [{ id: 'x', title: '</script><b>' }], total: 1, page: 1, limit: 25 } };
+  const html = renderLandingHtml(INDEX, page, [], BASE, pages, appData);
+  assert.ok(html.includes('</ol>'), 'the crawlable list is still there');
+  const m = html.match(/<\/div><script type="application\/json" id="landing-data">([^<]*)<\/script>/);
+  assert.ok(m, 'data block right after #root');
+  assert.deepEqual(JSON.parse(m[1]), appData);
+  assert.equal(LANDING_DATA_ID, 'landing-data');
+  const app = fs.readFileSync(new URL('../../frontend/src/tenders/landingData.ts', import.meta.url), 'utf8');
+  assert.match(app, new RegExp(`LANDING_DATA_ID = '${LANDING_DATA_ID}'`), 'the app reads the same id');
 });
 
 test('structured data states only published facts; llms.txt matches the plans', () => {
@@ -138,6 +158,14 @@ test('served by the real app: landing page, unknown slug, sitemap, llms.txt, lan
   assert.match(page.body, /<title>Goa government tenders: 25 open \| TenderTez<\/title>/);
   assert.match(page.body, /Goa works 0/);
   assert.equal((page.body.match(/<li><strong>/g) || []).length, 25);
+  // The app's data for the page is exactly what its API answers for that list.
+  const block = JSON.parse(page.body.match(/<script type="application\/json" id="landing-data">([^<]*)<\/script>/)[1]);
+  const facetsApi = JSON.parse((await get('/bidpilot/public/tenders/facets')).body);
+  const listApi = JSON.parse((await get('/bidpilot/public/tenders?kind=state&status=open&sort=newest&state=Goa')).body);
+  assert.equal(block.page.path, '/government-tenders/state/goa');
+  assert.deepEqual(block.facets, facetsApi);
+  assert.deepEqual(block.result, listApi);
+  assert.equal(block.result.tenders.length, 25);
   const missing = await get('/government-tenders/state/atlantis');
   assert.equal(missing.status, 404);
   assert.match(missing.body, /noindex/);
