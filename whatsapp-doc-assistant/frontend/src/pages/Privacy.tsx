@@ -8,7 +8,7 @@ import { CONTACT_EMAIL, FOUNDER } from '../config/site';
 // (see BIDPILOT_ARCHITECTURE.md, "Privacy policy page"). Change this page
 // whenever that changes: a new service provider, analytics, payments, or
 // email sending.
-const LAST_UPDATED = '27 October 2026';
+const LAST_UPDATED = '4 November 2026';
 
 const OPENAI_DATA_POLICY = 'https://developers.openai.com/api/docs/guides/your-data';
 
