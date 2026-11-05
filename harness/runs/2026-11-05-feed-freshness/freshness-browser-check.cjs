@@ -1,11 +1,24 @@
 // Browser check for the feed freshness run (local harness, port 8790).
-// node freshness-browser-check.cjs <origin> <stale|fresh>
+// node freshness-browser-check.cjs <origin> <stale|fresh> [expected last-update date, e.g. "23 October 2026"]
+// "stale" covers stale and unavailable lists (both show the dated warning).
+// The check first confirms the server really is in that state.
 const { chromium } = require('playwright');
-const [origin = 'http://localhost:8790', scenario = 'stale'] = process.argv.slice(2);
+// Screenshots go next to this file unless SHOTS names another folder.
+const SHOTS = process.env.SHOTS || __dirname;
+const [origin = 'http://localhost:8790', scenario = 'stale', staleDate = '23 October 2026'] = process.argv.slice(2);
+if (!['fresh', 'stale'].includes(scenario)) { console.error(`unknown state ${scenario}`); process.exit(2); }
 let pass = 0, fail = 0;
 const check = (ok, what) => { ok ? pass++ : fail++; console.log(`${ok ? 'PASS' : 'FAIL'} [${scenario}] ${what}`); };
+const esc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+const shortDay = staleDate.replace(/^(\d+) (\w{3})\w* \d{4}$/, '$1 $2'); // "23 October 2026" -> "23 Oct"
 
 (async () => {
+  const facets = await (await fetch(`${origin}/bidpilot/public/tenders/facets`)).json();
+  const statuses = Object.values(facets.freshness?.sources ?? {}).map((s) => s.status);
+  check(statuses.length === 3 && statuses.every((s) => (scenario === 'stale' ? ['stale', 'unavailable'].includes(s) : s === 'fresh')),
+    `server lists are ${scenario} (${statuses.join('/')})`);
+  const STATUS_WORD = { fresh: 'Fresh', delayed: 'Delayed', stale: 'Stale', unavailable: 'Unavailable' }[facets.freshness?.sources?.central?.status];
+
   const browser = await chromium.launch({ args: ['--no-proxy-server'] });
   for (const width of [390, 1366]) {
     const ctx = await browser.newContext({ viewport: { width, height: 844 }, isMobile: width < 800, hasTouch: width < 800 });
@@ -26,8 +39,8 @@ const check = (ok, what) => { ok ? pass++ : fail++; console.log(`${ok ? 'PASS' :
     const main = await page.locator('main').innerText();
     if (scenario === 'stale') {
       check(await page.locator('.tb-stale').isVisible(), `${width}px landing: stale notice visible`);
-      check(/This list has not been updated since 23 October 2026\. Tenders published since then are missing/.test(await page.locator('.tb-stale').innerText()), `${width}px landing: notice gives the last successful update`);
-      check(intro === '60 open tenders in our last update (23 October 2026)', `${width}px landing: count line (${intro})`);
+      check(new RegExp(`This list has not been updated since ${esc(staleDate)}\\. Tenders published since then are missing`).test(await page.locator('.tb-stale').innerText()), `${width}px landing: notice gives the last successful update (${staleDate})`);
+      check(intro === `60 open tenders in our last update (${staleDate})`, `${width}px landing: count line (${intro})`);
       check(!/right now/.test(main), `${width}px landing: never says "right now"`);
       check(await page.locator('.tb-fresh').count() === 0, `${width}px landing: no "Updated" line`);
     } else {
@@ -40,17 +53,20 @@ const check = (ok, what) => { ok ? pass++ : fail++; console.log(`${ok ? 'PASS' :
     check(cls < 0.01, `${width}px landing: no layout shift (${cls.toFixed(4)})`);
     const sw = await page.evaluate(() => [document.documentElement.scrollWidth, document.documentElement.clientWidth]);
     check(sw[0] <= sw[1], `${width}px landing: no horizontal scroll (${sw.join('/')})`);
-    if (width === 390 || width === 1366) await page.screenshot({ path: `${__dirname}/landing-${scenario}-${width}.png` });
+    if (width === 390 || width === 1366) await page.screenshot({ path: `${SHOTS}/landing-${scenario}-${width}.png` });
 
     // The main search, all lists.
     await page.goto(`${origin}/government-tenders`, { waitUntil: 'networkidle' });
     await page.waitForSelector('.tb-list .tb-item');
     await page.waitForTimeout(800);
     if (scenario === 'stale') {
-      check(/^Central government tenders, State tenders and GeM bids have not been updated since 23 October 2026/.test(await page.locator('.tb-stale').innerText()), `${width}px search: notice names the lists`);
-      check(/open tenders in our last update \(23 October 2026\)/.test(await page.locator('.tb-intro-count').innerText()), `${width}px search: count line`);
+      check(new RegExp(`^Central government tenders, State tenders and GeM bids have not been updated since ${esc(staleDate)}`).test(await page.locator('.tb-stale').innerText()), `${width}px search: notice names the lists`);
+      check(new RegExp(`open tenders in our last update \\(${esc(staleDate)}\\)`).test(await page.locator('.tb-intro-count').innerText()), `${width}px search: count line`);
+      check(!/right now/i.test(await page.locator('main').innerText()), `${width}px search: never says "right now"`);
+      check(await page.locator('.tb-fresh').count() === 0, `${width}px search: no "Updated" line`);
     } else {
       check(await page.locator('.tb-fresh').isVisible() && await page.locator('.tb-stale').count() === 0, `${width}px search: quiet line, no notice`);
+      check(/open tenders right now$/.test(await page.locator('.tb-intro-count').innerText()), `${width}px search: count says right now`);
     }
     // Filters still work: switching to GeM fetches the GeM list.
     await page.locator('button[aria-pressed]', { hasText: 'GeM' }).first().click();
@@ -59,7 +75,7 @@ const check = (ok, what) => { ok ? pass++ : fail++; console.log(`${ok ? 'PASS' :
     check(await page.locator('.tb-list .tb-item').count() > 0, `${width}px search: GeM filter still lists tenders`);
     const csp = await page.evaluate(() => window.__csp);
     check(errors.length === 0 && csp.length === 0, `${width}px: no page errors or CSP violations ${JSON.stringify([errors, csp])}`);
-    if (width === 390) await page.screenshot({ path: `${__dirname}/search-${scenario}-${width}.png` });
+    if (width === 390) await page.screenshot({ path: `${SHOTS}/search-${scenario}-${width}.png` });
     await ctx.close();
   }
 
@@ -76,12 +92,13 @@ const check = (ok, what) => { ok ? pass++ : fail++; console.log(`${ok ? 'PASS' :
   await page.waitForSelector('.ins-feed');
   const card = await page.locator('.ins-feed').innerText();
   if (scenario === 'stale') {
-    check(/Central government tenders\s+Unavailable[\s\S]*Last success: 23 Oct/.test(card), 'insights: status and last success');
+    check(['Stale', 'Unavailable'].includes(STATUS_WORD)
+      && new RegExp(`Central government tenders\\s+${STATUS_WORD}[\\s\\S]*Last success: ${esc(shortDay)}`).test(card), `insights: status (${STATUS_WORD}) and last success (${shortDay})`);
     check(/Last failure: .* · CPPP answered 404/.test(card), 'insights: last failure and error, shown separately');
   } else {
     check((card.match(/Fresh/g) || []).length === 3, 'insights: all three fresh');
   }
-  await page.locator('.ins-feed').screenshot({ path: `${__dirname}/insights-feed-${scenario}.png` });
+  await page.locator('.ins-feed').screenshot({ path: `${SHOTS}/insights-feed-${scenario}.png` });
   await ctx.close();
   await browser.close();
   console.log(`\n${pass} passed, ${fail} failed`);

@@ -2,7 +2,7 @@
 // What the tender lists say about their freshness (freshness.ts).
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { countWording, freshnessFor, freshnessView, type FeedFreshness } from './freshness.ts';
+import { countWording, freshnessFor, freshnessView, homeBandView, type FeedFreshness } from './freshness.ts';
 
 const at = (iso: string) => iso;
 const feed = (central: string, state: string, gem: string, last: Record<string, string | null> = {}): FeedFreshness => ({
@@ -59,4 +59,47 @@ test('missing data: nothing to show, and the count keeps its old wording', () =>
   for (const k of ['central', 'state', 'gem']) never.sources[k].lastSuccessAt = null;
   assert.match(freshnessView(never, 'gem')!.text, /^This list has not been updated recently\. Check the portal/);
   assert.equal(countWording(never, 'gem'), 'open tenders in our last update', 'never "right now" when not fresh');
+});
+
+
+test('home band: fresh, delayed or unknown keeps the usual "open" labels and no note', () => {
+  for (const f of [feed('fresh', 'fresh', 'fresh'), feed('delayed', 'fresh', 'delayed'), null, undefined]) {
+    const v = homeBandView(f);
+    assert.deepEqual(v.labels, { central: 'open', state: 'open', gem: 'open' });
+    assert.equal(v.note, null);
+    assert.equal(v.anyOld, false);
+  }
+});
+
+test('home band: all stale on the same day gives one date', () => {
+  const day = { central: '2026-10-23T15:29:45.000Z', state: '2026-10-23T15:29:50.000Z', gem: '2026-10-23T15:29:38.000Z' };
+  for (const status of ['stale', 'unavailable']) {
+    const v = homeBandView(feed(status, status, status, day));
+    assert.deepEqual(v.labels, { central: 'open in our last update', state: 'open in our last update', gem: 'open in our last update' });
+    assert.equal(v.note, 'Last updated 23 October 2026. New tenders published since then are missing.');
+    assert.equal(v.anyOld, true);
+  }
+});
+
+test('home band: different dates are each named, never one common date', () => {
+  const v = homeBandView(feed('stale', 'unavailable', 'stale', {
+    central: '2026-10-23T15:29:45.000Z', state: '2026-10-20T10:00:00.000Z', gem: '2026-10-24T08:00:00.000Z',
+  }));
+  assert.equal(v.note, 'Last updated: Central government 23 October 2026, State portals 20 October 2026, GeM bids 24 October 2026. '
+    + 'Newer tenders in those lists are missing.');
+});
+
+test('home band: only one list stale changes only its label and names only it', () => {
+  const v = homeBandView(feed('fresh', 'fresh', 'stale', { gem: '2026-11-02T06:00:00.000Z' }));
+  assert.deepEqual(v.labels, { central: 'open', state: 'open', gem: 'open in our last update' });
+  assert.equal(v.note, 'Last updated: GeM bids 2 November 2026. Newer tenders in that list are missing.');
+});
+
+test('home band: a stale list that was never read says so instead of inventing a date', () => {
+  const f = feed('unavailable', 'unavailable', 'unavailable');
+  for (const k of ['central', 'state', 'gem']) f.sources[k].lastSuccessAt = null;
+  const v = homeBandView(f);
+  assert.equal(v.labels.central, 'open in our last update');
+  assert.equal(v.note, 'Last updated: Central government (no update recorded), State portals (no update recorded), GeM bids (no update recorded). '
+    + 'Newer tenders in those lists are missing.');
 });

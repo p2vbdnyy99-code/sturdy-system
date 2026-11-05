@@ -63,3 +63,29 @@ function joinLabels(lists: string[]) {
   const names = lists.map((l) => LABEL[l] ?? l);
   return names.length <= 1 ? names.join('') : `${names.slice(0, -1).join(', ')} and ${names.at(-1)}`;
 }
+
+const BAND_LABEL: Record<string, string> = { central: 'Central government', state: 'State portals', gem: 'GeM bids' };
+const isOld = (s: SourceFreshness | undefined) => Boolean(s) && (s!.status === 'stale' || s!.status === 'unavailable');
+
+/**
+ * The home page's count band (Home.tsx TenderBand): each list's label, the
+ * note under the counts, and the search button's wording. Every list is
+ * judged on its own date: when stale lists were last updated on different
+ * days, each date is named, never one common date. Fresh, delayed or
+ * unknown: the band looks as it always has.
+ */
+export function homeBandView(f: FeedFreshness | null | undefined, kinds: string[] = ['central', 'state', 'gem']):
+  { labels: Record<string, string>; note: string | null; anyOld: boolean } {
+  const labels = Object.fromEntries(kinds.map((k) => [k, isOld(f?.sources?.[k]) ? 'open in our last update' : 'open']));
+  const old = kinds.filter((k) => isOld(f?.sources?.[k]));
+  if (old.length === 0) return { labels, note: null, anyOld: false };
+  const dates = old.map((k) => f!.sources[k].lastSuccessAt);
+  const named = dates.map((d) => (d ? longDate(d) : null));
+  const missing = 'New tenders published since then are missing.';
+  if (old.length === kinds.length && named[0] && named.every((d) => d === named[0])) {
+    return { labels, note: `Last updated ${named[0]}. ${missing}`, anyOld: true };
+  }
+  const parts = old.map((k, i) => `${BAND_LABEL[k] ?? k} ${named[i] ?? '(no update recorded)'}`);
+  const tail = old.length === 1 ? 'Newer tenders in that list are missing.' : 'Newer tenders in those lists are missing.';
+  return { labels, note: `Last updated: ${parts.join(', ')}. ${tail}`, anyOld: true };
+}

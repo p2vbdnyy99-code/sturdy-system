@@ -1,12 +1,48 @@
 // Stage A browser checks for the tender list pages (local harness server).
-// node list-browser-check.cjs <origin>
+// node list-browser-check.cjs <origin> [fresh|stale] [expected last-update date, e.g. "23 October 2026"]
+// The state says what the server's lists should be (freshness.js): "fresh",
+// or "stale" for stale or unavailable. The check first confirms the server
+// really is in that state, then checks that state's wording; everything else
+// is the same in both.
 const { chromium } = require('playwright');
+// Screenshots go next to this file unless SHOTS names another folder.
+const SHOTS = process.env.SHOTS || __dirname;
 
-const origin = process.argv[2] || 'http://localhost:8790';
+const [origin = 'http://localhost:8790', scenario = 'fresh', staleDate = '23 October 2026'] = process.argv.slice(2);
+if (!['fresh', 'stale'].includes(scenario)) { console.error(`unknown state ${scenario}`); process.exit(2); }
+const STALE = scenario === 'stale';
 let pass = 0, fail = 0;
-const check = (ok, what) => { ok ? pass++ : fail++; console.log(`${ok ? 'PASS' : 'FAIL'} ${what}`); };
+const check = (ok, what) => { ok ? pass++ : fail++; console.log(`${ok ? 'PASS' : 'FAIL'} [${scenario}] ${what}`); };
+
+// The freshness wording each list page must show in this state.
+async function freshnessWording(page, where, { count = null } = {}) {
+  const main = await page.locator('main').innerText();
+  const intro = await page.locator('.tb-intro-count').innerText();
+  if (STALE) {
+    check(await page.locator('.tb-stale').isVisible(), `${where}: freshness warning visible`);
+    // One list: "This list has …"; all lists: "Central government tenders, … have …".
+    check(/ (has|have) not been updated since /.test(await page.locator('.tb-stale').innerText())
+      && (await page.locator('.tb-stale').innerText()).includes(`since ${staleDate}.`), `${where}: warning gives the last successful update (${staleDate})`);
+    check(/missing/.test(await page.locator('.tb-stale').innerText()) && /Check the portal before you bid/.test(await page.locator('.tb-stale').innerText()), `${where}: warning says newer tenders are missing and to check the portal`);
+    check(count === null
+      ? intro.endsWith(`open tenders in our last update (${staleDate})`)
+      : intro === `${count} open tenders in our last update (${staleDate})`, `${where}: dated snapshot count line (${intro})`);
+    check(!/right now/i.test(main), `${where}: never says "right now"`);
+    check(await page.locator('.tb-fresh').count() === 0, `${where}: no quiet "Updated" line`);
+  } else {
+    check(/^Updated \d+ \w+, \d+:\d\d [ap]m IST from CPPP\.$/i.test(await page.locator('.tb-fresh').innerText().catch(() => '')), `${where}: quiet "Updated" line`);
+    check(await page.locator('.tb-stale').count() === 0, `${where}: no freshness warning`);
+    check(count === null ? intro.endsWith('open tenders right now') : intro === `${count} open tenders right now`, `${where}: count says right now (${intro})`);
+  }
+}
 
 (async () => {
+  // The server must be in the state this run checks, or the run proves nothing.
+  const facets = await (await fetch(`${origin}/bidpilot/public/tenders/facets`)).json();
+  const statuses = Object.values(facets.freshness?.sources ?? {}).map((s) => s.status);
+  check(statuses.length === 3 && statuses.every((s) => (STALE ? ['stale', 'unavailable'].includes(s) : s === 'fresh')),
+    `server lists are ${scenario} (${statuses.join('/')})`);
+
   const browser = await chromium.launch({ args: ['--no-proxy-server'] });
   for (const width of [390, 1366]) {
     const ctx = await browser.newContext({ viewport: { width, height: 844 }, isMobile: width < 800, hasTouch: width < 800 });
@@ -23,7 +59,9 @@ const check = (ok, what) => { ok ? pass++ : fail++; console.log(`${ok ? 'PASS' :
     check(api.length === 0, `${width}px: first load made no tender API requests (${JSON.stringify(api)})`);
     check(/kind=state&state=Maharashtra/.test(page.url()), `${width}px: URL carries the list's filter (${page.url()})`);
     check(await page.locator('h1').first().innerText() === 'Maharashtra government tenders', `${width}px: heading`);
-    check(await page.locator('.tb-intro-count').innerText() === '60 open tenders right now', `${width}px: count line`);
+    const countLine = STALE ? `60 open tenders in our last update (${staleDate})` : '60 open tenders right now';
+    check(await page.locator('.tb-intro-count').innerText() === countLine, `${width}px: count line (${countLine})`);
+    await freshnessWording(page, `${width}px state list`, { count: 60 });
     check(await page.locator('.tb-list .tb-item').count() === 25, `${width}px: 25 rows on page 1`);
     check(/60 tenders in Maharashtra/.test(await page.locator('.tb-total').innerText()), `${width}px: total line`);
     check(await page.locator('.tb-source').isVisible(), `${width}px: CPPP source note visible`);
@@ -56,10 +94,13 @@ const check = (ok, what) => { ok ? pass++ : fail++; console.log(`${ok ? 'PASS' :
     const orgRequests = () => api.filter((a) => /organisation=Central/.test(a)).length;
     const orgBefore = orgRequests();
     check(orgBefore === 0, `${width}px: organisation list first load made no list request (${orgBefore})`);
+    await freshnessWording(page, `${width}px organisation list`, { count: 40 });
     await page.locator('a[href="/government-tenders"]').locator('visible=true').first().click();
     await page.waitForURL(`${origin}/government-tenders`);
     await page.waitForSelector('.tb-list .tb-item');
     check(/Find government tenders across India/.test(await page.locator('h1').first().innerText()), `${width}px: in-app navigation to the main search shows the main search`);
+    await page.waitForTimeout(300);
+    await freshnessWording(page, `${width}px main search`);
     await page.goBack();
     await page.waitForTimeout(800);
     check(/Central Public Works Department/.test(await page.locator('h1').first().innerText()) && await page.locator('.tb-list .tb-item').count() > 0, `${width}px: back to the organisation list shows it`);
@@ -75,7 +116,8 @@ const check = (ok, what) => { ok ? pass++ : fail++; console.log(`${ok ? 'PASS' :
 
     const csp = await page.evaluate(() => window.__csp);
     check(errors.length === 0 && csp.length === 0, `${width}px: no page errors or CSP violations ${JSON.stringify([errors, csp])}`);
-    if (width === 390) await page.goto(`${origin}/government-tenders/state/maharashtra`, { waitUntil: 'networkidle' }).then(() => page.screenshot({ path: `${__dirname}/list-390.png` }));
+    // The committed list-390.png is the fresh state; other states get their own file.
+    if (width === 390) await page.goto(`${origin}/government-tenders/state/maharashtra`, { waitUntil: 'networkidle' }).then(() => page.screenshot({ path: `${SHOTS}/list-${STALE ? 'stale-' : ''}390.png` }));
     await ctx.close();
   }
   await browser.close();

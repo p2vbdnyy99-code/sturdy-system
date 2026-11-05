@@ -28,7 +28,8 @@ const GROUPS: Array<{ title: string; items: Array<{ q: string; a: ReactNode }> }
         q: 'Does it find tenders for me?',
         a: <>It helps. The tender search lists central, state and GeM tenders from the Central Public Procurement
           Portal&rsquo;s public lists (not every tender in India). Signed in, you can save a search, and new tenders
-          that match it show in the app. Reading a tender still starts with its PDF, which you download from the
+          that match it show in the app whenever the tender lists are being updated (each list shows when it was
+          last updated). Reading a tender still starts with its PDF, which you download from the
           portal.</>,
       },
       {

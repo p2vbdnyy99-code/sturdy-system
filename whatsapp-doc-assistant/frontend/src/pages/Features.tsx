@@ -19,7 +19,7 @@ const FEATURE_GROUPS: Array<{ id: string; icon: IconName; title: string; lead: s
       'GeM bids with their department and bid number',
       'Filter by open, closing within 7 days or closed; sort by newest or closing soonest',
       'Copy the tender ID and open the right portal\'s search in one click',
-      'Save a search (say, Maharashtra road works) and new matching tenders show in the app',
+      'Save a search (say, Maharashtra road works) and new matching tenders show in the app while the lists are being updated',
     ],
     link: { to: '/government-tenders', label: 'Search tenders now' },
   },

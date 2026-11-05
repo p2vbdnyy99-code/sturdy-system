@@ -5332,3 +5332,39 @@ restarts the machine.
   - the Phase 1 list check 40/40.
 - **verify.sh:** see the run's checks.md.
 - **Not verified in production:** nothing is deployed.
+
+**Follow-up: home page and copy (5 Nov 2026, approved after handoff #24;
+run `harness/runs/2026-11-05-home-freshness/`)**
+
+- **Home page count band.** It keeps the three counts. A stale or
+  unavailable list's label becomes "open in our last update", and a note
+  gives the last update date (`homeBandView` in `tenders/freshness.ts`).
+  Each list is judged on its own date: if the stale lists' dates differ,
+  each is named, never one common date. The search button says "Search N
+  tenders from our last update" while any list is stale. Fresh, delayed
+  or unknown: unchanged.
+- **FAQ and Features.** The saved-search promise is qualified ("whenever
+  the tender lists are being updated").
+- **Verification:**
+  - unit tests +5;
+  - browser at 390 and 1366 px in four data states (fresh 14/14, stale on
+    one date 18/18 including the FAQ and Features wording, stale on
+    different dates 14/14, never read 14/14), with no layout shift and no
+    overflow;
+  - the earlier list checks still pass with fresh data;
+  - `verify.sh` all green.
+- **Test corrections after review (handoff #25).** The browser checks now
+  pass in every data state instead of assuming fresh data, and each first
+  confirms the local server is in the state it was told (so it fails, not
+  passes, on the wrong data):
+  - the Phase 1 list check and the v55 freshness check take `fresh` or
+    `stale` plus the expected last-update date. Stale asserts the dated
+    count line, the warning with that date, and no "right now" on the
+    state list, an organisation list and the main search;
+  - the delayed check runs at 390 and 1366 px;
+  - the home check adds `delayed` (usual wording, no date, and the search
+    page it links to says the update is late) and `unknown` (facets
+    without freshness, with null freshness, or failed: usual wording, no
+    date, no current-data claim);
+  - `state-checks.sh` runs them all in six local states. Results are in
+    the run's checks.md. No product code changed.

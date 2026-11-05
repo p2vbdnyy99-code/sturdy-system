@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { LANDING_MIN_OPEN, statePath } from '../tenders/landing';
 import { getFeedFacets, type FeedFacets } from '../api/feed';
+import { homeBandView } from '../tenders/freshness';
 import { Link, Navigate, useLocation } from 'react-router-dom';
 import { useSession } from '../auth/SessionProvider';
 import { PublicLayout } from '../components/PublicLayout';
@@ -172,6 +173,8 @@ function TenderBand() {
   useEffect(() => { getFeedFacets().then(setFacets).catch(() => setFacets(null)); }, []);
   const total = facets ? facets.open.central + facets.open.state + facets.open.gem : 0;
   const topStates = facets ? [...facets.states].sort((a, b) => b.count - a.count).slice(0, 8) : [];
+  // Stale lists say so, each with its own date (tenders/freshness.ts).
+  const band = homeBandView(facets?.freshness);
   return (
     <section className="home-section home-section-alt home-tenders" aria-labelledby="home-tenders-title">
       <div className="home-container">
@@ -184,17 +187,18 @@ function TenderBand() {
         <div className="home-tender-kinds">
           <Link to="/government-tenders?kind=central" className="home-tender-kind">
             <span>Central government</span>
-            <strong>{facets ? facets.open.central.toLocaleString('en-IN') : '—'}</strong><small>open</small>
+            <strong>{facets ? facets.open.central.toLocaleString('en-IN') : '—'}</strong><small>{band.labels.central}</small>
           </Link>
           <Link to="/government-tenders?kind=state" className="home-tender-kind">
             <span>State portals</span>
-            <strong>{facets ? facets.open.state.toLocaleString('en-IN') : '—'}</strong><small>open</small>
+            <strong>{facets ? facets.open.state.toLocaleString('en-IN') : '—'}</strong><small>{band.labels.state}</small>
           </Link>
           <Link to="/government-tenders?kind=gem" className="home-tender-kind">
             <span>GeM bids</span>
-            <strong>{facets ? facets.open.gem.toLocaleString('en-IN') : '—'}</strong><small>open</small>
+            <strong>{facets ? facets.open.gem.toLocaleString('en-IN') : '—'}</strong><small>{band.labels.gem}</small>
           </Link>
         </div>
+        {band.note && <p className="home-tenders-stale" role="status">{band.note}</p>}
         {topStates.length > 0 && (
           <div className="home-tender-states" aria-label="Browse by state">
             {topStates.map((s) => (
@@ -203,7 +207,9 @@ function TenderBand() {
           </div>
         )}
         <Link to="/government-tenders" className="btn-link btn-primary">
-          {total > 0 ? `Search ${total.toLocaleString('en-IN')} open tenders` : 'Search tenders'} <Icon name="arrowRight" />
+          {total > 0
+            ? `Search ${total.toLocaleString('en-IN')} ${band.anyOld ? 'tenders from our last update' : 'open tenders'}`
+            : 'Search tenders'} <Icon name="arrowRight" />
         </Link>
       </div>
     </section>
