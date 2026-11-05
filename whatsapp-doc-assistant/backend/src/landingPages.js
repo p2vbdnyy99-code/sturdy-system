@@ -21,6 +21,7 @@ import { publicPageHead, breadcrumbs } from './seo.js';
 import { STATE_ALIASES, searchFeed, parseFeedQuery } from './bidpilot/repo/publicTenders.js';
 import { escapeMd, link, list, mdPage, todayInIndia } from './md/format.js';
 import { jsonDataBlock } from './dataBlock.js';
+import { freshnessFor, istLongDate, staleNotice } from './bidpilot/discovery/freshness.js';
 
 /** The id of the data block the app reads (frontend tenders/landingData.ts). */
 export const LANDING_DATA_ID = 'landing-data';
@@ -28,6 +29,19 @@ export const LANDING_DATA_ID = 'landing-data';
 export const MIN_OPEN = 20;
 export const MAX_ORGANISATIONS = 20;
 export const LIST_SIZE = 25;
+
+/**
+ * "N open tenders right now" only while the list is fresh; otherwise the
+ * count is as of the last successful update, and `notice` says so
+ * (discovery/freshness.js). No freshness known: the old wording.
+ */
+export function landingCountLine(page, freshness) {
+  const f = freshnessFor(freshness, page.kind);
+  const n = page.count.toLocaleString('en-IN');
+  if (!f || f.status === 'fresh') return { count: `${n} open tenders right now`, notice: null };
+  const when = istLongDate(f.lastSuccessAt);
+  return { count: when ? `${n} open tenders in our last update (${when})` : `${n} open tenders in our last update`, notice: staleNotice(f) };
+}
 
 /** Must match frontend/src/tenders/landing.ts landingSlug (tested). */
 export function landingSlug(name) {
@@ -95,7 +109,9 @@ export function landingTitle(page) {
 export function landingDescription(page) {
   const what = page.kind === 'gem' ? 'GeM bids' : page.kind === 'state' ? `tenders in ${page.label}` : `${page.label} tenders`;
   const first = `${page.count.toLocaleString('en-IN')} open ${what}, closing soonest first, with tender IDs and portal links.`;
-  const full = `${first} Free search, updated daily from CPPP’s public lists.`;
+  // No update-frequency claim: search results keep this text for weeks, and
+  // the lists' freshness is shown on the page itself (discovery/freshness.js).
+  const full = `${first} Free search of CPPP’s public lists.`;
   // Search results cut descriptions at about 160 characters; long organisation names keep the first sentence only.
   return full.length <= 160 ? full : first;
 }
@@ -128,7 +144,7 @@ export async function landingAppData(db, facets, page) {
  * inside #root (the app replaces it when it starts), followed by the app's
  * data for the page when given.
  */
-export function renderLandingHtml(indexHtml, page, tenders, baseUrl, allPages, appData = null) {
+export function renderLandingHtml(indexHtml, page, tenders, baseUrl, allPages, appData = null, freshness = null) {
   const heading = page.kind === 'gem' ? 'GeM bids open now' : `${page.label} government tenders`;
   // The list links to the search it comes from, so: Home > Find government tenders > this list.
   const crumbs = breadcrumbs(baseUrl, [['Find government tenders', '/government-tenders'], [heading, page.path]]);
@@ -141,8 +157,10 @@ export function renderLandingHtml(indexHtml, page, tenders, baseUrl, allPages, a
   }).join('');
   const others = allPages.filter((p) => p.path !== page.path)
     .map((p) => `<li><a href="${esc(p.path)}">${esc(p.kind === 'gem' ? 'GeM bids' : `${p.label} tenders`)}</a> (${p.count.toLocaleString('en-IN')})</li>`).join('');
+  const line = landingCountLine(page, freshness);
   const body = `<main><h1>${esc(heading)}</h1>`
-    + `<p>${page.count.toLocaleString('en-IN')} open tenders right now, closing soonest first. Search them free, without signing up, at `
+    + (line.notice ? `<p class="notice">${esc(line.notice)}</p>` : '')
+    + `<p>${esc(line.count)}, closing soonest first. Search them free, without signing up, at `
     + `<a href="${esc(searchUrlFor(page))}">TenderTez tender search</a>. Each tender links to its portal&rsquo;s search page with the ID to look for.</p>`
     + `<ol>${rows}</ol>`
     + '<p>Source: the public &ldquo;latest active tenders&rdquo; lists of the Central Public Procurement Portal (CPPP), eprocure.gov.in. '
@@ -168,11 +186,11 @@ export async function loadLandingPage(db, facets, path) {
     kind: page.kind, state: page.state, organisation: page.organisation, search: '',
     status: 'open', sort: 'closing', page: 1, limit: LIST_SIZE,
   });
-  return { page, tenders, pages };
+  return { page, tenders, pages, freshness: facets.freshness ?? null };
 }
 
 /** The markdown version of a landing page: the same list and notes as its HTML. */
-export function landingMarkdown({ page, tenders, pages }, baseUrl, now = new Date()) {
+export function landingMarkdown({ page, tenders, pages, freshness = null }, baseUrl, now = new Date()) {
   const heading = page.kind === 'gem' ? 'GeM bids open now' : `${page.label} government tenders`;
   const rows = tenders.map((t) => {
     const who = [t.organisation, t.department && t.department !== t.organisation ? t.department : null, t.state].filter(Boolean).join(' · ');
@@ -181,8 +199,10 @@ export function landingMarkdown({ page, tenders, pages }, baseUrl, now = new Dat
     return [`**${escapeMd(t.title)}**`, who && escapeMd(who), [closes && `Closes ${closes}`, id && escapeMd(id)].filter(Boolean).join(' · ')]
       .filter(Boolean).join('  \n   ');
   });
+  const line = landingCountLine(page, freshness);
   const body = [
-    `${page.count.toLocaleString('en-IN')} open tenders right now, closing soonest first. Search them free, without signing up, at `
+    ...(line.notice ? [`> ${line.notice}`] : []),
+    `${line.count}, closing soonest first. Search them free, without signing up, at `
       + `${link('TenderTez tender search', searchUrlFor(page), baseUrl)}. Each tender links to its portal\u2019s search page with the ID to look for.`,
     `## The ${tenders.length} closing soonest`,
     list(rows, true),

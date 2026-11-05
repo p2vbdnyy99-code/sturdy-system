@@ -5236,3 +5236,99 @@ warnings), unit 75, secret scan clean.
 - **verify.sh:** backend 744/458/366 (1 skip, the Papyr sample-CV test
   whose file isn't in this container), build, lint 0 errors (18 warnings),
   unit 78, secret scan clean.
+
+# Tender-list freshness and feed monitoring (5 Nov 2026)
+
+The run is in `harness/runs/2026-11-05-feed-freshness/`.
+
+**Why.** CPPP replaced its website on about 23 October 2026. The collector's
+three lists (central, state, GeM) all come from CPPP, and none has been read
+successfully since 23 Oct 15:29 UTC (handoff notes #18 and #19). Meanwhile
+the site kept saying "open tenders right now", and the failures were only
+info-level log lines that nobody saw for 12 days.
+
+**What changed.** No schema change: `discovery_state` already had
+`last_success_at`, `last_error` and `updated_at`.
+
+- **`discovery/freshness.js` (new).** Each list's status is computed from its
+  last *successful* read; a failed attempt is reported separately
+  (`lastFailureAt`, `lastError`) and never counted as an update.
+
+  | Status | Last success |
+  |---|---|
+  | Fresh | within 2 h |
+  | Delayed | 2 to 24 h |
+  | Stale | 24 h to 7 days |
+  | Unavailable | switched off, never read, or over 7 days |
+
+  It also provides `publicFreshness` (no error text), `freshnessFor`,
+  `staleNotice` and `feedChanges` (what got worse or recovered).
+- **Collector** (`collector.js`):
+  - a fresh-page success now records `lastSuccessAt` and clears the error;
+  - every failure (fresh or sweep) records `lastError`;
+  - at least one sweep page runs between fresh passes. During the outage
+    the fresh queue refilled before any sweep ran, so the GeM list (sweeps
+    only) never recorded a failure.
+- **Monitor** (`startFeedMonitor`, started in `server.js`). An hourly check
+  logs a warning once when a list gets worse and once on recovery, and
+  nothing while unchanged. Lists switched off on purpose are noted at info
+  level. It keeps its memory in RAM, so a restart reports a continuing
+  failure once more.
+- **Public pages:**
+  - the facets carry `freshness`;
+  - landing pages (HTML and .md) and the search .md say "right now" only
+    while fresh; otherwise they say "open tenders in our last update
+    (date)" and show a notice;
+  - the landing description no longer claims "updated daily";
+  - the app's list shows a quiet "Updated … IST from CPPP." line when
+    fresh, an info notice when delayed, and a warning naming the lists
+    and the last update date when stale or unavailable;
+  - the page's count line follows the same rules (`tenders/freshness.ts`).
+- **Founder dashboard.** `/insights` returns `feed` and shows a "Tender feed"
+  card: status, last success, and last failure with its error.
+- **Nightly email:**
+  - `scripts/insights-summary.mjs` adds raw `feed` facts per list. It uses
+    only modules that are already deployed, because the nightly task runs
+    it against the live code; it was checked read-only against production
+    on 5 Nov;
+  - `ttm/nightly.py` classifies them with the same thresholds and adds a
+    "Tender lists" card and a text line;
+  - the subject starts with "Tender feed alert (…)" only when a list got
+    worse than in the previous night's saved JSON (`N/<date-1>.json`). An
+    unresolved problem is listed nightly but alerted once; recovery is
+    noted.
+
+**`BIDPILOT_DISCOVERY_CPPP=off`** is read only by `startDiscovery()` (which
+then creates no crawler, timer or request) and by the unused `collecting`
+field of `/bidpilot/feed`. Setting it off:
+- stops all CPPP requests;
+- also stops `pruneClosed`, so closed tenders stay in the table (open lists
+  are unaffected);
+- makes every list "unavailable (switched off)" on the site and in the
+  email;
+- leaves the alert matcher, public search and in-app feed working on the
+  stored rows.
+
+It is reversible by setting it back to `on`. Changing a Fly secret
+restarts the machine.
+
+**Verification:**
+- **Unit tests:**
+  - `test/bidpilot/freshness.test.js` (7): statuses, missing or bad
+    timestamps, failure separate from success, worst-of, public view
+    without errors, monitor de-duplication with a stub DB, landing HTML
+    and .md wording, threshold sync with nightly.py;
+  - `feed.test.js` +1: success and failure recorded; a failing list leaves
+    the others clean; GeM records its failure during an outage (fails
+    without the sweep fix); recovery clears it;
+  - frontend `tenders/freshness.test.ts` (5);
+  - `marketing/automation/tests/test_nightly.py` +7.
+- **Browser** (local harness, 390 and 1366 px):
+  - stale 26/26 (notice, count line, never "right now", 25 rows still
+    listed, layout shift 0.0000, no sideways scroll, filters work, no
+    errors or CSP violations, insights card);
+  - fresh 19/19;
+  - delayed 1/1;
+  - the Phase 1 list check 40/40.
+- **verify.sh:** see the run's checks.md.
+- **Not verified in production:** nothing is deployed.

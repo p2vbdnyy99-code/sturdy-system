@@ -7,6 +7,8 @@ import { and, asc, desc, eq, gte, ilike, inArray, lt, or, sql } from 'drizzle-or
 import { publicTenders, discoveryState } from '../../db/schema/index.js';
 import { findOnPortal } from '../discovery/portals.js';
 import { log } from '../../logger.js';
+import { config } from '../../config.js';
+import { feedFreshness, publicFreshness } from '../discovery/freshness.js';
 
 export const KINDS = ['central', 'state', 'gem'];
 export const STATUSES = ['open', 'closing', 'closed', 'all'];
@@ -136,6 +138,8 @@ export async function feedFacets(db, now = new Date()) {
       lastSuccessAt: l.lastSuccessAt, lastSweepFinishedAt: l.lastSweepFinishedAt,
       totalPages: l.totalPages, nextPage: l.nextPage,
     }])),
+    // How fresh each list is (discovery/freshness.js); no error text.
+    freshness: publicFreshness(feedFreshness(lists, config.bidpilot.discovery, now)),
   };
 }
 

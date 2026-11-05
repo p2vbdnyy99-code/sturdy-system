@@ -1,6 +1,7 @@
 // Matches src/bidpilot/routes/publicTenders.js (no sign-in) and
 // src/bidpilot/routes/feed.js (in the app, with Track): government tenders
 // collected from CPPP's public lists of central, state and GeM tenders.
+import type { FeedFreshness } from '../tenders/freshness';
 import { request } from './client';
 
 export type FeedKind = 'central' | 'state' | 'gem';
@@ -41,6 +42,8 @@ export type FeedFacets = {
   states: Array<{ name: string; count: number }>;
   organisations: { central: Array<{ name: string; count: number }>; gem: Array<{ name: string; count: number }> };
   lists: Partial<Record<FeedKind, { lastSuccessAt: string | null; lastSweepFinishedAt: string | null; totalPages: number | null; nextPage: number }>>;
+  /** How fresh each list is (tenders/freshness.ts); absent from older servers. */
+  freshness?: FeedFreshness | null;
 };
 
 function params(q: FeedQuery) {

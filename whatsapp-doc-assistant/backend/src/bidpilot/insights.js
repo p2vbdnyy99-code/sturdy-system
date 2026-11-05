@@ -13,6 +13,8 @@
 
 import { PLANS, UNLIMITED_PLAN } from './plans.js';
 import { getAllowance } from './analysis/budget.js';
+import { discoveryState } from '../db/schema/index.js';
+import { feedFreshness } from './discovery/freshness.js';
 
 /** Whether a signed-in user may see the dashboard. Email sign-up is not
  *  verified, so the list must only hold emails of accounts that already
@@ -53,7 +55,7 @@ async function rows(client, text, params) {
 }
 
 /** Everything the dashboard shows, for the last `days` India days. */
-export async function insights(db, { days = 30, adminEmails = [] } = {}) {
+export async function insights(db, { days = 30, adminEmails = [], discovery = { cppp: false, lists: [] } } = {}) {
   const client = db.$client;
   const d = RANGES.includes(Number(days)) ? Number(days) : 30;
   const emails = adminEmails.map((e) => String(e).trim().toLowerCase());
@@ -194,6 +196,8 @@ export async function insights(db, { days = 30, adminEmails = [] } = {}) {
     group by c.id, c.name, c.created_at, o.signed_up, o.email, o.phone
     order by internal, last_activity desc nulls last`, [emails]);
   for (const c of companies) c.allowance = await getAllowance(db, c.id);
+  // The tender lists' health (discovery/freshness.js), with the last error.
+  const feed = feedFreshness(await db.select().from(discoveryState), discovery);
 
   return {
     days: d,
@@ -205,6 +209,7 @@ export async function insights(db, { days = 30, adminEmails = [] } = {}) {
     paid,
     sources, campaigns, pages, devices,
     crawlers: { bots: crawlerBots, pages: crawlerPages },
+    feed,
     activity,
     accounts: companies.map((c) => ({
       id: c.id, name: c.name, signedUpAt: c.signed_up, contact: c.email ?? c.phone ?? null, internal: c.internal,

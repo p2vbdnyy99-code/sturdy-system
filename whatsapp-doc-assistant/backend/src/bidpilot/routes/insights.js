@@ -17,7 +17,7 @@ export function createInsightsRouter() {
     }
     try {
       res.set('Cache-Control', 'no-store');
-      return res.json(await insights(getDb(), { days: req.query.days, adminEmails: config.bidpilot.adminEmails }));
+      return res.json(await insights(getDb(), { days: req.query.days, adminEmails: config.bidpilot.adminEmails, discovery: config.bidpilot.discovery }));
     } catch (err) {
       log.error('bidpilot insights error:', err);
       return res.status(500).json({ error: 'Internal server error.' });

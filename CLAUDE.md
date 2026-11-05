@@ -117,6 +117,16 @@ Follow `harness/README.md`. In short:
   every time; never store or show a checklist line that isn't one of them
   (users may add their own, marked as theirs). Corrigendum changes must quote
   text that is on the page they name, or they are dropped.
+- Tender lists must never look fresher than they are. Only a successful
+  read is an update; "open tenders right now" is shown only while a list is
+  fresh (`bidpilot/discovery/freshness.js`: fresh up to 2 h, delayed up to
+  24 h, stale up to 7 days, then unavailable). Otherwise pages give the last
+  successful update date and a notice. No update-frequency claims in page
+  text or descriptions. `marketing/automation/ttm/nightly.py` uses the same
+  thresholds (`test/bidpilot/freshness.test.js` checks). CPPP replaced its
+  site on about 23 Oct 2026 and the collector has read nothing since; its
+  new data interface is encrypted and token-bound, and must not be
+  reverse-engineered.
 - The tender feed collector reads only CPPP's public "latest active
   tenders" lists (central, state, GeM), one page at a time with a pause of
   at least 2 seconds, identifying itself; off unless

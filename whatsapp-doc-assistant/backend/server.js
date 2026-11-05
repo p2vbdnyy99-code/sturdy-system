@@ -31,7 +31,7 @@ import { SAMPLE_PATH, renderSampleHtml, createSampleRouter } from './src/sampleP
 import { cookieParserMiddleware } from './src/bidpilot/auth/cookies.js';
 import { bidpilotCors } from './src/bidpilot/auth/cors.js';
 import { recoverInterruptedWork } from './src/bidpilot/recovery.js';
-import { startDiscovery } from './src/bidpilot/discovery/collector.js';
+import { startDiscovery, startFeedMonitor } from './src/bidpilot/discovery/collector.js';
 import { startAlertMatcher } from './src/bidpilot/repo/savedSearches.js';
 import { getDb } from './src/db/client.js';
 import { canonicalHostRedirect, renderIndexHtml, robotsTxt, sitemapXml, PUBLIC_PAGES } from './src/seo.js';
@@ -326,7 +326,7 @@ if (frontendDistExists) {
     if (!found) return res.status(404).type('html').send(renderIndexHtml(indexHtml, req.path, SITE_BASE_URL));
     // The app's data for this page, so its first render is the loaded list.
     const appData = await landingAppData(getDb(), facets, found.page);
-    const html = renderLandingHtml(indexHtml, found.page, found.tenders, SITE_BASE_URL, found.pages, appData);
+    const html = renderLandingHtml(indexHtml, found.page, found.tenders, SITE_BASE_URL, found.pages, appData, found.freshness);
     landingCache.set(req.path, html);
     return res.type('html').send(html);
   }
@@ -415,6 +415,8 @@ async function start() {
   startKeepAlive();
   if (config.db.url) {
     startDiscovery(getDb());
+    // Warns once in the log when a tender list goes stale (freshness.js).
+    startFeedMonitor(getDb());
     startAlertMatcher(getDb());
     // Load the tender counts once now, so no visitor waits for the first load.
     cachedFacets()(getDb())

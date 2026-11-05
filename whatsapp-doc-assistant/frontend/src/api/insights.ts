@@ -21,6 +21,15 @@ export type Insights = {
   devices: Array<{ label: string; visitors: number }>;
   /** Requests from search and AI crawlers (by user agent), per crawler and per page. */
   crawlers: { bots: Array<{ label: string; hits: number; last_day: string }>; pages: Array<{ label: string; hits: number }> };
+  /** The tender lists' health (backend discovery/freshness.js); absent from older servers. */
+  feed?: {
+    checkedAt: string;
+    status: 'fresh' | 'delayed' | 'stale' | 'unavailable';
+    sources: Array<{
+      list: string; label: string; status: 'fresh' | 'delayed' | 'stale' | 'unavailable'; reason: 'off' | 'never' | 'failing' | null;
+      lastSuccessAt: string | null; lastFailureAt: string | null; lastError: string | null; ageHours: number | null;
+    }>;
+  };
   activity: Array<{ kind: 'signup' | 'upload' | 'analysed' | 'failed'; at: string; company: string }>;
   accounts: Array<{
     id: string; name: string; signedUpAt: string; contact: string | null; internal: boolean;

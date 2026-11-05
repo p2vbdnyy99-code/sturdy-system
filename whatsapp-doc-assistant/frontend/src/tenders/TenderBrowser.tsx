@@ -7,6 +7,7 @@ import { Icon } from '../components/Icon';
 import { dueLabel } from '../shell/queue';
 import { formatDate } from '../format';
 import { KIND_LABELS, kindTag, queryFromParams, paramsFromQuery, SORTS, STATUSES } from './browse';
+import { freshnessView } from './freshness';
 
 // The government tender search, shared by the public page
 // (/government-tenders) and the in-app Tender feed. Filters live in the URL
@@ -165,6 +166,7 @@ export function TenderBrowser({ load, onTrack, defaultQuery, initial }: Props) {
 
       {error && <p role="alert" className="error-text">{error}</p>}
       {!data && !error && <p className="muted">Loading tenders…</p>}
+      {data && <FreshnessNote facets={facets} kind={query.kind === 'all' ? null : query.kind} />}
       {data && (
         <p className="tb-total muted" aria-live="polite">
           {data.total.toLocaleString('en-IN')} {data.total === 1 ? 'tender' : 'tenders'}
@@ -189,6 +191,19 @@ export function TenderBrowser({ load, onTrack, defaultQuery, initial }: Props) {
           <button type="button" disabled={query.page >= Math.min(pages, 1000)} onClick={() => update({ page: query.page + 1 })}>Next</button>
         </div>
       )}
+    </div>
+  );
+}
+
+/** How fresh the list is (tenders/freshness.ts): a quiet line when fresh, a notice otherwise. */
+function FreshnessNote({ facets, kind }: { facets: FeedFacets | null; kind: string | null }) {
+  const view = freshnessView(facets?.freshness, kind);
+  if (!view) return null;
+  if (view.tone === 'quiet') return <p className="tb-fresh muted">{view.text}</p>;
+  return (
+    <div className={view.tone === 'warning' ? 'notice tb-stale' : 'notice notice-info tb-stale'} role="status">
+      <Icon name="info" />
+      <span className="notice-text">{view.text}</span>
     </div>
   );
 }

@@ -55,3 +55,75 @@ class NightlyTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+def _feed(checked, central, state=None, gem=None, enabled=True, error="CPPP answered 404"):
+    def src(name, last):
+        return {"list": name, "enabled": enabled, "lastSuccessAt": last,
+                "lastFailureAt": checked if last != checked else None, "lastError": error if last != checked else None}
+    return {"checkedAt": checked, "sources": [src("central", central), src("state", state or central), src("gem", gem or central)]}
+
+
+class FeedFreshnessTests(unittest.TestCase):
+    NOW = "2026-11-05T15:50:00+00:00"
+
+    def night(self, feed, date="2026-11-05"):
+        return {**SAMPLE, "date": date, "feed": feed}
+
+    def test_statuses_follow_the_shared_thresholds(self):
+        now = nightly._parse(self.NOW)
+        cases = [("2026-11-05T14:00:00+00:00", "fresh"), ("2026-11-05T10:00:00+00:00", "delayed"),
+                 ("2026-11-02T15:50:00+00:00", "stale"), ("2026-10-23T15:29:45+00:00", "unavailable"), (None, "unavailable")]
+        for last, want in cases:
+            self.assertEqual(nightly.feed_status({"enabled": True, "lastSuccessAt": last}, now), want, last)
+        self.assertEqual(nightly.feed_status({"enabled": False, "lastSuccessAt": "2026-11-05T15:49:00+00:00"}, now), "unavailable",
+                         "switched off")
+
+    def test_all_fresh_is_quiet(self):
+        m = nightly.render(self.night(_feed(self.NOW, "2026-11-05T15:40:00+00:00")))
+        self.assertTrue(m["subject"].startswith("TenderTez tonight"))
+        self.assertIn("Tender lists: all fresh", m["text"])
+
+    def test_a_new_problem_alerts_once_and_names_the_last_success_and_error(self):
+        stale = _feed(self.NOW, "2026-10-23T15:29:45+00:00")
+        first = nightly.render(self.night(stale), previous=None)
+        self.assertTrue(first["subject"].startswith("Tender feed alert (Central, State, GeM) · "))
+        self.assertIn("Central unavailable since 23 Oct 2026 NEW", first["text"])
+        self.assertIn("Latest error: CPPP answered 404", first["html"])
+        self.assertIn("last update 23 Oct 2026", first["html"])
+        # The same unresolved problem the next night: listed, not alerted again.
+        nxt = nightly.render(self.night(_feed("2026-11-06T15:50:00+00:00", "2026-10-23T15:29:45+00:00"), "2026-11-06"),
+                             previous=self.night(stale))
+        self.assertTrue(nxt["subject"].startswith("TenderTez tonight"), nxt["subject"])
+        self.assertIn("Central unavailable since 23 Oct 2026", nxt["text"])
+        self.assertNotIn("NEW", nxt["text"])
+
+    def test_getting_worse_alerts_again_and_recovery_is_noted(self):
+        delayed = self.night(_feed(self.NOW, "2026-11-05T05:00:00+00:00"))
+        stale_next = self.night(_feed("2026-11-06T15:50:00+00:00", "2026-11-05T05:00:00+00:00"), "2026-11-06")
+        self.assertTrue(nightly.render(stale_next, previous=delayed)["subject"].startswith("Tender feed alert"), "delayed -> stale")
+        recovered = self.night(_feed("2026-11-07T15:50:00+00:00", "2026-11-07T15:45:00+00:00"), "2026-11-07")
+        m = nightly.render(recovered, previous=stale_next)
+        self.assertTrue(m["subject"].startswith("TenderTez tonight"))
+        self.assertIn("recovered", m["text"])
+        self.assertIn("(recovered)", m["html"])
+
+    def test_bad_timestamps_never_break_the_email(self):
+        bad = {"checkedAt": "not-a-date", "sources": [{"list": "central", "enabled": True, "lastSuccessAt": "garbage"}]}
+        m = nightly.render(self.night(bad), previous=self.night(bad))
+        self.assertIn("Central unavailable since never", m["text"])
+
+    def test_old_data_without_a_feed_still_renders_unchanged(self):
+        m = nightly.render(SAMPLE)
+        self.assertNotIn("Tender lists", m["html"])
+        self.assertNotIn("Tender lists", m["text"])
+
+    def test_previous_night_is_read_from_the_file_next_to_tonights(self):
+        import json
+        import tempfile
+        with tempfile.TemporaryDirectory() as d:
+            prev = Path(d) / "2026-11-04.json"
+            prev.write_text(json.dumps({"date": "2026-11-04", "feed": {"checkedAt": "x", "sources": []}}), encoding="utf-8")
+            self.assertEqual(nightly.previous_night(str(Path(d) / "2026-11-05.json"), "2026-11-05")["date"], "2026-11-04")
+            self.assertIsNone(nightly.previous_night(str(Path(d) / "2026-11-07.json"), "2026-11-07"))
+            self.assertIsNone(nightly.previous_night(str(Path(d) / "x.json"), None))

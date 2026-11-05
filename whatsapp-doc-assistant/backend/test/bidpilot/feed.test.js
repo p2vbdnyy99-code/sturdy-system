@@ -14,6 +14,7 @@ import pg from 'pg';
 import { parseCpppList, parseLastPage, cpppPageUrl, cpppIdFromUrl, CPPP_LISTS } from '../../src/bidpilot/discovery/cppp.js';
 import { findOnPortal, normaliseState, LINK_HOSTS } from '../../src/bidpilot/discovery/portals.js';
 import { createCrawler, setDiscoveryFetch, USER_AGENT } from '../../src/bidpilot/discovery/collector.js';
+import { feedFreshness } from '../../src/bidpilot/discovery/freshness.js';
 import { parseFeedQuery } from '../../src/bidpilot/repo/publicTenders.js';
 import { dbAvailable, DB_URL, testDb, closeTestDb, truncateAll } from '../db/helpers.js';
 import { createCompanyWithOwner } from '../../src/bidpilot/repo/companies.js';
@@ -206,6 +207,70 @@ test('collector: fresh pages first, then a full sweep that is saved and resumed'
     assert.match(after.last_error, /tender list/);
     reply = null;
     assert.equal(label(await again.step()), 'sweep central 1');
+  } finally {
+    setDiscoveryFetch((...a) => fetch(...a));
+    await closeDb();
+  }
+});
+
+test('collector: every attempt is recorded, a failing list does not touch the others, and recovery clears it (freshness)', { skip: SKIP_DB }, async () => {
+  const pool = new pg.Pool({ connectionString: DB_URL, max: 2 });
+  setDb(pool);
+  const db = testDb();
+  await truncateAll();
+  const LAST = { central: 2, state: 2, gem: 2 };
+  let failing = () => false; // which URLs answer 404
+  setDiscoveryFetch(async (url) => {
+    if (failing(url)) return { status: 404, text: async () => 'Not Found' };
+    for (const list of ['central', 'state', 'gem']) {
+      for (let n = 1; n <= 3; n += 1) {
+        if (cpppPageUrl(list, n) === url) return { status: 200, text: async () => fakeListPage(list, n, LAST[list]) };
+      }
+    }
+    throw new Error(`unexpected URL ${url}`);
+  });
+  let clock = new Date('2026-11-01T00:00:00Z');
+  const settings = { cppp: true, lists: ['central', 'state', 'gem'] };
+  const rows = async () => (await db.execute('select list, last_success_at, last_error, updated_at from discovery_state order by list')).rows
+    .map((r) => ({ list: r.list, lastSuccessAt: r.last_success_at, lastError: r.last_error, updatedAt: r.updated_at }));
+  const run = async (crawler, n) => { for (let i = 0; i < n; i += 1) await crawler.step().catch(() => {}); };
+  try {
+    // freshEveryMs 0: the fresh pages are due again as soon as allowed, as in a long outage.
+    const crawler = createCrawler(db, { lists: settings.lists, freshEveryMs: 0, keepClosedDays: 60, now: () => clock });
+    // Each cycle is 6 fresh pages then one sweep page, so 3 cycles sweep every list once.
+    await run(crawler, 21);
+    const t0 = clock.toISOString();
+    let st = await rows();
+    assert.deepEqual(st.map((r) => [r.list, new Date(r.lastSuccessAt).toISOString(), r.lastError]),
+      [['central', t0, null], ['gem', t0, null], ['state', t0, null]], 'fresh and sweep reads both count as successes');
+
+    // Only the state list fails: central and GeM keep working and stay clean.
+    clock = new Date('2026-11-01T01:00:00Z');
+    failing = (url) => url.includes('/mmpdata');
+    await run(crawler, 21);
+    st = Object.fromEntries((await rows()).map((r) => [r.list, r]));
+    assert.match(st.state.lastError, /CPPP answered 404/);
+    assert.equal(new Date(st.state.lastSuccessAt).toISOString(), t0, 'a failed attempt is never the last update');
+    assert.equal(st.central.lastError, null);
+    assert.equal(st.gem.lastError, null);
+    assert.equal(new Date(st.central.lastSuccessAt).toISOString(), clock.toISOString());
+
+    // Everything fails (CPPP gone): GeM, read only by sweeps, records its failure too.
+    clock = new Date('2026-11-01T02:00:00Z');
+    failing = () => true;
+    await run(crawler, 40);
+    st = Object.fromEntries((await rows()).map((r) => [r.list, r]));
+    for (const list of ['central', 'state', 'gem']) assert.match(st[list].lastError ?? '', /404/, `${list} failure recorded`);
+    const f = feedFreshness(await rows(), settings, new Date('2026-11-03T02:00:00Z'));
+    assert.deepEqual(f.sources.map((s) => s.status), ['stale', 'stale', 'stale'], 'two days without a success');
+    assert.ok(f.sources.every((s) => s.lastFailureAt && s.lastError), 'the failure is reported separately');
+
+    // Recovery: the next successful reads clear the errors and update the time.
+    clock = new Date('2026-11-03T03:00:00Z');
+    failing = () => false;
+    await run(crawler, 21);
+    const back = feedFreshness(await rows(), settings, clock);
+    assert.deepEqual(back.sources.map((s) => [s.status, s.lastError]), [['fresh', null], ['fresh', null], ['fresh', null]]);
   } finally {
     setDiscoveryFetch((...a) => fetch(...a));
     await closeDb();

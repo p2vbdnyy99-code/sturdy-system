@@ -143,7 +143,8 @@ def main(argv=None) -> int:
             _print(r if a.json else report.to_markdown(r))
         elif a.cmd == "nightly-email":
             with open(a.data, encoding="utf-8") as f:
-                mail = nightly.render(json.load(f))
+                data = json.load(f)
+            mail = nightly.render(data, nightly.previous_night(a.data, data.get("date")))
             with open(a.out, "w", encoding="utf-8") as f:
                 f.write(mail["html"])
             _print({"subject": mail["subject"], "text": mail["text"], "html_file": a.out, "html_chars": len(mail["html"])})

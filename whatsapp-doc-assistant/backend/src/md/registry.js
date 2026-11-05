@@ -11,6 +11,7 @@
 import { PUBLIC_PAGES, GUIDES, GUIDES_CHECKED } from '../seo.js';
 import { sampleView, SAMPLE_PATH } from '../samplePage.js';
 import { isLandingPath, landingMarkdown, landingPagesFrom, loadLandingPage, searchUrlFor } from '../landingPages.js';
+import { freshnessFor, istLongDate, staleNotice } from '../bidpilot/discovery/freshness.js';
 import { mainToMarkdown } from './htmlToMd.js';
 import { escapeMd, isoDate, link, list, mdPage, table, todayInIndia } from './format.js';
 
@@ -125,9 +126,15 @@ async function searchPage({ baseUrl, facets }) {
   const section = (title, items) => (items.length ? [`## ${title}`, list(items)] : []);
   const group = (kind, orgs) => pages.filter((p) => p.kind === kind && Boolean(p.organisation) === orgs)
     .map((p) => `${link(p.kind === 'gem' ? 'GeM bids' : `${p.label} tenders`, p.path, baseUrl)}: ${p.count.toLocaleString('en-IN')} open`);
+  // "Right now" only while the lists are fresh (discovery/freshness.js).
+  const fresh = freshnessFor(f.freshness);
+  const stale = fresh && fresh.status !== 'fresh';
   const body = [
     'Central, state and GeM tenders in one search, by state or organisation. Free, no sign-in needed.',
-    `**${total.toLocaleString('en-IN')}** open tenders right now.`,
+    ...(stale ? [`> ${staleNotice(fresh)}`] : []),
+    stale && fresh.lastSuccessAt
+      ? `**${total.toLocaleString('en-IN')}** open tenders in our last update (${istLongDate(fresh.lastSuccessAt)}).`
+      : `**${total.toLocaleString('en-IN')}** open tenders right now.`,
     table(['List', 'Open tenders', 'Search'], [
       ['Central government', f.open.central.toLocaleString('en-IN'), link('search', searchUrlFor({ kind: 'central' }), baseUrl)],
       ['State portals', f.open.state.toLocaleString('en-IN'), link('search', searchUrlFor({ kind: 'state' }), baseUrl)],

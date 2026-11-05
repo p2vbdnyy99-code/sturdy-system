@@ -4775,6 +4775,16 @@ textarea {
   font-size: 0.9rem;
 }
 
+/* How fresh the list is (tenders/freshness.ts). */
+.tb-fresh {
+  margin: 0.5rem 0 0;
+  font-size: 0.85rem;
+}
+
+.tb-stale {
+  margin: 0.75rem 0 0;
+}
+
 .tb-list {
   margin: 0;
   padding: 0;
@@ -5773,6 +5783,15 @@ textarea {
 }
 
 .ins-card-head p { margin: 2px 0 0; font-size: 0.78rem; color: var(--ins-muted); }
+
+/* Tender feed health (Insights FeedHealth). */
+.ins-feed { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.ins-feed-item { display: grid; gap: 2px; font-size: 0.82rem; color: var(--ins-muted); padding-left: 10px; border-left: 3px solid var(--ins-muted); overflow-wrap: anywhere; }
+.ins-feed-item strong { color: inherit; font-size: 0.9rem; }
+.ins-feed-status { font-weight: 700; }
+.ins-feed-fresh { border-left-color: #3fc93f; }
+.ins-feed-delayed { border-left-color: #fab219; }
+.ins-feed-stale, .ins-feed-unavailable { border-left-color: #e66767; }
 
 .ins-chart { width: 100%; }
 .ins-chart svg { display: block; touch-action: pan-y; }

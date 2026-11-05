@@ -12,6 +12,15 @@ import datetime as dt
 import html
 
 DASHBOARD = "https://tendertez.in/insights"
+
+# Tender-list freshness, the same rules as the site's
+# whatsapp-doc-assistant/backend/src/bidpilot/discovery/freshness.js
+# (test/bidpilot/freshness.test.js there checks these numbers match).
+FRESH_HOURS = 2
+STALE_HOURS = 24
+UNAVAILABLE_DAYS = 7
+FEED_LABELS = {"central": "Central", "state": "State", "gem": "GeM"}
+FEED_RANK = {"fresh": 0, "delayed": 1, "stale": 2, "unavailable": 3}
 KIND = {"signup": "signed up", "upload": "uploaded a tender", "analysed": "got an analysis", "failed": "analysis failed"}
 
 STYLE = (
@@ -83,11 +92,74 @@ def _columns(series) -> str:
             f'<tr>{"".join(days)}</tr></table>')
 
 
-def render(d: dict) -> dict:
+def _parse(iso):
+    if not iso:
+        return None
+    try:
+        return dt.datetime.fromisoformat(str(iso).replace("Z", "+00:00"))
+    except ValueError:
+        return None
+
+
+def feed_status(src: dict, checked_at) -> str:
+    """One list's status from the raw facts insights-summary.mjs prints."""
+    if not src.get("enabled"):
+        return "unavailable"
+    last = _parse(src.get("lastSuccessAt"))
+    if last is None:
+        return "unavailable"
+    hours = max(0.0, (checked_at - last).total_seconds() / 3600)
+    if hours <= FRESH_HOURS:
+        return "fresh"
+    if hours <= STALE_HOURS:
+        return "delayed"
+    if hours <= UNAVAILABLE_DAYS * 24:
+        return "stale"
+    return "unavailable"
+
+
+def feed_summary(d: dict, previous: dict | None = None) -> dict | None:
+    """Each list's status tonight, and which got worse since the previous
+    night's data (the alert) or recovered. Unchanged problems are listed but
+    not alerted again. None when the data has no feed section."""
+    feed = d.get("feed")
+    if not feed:
+        return None
+    checked = _parse(feed.get("checkedAt")) or dt.datetime.now(dt.timezone.utc)
+    prev_status = {}
+    if previous and previous.get("feed"):
+        pf = previous["feed"]
+        pc = _parse(pf.get("checkedAt")) or checked
+        prev_status = {s["list"]: feed_status(s, pc) for s in pf.get("sources", [])}
+    rows, worse, recovered = [], [], []
+    for s in feed.get("sources", []):
+        st = feed_status(s, checked)
+        before = prev_status.get(s["list"], "fresh")
+        if FEED_RANK[st] > FEED_RANK[before]:
+            worse.append(s["list"])
+        elif st == "fresh" and before != "fresh":
+            recovered.append(s["list"])
+        rows.append({**s, "status": st})
+    return {"rows": rows, "worse": worse, "recovered": recovered,
+            "problem": [r for r in rows if r["status"] != "fresh"]}
+
+
+def _feed_day(iso) -> str:
+    when = _parse(iso)
+    if when is None:
+        return "never"
+    return (when + dt.timedelta(hours=5, minutes=30)).strftime("%-d %b %Y")
+
+
+def render(d: dict, previous: dict | None = None) -> dict:
     t, w, p, paid, f = d["today"], d["week"], d["previousWeek"], d["paid"], d["funnel"]
     date = _day(d["date"])
     subject = (f"TenderTez tonight ({date}): {t['visitors']} visitors, {t['signups']} sign-ups, "
                f"{t['uploads']} uploads, {t['analyses']} analyses, {paid['companies']} paying")
+    feed = feed_summary(d, previous)
+    if feed and feed["worse"]:
+        names = ", ".join(FEED_LABELS.get(x, x) for x in feed["worse"])
+        subject = f"Tender feed alert ({names}) · {subject}"
     hero = (f"₹{paid['monthlyListPrice']:,} a month at list price" if paid["companies"]
             else "No active paid plan yet. Your own accounts are not counted.")
     parts = [
@@ -99,6 +171,17 @@ def render(d: dict) -> dict:
         f'<tr>{_tile("Uploads", t["uploads"], w["uploads"], p["uploads"])}'
         f'{_tile("Analyses", t["analyses"], w["analyses"], p["analyses"])}</tr></table>',
     ]
+    if feed:
+        rows = "".join(
+            f'<tr><td><b>{_e(FEED_LABELS.get(r["list"], r["list"]))}</b> {_e(r["status"])}'
+            f'{" (NEW)" if r["list"] in feed["worse"] else ""}{" (recovered)" if r["list"] in feed["recovered"] else ""}</td>'
+            f'<td align="right">last update {_e(_feed_day(r.get("lastSuccessAt")))}</td></tr>'
+            for r in feed["rows"])
+        err = next((r.get("lastError") for r in feed["problem"] if r.get("lastError")), None)
+        note = (f'<p class="n">Latest error: {_e(err)}</p>' if err else "")
+        colour = "#e66767" if feed["problem"] else "#16263d"
+        parts.append(f'<div class="c" style="border-color:{colour}"><p class="t">Tender lists</p>'
+                     f'<table width="100%" class="r">{rows}</table>{note}</div>')
     if w.get("waiting") or w.get("failed"):
         parts.append(f'<div class="c" style="border-color:#fab219;font-size:13px"><b>Activation gap:</b> {w.get("waiting", 0)} uploaded '
                      f'tender(s) waiting for Analyze and {w.get("failed", 0)} failed this week.</div>')
@@ -128,6 +211,29 @@ def render(d: dict) -> dict:
         f"This week: {w['visitors']} visitors, {w['signups']} sign-ups, {w['uploads']} uploads, {w['analyses']} analyses",
         f"Funnel (7 days): {f['visitors']} visitor-days > {f['saw_signup']} opened sign-up > {f['signups']} signed up > "
         f"{f['uploaded']} uploaded > {f['analysed']} analysed > {paid['companies']} paying",
+        *([_feed_text(feed)] if feed else []),
         f"Live dashboard: {DASHBOARD}",
     ])
     return {"subject": subject, "text": text, "html": body}
+
+
+def _feed_text(feed: dict) -> str:
+    if not feed["problem"]:
+        return "Tender lists: all fresh" + (f" (recovered: {', '.join(feed['recovered'])})" if feed["recovered"] else "")
+    parts = [f"{FEED_LABELS.get(r['list'], r['list'])} {r['status']} since {_feed_day(r.get('lastSuccessAt'))}"
+             + (" NEW" if r["list"] in feed["worse"] else "") for r in feed["problem"]]
+    return "Tender lists: " + "; ".join(parts)
+
+
+def previous_night(data_path: str, date: str | None) -> dict | None:
+    """The previous night's saved JSON next to tonight's (N/<date-1>.json),
+    for the tender-feed alert de-duplication; None when there is none."""
+    import json
+    from pathlib import Path
+    if not date:
+        return None
+    try:
+        prev = Path(data_path).with_name(f"{dt.date.fromisoformat(date) - dt.timedelta(days=1)}.json")
+        return json.loads(prev.read_text(encoding="utf-8")) if prev.exists() else None
+    except (ValueError, OSError):
+        return None

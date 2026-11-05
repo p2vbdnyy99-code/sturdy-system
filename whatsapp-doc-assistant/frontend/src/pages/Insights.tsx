@@ -148,6 +148,11 @@ export function InsightsPage() {
             <Card title="Pages crawlers read">
               <BarList rows={data.crawlers.pages.map((p) => ({ label: p.label, visitors: p.hits }))} empty="No crawler requests counted yet." />
             </Card>
+            {data.feed && (
+              <Card title="Tender feed" note="Last successful read of each CPPP list; failed attempts are shown separately">
+                <FeedHealth feed={data.feed} />
+              </Card>
+            )}
             <Card title="Latest activity" note="Last 30 days">
               <Activity items={data.activity} now={now} />
             </Card>
@@ -164,6 +169,25 @@ export function InsightsPage() {
         </div>
       )}
     </div>
+  );
+}
+
+const FEED_STATUS = { fresh: 'Fresh', delayed: 'Delayed', stale: 'Stale', unavailable: 'Unavailable' } as const;
+const FEED_REASON = { off: 'switched off', never: 'never read', failing: 'failing for over 7 days' } as const;
+const istTime = (iso: string) => new Intl.DateTimeFormat('en-IN', { timeZone: 'Asia/Kolkata', day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' }).format(new Date(iso));
+
+function FeedHealth({ feed }: { feed: NonNullable<Insights['feed']> }) {
+  return (
+    <ul className="ins-feed">
+      {feed.sources.map((s) => (
+        <li key={s.list} className={`ins-feed-item ins-feed-${s.status}`}>
+          <strong>{s.label}</strong>
+          <span className="ins-feed-status">{FEED_STATUS[s.status]}{s.reason ? ` (${FEED_REASON[s.reason]})` : ''}</span>
+          <span>Last success: {s.lastSuccessAt ? istTime(s.lastSuccessAt) : 'never'}</span>
+          {s.lastError && <span>Last failure: {s.lastFailureAt ? istTime(s.lastFailureAt) : 'time unknown'} · {s.lastError}</span>}
+        </li>
+      ))}
+    </ul>
   );
 }
 

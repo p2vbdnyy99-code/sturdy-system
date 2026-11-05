@@ -21,6 +21,7 @@ import { publicTenders, discoveryState } from '../../db/schema/index.js';
 import { config } from '../../config.js';
 import { log } from '../../logger.js';
 import { cpppPageUrl, parseCpppList, parseLastPage } from './cppp.js';
+import { feedFreshness, feedChanges, istLongDate } from './freshness.js';
 
 export const USER_AGENT = 'TenderTezBot/1.0 (+https://tendertez.in; advayaicopilot@gmail.com)';
 const MAX_BACKOFF_MS = 30 * 60 * 1000;
@@ -114,11 +115,16 @@ export function createCrawler(db, {
   let lastFreshAt = null;
   let turn = 0;
   let pagesSinceLog = 0;
+  // At least one sweep page between two fresh passes. During an outage with
+  // a long back-off the fresh queue would otherwise refill before any sweep
+  // ran, and the GeM list (sweeps only) would never record its failure.
+  let sweptSinceFresh = true;
 
   const nextJob = async () => {
     const t = now().getTime();
-    if (freshQueue.length === 0 && (lastFreshAt === null || t - lastFreshAt >= freshEveryMs)) {
+    if (freshQueue.length === 0 && sweptSinceFresh && (lastFreshAt === null || t - lastFreshAt >= freshEveryMs)) {
       lastFreshAt = t;
+      sweptSinceFresh = false;
       freshQueue = FRESH_LISTS.filter((l) => lists.includes(l))
         .flatMap((list) => Array.from({ length: FRESH_PAGES }, (_, i) => ({ list, page: i + 1, fresh: true })));
       const pruned = await pruneClosed(db, keepClosedDays, now());
@@ -128,6 +134,7 @@ export function createCrawler(db, {
     if (lists.length === 0) return null;
     const list = lists[turn % lists.length];
     turn += 1;
+    sweptSinceFresh = true;
     const state = await loadState(db, list);
     return { list, page: state.nextPage, fresh: false, state };
   };
@@ -140,6 +147,9 @@ export function createCrawler(db, {
       try {
         const { rows, lastPage } = await fetchListPage(job.list, job.page);
         const stored = await storeRows(db, rows);
+        // A fresh page read is a successful update of its list too
+        // (freshness.js counts only successes as updates).
+        if (job.fresh) await saveState(db, job.list, { lastSuccessAt: now(), lastError: null });
         if (!job.fresh) {
           const total = lastPage ?? job.state.totalPages ?? job.page;
           const done = job.page >= total || rows.length === 0;
@@ -159,8 +169,9 @@ export function createCrawler(db, {
         }
         return { list: job.list, page: job.page, stored, fresh: job.fresh };
       } catch (err) {
-        // A failed fresh page is simply skipped; a failed sweep page is retried.
-        if (!job.fresh) await saveState(db, job.list, { lastError: String(err?.message || err).slice(0, 200) }).catch(() => {});
+        // A failed fresh page is skipped and a failed sweep page retried; both
+        // are recorded, so the dashboard and nightly email can see them.
+        await saveState(db, job.list, { lastError: String(err?.message || err).slice(0, 200) }).catch(() => {});
         throw err;
       }
     },
@@ -189,4 +200,42 @@ export function startDiscovery(db) {
   timer = setTimeout(tick, 30_000); // after start-up settles
   log.info(`bidpilot discovery: CPPP lists ${settings.lists.join(', ')} on, ${settings.delaySeconds} s between pages, newest pages every ${settings.intervalMinutes} min`);
   return () => { stopped = true; if (timer) clearTimeout(timer); };
+}
+
+/**
+ * Hourly check of every list's freshness (freshness.js). Logs a warning once
+ * when a list gets worse (delayed, stale, unavailable) and once when it
+ * recovers; nothing while it stays the same, so an unresolved failure is not
+ * repeated. The founder's alert is the nightly email (scripts/insights-summary.mjs).
+ * Remembers the last statuses in memory: after a restart, a list that is
+ * still failing is reported once more.
+ */
+export function startFeedMonitor(db, { everyMs = 60 * 60 * 1000, settings = config.bidpilot.discovery, logger = log } = {}) {
+  let previous = null;
+  let timer = null;
+  let stopped = false;
+  const check = async () => {
+    try {
+      const rows = await db.select().from(discoveryState);
+      const f = feedFreshness(rows, settings);
+      const { worse, recovered, statuses } = feedChanges(previous, f);
+      for (const s of worse) {
+        // A list switched off on purpose is noted, not alarmed about.
+        if (s.reason === 'off') { logger.info(`bidpilot feed: ${s.list} list is switched off`); continue; }
+        const since = s.lastSuccessAt ? `last success ${istLongDate(s.lastSuccessAt)} (${s.lastSuccessAt})` : 'never read';
+        const why = s.reason === 'off' ? 'switched off' : s.lastError ? `last error: ${s.lastError}` : 'no error recorded';
+        logger.warn(`bidpilot feed: ${s.list} list is ${s.status}; ${since}; ${why}`);
+      }
+      for (const s of recovered) logger.info(`bidpilot feed: ${s.list} list recovered; last success ${s.lastSuccessAt}`);
+      previous = statuses;
+    } catch (err) {
+      logger.warn(`bidpilot feed: freshness check failed (${String(err?.message || err).slice(0, 120)})`);
+    }
+    if (timer) clearTimeout(timer); // one pending check at most, however it was started
+    if (!stopped) timer = setTimeout(check, everyMs);
+  };
+  timer = setTimeout(check, 90_000); // after start-up settles
+  const stop = () => { stopped = true; if (timer) clearTimeout(timer); };
+  stop.checkNow = check; // for tests
+  return stop;
 }

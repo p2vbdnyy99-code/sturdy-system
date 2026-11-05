@@ -9,6 +9,7 @@ import { Icon } from '../components/Icon';
 import { PRODUCT_NAME } from '../config/product';
 import { TenderBrowser } from '../tenders/TenderBrowser';
 import { SourceNote } from '../tenders/SourceNote';
+import { countWording } from '../tenders/freshness';
 
 // Public tender search (no sign-in): central, state and GeM tenders from
 // CPPP's public lists, by state and by organisation. Tracking a tender, its
@@ -78,7 +79,7 @@ export function GovernmentTendersPage() {
       <PageIntro kicker="Government tenders" title={heading}>
         <p>Central, state and GeM tenders in one search, by state or organisation. Free, no sign-in needed.</p>
         {count !== null && count > 0 && (
-          <p className="tb-intro-count"><strong>{count.toLocaleString('en-IN')}</strong> open tenders right now</p>
+          <p className="tb-intro-count"><strong>{count.toLocaleString('en-IN')}</strong> {countWording(facets?.freshness, landing?.kind ?? null)}</p>
         )}
       </PageIntro>
       <section className="home-section tb-section">

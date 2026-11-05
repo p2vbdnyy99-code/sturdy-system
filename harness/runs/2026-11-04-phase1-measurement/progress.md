@@ -51,5 +51,15 @@
 - Remaining limit from M1: the team-tender list is in memory, so a restart between a team upload and the end of its analysis would let that one analysis_complete through.
 - Nothing committed, pushed or deployed.
 
+## Release v54 (4 Nov 2026, 22:40 IST; founder's "deploy" and "push")
+- Commits: 43ae575 (Phase 1 + review fixes) and 2f1affc (privacy LAST_UPDATED = 4 November 2026), pushed as a fast-forward; GitHub = local = 2f1affc.
+- Before: verify.sh 744/458/366, build, lint 0 errors (18 warnings), unit 78, secret scan clean; production 0 ANALYZING and 0 being read (checked twice).
+- Deploy: `flyctl deploy` -> v54, machine started; log: GA4 page views and conversion events on. Rollback: v53.
+- Live, Lighthouse mobile x3: state/maharashtra CLS 0.000 (perf 91/98/99); organisation/nrrda CLS 0.000 (perf 100/98/99); a11y 96, best practices 96 (the signed-out 401 from /bidpilot/me, also on v53). Before: 0.308.
+- Live browser (live-phase1 check, 18/18): server HTML has the landing-data block; first load makes no list/facets request; the block is removed after use; back to the list fetches it fresh; no page errors or CSP violations; visit beacons carry the site cookies; Choose Starter still opens the email; plan click beacon sent; privacy shows 4 November 2026, the signed-in/page-view wording, the four events and "up to 400 days".
+- Production rows (read-only): the team-marked browser's tagged visits and plan click: 0 rows; untagged list visits from the marked browser: 0; the ordinary test visitor: 2 rows (/pricing and /plan-click/starter, campaign livecheck1715-visitor). These 2 are test rows.
+- Logs since deploy: no application errors. Pre-existing and unrelated: the CPPP feed read has answered 404 since at least 3 Nov 17:18 UTC.
+- Pending: GA4 Realtime check by the founder (page_view and plan_click from the test visitor); sign_up/upload/analysis_complete need a production test account (founder's approval).
+
 ## Next action
 Founder review of Phase 1 with the review fixes. Then "commit" / "push" / "deploy" as they choose. Phase 2 (EMD exemption checker) waits for approval.
