@@ -89,8 +89,8 @@ const shortDay = staleDate.replace(/^(\d+) (\w{3})\w* \d{4}$/, '$1 $2'); // "23 
   await page.locator('form button[type=submit]').click();
   await page.waitForURL(/\/dashboard/);
   await page.goto(`${origin}/insights`, { waitUntil: 'networkidle' });
-  await page.waitForSelector('.ins-feed');
-  const card = await page.locator('.ins-feed').innerText();
+  await page.waitForSelector('.ins-health');
+  const card = await page.locator('.ins-health').innerText();
   if (scenario === 'stale') {
     check(['Stale', 'Unavailable'].includes(STATUS_WORD)
       && new RegExp(`Central government tenders\\s+${STATUS_WORD}[\\s\\S]*Last success: ${esc(shortDay)}`).test(card), `insights: status (${STATUS_WORD}) and last success (${shortDay})`);
@@ -98,7 +98,7 @@ const shortDay = staleDate.replace(/^(\d+) (\w{3})\w* \d{4}$/, '$1 $2'); // "23 
   } else {
     check((card.match(/Fresh/g) || []).length === 3, 'insights: all three fresh');
   }
-  await page.locator('.ins-feed').screenshot({ path: `${SHOTS}/insights-feed-${scenario}.png` });
+  await page.locator('.ins-health').screenshot({ path: `${SHOTS}/insights-feed-${scenario}.png` });
   await ctx.close();
   await browser.close();
   console.log(`\n${pass} passed, ${fail} failed`);

@@ -5368,3 +5368,22 @@ run `harness/runs/2026-11-05-home-freshness/`)**
     date, no current-data claim);
   - `state-checks.sh` runs them all in six local states. Results are in
     the run's checks.md. No product code changed.
+
+**Fix: /insights Tender feed card layout (5 Nov 2026, approved after
+handoff #28; run `harness/runs/2026-11-05-insights-feed-layout/`)**
+
+- **Defect (live since v55).** The Tender feed card reused the class
+  `ins-feed`, which already belonged to the "Latest activity" list. That
+  list's `.ins-feed li` three-column grid outranked the card's one-column
+  rule, so each status was squeezed into a column one letter wide (cards
+  over 2,200 px tall). In the other direction, the card's
+  `.ins-feed { display: grid; gap: 10px }` added gaps to the activity list.
+- **Fix.** The card has its own class names (`ins-health`,
+  `ins-health-item`, `ins-health-status`, `ins-health-<status>`). The rules
+  themselves are unchanged. The activity list's rules are again exactly
+  those before v55.
+- **Verification:** at 390 and 1366 px, with Fresh, Delayed, Stale and
+  Unavailable lists: each status on one or two lines, rows at most 110 px,
+  no overflow; every other card the same size, layout and text as before
+  the fix, except "Latest activity", which loses v55's 10 px row gaps.
+  `verify.sh` all green.

@@ -1,0 +1,68 @@
+{
+  "Visitors per day": {
+    "width": 828,
+    "height": 326,
+    "layout": "HEADER:17,17,794x40.5 H2:17,17,794x19 P:17,38,794x19.5 DIV:17,69.5,794x240 svg:17,69.5,794x240 defs:-474,-573.5,0x0 linearGradient:-474,-573.5,0x0 stop:-474,-573.5,0x0 stop:-474,-573.5,0x0 g:38,274.5,761x14 line:53,281.5,746x0 text:38,274.5,7x14 g:30.5,176.5,768.5x14 line:53,183.5,746x0 text:30.5,176.5,14.5x14 g:30.5,78.5,768.5x14 line:53,85.5,746x0 text:30.5,78.5,14.5x14 text:53,290.5,29x14 text:112.5,290.5,36x14 text:189.5,290.5,36x14 text:267,290.5,36x14 text:344,290.5,36x14 text:421,290.5,36x14 text:498.5,290.5,36x14 text:575.5,290.5,36x14 text:652.5,290.5,36x14 text:768,290.5,31x14 path:53,173.5,746x108 path:53,173.5,746x88 circle:794.5,228,9x9",
+    "text": "Visitors per day Hover or use the arrow keys for each day's numbers 0 10 20 7 Oct 10 Oct 13 Oct 16 Oct 19 Oct 22 Oct 25 Oct 28 Oct 31 Oct 5 Nov"
+  },
+  "Funnel": {
+    "width": 408,
+    "height": 347,
+    "layout": "HEADER:17,17,374x40.5 H2:17,17,374x19 P:17,38,374x19.5 OL:17,69.5,374x260.5 LI:17,69.5,374x35 DIV:17,69.5,374x21 SPAN:17,69.5,110x21 SPAN:364.5,69.5,26.5x21 STRONG:364.5,71.5,26.5x16 svg:17,94.5,374x10 rect:17,94.5,374x10 rect:17,94.5,374x10 LI:17,114.5,374x35 DIV:17,114.5,374x21 SPAN:17,114.5,104x21 SPAN:338,114.5,53x21 STRONG:338,116.5,17.5x16 EM:363.5,117.5,27.5x15 svg:17,139.5,374x10 rect:17,139.5,374x10 rect:17,139.5,107x10 LI:17,159.5,374x35 DIV:17,159.5,374x21 SPAN:17,159.5,65x21 SPAN:349.5,159.5,41.5x21 STRONG:349.5,161.5,9x16 EM:366,162.5,25x15 svg:17,184.5,374x10 rect:17,184.5,374x10 rect:17,184.5,13x10 LI:17,204.5,374x35 DIV:17,204.5,374x21 SPAN:17,204.5,119x21 SPAN:346.5,204.5,44.5x21 STRONG:346.5,206.5,9x16 EM:363.5,207.5,27.5x15 svg:17,229.5,374x10 rect:17,229.5,374x10 rect:17,229.5,11x10 LI:17,249.5,374x35 DIV:17,249.5,374x21 SPAN:17,249.5,98x21 SPAN:341,249.5,50x21 STRONG:341,251.5,9x16 EM:358,252.5,33x15 svg:17,274.5,374x10 rect:17,274.5,374x10 rect:17,274.5,11x10 LI:17,294.5,374x35 DIV:17,294.5,374x21 SPAN:17,294.5,74.5x21 SPAN:346.5,294.5,44.5x21 STRONG:346.5,296.5,9x16 EM:363.5,297.5,27.5x15 svg:17,319.5,374x10 rect:17,319.5,374x10 rect:17,319.5,5.5x10",
+    "text": "Funnel Last 30 days; your own accounts left out Visitors (per day) 171 Opened sign-up 4929% Signed up 612% Uploaded a tender 583% Got an analysis 5100% Paying now 120%"
+  },
+  "Activity per day": {
+    "width": 408,
+    "height": 347,
+    "layout": "HEADER:17,17,374x40.5 H2:17,17,374x19 P:17,38,374x19.5 DIV:17,69.5,374x78.5 P:17,69.5,374x20.5 SPAN:17,69.5,56x20.5 STRONG:382.5,69.5,8.5x20.5 svg:17,93.5,374x54 line:17,146.5,374x0 rect:118.5,98.5,10.5x48 title:-894,-277,0x0 rect:180.5,98.5,10.5x48 title:-894,-277,0x0 rect:242,98.5,10.5x48 title:-894,-277,0x0 rect:303.5,98.5,10.5x48 title:-894,-277,0x0 rect:365.5,98.5,10.5x48 title:-894,-277,0x0 rect:377.5,98.5,10.5x48 title:-894,-277,0x0 DIV:17,157.5,374x78.5 P:17,157.5,374x20.5 SPAN:17,157.5,51.5x20.5 STRONG:379.5,157.5,11.5x20.5 svg:17,182,374x54 line:17,235,374x0 rect:168,187,10.5x48 title:-894,-277,0x0 rect:180.5,187,10.5x48 title:-894,-277,0x0 rect:205,187,10.5x48 title:-894,-277,0x0 rect:217.5,187,10.5x48 title:-894,-277,0x0 rect:229.5,187,10.5x48 title:-894,-277,0x0 rect:279,187,10.5x48 title:-894,-277,0x0 rect:316,187,10.5x48 title:-894,-277,0x0 rect:328.5,187,10.5x48 title:-894,-277,0x0 rect:353,187,10.5x48 title:-894,-277,0x0 rect:365.5,187,10.5x48 title:-894,-277,0x0 rect:377.5,187,10.5x48 title:-894,-277,0x0 DIV:17,246,374x78.5 P:17,246,374x20.5 SPAN:17,246,56.5x20.5 STRONG:382.5,246,8.5x20.5 svg:17,270.5,374x54 line:17,323.5,374x0 rect:180.5,275.5,10.5x48 title:-894,-277,0x0 rect:229.5,275.5,10.5x48 title:-894,-277,0x0 rect:279,275.5,10.5x48 title:-894,-277,0x0 rect:328.5,275.5,10.5x48 title:-894,-277,0x0 rect:377.5,275.5,10.5x48 title:-894,-277,0x0",
+    "text": "Activity per day Sign-ups, uploads and analyses (each on its own scale) Sign-ups 6 Uploads 11 Analyses 5"
+  },
+  "Where visitors came from": {
+    "width": 408,
+    "height": 260,
+    "layout": "HEADER:17,17,374x19 H2:17,17,374x19 UL:17,48,374x195.5 LI:17,48,374x31 DIV:17,48,374x21 SPAN:17,48,76x21 STRONG:373.5,48,17.5x21 svg:17,73,374x6 rect:17,73,374x6 rect:17,73,374x6 LI:17,89,374x31 DIV:17,89,374x21 SPAN:17,89,62.5x21 STRONG:373.5,89,17.5x21 svg:17,114,374x6 rect:17,114,374x6 rect:17,114,374x6 LI:17,130,374x31 DIV:17,130,374x21 SPAN:17,130,81x21 STRONG:373.5,130,17.5x21 svg:17,155,374x6 rect:17,155,374x6 rect:17,155,353x6 LI:17,171,374x31 DIV:17,171,374x21 SPAN:17,171,36.5x21 STRONG:373.5,171,17.5x21 svg:17,196.5,374x6 rect:17,196.5,374x6 rect:17,196.5,343x6 LI:17,212.5,374x31 DIV:17,212.5,374x21 SPAN:17,212.5,39x21 STRONG:373.5,212.5,17.5x21 svg:17,237.5,374x6 rect:17,237.5,374x6 rect:17,237.5,332.5x6",
+    "text": "Where visitors came from google.com 36 whatsapp 36 linkedin.com 34 direct 33 x.com 32"
+  },
+  "Campaigns": {
+    "width": 408,
+    "height": 260,
+    "layout": "HEADER:17,17,374x40.5 H2:17,17,374x19 P:17,38,374x19.5 UL:17,69.5,374x72 LI:17,69.5,374x31 DIV:17,69.5,374x21 SPAN:17,69.5,154.5x21 STRONG:373.5,69.5,17.5x21 svg:17,94.5,374x6 rect:17,94.5,374x6 rect:17,94.5,374x6 LI:17,110.5,374x31 DIV:17,110.5,374x21 SPAN:17,110.5,95.5x21 STRONG:373.5,110.5,17.5x21 svg:17,135.5,374x6 rect:17,135.5,374x6 rect:17,135.5,352x6",
+    "text": "Campaigns From post links (source.campaign) linkedin.emd_exemption 34 x.daily_tenders 32"
+  },
+  "Top pages": {
+    "width": 408,
+    "height": 301,
+    "layout": "HEADER:17,17,374x19 H2:17,17,374x19 UL:17,48,374x236.5 LI:17,48,374x31 DIV:17,48,374x21 SPAN:17,48,137x21 STRONG:373.5,48,17.5x21 svg:17,73,374x6 rect:17,73,374x6 rect:17,73,374x6 LI:17,89,374x31 DIV:17,89,374x21 SPAN:17,89,5x21 STRONG:373.5,89,17.5x21 svg:17,114,374x6 rect:17,114,374x6 rect:17,114,350.5x6 LI:17,130,374x31 DIV:17,130,374x21 SPAN:17,130,49.5x21 STRONG:373.5,130,17.5x21 svg:17,155,374x6 rect:17,155,374x6 rect:17,155,315.5x6 LI:17,171,374x31 DIV:17,171,374x21 SPAN:17,171,109.5x21 STRONG:373.5,171,17.5x21 svg:17,196.5,374x6 rect:17,196.5,374x6 rect:17,196.5,304x6 LI:17,212.5,374x31 DIV:17,212.5,374x21 SPAN:17,212.5,54x21 STRONG:373.5,212.5,17.5x21 svg:17,237.5,374x6 rect:17,237.5,374x6 rect:17,237.5,286.5x6 LI:17,253.5,374x31 DIV:17,253.5,374x21 SPAN:17,253.5,57.5x21 STRONG:373.5,253.5,17.5x21 svg:17,278.5,374x6 rect:17,278.5,374x6 rect:17,278.5,228x6",
+    "text": "Top pages /government-tenders 64 / 60 /pricing 54 /sample-analysis 52 /register 49 /features 39"
+  },
+  "Search and AI crawlers": {
+    "width": 408,
+    "height": 301,
+    "layout": "HEADER:17,17,374x40.5 H2:17,17,374x19 P:17,38,374x19.5 P:17,69.5,374x21",
+    "text": "Search and AI crawlers Requests by crawler name (a user agent can be faked) No crawler requests counted yet."
+  },
+  "Pages crawlers read": {
+    "width": 408,
+    "height": 349,
+    "layout": "HEADER:17,17,374x19 H2:17,17,374x19 P:17,48,374x21",
+    "text": "Pages crawlers read No crawler requests counted yet."
+  },
+  "Tender feed": {
+    "width": 408,
+    "height": 349,
+    "layout": "HEADER:17,17,374x59.5 H2:17,17,374x19 P:17,38,374x38.5 UL:17,88.5,374x243.5 LI:17,88.5,374x67 STRONG:30,88.5,361x22.5 SPAN:30,113,361x20.5 SPAN:30,135.5,361x20.5 LI:17,165.5,374x67 STRONG:30,165.5,361x22.5 SPAN:30,190,361x20.5 SPAN:30,212.5,361x20.5 LI:17,242.5,374x89.5 STRONG:30,242.5,361x22.5 SPAN:30,267,361x20.5 SPAN:30,289.5,361x20.5 SPAN:30,311.5,361x20.5",
+    "text": "Tender feed Last successful read of each CPPP list; failed attempts are shown separately Central government tenders Fresh Last success: 5 Nov, 9:47 am State tenders Delayed Last success: 5 Nov, 5:47 am GeM bids Stale Last success: 2 Nov, 10:47 am Last failure: 5 Nov, 10:47 am · CPPP answered 404"
+  },
+  "Latest activity": {
+    "width": 408,
+    "height": 654,
+    "layout": "HEADER:17,17,374x40.5 H2:17,17,374x19 P:17,38,374x19.5 UL:17,69.5,374x567.5 LI:17,69.5,374x45 SPAN:17,77.5,28x28 svg:23.5,84,15x15 path:24.5,85.5,13x11.5 path:31,89.5,0x5 SPAN:55,81,268x21 STRONG:55,83,167x16 TIME:333,81.5,58x19.5 LI:17,114.5,374x45 SPAN:17,122.5,28x28 svg:23.5,129,15x15 path:24.5,130.5,13x11.5 path:31,134.5,0x5 SPAN:55,126,268x21 STRONG:55,128,124x16 TIME:333,126.5,58x19.5 LI:17,159.5,374x59 SPAN:17,174.5,28x28 svg:23.5,181,15x15 path:25.5,190.5,11.5x4 path:28,183,6.5x7.5 SPAN:55,167.5,268x42 STRONG:55,169.5,147x16 TIME:333,178.5,58x19.5 LI:17,218.5,374x45 SPAN:17,226.5,28x28 svg:23.5,233,15x15 path:25,234,12.5x12.5 path:29,235.5,8x6.5 SPAN:55,230,268x21 STRONG:55,232,147x16 TIME:333,231,58x19.5 LI:17,263.5,374x45 SPAN:17,271.5,28x28 svg:23.5,278,15x15 path:24,287.5,10x4 circle:26.5,280,5x5 path:33.5,280,4.5x11 SPAN:55,275,268x21 STRONG:55,277,50.5x16 TIME:333,276,58x19.5 LI:17,308.5,374x45 SPAN:17,316.5,28x28 svg:23.5,323,15x15 path:25.5,332.5,11.5x4 path:28,325,6.5x7.5 SPAN:55,320,270.5x21 STRONG:55,322,147x16 TIME:335.5,321,55.5x19.5 LI:17,353.5,374x45 SPAN:17,361.5,28x28 svg:23.5,368,15x15 path:24,377.5,10x4 circle:26.5,370,5x5 path:33.5,370,4.5x11 SPAN:55,365,270.5x21 STRONG:55,367,147x16 TIME:335.5,366,55.5x19.5 LI:17,398.5,374x59 SPAN:17,413.5,28x28 svg:23.5,420,15x15 path:25.5,429.5,11.5x4 path:28,422,6.5x7.5 SPAN:55,406.5,261x42 STRONG:55,408.5,147x16 TIME:326,418,65x19.5 LI:17,457.5,374x45 SPAN:17,465.5,28x28 svg:23.5,472,15x15 path:25,473.5,12.5x12.5 path:29,474.5,8x6.5 SPAN:55,469,261x21 STRONG:55,471,124x16 TIME:326,470,65.5x19.5 LI:17,502.5,374x45 SPAN:17,510.5,28x28 svg:23.5,517,15x15 path:25.5,526.5,11.5x4 path:28,519,6.5x7.5 SPAN:55,514,261x21 STRONG:55,516,124x16 TIME:326,515,65.5x19.5 LI:17,547.5,374x45 SPAN:17,555.5,28x28 svg:23.5,562,15x15 path:25.5,571.5,11.5x4 path:28,564,6.5x7.5 SPAN:55,559,261x21 STRONG:55,561,124x16 TIME:326,560,65x19.5 LI:17,592.5,374x44 SPAN:17,600.5,28x28 svg:23.5,607,15x15 path:24,616.5,10x4 circle:26.5,609,5x5 path:33.5,609,4.5x11 SPAN:55,604,261x21 STRONG:55,606,124x16 TIME:326,605,65x19.5",
+    "text": "Latest activity Last 30 days Deccan Medical Supplies analysis failed 6 min ago Bharat Infra Works analysis failed 6 min ago Alpha Bid Consultants uploaded a tender 6 min ago Alpha Bid Consultants got an analysis 6 min ago Skylark signed up 6 min ago Alpha Bid Consultants uploaded a tender 1 day ago Alpha Bid Consultants signed up 1 day ago Alpha Bid Consultants uploaded a tender 2 days ago Bharat Infra Works got an analysis 4 days ago Bharat Infra Works uploaded a tender 4 days ago Bharat Infra Works uploaded a tender 5 days ago Bharat Infra Works signed up 6 days ago"
+  },
+  "Accounts": {
+    "width": 828,
+    "height": 386,
+    "layout": "HEADER:17,17,794x40.5 H2:17,17,794x19 P:17,38,794x19.5 DIV:17,69.5,794x299.5 TABLE:17,69.5,1085x299.5 THEAD:17,69.5,1085x34.5 TR:17,69.5,1085x34.5 TH:17,69.5,185x34.5 TH:202,69.5,190.5x34.5 TH:393,69.5,88.5x34.5 TH:481.5,69.5,80x34.5 TH:561,69.5,88.5x34.5 TH:649.5,69.5,119x34.5 TH:768.5,69.5,63.5x34.5 TH:832,69.5,94x34.5 TH:926,69.5,72x34.5 TH:998.5,69.5,103.5x34.5 TBODY:17,103.5,1085x265 TR:17,103.5,1085x38 TH:17,103.5,185x38 TD:202,103.5,190.5x38 TD:393,103.5,88.5x38 TD:481.5,103.5,80x38 TD:561,103.5,88.5x38 TD:649.5,103.5,119x38 TD:768.5,103.5,63.5x38 TD:832,103.5,94x38 TD:926,103.5,72x38 TD:998.5,103.5,103.5x38 TR:17,141.5,1085x38 TH:17,141.5,185x38 TD:202,141.5,190.5x38 TD:393,141.5,88.5x38 TD:481.5,141.5,80x38 TD:561,141.5,88.5x38 TD:649.5,141.5,119x38 TD:768.5,141.5,63.5x38 TD:832,141.5,94x38 TD:926,141.5,72x38 TD:998.5,141.5,103.5x38 TR:17,179.5,1085x38 TH:17,179.5,185x38 TD:202,179.5,190.5x38 TD:393,179.5,88.5x38 TD:481.5,179.5,80x38 TD:561,179.5,88.5x38 TD:649.5,179.5,119x38 TD:768.5,179.5,63.5x38 TD:832,179.5,94x38 TD:926,179.5,72x38 TD:998.5,179.5,103.5x38 TR:17,217,1085x38 TH:17,217,185x38 TD:202,217,190.5x38 TD:393,217,88.5x38 TD:481.5,217,80x38 TD:561,217,88.5x38 TD:649.5,217,119x38 TD:768.5,217,63.5x38 TD:832,217,94x38 TD:926,217,72x38 TD:998.5,217,103.5x38 TR:17,255,1085x38 TH:17,255,185x38 TD:202,255,190.5x38 TD:393,255,88.5x38 TD:481.5,255,80x38 TD:561,255,88.5x38 TD:649.5,255,119x38 TD:768.5,255,63.5x38 TD:832,255,94x38 TD:926,255,72x38 TD:998.5,255,103.5x38 TR:17,293,1085x38 TH:17,293,185x38 TD:202,293,190.5x38 TD:393,293,88.5x38 TD:481.5,293,80x38 TD:561,293,88.5x38 TD:649.5,293,119x38 TD:768.5,293,63.5x38 TD:832,293,94x38 TD:926,293,72x38 TD:998.5,293,103.5x38 TR:17,330.5,1085x38 TH:17,330.5,185x38 SPAN:120,341,44x18 TD:202,330.5,190.5x38 TD:393,330.5,88.5x38 TD:481.5,330.5,80x38 TD:561,330.5,88.5x38 TD:649.5,330.5,119x38 TD:768.5,330.5,63.5x38 TD:832,330.5,94x38 TD:926,330.5,72x38 TD:998.5,330.5,103.5x38",
+    "text": "Accounts Newest activity first; your own accounts are listed last COMPANY CONTACT SIGNED UP UPLOADS ANALYSED NOT ANALYSED FAILED PLAN PROFILE LAST ACTIVE Alpha Bid Consultants owner0@example.com 4 Nov 3 1 2 0 Starter 0/10 None 6 min ago Everest GeM Services owner4@example.com 15 Oct 2 1 1 0 Trial 0/5 None 6 min ago Deccan Medical Supplies owner3@example.com 20 Oct 3 1 1 1 Trial 0/5 None 6 min ago Coastal Electricals owner2@example.com 25 Oct 1 1 0 0 Trial 0/5 None 6 min ago Bharat Infra Works owner1@example.com 30 Oct 2 1 0 1 Trial 0/5 None 6 min ago Skylark founder@harness.example 5 Nov 0 0 0 0 Trial 0/5 None 6 min ago My companyyours founder@example.test 5 Nov 0 0 0 0 Trial 0/5 None 5 min ago"
+  }
+}

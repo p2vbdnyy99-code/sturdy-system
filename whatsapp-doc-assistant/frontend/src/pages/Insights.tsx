@@ -178,11 +178,11 @@ const istTime = (iso: string) => new Intl.DateTimeFormat('en-IN', { timeZone: 'A
 
 function FeedHealth({ feed }: { feed: NonNullable<Insights['feed']> }) {
   return (
-    <ul className="ins-feed">
+    <ul className="ins-health">
       {feed.sources.map((s) => (
-        <li key={s.list} className={`ins-feed-item ins-feed-${s.status}`}>
+        <li key={s.list} className={`ins-health-item ins-health-${s.status}`}>
           <strong>{s.label}</strong>
-          <span className="ins-feed-status">{FEED_STATUS[s.status]}{s.reason ? ` (${FEED_REASON[s.reason]})` : ''}</span>
+          <span className="ins-health-status">{FEED_STATUS[s.status]}{s.reason ? ` (${FEED_REASON[s.reason]})` : ''}</span>
           <span>Last success: {s.lastSuccessAt ? istTime(s.lastSuccessAt) : 'never'}</span>
           {s.lastError && <span>Last failure: {s.lastFailureAt ? istTime(s.lastFailureAt) : 'time unknown'} · {s.lastError}</span>}
         </li>
