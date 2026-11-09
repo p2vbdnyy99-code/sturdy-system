@@ -6,23 +6,26 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { renderIndexHtml, sitemapXml, structuredData, llmsTxt, GUIDES, GUIDES_CHECKED, PUBLIC_PAGES } from '../src/seo.js';
+import { renderIndexHtml, sitemapXml, structuredData, llmsTxt, GUIDES, PUBLIC_PAGES } from '../src/seo.js';
 import { createPrerender } from '../src/prerender.js';
 import { crawlerFrom, crawlerPath, createCrawlerCounter } from '../src/bidpilot/crawlers.js';
 import { canonicalState, stateNames, searchFeed, feedFacets } from '../src/bidpilot/repo/publicTenders.js';
 import { landingRedirect, landingPagesFrom } from '../src/landingPages.js';
 import { normalizePath } from '../src/bidpilot/visits.js';
 import { insights } from '../src/bidpilot/insights.js';
-import { GUIDES as APP_GUIDES, GUIDES_CHECKED as APP_CHECKED, guidePath } from '../../frontend/src/guides/guides.ts';
+import { GUIDES as APP_GUIDES, guidePath } from '../../frontend/src/guides/guides.ts';
 import { dbAvailable, testDb, closeTestDb, truncateAll } from './db/helpers.js';
 import { publicTenders, crawlerHits } from '../src/db/schema/index.js';
 
 const BASE = 'https://tendertez.in';
 const INDEX = '<html><head><title>TenderTez</title></head><body><div id="root"></div></body></html>';
 
-test('the app and the server list the same guides, headlines and checked date', () => {
-  assert.equal(APP_CHECKED, GUIDES_CHECKED);
-  assert.deepEqual(APP_GUIDES.map((g) => [guidePath(g.slug), g.title]), GUIDES.map((g) => [g.path, g.headline]));
+test('the app and the server list the same guides, headlines and checked dates', () => {
+  assert.deepEqual(
+    APP_GUIDES.map((g) => [guidePath(g.slug), g.title, g.checked]),
+    GUIDES.map((g) => [g.path, g.headline, g.checked]),
+  );
+  for (const g of GUIDES) assert.match(g.checked, /^\d{4}-\d{2}-\d{2}$/, g.path);
 });
 
 test('guides are public pages: indexable, in llms.txt, with Article and breadcrumb data', () => {
@@ -33,7 +36,7 @@ test('guides are public pages: indexable, in llms.txt, with Article and breadcru
     const [article, crumbs] = structuredData(g.path, BASE);
     assert.equal(article['@type'], 'Article');
     assert.equal(article.headline, g.headline);
-    assert.equal(article.dateModified, GUIDES_CHECKED);
+    assert.equal(article.dateModified, g.checked, 'each guide carries its own checked date');
     assert.ok(article.citation.length >= 1 && article.citation.every((u) => u.startsWith('https://')));
     assert.equal(crumbs['@type'], 'BreadcrumbList');
     assert.ok(llmsTxt(BASE).includes(`${BASE}${g.path}`));
@@ -92,7 +95,8 @@ test('the real frontend bundle renders every public page with its H1 and text', 
 
 test('sitemap dates: guides carry their checked date, tender lists today, other pages none', () => {
   const xml = sitemapXml(BASE, ['/government-tenders/state/goa'], new Date('2026-10-24T20:00:00Z'));
-  assert.match(xml, /<loc>https:\/\/tendertez.in\/guides\/emd-exemption<\/loc><lastmod>2026-10-24<\/lastmod>/);
+  assert.match(xml, /<loc>https:\/\/tendertez.in\/guides\/emd-exemption<\/loc><lastmod>2026-11-09<\/lastmod>/);
+  assert.match(xml, /<loc>https:\/\/tendertez.in\/guides\/tender-corrigendum<\/loc><lastmod>2026-10-24<\/lastmod>/, 'a guide that was not re-read keeps its date');
   assert.match(xml, /state\/goa<\/loc><lastmod>2026-10-25<\/lastmod>/, 'India date, not UTC');
   assert.match(xml, /<loc>https:\/\/tendertez.in\/pricing<\/loc><\/url>/);
 });

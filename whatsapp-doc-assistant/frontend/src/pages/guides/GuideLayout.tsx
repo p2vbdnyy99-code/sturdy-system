@@ -26,7 +26,7 @@ export function GuideLayout({ slug, answer, bridge, children, sources }: {
     <PublicLayout>
       <PageIntro kicker="Guide" title={guide.title}>
         <p className="guide-byline">
-          <Link to="/guides">TenderTez guides</Link> &middot; Sources checked {checkedLabel()}
+          <Link to="/guides">TenderTez guides</Link> &middot; Sources checked {checkedLabel(guide.checked)}
         </p>
       </PageIntro>
 
@@ -51,7 +51,7 @@ export function GuideLayout({ slug, answer, bridge, children, sources }: {
 
           <section className="legal-block guide-sources">
             <h2>Sources</h2>
-            <p>Read in full on {checkedLabel()}. Where a rule differs, the tender in front of you decides.</p>
+            <p>Read in full on {checkedLabel(guide.checked)}. Where a rule differs, the tender in front of you decides.</p>
             <ul>
               {sources.map((s) => (
                 <li key={s.url}>

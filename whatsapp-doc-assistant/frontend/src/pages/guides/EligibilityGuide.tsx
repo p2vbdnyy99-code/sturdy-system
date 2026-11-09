@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { GuideBridge, GuideLayout, GuideQuestion, type Source } from './GuideLayout';
 import { SAMPLE_EXCERPT, SAMPLE_SECTIONS } from '../../sampleExcerpt';
 
-// Every rule below is quoted from SOURCES (read in full on GUIDES_CHECKED).
+// Every rule below is quoted from SOURCES (read in full on the guide's `checked` date in guides/guides.ts).
 const SOURCES: Source[] = [
   {
     name: 'All India Radio, Civil Construction Wing, Kolkata: e-tender instructions (CPWD format)',

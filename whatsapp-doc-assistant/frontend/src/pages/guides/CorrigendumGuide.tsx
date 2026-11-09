@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { GuideBridge, GuideLayout, GuideQuestion, type Source } from './GuideLayout';
 import { SAMPLE_SECTIONS } from '../../sampleExcerpt';
 
-// The worked example is quoted from SOURCES (read in full on GUIDES_CHECKED).
+// The worked example is quoted from SOURCES (read in full on the guide's `checked` date in guides/guides.ts).
 const SOURCES: Source[] = [
   {
     name: 'IIT Kanpur Institute Works Department, Division II: corrigendum of 5 May 2026 to NIT 06/Civil/D2/2025-26',

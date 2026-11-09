@@ -93,12 +93,13 @@ export const PUBLIC_PAGES = {
 
 /**
  * The guides (frontend/src/guides/guides.ts has the same slugs, headlines and
- * date; tested). Each quotes only its sources, read in full on GUIDES_CHECKED.
+ * dates; tested). Each quotes only its sources, read in full on its own
+ * `checked` date (YYYY-MM-DD).
  */
-export const GUIDES_CHECKED = '2026-10-24';
 export const GUIDES = [
   {
     path: '/guides/tender-eligibility-check',
+    checked: '2026-10-24',
     headline: 'How to check eligibility in a government tender',
     title: 'How to check eligibility in a government tender',
     description: 'Check turnover, similar-work experience, registrations and exemptions in a government tender, '
@@ -111,6 +112,7 @@ export const GUIDES = [
   },
   {
     path: '/guides/emd-exemption',
+    checked: '2026-11-09',
     headline: 'EMD exemption for MSEs and startups: who qualifies and how to claim it',
     title: 'EMD exemption for MSEs and startups: who qualifies',
     description: 'GFR Rule 170 exempts MSEs and DPIIT-recognised startups from EMD. On GeM, traders are excluded '
@@ -119,10 +121,14 @@ export const GUIDES = [
       'https://dgll.nic.in/sites/default/files/2023-06/GFR%20amendment2.pdf',
       'https://www.rri.res.in/sites/default/files/2024-08/GeM-Bidding-5263261.pdf',
       'https://doe.gov.in/files/circulars_document/Bid_Security_Earnest_Money_Deposit.pdf',
+      'https://doe.gov.in/files/circulars_document/GFRupdatedupto31012026.pdf',
+      'https://doe.gov.in/files/circulars_document/Amendment_in_General_Financial_Rules_2017_Rule_171_i_Performance_Security_Regarding.pdf',
+      'https://aiimsbhubaneswar.nic.in/wp-content/uploads/2026/05/NIT11.pdf',
     ],
   },
   {
     path: '/guides/tender-corrigendum',
+    checked: '2026-10-24',
     headline: 'What a tender corrigendum can change, and how to check it',
     title: 'Tender corrigendum: what it changes and how to check',
     description: 'A corrigendum can change the deadline, EMD, eligibility or scope after you have read a tender. '
@@ -206,7 +212,7 @@ function pageData(path, baseUrl) {
       '@type': 'Article',
       headline: guide.headline,
       description: guide.description,
-      dateModified: GUIDES_CHECKED,
+      dateModified: guide.checked,
       author: publisher,
       publisher,
       mainEntityOfPage: `${baseUrl}${guide.path}`,
@@ -477,10 +483,10 @@ export function robotsTxt(baseUrl) {
  */
 export function sitemapXml(baseUrl, extraPaths = [], now = new Date()) {
   const today = now.toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
-  const guidePaths = new Set(GUIDES.map((g) => g.path));
+  const guideDates = new Map(GUIDES.map((g) => [g.path, g.checked]));
   const entry = (p, lastmod) => `  <url><loc>${escapeHtml(`${baseUrl}${p}`)}</loc>${lastmod ? `<lastmod>${lastmod}</lastmod>` : ''}</url>`;
   const urls = [
-    ...Object.keys(PUBLIC_PAGES).map((p) => entry(p, guidePaths.has(p) ? GUIDES_CHECKED : null)),
+    ...Object.keys(PUBLIC_PAGES).map((p) => entry(p, guideDates.get(p) ?? null)),
     ...extraPaths.map((p) => entry(p, today)),
   ].join('\n');
   return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls}\n</urlset>\n`;

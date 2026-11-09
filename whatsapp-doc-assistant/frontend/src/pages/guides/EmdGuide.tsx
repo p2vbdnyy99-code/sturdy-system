@@ -2,9 +2,14 @@ import { Link } from 'react-router-dom';
 import { GuideBridge, GuideLayout, GuideQuestion, type Source } from './GuideLayout';
 import { SAMPLE_EXCERPT, SAMPLE_SECTIONS } from '../../sampleExcerpt';
 
-// Every rule below is quoted from SOURCES (read in full on GUIDES_CHECKED).
-// The DoE memorandum of 12 Nov 2020 covered tenders issued until 31.12.2021
-// only (its para 6); never present it as current.
+// Every rule below is quoted from SOURCES (read in full on the guide's
+// `checked` date in guides/guides.ts). Rules 170 and 171 are quoted from the
+// GFR as updated up to 31.01.2026; performance security is the text amended
+// by DoE OM F.1/2/2023-PPD of 01.01.2024 (3-5% for goods and services; 3-10%
+// performance security plus security deposit for works). The DoE memorandum
+// of 12 Nov 2020 covered tenders issued until 31.12.2021 only (its para 6);
+// never present it as current. The worked example is the AIIMS Bhubaneswar
+// NIT behind the public sample analysis (same SHA-256), PDF page numbers.
 const SOURCES: Source[] = [
   {
     name: 'Department of Expenditure, OM No. F.20/2/2014-PPD(Pt.), 25 July 2017: amendment to Rule 170(i) of GFR 2017',
@@ -21,7 +26,25 @@ const SOURCES: Source[] = [
     url: 'https://doe.gov.in/files/circulars_document/Bid_Security_Earnest_Money_Deposit.pdf',
     note: 'bid security declaration in place of EMD, for tenders issued until 31 December 2021',
   },
+  {
+    name: 'Department of Expenditure, General Financial Rules 2017, updated up to 31 January 2026',
+    url: 'https://doe.gov.in/files/circulars_document/GFRupdatedupto31012026.pdf',
+    note: 'Rules 170 and 171 as they stand: bid security forms, validity and refund, bid securing declaration, performance security',
+  },
+  {
+    name: 'Department of Expenditure, OM No. F.1/2/2023-PPD, 1 January 2024: amendment to Rule 171(i)',
+    url: 'https://doe.gov.in/files/circulars_document/Amendment_in_General_Financial_Rules_2017_Rule_171_i_Performance_Security_Regarding.pdf',
+    note: 'performance security of 3–5% for goods and services; 3–10% with security deposit for works',
+  },
+  {
+    name: 'AIIMS Bhubaneswar, NIT No. AIIMS/BBSR/ENGG./ELECT./11/2026',
+    url: 'https://aiimsbhubaneswar.nic.in/wp-content/uploads/2026/05/NIT11.pdf',
+    note: 'the worked example: EMD as a percentage, no exemption, performance guarantee and security deposit',
+  },
 ];
+
+const AIIMS_PDF = 'https://aiimsbhubaneswar.nic.in/wp-content/uploads/2026/05/NIT11.pdf';
+const aiimsPage = (n: number) => <a href={`${AIIMS_PDF}#page=${n}`} target="_blank" rel="noopener noreferrer">p.{n}</a>;
 
 export function EmdGuidePage() {
   return (
@@ -58,9 +81,63 @@ export function EmdGuidePage() {
         <p>
           EMD (earnest money deposit), or bid security, protects the buyer if a bidder withdraws or changes its bid
           while the bid is valid. Rule 170(i) says it &ldquo;should ordinarily range between two percent to five
-          percent of the estimated value of the goods to be procured&rdquo;. It may be given as a demand draft, fixed
-          deposit receipt, banker&rsquo;s cheque, bank guarantee or online payment, and is normally valid for 45 days
-          beyond the final bid validity period.
+          percent of the estimated value of the goods to be procured&rdquo;. It may be given as an insurance surety
+          bond, an account payee demand draft, a fixed deposit receipt, a banker&rsquo;s cheque or a bank guarantee
+          (including an e-bank guarantee) from a commercial bank, or as an online payment, and is normally valid for 45
+          days beyond the final bid validity period.
+        </p>
+        <p>
+          Unsuccessful bidders should get it back after the final bid validity ends, and at the latest by the 30th
+          day after the contract is awarded. In two-packet or two-stage bidding, bidders who don&rsquo;t pass the
+          first stage should get it back within 30 days of that stage&rsquo;s result (Rule 170(ii)). The winning
+          bidder&rsquo;s bid security is refunded when it furnishes the performance security (Rule 171(iii)).
+        </p>
+      </section>
+
+      <section className="legal-block">
+        <h2>How to work out the EMD amount</h2>
+        <p>The tender sets the amount, either as a figure or as a percentage of a value it names.</p>
+        <ol>
+          <li><strong>Find every place the EMD is written:</strong> the notice inviting tender, the EMD clause in the instructions to bidders, and any schedule of amounts.</li>
+          <li><strong>If it is a percentage, note what it is a percentage of:</strong> the estimated cost, the estimated value, or the value you quote. Use that figure, as the tender states it.</li>
+          <li><strong>Read every corrigendum.</strong> A corrigendum can change the EMD.</li>
+          <li><strong>On eProcure (CPPP),</strong> the tender&rsquo;s details page also shows an &ldquo;EMD Amount in &#8377;&rdquo; field. If it differs from the documents, ask the buyer before you pay.</li>
+        </ol>
+        <h3>A worked example from a real tender</h3>
+        <p>
+          AIIMS Bhubaneswar&rsquo;s NIT No. AIIMS/BBSR/ENGG./ELECT./11/2026 (pump motor sets) gives the estimated
+          cost as &ldquo;Rs. 40,35,586.00&rdquo; ({aiimsPage(3)}) and the earnest money as &ldquo;2% of the
+          Estimated Value&rdquo; ({aiimsPage(4)}). It doesn&rsquo;t print the rupee amount, so a bidder works it out:
+          2% of Rs. 40,35,586.00 is <strong>Rs. 80,711.72</strong>. The same tender says &ldquo;EMD Exemption is not
+          allowed for this work&rdquo; ({aiimsPage(12)}), so read your own tender&rsquo;s clause before relying on an
+          exemption.
+        </p>
+      </section>
+
+      <section className="legal-block">
+        <h2>Performance security and EMD: what&rsquo;s the difference?</h2>
+        <p>
+          EMD is asked from every bidder, with the bid. Performance security is asked only from the bidder who wins,
+          after award, to secure the contract (Rule 171). They are separate: an exemption from EMD doesn&rsquo;t
+          exempt you from performance security, and Rule 171 names no exemption for MSEs or startups.
+        </p>
+        <div className="guide-table">
+          <table>
+            <thead><tr><th></th><th>EMD (bid security)</th><th>Performance security</th></tr></thead>
+            <tbody>
+              <tr><td>Who gives it</td><td>Every bidder, unless exempt under Rule 170(i)</td><td>Only the successful bidder</td></tr>
+              <tr><td>When</td><td>With the bid</td><td>After the contract is awarded</td></tr>
+              <tr><td>How much, under GFR</td><td>Ordinarily 2% to 5% of the estimated value of the goods (Rule 170(i))</td><td>3% to 5% of the contract value for goods, consultancy and non-consultancy services; for works, performance security plus security deposit or retention money of 3% to 10% (Rule 171(i), amended 1 January 2024)</td></tr>
+              <tr><td>How long it stays valid</td><td>45 days beyond the final bid validity period</td><td>60 days beyond completion of all contractual obligations, including warranty (Rule 171(ii))</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>
+          The tender states its own figures. The AIIMS tender above asks for a performance guarantee of &ldquo;05%
+          (Five Percent) of Contract Value&rdquo;, valid &ldquo;6 months beyond completion of all the contractual
+          obligations&rdquo;, and warns that if the contractor fails to deposit it, &ldquo;the EMD will be
+          forfeited&rdquo; ({aiimsPage(12)}). Its schedule adds a security deposit of &ldquo;2.5% of Tendered
+          Value&rdquo; ({aiimsPage(27)}).
         </p>
       </section>
 
@@ -110,11 +187,13 @@ export function EmdGuidePage() {
       <section className="legal-block">
         <h2>Is a bid security declaration the same as an EMD exemption?</h2>
         <p>
-          No. A declaration is a signed undertaking in place of money: if you withdraw or change your bid during
-          validity, or don&rsquo;t sign the contract, you can be suspended from bidding for a period the tender
-          states. An exemption means no bid security is asked at all. A Department of Expenditure memorandum of 12
-          November 2020 told ministries to use declarations instead of bid security, for tenders issued up to 31
-          December 2021. Today, the tender&rsquo;s own terms decide which applies.
+          No. A declaration is a signed undertaking in place of money. Rule 170(iii) lets ministries and departments
+          ask for one instead of bid security: a bidder that withdraws or changes its bid during validity, or wins and
+          fails to sign the contract or submit the performance security by the deadline, is suspended from that
+          buyer&rsquo;s bids for the period the tender states. An exemption means no bid security is asked at all. A
+          Department of Expenditure memorandum of 12 November 2020 told ministries to use declarations instead of bid
+          security, for tenders issued up to 31 December 2021. Today, the tender&rsquo;s own terms decide which
+          applies.
         </p>
       </section>
 
@@ -125,6 +204,7 @@ export function EmdGuidePage() {
           <li>Uploading an expired or wrong-category certificate, or none.</li>
           <li>Assuming a medium enterprise is exempt.</li>
           <li>Assuming the exemption also covers the performance security (ePBG on GeM) after award. It is a separate requirement.</li>
+          <li>Working out a percentage EMD on the wrong figure, such as your quoted value when the tender says the estimated cost.</li>
           <li>Not checking the corrigendum, which can change the EMD.</li>
         </ul>
       </section>
@@ -151,7 +231,13 @@ export function EmdGuidePage() {
           the exact amount.
         </GuideQuestion>
         <GuideQuestion q="Does EMD exemption cover performance security?">
-          No. Performance security is asked from the winning bidder after award and is separate from EMD.
+          No. Performance security is asked from the winning bidder after award, under GFR Rule 171, which names no
+          exemption for MSEs or startups.
+        </GuideQuestion>
+        <GuideQuestion q="How much is performance security?">
+          Under GFR Rule 171(i) as amended on 1 January 2024, 3% to 5% of the contract value for goods, consultancy
+          and non-consultancy services. For works, performance security plus security deposit or retention money
+          continues at 3% to 10%. The tender states the exact figure.
         </GuideQuestion>
       </section>
 

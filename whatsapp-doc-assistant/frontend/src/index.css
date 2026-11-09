@@ -2724,6 +2724,11 @@ a:hover {
   gap: 0.8rem 1.2rem;
 }
 
+.guide-teaser-checked {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}
+
 .guide-teaser-title {
   font-size: 1.15rem;
   margin: 0.2rem 0 0.5rem;

@@ -5415,3 +5415,25 @@ handoff #28; run `harness/runs/2026-11-05-insights-feed-layout/`)**
   - `verify.sh` all green: backend 752/466/373, frontend unit tests 94, lint 0 errors, secret scan clean.
   - Browser check (390 and 1366 px, local build, stale feed state): 91/91. It covers buttons, values, anchors, guide box position (9–14% of the page), the stale warnings, no CSP violations, layout shift 0 and no overflow.
   - The sample page text matches live v56 exactly, apart from the new button.
+
+**EMD guide: working out the amount, performance security, per-guide dates
+(9 Nov 2026, local only; run `harness/runs/2026-11-09-emd-guide-update/`)**
+
+- **Why.** The EMD guide is the page Google sends visitors to (16 of 26 in 30 days). The founder's topics "how to calculate EMD" and "performance security vs EMD" belong in it rather than in thin new pages.
+- **Content**, every statement traced in the run's checks.md:
+  - "What is EMD" now lists every accepted form (including insurance surety bonds and e-bank guarantees) and the refund rules, from the GFR as updated to 31.01.2026.
+  - New "How to work out the EMD amount", with the AIIMS NIT worked example: 2% of Rs. 40,35,586.00 = Rs. 80,711.72, with PDF page links.
+  - New EMD vs performance security table, using Rule 171 as amended by DoE OM F.1/2/2023-PPD of 01.01.2024:
+    - 3–5% for goods and services;
+    - 3–10% for works, performance security plus security deposit.
+  - Rule 170(iii) bid securing declaration.
+  - One new question, one new common mistake, three new sources (also in the Article citations).
+- **Per-guide dates.** `GUIDES_CHECKED` is replaced by a `checked` date on each guide, in both `frontend/src/guides/guides.ts` and `backend/src/seo.js`. It feeds:
+  - the byline and the sources box;
+  - the /guides list;
+  - JSON-LD `dateModified`;
+  - sitemap `lastmod`;
+  - the markdown `Last updated` line.
+
+  `geo.test.js` checks that the app and the server agree per guide. The EMD guide is 2026-11-09; the other two keep 2026-10-24, because they weren't re-read.
+- **Verification:** `verify.sh` all green (backend 752/466/373, frontend 94, lint 0 errors, secret scan clean). Browser check 28/28 at 390 and 1366 px.

@@ -9,8 +9,8 @@ export function GuidesPage() {
       <PageIntro kicker="Guides" title="Guides to reading Indian government tenders">
         <p>
           Short, sourced answers to the questions that decide whether a bid is accepted: eligibility, EMD and
-          corrigenda. Each guide quotes the rule or tender it relies on and links to it. Sources checked{' '}
-          {checkedLabel()}.
+          corrigenda. Each guide quotes the rule or tender it relies on, links to it, and gives the date its sources
+          were checked.
         </p>
       </PageIntro>
 
@@ -21,6 +21,7 @@ export function GuidesPage() {
               <p className="home-kicker">Guide</p>
               <h2 className="guide-teaser-title">{g.title}</h2>
               <p>{g.summary}</p>
+              <p className="guide-teaser-checked">Sources checked {checkedLabel(g.checked)}</p>
               <span className="home-teaser-link">Read the guide <Icon name="arrowRight" /></span>
             </Link>
           ))}

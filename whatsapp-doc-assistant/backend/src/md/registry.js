@@ -8,7 +8,7 @@
 // the same data as their HTML: the sample analysis (samplePage.js sampleView),
 // the tender search counts (feedFacets) and the tender lists (landingPages.js).
 
-import { PUBLIC_PAGES, GUIDES, GUIDES_CHECKED } from '../seo.js';
+import { PUBLIC_PAGES, GUIDES } from '../seo.js';
 import { sampleView, SAMPLE_PATH } from '../samplePage.js';
 import { isLandingPath, landingMarkdown, landingPagesFrom, loadLandingPage, searchUrlFor } from '../landingPages.js';
 import { freshnessFor, istLongDate, staleNotice } from '../bidpilot/discovery/freshness.js';
@@ -78,7 +78,7 @@ function componentPage(path) {
       title: title || PUBLIC_PAGES[path].title,
       summary: pageSummary(path),
       canonical: `${baseUrl}${path === '/' ? '/' : path}`,
-      lastUpdated: guide ? GUIDES_CHECKED : printedDate(body),
+      lastUpdated: guide ? guide.checked : printedDate(body),
       body,
       related: related(links, path, baseUrl),
     });
