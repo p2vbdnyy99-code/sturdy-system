@@ -152,6 +152,9 @@ Follow `harness/README.md`. In short:
   stored real analysis of a public tender exactly as produced; never edit
   its JSON or add points to it. Check every quote against the PDF before
   replacing it.
+  Lines of it shown elsewhere (home page card and comparison, guide boxes)
+  come only from `frontend/src/sampleExcerpt.ts`, which
+  `sampleExcerpt.test.ts` checks word for word against the stored JSON.
 - A "try" for the profile rule is a tender with a document; a tender tracked
   from the feed is analysed only after its PDF is attached.
 - Analysis starts by itself after a dashboard upload only when the upload
@@ -295,6 +298,10 @@ was blocked and why.
     dashboard once showed "will be read but not analysed" yet still asked
     for the automatic analysis, then said it would start; a pre-release
     review caught it from a screenshot, not from the green tests.
+32. The public site scrolls smoothly. A browser check of an anchor link must
+    wait for the scroll position to settle, and page text must be read with
+    `innerText` from the rendered page, not a detached clone (a clone
+    included closed `<details>` and looked like changed content).
 
 ## Parallel work
 

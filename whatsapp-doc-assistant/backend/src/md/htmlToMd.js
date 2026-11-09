@@ -12,9 +12,11 @@ import { absUrl, escapeMd, heading, link } from './format.js';
 const VOID = new Set(['br', 'img', 'input', 'hr', 'meta', 'link', 'source', 'wbr', 'area', 'col']);
 const INLINE = new Set(['a', 'strong', 'b', 'em', 'i', 'span', 'small', 'code', 'br', 'sup', 'sub', 'abbr', 'time', 'mark']);
 const SKIP_TAGS = new Set(['svg', 'button', 'input', 'select', 'option', 'label', 'form', 'script', 'style', 'img', 'textarea', 'nav', 'noscript']);
-// Not content: eyebrow labels, the made-up hero example, form-like widgets
-// whose numbers load later, and calls to action repeated across pages.
-const SKIP_CLASSES = ['home-kicker', 'home-preview', 'home-tender-kinds', 'home-hero-actions', 'home-cta', 'guide-cta',
+// Not content: eyebrow labels, the hero example card (a repeat of the
+// sample analysis, which has its own page), form-like widgets whose numbers
+// load later, and calls to action repeated across pages (including the early
+// box in each guide).
+const SKIP_CLASSES = ['home-kicker', 'home-preview', 'home-tender-kinds', 'home-hero-actions', 'home-cta', 'guide-cta', 'guide-bridge', 'home-compare-head',
   'pricing-plan-cta', 'home-step-number', 'visually-hidden', 'home-feature-icon'];
 
 // Repeated cards that are really a table (the plans on /pricing): one row

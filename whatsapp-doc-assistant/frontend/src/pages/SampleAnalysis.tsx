@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { PageIntro, PublicLayout } from '../components/PublicLayout';
 import { Icon } from '../components/Icon';
 import { PRODUCT_NAME } from '../config/product';
@@ -48,6 +48,14 @@ export function SampleAnalysisPage() {
     if (!needsFetch) return;
     getSampleAnalysis().then(setData).catch(() => setFailed(true));
   }, [needsFetch]);
+  // Links from the home page and the guides point at a section
+  // (/sample-analysis#points). The browser doesn't scroll after a client-side
+  // navigation, so do it once the section is on the page.
+  const { hash } = useLocation();
+  const ready = data !== null;
+  useEffect(() => {
+    if (hash && ready) document.getElementById(hash.slice(1))?.scrollIntoView();
+  }, [hash, ready]);
 
   // Only the loading message until the data is here: if the intro, the
   // closing section and the footer were on screen, the content would push
@@ -73,6 +81,12 @@ export function SampleAnalysisPage() {
           {data && <> Analysed on {formatDate(data.analysedAt)}.</>} Before publishing this page we checked each
           quoted line against the PDF; one list that starts on page 25 continues on page 26.
         </p>
+        {/* Next step for a visitor who came to see the proof: near the top, not
+            only after the whole analysis. The sample itself is unchanged. */}
+        <p className="sample-top-cta">
+          <Link to="/register" className="btn-link btn-accent">Analyse your own tender free <Icon name="arrowRight" /></Link>
+          <span className="sample-top-cta-note">First {FREE_TRIAL_TENDERS} tenders free, no card.</span>
+        </p>
       </PageIntro>
 
       {failed && (
@@ -83,7 +97,7 @@ export function SampleAnalysisPage() {
         <>
           <section className="home-section">
             <div className="home-container">
-              <h2 className="home-heading">Key facts</h2>
+              <h2 className="home-heading" id="key-facts">Key facts</h2>
               <div className="key-facts sample-key-facts">
                 {data.keyFacts.map((f) => (
                   <div key={f.key} className="key-fact">
@@ -93,7 +107,7 @@ export function SampleAnalysisPage() {
                 ))}
               </div>
 
-              <h2 className="home-heading sample-heading">Dates</h2>
+              <h2 className="home-heading sample-heading" id="dates">Dates</h2>
               <ul className="sample-list">
                 {data.dates.map((d) => (
                   <li key={`${d.label}-${d.page}`}><strong>{d.label}:</strong> {d.text}<Cite page={d.page} quote={d.quote} pdf={data.sourceUrl} /></li>
@@ -104,7 +118,7 @@ export function SampleAnalysisPage() {
 
           <section className="home-section home-section-alt">
             <div className="home-container">
-              <h2 className="home-heading">Points worth a second look ({data.pointsToCheck.length})</h2>
+              <h2 className="home-heading" id="points">Points worth a second look ({data.pointsToCheck.length})</h2>
               <p className="sample-lead">Clauses that can cost a bidder money or the bid, as flagged in the analysis.</p>
               <ul className="sample-list sample-flags">
                 {data.pointsToCheck.map((p) => (
@@ -116,7 +130,7 @@ export function SampleAnalysisPage() {
 
           <section className="home-section">
             <div className="home-container">
-              <h2 className="home-heading">Submission checklist ({data.checklistCount} items)</h2>
+              <h2 className="home-heading" id="checklist">Submission checklist ({data.checklistCount} items)</h2>
               <p className="sample-lead">Every condition and document the tender asks for, documents first. In your account you tick items off and download it as Excel.</p>
               {data.checklist.map((g, i) => (
                 <details key={g.category} className="sample-group" open={i === 0}>
@@ -137,7 +151,7 @@ export function SampleAnalysisPage() {
 
           <section className="home-section home-section-alt">
             <div className="home-container">
-              <h2 className="home-heading">Bill of quantities ({data.boq.length} items)</h2>
+              <h2 className="home-heading" id="boq">Bill of quantities ({data.boq.length} items)</h2>
               <div className="table-scroll">
                 <table className="sample-boq">
                   <thead><tr><th>#</th><th>Item</th><th>Qty</th><th>Unit</th><th>Page</th></tr></thead>

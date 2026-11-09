@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
-import { GuideLayout, GuideQuestion, type Source } from './GuideLayout';
+import { GuideBridge, GuideLayout, GuideQuestion, type Source } from './GuideLayout';
+import { SAMPLE_EXCERPT, SAMPLE_SECTIONS } from '../../sampleExcerpt';
 
 // Every rule below is quoted from SOURCES (read in full on GUIDES_CHECKED).
 // The DoE memorandum of 12 Nov 2020 covered tenders issued until 31.12.2021
@@ -34,6 +35,23 @@ export function EmdGuidePage() {
         manufacturers of the goods or providers of the service qualify as MSEs, so traders do not, and the proof
         must be uploaded with the bid.
       </p>}
+      bridge={
+        <GuideBridge
+          title="Find the EMD clause in the tender you’re looking at"
+          lines={[
+            { label: 'EMD', ...SAMPLE_EXCERPT.facts.emd },
+            SAMPLE_EXCERPT.points.emdExemption,
+          ]}
+          sampleLink={SAMPLE_SECTIONS.points}
+          sampleLabel="See these points in the real analysis"
+        >
+          <p>
+            Each tender sets its own EMD terms. TenderTez lists the EMD amount and any wording about exemption in a
+            tender PDF, each with the page it is on and the quoted text, so you can read the clause itself.
+            Whether an exemption applies to you depends on that clause and your certificates.
+          </p>
+        </GuideBridge>
+      }
     >
       <section className="legal-block">
         <h2>What is EMD, and how much is it?</h2>

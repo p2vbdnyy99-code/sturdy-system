@@ -5387,3 +5387,31 @@ handoff #28; run `harness/runs/2026-11-05-insights-feed-layout/`)**
   no overflow; every other card the same size, layout and text as before
   the fix, except "Latest activity", which loses v55's 10 px row gaps.
   `verify.sh` all green.
+
+**Growth sprint C1–C5: guides, home page and sample lead to the product
+(9 Nov 2026, local only, not committed; run
+`harness/runs/2026-11-09-growth-c1-c5/`)**
+
+- **Why.**
+  - In the 30 days to 9 Nov, 16 of 26 Google visitors landed on the EMD guide, and none reached sign-up. Its only call to action sat after the article, at about 71% of the page on a phone.
+  - The home page's second button sent visitors to a tender list that hasn't updated since 23 Oct.
+  - The hero card used invented values.
+- **One source for real values.**
+  - `frontend/src/sampleExcerpt.ts` holds short excerpts of the stored sample analysis (`backend/src/sample/aiims-bbsr-pump-motors.json`): overview values, two red flags, three requirements and their counts.
+  - `sampleExcerpt.test.ts` compares each value and page with the JSON, word for word. Never add a value the stored analysis doesn't contain.
+- **C1 (guides).** `GuideLayout` takes a required `bridge`: a `GuideBridge` box after the direct answer. Each guide's box:
+  - says what TenderTez shows for its question;
+  - for EMD and eligibility, shows real sample lines with pages;
+  - links to sign-up and to the matching sample section.
+  - It never decides eligibility or an exemption.
+  - The end-of-guide box stays.
+  - `guide-bridge` is left out of the markdown pages, like `guide-cta`.
+- **C2 (home preview).** The hero card shows the real sample, labelled "Real analysis · tender closed 30 May 2026", with "See the full analysis". Conditions are neutral, never green or "met". On phones it sits below the hero text.
+- **C3.** The hero's second button is "See a sample analysis" instead of "Find tenders". The tender band, the search pages and their stale notices are unchanged.
+- **C4 (sample page).** "Analyse your own tender free" sits under the intro. Sections have anchors (`#key-facts`, `#dates`, `#points`, `#checklist`, `#boq`), and the page scrolls to the hash after a client-side navigation. The sample's own content is unchanged.
+- **C5 (home).** "By hand, or with TenderTez": five rows of what a bidder looks for, where they would look by hand, and where the real analysis shows it (value and page, with a link). No time-saving or accuracy claims. In markdown it reads as one block per row (the header row is skipped).
+- **Not changed:** pricing, analytics, database, AI prompts and models, discovery, configuration, sample JSON.
+- **Verification:**
+  - `verify.sh` all green: backend 752/466/373, frontend unit tests 94, lint 0 errors, secret scan clean.
+  - Browser check (390 and 1366 px, local build, stale feed state): 91/91. It covers buttons, values, anchors, guide box position (9–14% of the page), the stale warnings, no CSP violations, layout shift 0 and no overflow.
+  - The sample page text matches live v56 exactly, apart from the new button.

@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
-import { GuideLayout, GuideQuestion, type Source } from './GuideLayout';
+import { GuideBridge, GuideLayout, GuideQuestion, type Source } from './GuideLayout';
+import { SAMPLE_SECTIONS } from '../../sampleExcerpt';
 
 // The worked example is quoted from SOURCES (read in full on GUIDES_CHECKED).
 const SOURCES: Source[] = [
@@ -21,6 +22,19 @@ export function CorrigendumGuidePage() {
         corrigendum issued for the tender, read the changed clause in full, and check your bid against it again.
         Don&rsquo;t rely on the notice&rsquo;s one-line summary.
       </p>}
+      bridge={
+        <GuideBridge
+          title="Check what a corrigendum changed"
+          sampleLink={SAMPLE_SECTIONS.dates}
+          sampleLabel="See how a real tender’s dates are listed"
+        >
+          <p>
+            Upload the corrigendum to the same tender in TenderTez and it lists what changed in the deadline, EMD or
+            dates, each quoted with its page. Then read the changed clause in full, as this guide explains, before you
+            rely on it.
+          </p>
+        </GuideBridge>
+      }
     >
       <section className="legal-block">
         <h2>What can a corrigendum change?</h2>

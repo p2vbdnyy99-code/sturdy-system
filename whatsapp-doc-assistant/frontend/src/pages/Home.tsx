@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { LANDING_MIN_OPEN, statePath } from '../tenders/landing';
 import { getFeedFacets, type FeedFacets } from '../api/feed';
 import { homeBandView } from '../tenders/freshness';
@@ -9,6 +9,7 @@ import { Icon, type IconName } from '../components/Icon';
 import { PRODUCT_NAME } from '../config/product';
 import { FREE_TRIAL_TENDERS } from '../config/site';
 import { GUIDES, guidePath } from '../guides/guides';
+import { SAMPLE_EXCERPT, SAMPLE_SECTIONS } from '../sampleExcerpt';
 
 // Public homepage at "/". Signed-in users keep the old behaviour of "/"
 // (straight to the dashboard). Copy describes only what the product does
@@ -56,16 +57,17 @@ export function HomePage() {
               <Link to="/register" className="btn-link btn-accent btn-lg">
                 Start your free trial <Icon name="arrowRight" />
               </Link>
-              <Link to="/government-tenders" className="btn-link btn-ghost-light btn-lg">Find tenders</Link>
+              {/* The proof, not the tender search: the search lists are
+                  stale (see TenderBand) and analysis is the product. */}
+              <Link to="/sample-analysis" className="btn-link btn-ghost-light btn-lg">See a sample analysis</Link>
             </div>
             <p className="home-hero-note">Your first {FREE_TRIAL_TENDERS} tenders are free. No card needed. Works on your phone.</p>
-            <p className="home-hero-sample">
-              <Link to="/sample-analysis">See a real analysis of a 35-page AIIMS tender <Icon name="arrowRight" /></Link>
-            </p>
           </div>
           <HeroPreview />
         </div>
       </section>
+
+      <ByHandComparison />
 
       <TenderBand />
 
@@ -216,34 +218,101 @@ function TenderBand() {
   );
 }
 
-// Illustration of the tender page, built in HTML/CSS (no screenshot file).
-// Clearly labelled as an example; the values are made up. The deadline is
-// always two weeks ahead, so the example never shows a date already passed.
+// Part of a real analysis, built in HTML/CSS (no screenshot file): lines
+// from the public sample (sampleExcerpt.ts, checked word for word against the
+// stored analysis), labelled as a real analysis of a tender that has closed.
+// Shown on phones too (below the hero text), with a link to the full sample.
 function HeroPreview() {
-  const [deadline] = useState(() => new Date(Date.now() + 14 * 86_400_000)
-    .toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }));
+  const { facts, points, requirements } = SAMPLE_EXCERPT;
   return (
-    <div className="home-preview" aria-label="Example of an analysed tender">
+    <div className="home-preview" aria-label="Part of a real TenderTez analysis">
       <div className="home-preview-bar">
         <span /><span /><span />
-        <em>Example</em>
+        <em>Real analysis &middot; tender closed {SAMPLE_EXCERPT.closedOn}</em>
       </div>
       <div className="home-preview-body">
-        <p className="home-preview-title">Construction of boundary wall and approach road</p>
-        <p className="home-preview-org">Public Works Division &middot; 86 pages</p>
+        <p className="home-preview-title">{SAMPLE_EXCERPT.tenderShort}</p>
+        <p className="home-preview-org">{SAMPLE_EXCERPT.organisation} &middot; {SAMPLE_EXCERPT.pageCount} pages</p>
         <div className="home-preview-facts">
-          <div className="home-preview-fact home-preview-fact-due">
-            <span>Deadline</span><strong>{deadline}</strong><small>p.3</small>
-          </div>
-          <div className="home-preview-fact"><span>EMD</span><strong>&#8377;1,27,300</strong><small>p.4</small></div>
-          <div className="home-preview-fact"><span>Estimated value</span><strong>&#8377;63.6 lakh</strong><small>p.2</small></div>
+          <div className="home-preview-fact"><span>Estimated value</span><strong>{facts.estimatedValue.text}</strong><small>p.{facts.estimatedValue.page}</small></div>
+          <div className="home-preview-fact"><span>Completion period</span><strong>{facts.contractDuration.text}</strong><small>p.{facts.contractDuration.page}</small></div>
+          <div className="home-preview-fact home-preview-fact-wide"><span>EMD</span><strong>{facts.emd.text}</strong><small>p.{facts.emd.page}</small></div>
         </div>
         <ul className="home-preview-list">
-          <li><Icon name="check" /><span>Average turnover &ge; 30% of estimated cost</span><small>p.11</small></li>
-          <li><Icon name="check" /><span>3 similar works in the last 7 years</span><small>p.11</small></li>
-          <li className="home-preview-flag"><Icon name="alert" /><span>Penalty 0.5% per week of delay, up to 10%</span><small>p.27</small></li>
+          <li className="home-preview-cond"><Icon name="info" /><span>{requirements.turnover.title}</span><small>p.{requirements.turnover.page}</small></li>
+          <li className="home-preview-flag"><Icon name="alert" /><span>{points.emdExemption.text}</span><small>p.{points.emdExemption.page}</small></li>
+          <li className="home-preview-flag"><Icon name="alert" /><span>{points.delayPenalty.text}</span><small>p.{points.delayPenalty.page}</small></li>
         </ul>
+        <Link to="/sample-analysis" className="home-preview-more">See the full analysis <Icon name="arrowRight" /></Link>
       </div>
     </div>
+  );
+}
+
+// What a bidder looks for in a tender, where they'd look by hand, and where
+// the real sample analysis shows it. Only values from the stored sample
+// (sampleExcerpt.ts); no claims about time saved or accuracy.
+function ByHandComparison() {
+  const { facts, points, requirements } = SAMPLE_EXCERPT;
+  const rows: Array<{ find: string; byHand: string; shown: ReactNode; to: string }> = [
+    {
+      find: 'Submission deadline',
+      byHand: 'Find the date in the notice inviting tender, and check it against any corrigendum.',
+      shown: <>{facts.submissionDeadline.text} <small>p.{facts.submissionDeadline.page}</small>, under Key facts.</>,
+      to: SAMPLE_SECTIONS.keyFacts,
+    },
+    {
+      find: 'EMD and any exemption',
+      byHand: 'Read the EMD clause and the conditions around it.',
+      shown: <>{facts.emd.text} <small>p.{facts.emd.page}</small>, and flagged: &ldquo;{points.emdExemption.text}&rdquo; <small>p.{points.emdExemption.page}</small></>,
+      to: SAMPLE_SECTIONS.points,
+    },
+    {
+      find: 'Turnover and similar work',
+      byHand: 'Read the eligibility or qualification section.',
+      shown: <>{requirements.turnover.title} and {requirements.similarWork.title}, each with the tender&rsquo;s wording <small>p.{requirements.turnover.page}</small></>,
+      to: SAMPLE_SECTIONS.checklist,
+    },
+    {
+      find: 'Penalties and other risky clauses',
+      byHand: 'Read the conditions of contract.',
+      shown: <>{SAMPLE_EXCERPT.pointsCount} points worth a second look, each with its page, such as &ldquo;{points.delayPenalty.text}&rdquo; <small>p.{points.delayPenalty.page}</small></>,
+      to: SAMPLE_SECTIONS.points,
+    },
+    {
+      find: 'Documents and conditions to submit',
+      byHand: 'Build your own list as you read.',
+      shown: <>A submission checklist of {SAMPLE_EXCERPT.checklistCount} conditions and documents, each with its page.</>,
+      to: SAMPLE_SECTIONS.checklist,
+    },
+  ];
+  return (
+    <section className="home-section" aria-labelledby="home-compare-title">
+      <div className="home-container">
+        <p className="home-kicker">By hand, or with {PRODUCT_NAME}</p>
+        <h2 className="home-heading" id="home-compare-title">What you look for in a tender, and where {PRODUCT_NAME} shows it</h2>
+        <p className="home-compare-lead">
+          The same five things, as they appear in {PRODUCT_NAME}&rsquo;s unedited analysis of a real{' '}
+          {SAMPLE_EXCERPT.pageCount}-page AIIMS Bhubaneswar tender.
+        </p>
+        <div className="home-compare" role="table" aria-label="By hand compared with the analysis">
+          <div className="home-compare-row home-compare-head" role="row">
+            <span role="columnheader">To find</span>
+            <span role="columnheader">By hand</span>
+            <span role="columnheader">In the {PRODUCT_NAME} analysis</span>
+          </div>
+          {rows.map((r) => (
+            <div key={r.find} className="home-compare-row" role="row">
+              <div role="rowheader"><strong>{r.find}</strong></div>
+              <div role="cell"><em className="home-compare-label">By hand: </em>{r.byHand}</div>
+              <div role="cell"><em className="home-compare-label">In the analysis: </em>{r.shown} <Link to={r.to} className="home-compare-link">See it</Link></div>
+            </div>
+          ))}
+        </div>
+        <p className="home-features-more">
+          <Link to="/sample-analysis" className="home-teaser-link">Open the full analysis and check each line against the PDF <Icon name="arrowRight" /></Link>
+        </p>
+      </div>
+    </section>
   );
 }

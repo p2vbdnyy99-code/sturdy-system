@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
-import { GuideLayout, GuideQuestion, type Source } from './GuideLayout';
+import { GuideBridge, GuideLayout, GuideQuestion, type Source } from './GuideLayout';
+import { SAMPLE_EXCERPT, SAMPLE_SECTIONS } from '../../sampleExcerpt';
 
 // Every rule below is quoted from SOURCES (read in full on GUIDES_CHECKED).
 const SOURCES: Source[] = [
@@ -32,6 +33,23 @@ export function EligibilityGuidePage() {
         corrigendum, because corrigenda change eligibility too. The tender&rsquo;s own wording decides: two tenders
         for similar work can set different thresholds.
       </p>}
+      bridge={
+        <GuideBridge
+          title="See every eligibility condition with its page"
+          lines={[
+            { label: SAMPLE_EXCERPT.requirements.turnover.title, text: SAMPLE_EXCERPT.requirements.turnover.description, page: SAMPLE_EXCERPT.requirements.turnover.page },
+            { label: SAMPLE_EXCERPT.requirements.similarWork.title, text: SAMPLE_EXCERPT.requirements.similarWork.description, page: SAMPLE_EXCERPT.requirements.similarWork.page },
+          ]}
+          sampleLink={SAMPLE_SECTIONS.checklist}
+          sampleLabel={`See all ${SAMPLE_EXCERPT.checklistCount} conditions and documents in the real analysis`}
+        >
+          <p>
+            TenderTez lists each condition and document a tender PDF asks for, with the page it is on and the quoted
+            text, so you know exactly which clause to read. With your company profile saved, it also shows which
+            conditions you appear to meet and which you don&rsquo;t, for you to confirm against the page.
+          </p>
+        </GuideBridge>
+      }
     >
       <section className="legal-block">
         <h2>Step 1: Find every place eligibility is written</h2>

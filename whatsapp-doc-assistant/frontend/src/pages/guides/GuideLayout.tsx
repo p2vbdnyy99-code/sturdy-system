@@ -4,15 +4,19 @@ import { PageIntro, PublicLayout } from '../../components/PublicLayout';
 import { Icon } from '../../components/Icon';
 import { FREE_TRIAL_TENDERS } from '../../config/site';
 import { GUIDES, checkedLabel, guidePath } from '../../guides/guides';
+import type { ExcerptLine } from '../../sampleExcerpt';
 
 export type Source = { name: string; url: string; note: string };
 
-// One guide: the direct answer first, the sections, the sources it quotes,
-// and links to the other guides. Written to be checked: every rule it states
-// is quoted from a source listed at the end.
-export function GuideLayout({ slug, answer, children, sources }: {
+// One guide: the direct answer first, then a short box linking the guide's
+// question to the product (most readers arrive from search and leave after
+// reading), the sections, the sources it quotes, and links to the other
+// guides. Written to be checked: every rule it states is quoted from a source
+// listed at the end.
+export function GuideLayout({ slug, answer, bridge, children, sources }: {
   slug: string;
   answer: ReactNode;
+  bridge: ReactNode;
   children: ReactNode;
   sources: Source[];
 }) {
@@ -29,6 +33,7 @@ export function GuideLayout({ slug, answer, children, sources }: {
       <section className="home-section legal-section">
         <div className="home-container legal-container guide">
           <div className="guide-answer">{answer}</div>
+          {bridge}
           {children}
 
           <section className="legal-block guide-cta">
@@ -65,6 +70,42 @@ export function GuideLayout({ slug, answer, children, sources }: {
         </div>
       </section>
     </PublicLayout>
+  );
+}
+
+/** The early box in a guide: what TenderTez shows for this guide's question,
+ *  with real lines from the public sample analysis (sampleExcerpt.ts, checked
+ *  word for word against the stored analysis). It helps the reader find and
+ *  read the clause; it never decides eligibility or an exemption for them. */
+export function GuideBridge({ title, children, lines, sampleLink, sampleLabel }: {
+  title: string;
+  children: ReactNode;
+  lines?: Array<ExcerptLine & { label?: string }>;
+  sampleLink: string;
+  sampleLabel: string;
+}) {
+  return (
+    <aside className="guide-bridge" aria-labelledby="guide-bridge-title">
+      <h2 id="guide-bridge-title">{title}</h2>
+      {children}
+      {lines && lines.length > 0 && (
+        <>
+          <p className="guide-bridge-from">From TenderTez&rsquo;s unedited analysis of a real 35-page AIIMS Bhubaneswar tender:</p>
+          <ul className="guide-bridge-lines">
+            {lines.map((l) => (
+              <li key={l.text}>
+                <span>{l.label && <strong>{l.label}: </strong>}{l.text}</span>
+                <small>p.{l.page}</small>
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
+      <p className="guide-bridge-links">
+        <Link to="/register" className="btn-link btn-accent">Check your tender free <Icon name="arrowRight" /></Link>
+        <Link to={sampleLink}>{sampleLabel} <Icon name="arrowRight" /></Link>
+      </p>
+    </aside>
   );
 }
 

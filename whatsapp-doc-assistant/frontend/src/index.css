@@ -1679,22 +1679,31 @@ a:hover {
   margin: 1rem 0 0;
 }
 
-.home-hero-sample {
-  margin: 0.6rem 0 0;
-  font-size: 0.95rem;
-  font-weight: 600;
-}
-
-.home-hero-sample a {
-  color: var(--saffron-100);
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-}
-
 /* Public sample analysis (/sample-analysis). */
 .sample-note {
   font-size: 0.9rem;
+}
+
+/* Sections linked from the home page and guides: clear the sticky header. */
+#key-facts,
+#dates,
+#points,
+#checklist,
+#boq {
+  scroll-margin-top: 5rem;
+}
+
+.sample-top-cta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1rem;
+  margin-top: 1.25rem;
+}
+
+.sample-top-cta-note {
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
 }
 
 /* Fills the screen while the sample loads, so the page's sections and the
@@ -1878,15 +1887,6 @@ a:hover {
   font-weight: 600;
 }
 
-.home-preview-fact-due {
-  border-top-color: var(--saffron-500);
-  background: var(--saffron-50);
-}
-
-.home-preview-fact-due small {
-  color: var(--saffron-700);
-}
-
 .home-preview-list {
   list-style: none;
   padding: 0;
@@ -1907,6 +1907,98 @@ a:hover {
 
 .home-preview-list li .icon {
   color: var(--color-success);
+}
+
+/* A condition the tender sets: neutral, because the sample says nothing
+   about whether any bidder meets it. */
+.home-preview-list li.home-preview-cond {
+  background: var(--navy-50);
+}
+
+.home-preview-list li.home-preview-cond .icon {
+  color: var(--navy-700);
+}
+
+.home-preview-more {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 0.85rem;
+  font-weight: 600;
+  font-size: 0.92rem;
+}
+
+/* Home: by hand, or with TenderTez (values from the real sample). */
+.home-compare-lead {
+  max-width: 720px;
+  color: var(--color-text-muted);
+  margin: 0 0 1.25rem;
+}
+
+.home-compare {
+  display: grid;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: var(--color-surface);
+}
+
+.home-compare-row {
+  display: grid;
+  grid-template-columns: 0.8fr 1fr 1.6fr;
+  gap: 1rem;
+  padding: 0.9rem 1.1rem;
+  border-top: 1px solid var(--color-border);
+  font-size: 0.95rem;
+}
+
+.home-compare-row:first-child {
+  border-top: 0;
+}
+
+.home-compare-head {
+  background: var(--navy-50);
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-muted);
+}
+
+.home-compare-row small {
+  font-weight: 700;
+  color: var(--navy-700);
+}
+
+.home-compare-label {
+  display: none;
+  font-style: normal;
+  font-weight: 700;
+  color: var(--color-text-muted);
+}
+
+.home-compare-link {
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+@media (max-width: 760px) {
+  .home-compare-row {
+    grid-template-columns: 1fr;
+    gap: 0.35rem;
+  }
+
+  .home-compare-head {
+    display: none;
+  }
+
+  .home-compare-row:nth-child(2) {
+    border-top: 0;
+  }
+
+  .home-compare-label {
+    display: inline;
+  }
 }
 
 .home-preview-list li span {
@@ -2562,6 +2654,62 @@ a:hover {
   margin-top: 1rem;
 }
 
+/* Early box in each guide: what TenderTez shows for this question, with
+   real lines from the sample analysis. */
+.guide-bridge {
+  margin: 1.5rem 0 2rem;
+  padding: 1.1rem 1.25rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--navy-50);
+}
+
+.guide-bridge h2 {
+  margin: 0 0 0.5rem;
+  font-size: 1.15rem;
+}
+
+.guide-bridge p {
+  margin: 0 0 0.75rem;
+}
+
+.guide-bridge-from {
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+}
+
+.guide-bridge-lines {
+  list-style: none;
+  margin: 0 0 1rem;
+  padding: 0;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.guide-bridge-lines li {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.6rem 0.75rem;
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  font-size: 0.95rem;
+}
+
+.guide-bridge-lines li small {
+  flex: none;
+  color: var(--color-text-muted);
+  font-weight: 600;
+}
+
+.guide-bridge-links {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1.25rem;
+  margin: 0;
+}
+
 .guide-cta {
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
@@ -2984,7 +3132,7 @@ a:hover {
     grid-template-columns: 1fr 1fr;
   }
 
-  .home-preview-fact-due {
+  .home-preview-fact-wide {
     grid-column: 1 / -1;
   }
 
