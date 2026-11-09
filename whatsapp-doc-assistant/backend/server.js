@@ -37,7 +37,7 @@ import { getDb } from './src/db/client.js';
 import { canonicalHostRedirect, renderIndexHtml, robotsTxt, sitemapXml, PUBLIC_PAGES } from './src/seo.js';
 import { createMarkdownRouter } from './src/md/router.js';
 import { createPrerender } from './src/prerender.js';
-import { landingPagesFrom, isLandingPath, landingRedirect, renderLandingHtml, createLandingCache, loadLandingPage, landingAppData } from './src/landingPages.js';
+import { indexableLandingPages, isLandingPath, landingRedirect, renderLandingHtml, createLandingCache, loadLandingPage, landingAppData } from './src/landingPages.js';
 import { cachedFacets } from './src/bidpilot/repo/publicTenders.js';
 import { createVisitsRouter } from './src/bidpilot/visits.js';
 import { createStaffCheck } from './src/bidpilot/staff.js';
@@ -293,12 +293,12 @@ if (frontendDistExists) {
   // comes from the search's own counts, cached for a few minutes.
   const landingFacets = cachedFacets();
   const landingCache = createLandingCache();
-  const landingPages = async () => (config.db.url ? landingPagesFrom(await landingFacets(getDb())) : []);
 
   app.get('/robots.txt', (_req, res) => res.type('text/plain').send(robotsTxt(SITE_BASE_URL)));
   app.get('/sitemap.xml', async (_req, res) => {
     let extra = [];
-    try { extra = (await landingPages()).map((p) => p.path); } catch (err) { log.warn(`sitemap: landing pages unavailable (${err.message})`); }
+    // Only lists whose source is fresh or delayed (landingPages.js landingIndexable).
+    try { extra = config.db.url ? indexableLandingPages(await landingFacets(getDb())).map((p) => p.path) : []; } catch (err) { log.warn(`sitemap: landing pages unavailable (${err.message})`); }
     res.type('application/xml').send(sitemapXml(SITE_BASE_URL, extra));
   });
   const indexHtml = fs.readFileSync(path.join(FRONTEND_DIST, 'index.html'), 'utf8');

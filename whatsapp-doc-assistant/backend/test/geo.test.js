@@ -96,7 +96,8 @@ test('the real frontend bundle renders every public page with its H1 and text', 
 test('sitemap dates: guides carry their checked date, tender lists today, other pages none', () => {
   const xml = sitemapXml(BASE, ['/government-tenders/state/goa'], new Date('2026-10-24T20:00:00Z'));
   assert.match(xml, /<loc>https:\/\/tendertez.in\/guides\/emd-exemption<\/loc><lastmod>2026-11-09<\/lastmod>/);
-  assert.match(xml, /<loc>https:\/\/tendertez.in\/guides\/tender-corrigendum<\/loc><lastmod>2026-10-24<\/lastmod>/, 'a guide that was not re-read keeps its date');
+  assert.match(xml, /<loc>https:\/\/tendertez.in\/guides\/tender-corrigendum<\/loc><lastmod>2026-11-10<\/lastmod>/);
+  assert.match(xml, /<loc>https:\/\/tendertez.in\/guides\/tender-eligibility-check<\/loc><lastmod>2026-10-24<\/lastmod>/, 'a guide that was not re-read keeps its date');
   assert.match(xml, /state\/goa<\/loc><lastmod>2026-10-25<\/lastmod>/, 'India date, not UTC');
   assert.match(xml, /<loc>https:\/\/tendertez.in\/pricing<\/loc><\/url>/);
 });

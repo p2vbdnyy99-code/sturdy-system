@@ -21,9 +21,9 @@ export const GUIDES: GuideMeta[] = [
   },
   {
     slug: 'tender-corrigendum',
-    title: 'What a tender corrigendum can change, and how to check it',
-    summary: 'Where to find every corrigendum, how to read what it changed, and a real example that changed who was eligible.',
-    checked: '2026-10-24',
+    title: 'What is a corrigendum in a tender? Meaning, what it changes and how to check',
+    summary: 'What a corrigendum means, how it differs from an amendment, what one on GeM looks like, and a real example that changed who was eligible.',
+    checked: '2026-11-10',
   },
 ];
 

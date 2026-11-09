@@ -7,6 +7,7 @@ import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import {
   landingSlug, landingPagesFrom, isLandingPath, renderLandingHtml, landingTitle, landingDescription, searchUrlFor, MIN_OPEN,
+  landingIndexable, indexableLandingPages,
   landingAppQuery, LANDING_DATA_ID,
 } from '../src/landingPages.js';
 import { structuredData, llmsTxt, sitemapXml, renderIndexHtml } from '../src/seo.js';
@@ -123,6 +124,55 @@ test('structured data states only published facts; llms.txt matches the plans', 
   assert.match(sitemapXml(BASE, ['/government-tenders/state/maharashtra']), /<loc>https:\/\/tendertez.in\/government-tenders\/state\/maharashtra<\/loc>/);
 });
 
+// Public freshness (discovery/freshness.js publicFreshness) with one status per list.
+const fresh = (central, state, gem) => ({
+  checkedAt: '2026-11-10T00:00:00Z', status: 'mixed',
+  sources: Object.fromEntries([['central', central], ['state', state], ['gem', gem]]
+    .map(([list, status]) => [list, { status, lastSuccessAt: '2026-10-23T15:29:45.000Z' }])),
+});
+
+test('a landing page is indexed only while its own list is fresh or delayed', () => {
+  const page = { path: '/government-tenders/state/goa', kind: 'state', state: 'Goa', organisation: '', label: 'Goa', count: 25 };
+  assert.equal(landingIndexable(page, fresh('fresh', 'fresh', 'fresh')), true);
+  assert.equal(landingIndexable(page, fresh('fresh', 'delayed', 'fresh')), true);
+  assert.equal(landingIndexable(page, fresh('fresh', 'stale', 'fresh')), false);
+  assert.equal(landingIndexable(page, fresh('fresh', 'unavailable', 'fresh')), false);
+  assert.equal(landingIndexable(page, fresh('stale', 'fresh', 'stale')), true, 'other lists do not count');
+  assert.equal(landingIndexable(page, null), true, 'unknown freshness keeps today\'s behaviour');
+
+  const facets = {
+    open: { central: 30, state: 30, gem: 30 },
+    states: [{ name: 'Goa', count: 25 }],
+    organisations: { central: [{ name: 'Indian Railways', count: 40 }] },
+    freshness: fresh('stale', 'fresh', 'fresh'),
+  };
+  const paths = indexableLandingPages(facets).map((p) => p.path);
+  assert.ok(paths.includes('/government-tenders/state/goa'));
+  assert.ok(paths.includes('/government-tenders/list/gem'));
+  assert.ok(!paths.includes('/government-tenders/list/central-government'), 'stale central list is left out');
+  assert.ok(!paths.some((p) => p.startsWith('/government-tenders/organisation/')), 'central organisations follow the central list');
+  assert.equal(indexableLandingPages({ ...facets, freshness: null }).length, landingPagesFrom(facets).length);
+});
+
+test('a stale landing page is noindex but still shows its list and notice', () => {
+  const page = { path: '/government-tenders/state/goa', kind: 'state', state: 'Goa', organisation: '', label: 'Goa', count: 25 };
+  const rows = [{ title: 'Road works', organisation: 'PWD', state: 'Goa', kind: 'state', tenderId: '2026_GOA_1_1', closingAt: '2026-11-20T09:30:00.000Z' }];
+  const stale = renderLandingHtml(INDEX, page, rows, BASE, [page], null, fresh('fresh', 'stale', 'fresh'));
+  assert.match(stale, /<meta name="robots" content="noindex" \/>/);
+  assert.match(stale, /Road works/);
+  assert.match(stale, /class="notice"/);
+  const ok = renderLandingHtml(INDEX, page, rows, BASE, [page], null, fresh('stale', 'fresh', 'stale'));
+  assert.doesNotMatch(ok, /noindex/);
+  assert.doesNotMatch(renderLandingHtml(INDEX, page, rows, BASE, [page]), /noindex/, 'no freshness: indexable as before');
+});
+
+test('the sitemap leaves out the sign-up form', () => {
+  const xml = sitemapXml(BASE, []);
+  assert.doesNotMatch(xml, /\/register</);
+  assert.match(xml, /<loc>https:\/\/tendertez.in\/guides\/emd-exemption<\/loc>/);
+  assert.match(xml, /<loc>https:\/\/tendertez.in\/sample-analysis<\/loc>/);
+});
+
 test('visits and GA4 count landing pages by their own path', () => {
   assert.equal(normalizePath('/government-tenders/state/maharashtra?utm_source=linkedin'), '/government-tenders/state/maharashtra');
   const body = buildPageView({ path: '/government-tenders/state/maharashtra', source: 'direct', campaign: null, device: 'mobile', visitorId: '0123456789abcdef', day: '2026-10-16' }, BASE);
@@ -170,7 +220,14 @@ test('served by the real app: landing page, unknown slug, sitemap, llms.txt, lan
   assert.equal(missing.status, 404);
   assert.match(missing.body, /noindex/);
   const sitemap = await get('/sitemap.xml');
-  assert.match(sitemap.body, /\/government-tenders\/state\/goa<\/loc>/);
+  // The collector is off in tests, so the state list is "unavailable": its
+  // pages still serve their list but are noindex and out of the sitemap
+  // (landingIndexable). The fresh case is covered by the unit tests above.
+  assert.equal(facetsApi.freshness.sources.state.status, 'unavailable');
+  assert.match(page.body, /<meta name="robots" content="noindex" \/>/);
+  assert.doesNotMatch(sitemap.body, /\/government-tenders\/state\/goa<\/loc>/);
+  assert.match(sitemap.body, /<loc>http[^<]*\/guides\/emd-exemption<\/loc>/);
+  assert.doesNotMatch(sitemap.body, /\/register</);
   const llms = await get('/llms.txt');
   assert.match(llms.type, /text\/plain/);
   assert.match(llms.body, /^# TenderTez/);

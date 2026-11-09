@@ -5437,3 +5437,28 @@ handoff #28; run `harness/runs/2026-11-05-insights-feed-layout/`)**
 
   `geo.test.js` checks that the app and the server agree per guide. The EMD guide is 2026-11-09; the other two keep 2026-10-24, because they weren't re-read.
 - **Verification:** `verify.sh` all green (backend 752/466/373, frontend 94, lint 0 errors, secret scan clean). Browser check 28/28 at 390 and 1366 px.
+
+**Search Console fixes: stale tender lists leave the index; corrigendum guide
+answers "meaning" (10 Nov 2026, local only; run
+`harness/runs/2026-11-10-search-fixes/`)**
+
+- **Evidence.** Search Console export, 14 Oct to 7 Nov:
+  - all 5 404s and 25 of 26 "Discovered – currently not indexed" URLs were tender-list pages;
+  - the lists together had 24 impressions and 0 clicks;
+  - the corrigendum guide had 672 impressions and 1 click, for queries like "corrigendum meaning in tender".
+- **Tender lists.** `landingIndexable(page, freshness)` in `landingPages.js`:
+  - A landing page is indexable while its own list (central, state or GeM) is fresh or delayed.
+  - Stale or unavailable: `<meta name="robots" content="noindex">`, and left out of the sitemap (`indexableLandingPages`). The page still serves its list and stale notice.
+  - Unknown freshness: unchanged.
+  - The pages return to the sitemap by themselves when the list is fresh.
+  - /register leaves the sitemap (`SITEMAP_SKIP` in `seo.js`) but stays a public page.
+- **Corrigendum guide:**
+  - New title "Corrigendum in a tender: meaning and how to check it"; H1 and app title "What is a corrigendum in a tender? Meaning, what it changes and how to check". Same URL.
+  - The answer leads with the meaning.
+  - New sections: "Corrigendum vs amendment" and "What does a corrigendum on a GeM bid mean?", plus two new questions.
+  - Sources, read in full on 10 Nov 2026: DoE Manual for Procurement of Goods 2024 (paras 5.1.4, 5.1.5, 5.1.6, 5.2.3(e)), GFR Rule 159(i), a RECPDCL GeM corrigendum, and the re-read IIT Kanpur corrigendum.
+  - Checked date 2026-11-10.
+- **Verification:**
+  - `verify.sh` green (backend 755/469/376, frontend 94, lint 0 errors, secret scan clean).
+  - Browser 22/22 at 390 and 1366 px.
+  - Local HTTP: with the feed stale, the landing page is noindex with its list, and the sitemap has 13 URLs and no lists. With the feed fresh, no noindex, and the lists are back.

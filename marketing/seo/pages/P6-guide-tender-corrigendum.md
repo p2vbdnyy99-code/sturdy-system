@@ -1,5 +1,8 @@
 # P6: Tender corrigendum: what it changes and how to check
 
+> **Updated 10 Nov 2026:** Search Console showed the page's searches are for the *meaning* of "corrigendum" (672 impressions, 1 click in Oct–Nov 2026). New title: "Corrigendum in a tender: meaning and how to check it". New H1: "What is a corrigendum in a tender? Meaning, what it changes and how to check". New sections: corrigendum vs amendment, and a corrigendum on GeM. The original spec below is kept for history.
+
+
 **Status:** draft for the founder's review. The worked example was checked on 24 Oct 2026 in the IIT Kanpur corrigendum PDF named below.
 
 - **URL:** `/guides/tender-corrigendum`

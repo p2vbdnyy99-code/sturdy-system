@@ -80,6 +80,23 @@ export function landingPagesFrom(facets) {
   return pages.filter((p) => (seen.has(p.path) ? false : seen.add(p.path)));
 }
 
+/**
+ * Whether search engines should index a landing page now: only while its own
+ * list (central, state or GeM) is fresh or delayed. A stale or unavailable
+ * list shrinks as its tenders close, and pages that fall under MIN_OPEN
+ * become 404s, so while the feed is down they are noindex and out of the
+ * sitemap, and still work for visitors. Unknown freshness keeps them in.
+ */
+export function landingIndexable(page, freshness) {
+  const f = freshnessFor(freshness, page.kind);
+  return !f || f.status === 'fresh' || f.status === 'delayed';
+}
+
+/** The landing pages to list in the sitemap: those that exist and are indexable. */
+export function indexableLandingPages(facets) {
+  return landingPagesFrom(facets).filter((p) => landingIndexable(p, facets?.freshness ?? null));
+}
+
 /** Where an old state spelling's page now lives (a 301), or null. */
 export function landingRedirect(path) {
   for (const [alias, main] of Object.entries(STATE_ALIASES)) {
@@ -169,8 +186,9 @@ export function renderLandingHtml(indexHtml, page, tenders, baseUrl, allPages, a
     + '<a href="/register">Your first 5 tenders are free</a>.</p>'
     + `<h2>Other lists</h2><ul>${others}</ul></main>`;
   const data = appData ? jsonDataBlock(LANDING_DATA_ID, appData) : '';
+  const robots = landingIndexable(page, freshness) ? '' : '\n    <meta name="robots" content="noindex" />';
   return indexHtml
-    .replace(/<title>[^<]*<\/title>/, head)
+    .replace(/<title>[^<]*<\/title>/, head + robots)
     .replace('<div id="root"></div>', `<div id="root">${body}</div>${data}`);
 }
 

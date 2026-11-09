@@ -54,9 +54,11 @@ test('robots.txt blocks the API and app pages and points to the sitemap', () => 
   assert.ok(robots.includes('Sitemap: https://tendertez.in/sitemap.xml'));
 });
 
-test('the sitemap lists exactly the public pages', () => {
+test('the sitemap lists exactly the public pages, except the sign-up form', () => {
   const xml = sitemapXml(BASE);
-  assert.deepEqual([...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]), Object.keys(PUBLIC_PAGES).map((p) => `${BASE}${p}`));
+  assert.deepEqual([...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]),
+    Object.keys(PUBLIC_PAGES).filter((p) => p !== '/register').map((p) => `${BASE}${p}`));
+  assert.ok(PUBLIC_PAGES['/register'], 'the sign-up form stays a public page');
 });
 
 function run(mw, { method = 'GET', hostname, originalUrl = '/' }) {

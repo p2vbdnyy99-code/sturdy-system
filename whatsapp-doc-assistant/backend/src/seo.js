@@ -128,12 +128,17 @@ export const GUIDES = [
   },
   {
     path: '/guides/tender-corrigendum',
-    checked: '2026-10-24',
-    headline: 'What a tender corrigendum can change, and how to check it',
-    title: 'Tender corrigendum: what it changes and how to check',
-    description: 'A corrigendum can change the deadline, EMD, eligibility or scope after you have read a tender. '
-      + 'How to find every corrigendum and check what changed.',
-    citations: ['https://www.iitk.ac.in/iwd/file/2026/06-Civil-D2-2026-27/Corrigendum.pdf'],
+    checked: '2026-11-10',
+    headline: 'What is a corrigendum in a tender? Meaning, what it changes and how to check',
+    title: 'Corrigendum in a tender: meaning and how to check it',
+    description: 'A corrigendum is the notice a buyer issues to amend a published tender. What it means, how it differs '
+      + 'from an amendment, and how to check one, on GeM too.',
+    citations: [
+      'https://doe.gov.in/files/circulars_document/Manual_Goods_2024.pdf',
+      'https://doe.gov.in/files/circulars_document/GFRupdatedupto31012026.pdf',
+      'https://www.recpdcl.in/assets/data/tenders/GeM-Bidding-4566402-Corrigendum1.pdf',
+      'https://www.iitk.ac.in/iwd/file/2026/06-Civil-D2-2026-27/Corrigendum.pdf',
+    ],
   },
 ];
 for (const g of GUIDES) PUBLIC_PAGES[g.path] = { title: g.title, description: g.description };
@@ -481,12 +486,16 @@ export function robotsTxt(baseUrl) {
  * their sources were checked, and the tender lists (`extraPaths`) change
  * every day, so they carry today's date in India. Other pages have none.
  */
+// Public pages that stay public (counted, indexable if found) but aren't worth
+// listing for search engines: the sign-up form has no content of its own.
+const SITEMAP_SKIP = new Set(['/register']);
+
 export function sitemapXml(baseUrl, extraPaths = [], now = new Date()) {
   const today = now.toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
   const guideDates = new Map(GUIDES.map((g) => [g.path, g.checked]));
   const entry = (p, lastmod) => `  <url><loc>${escapeHtml(`${baseUrl}${p}`)}</loc>${lastmod ? `<lastmod>${lastmod}</lastmod>` : ''}</url>`;
   const urls = [
-    ...Object.keys(PUBLIC_PAGES).map((p) => entry(p, guideDates.get(p) ?? null)),
+    ...Object.keys(PUBLIC_PAGES).filter((p) => !SITEMAP_SKIP.has(p)).map((p) => entry(p, guideDates.get(p) ?? null)),
     ...extraPaths.map((p) => entry(p, today)),
   ].join('\n');
   return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls}\n</urlset>\n`;
