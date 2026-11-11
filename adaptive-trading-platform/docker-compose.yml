@@ -1,0 +1,52 @@
+# Backend + PostgreSQL + Redis. Copy .env.example to .env and fill in the secrets first.
+#   docker compose up -d --build
+# The Windows MT5 bridge is NOT part of this stack: it runs on the Windows machine next to the terminal.
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: atp
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: atp
+    volumes: [pgdata:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U atp -d atp"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
+    restart: unless-stopped
+
+  backend:
+    build: ./backend
+    env_file: .env
+    environment:
+      ATP_ENV: prod
+      ATP_DATABASE_URL: postgresql+psycopg://atp:${POSTGRES_PASSWORD}@db:5432/atp
+      ATP_REDIS_URL: redis://redis:6379/0
+      ATP_WEB_DIST_DIR: /srv/web
+    volumes:
+      - ./mobile/dist:/srv/web:ro        # optional: exported web build (browser admin / Windows desktop UI)
+    depends_on:
+      db: { condition: service_healthy }
+      redis: { condition: service_started }
+    ports: ["127.0.0.1:8000:8000"]       # publish through a TLS reverse proxy; do not expose plain HTTP publicly
+    restart: unless-stopped
+
+  backup:
+    image: postgres:16-alpine
+    profiles: ["backup"]                 # docker compose run --rm backup
+    environment:
+      PGPASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - ./backups:/backups
+      - ./scripts/backup.sh:/backup.sh:ro
+    depends_on: [db]
+    entrypoint: ["sh", "/backup.sh"]
+
+volumes:
+  pgdata:

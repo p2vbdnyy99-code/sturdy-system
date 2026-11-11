@@ -63,7 +63,7 @@ def create_app() -> FastAPI:
         path = request.url.path
         if path.startswith("/api/"):
             ip = request.client.host if request.client else "unknown"
-            is_auth = path.startswith("/api/v1/auth/") and request.method == "POST"
+            is_auth = path in ("/api/v1/auth/login", "/api/v1/auth/register", "/api/v1/auth/change-password")
             limit = s.auth_rate_limit_per_minute if is_auth else s.rate_limit_per_minute
             if not limiter.allow(f"{'auth' if is_auth else 'api'}:{ip}", limit):
                 return JSONResponse({"detail": "Rate limit exceeded. Slow down."}, status_code=429,
