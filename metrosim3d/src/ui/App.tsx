@@ -64,6 +64,11 @@ function Hud({ game }: { game: Game }) {
     return () => clearTimeout(t);
   }, [s.toast?.id]);
 
+  if (s.bench.running) {
+    // HUD hidden so the measurement reflects the 3D view alone.
+    return <div className="bench-progress">Performance test: {s.bench.step}</div>;
+  }
+
   return (
     <>
       <header className="topbar">
@@ -142,8 +147,38 @@ function Hud({ game }: { game: Game }) {
 
       {toastVisible && s.toast && <div className="toast">{s.toast.text}</div>}
       {panel === 'saves' && <SavePanel game={game} state={s} onClose={() => setPanel('none')} />}
+      {s.bench.report && <BenchReportPanel text={s.bench.report} onClose={() => game.clearBenchReport()} />}
       {panel === 'settings' && <SettingsPanel game={game} state={s} onClose={() => setPanel('none')} />}
     </>
+  );
+}
+
+function BenchReportPanel({ text, onClose }: { text: string; onClose: () => void }) {
+  const [copied, setCopied] = useState(false);
+  const ref = useRef<HTMLTextAreaElement>(null);
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+    } catch {
+      // Clipboard API can be blocked (e.g. inside an embedded page): select the text instead.
+      ref.current?.select();
+    }
+  };
+  return (
+    <div className="sheet-backdrop" onClick={onClose}>
+      <div className="sheet" onClick={(e) => e.stopPropagation()} role="dialog" aria-label="Performance results">
+        <div className="sheet-head">
+          <h2>Performance results</h2>
+          <button className="icon-btn" onClick={onClose} aria-label="Close">{Icon.close}</button>
+        </div>
+        <textarea ref={ref} className="report" readOnly value={text} rows={14} />
+        <div className="btn-row">
+          <button className="primary" onClick={() => void copy()}>{copied ? 'Copied' : 'Copy results'}</button>
+          <span className="muted">Paste these into the chat. Your city has been restored.</span>
+        </div>
+      </div>
+    </div>
   );
 }
 

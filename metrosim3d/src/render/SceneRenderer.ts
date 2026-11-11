@@ -34,6 +34,8 @@ export class SceneRenderer {
   private dirty = true;
   /** Rolling average of CPU time spent in render() calls, ms. */
   frameMs = 0;
+  /** Time spent in the last sync(), by layer (ms). For the performance test. */
+  lastSync = { terrain: 0, roads: 0, zones: 0, buildings: 0, trees: 0 };
 
   constructor(private canvas: HTMLCanvasElement, world: World, quality: Quality) {
     this.quality = quality;
@@ -121,27 +123,42 @@ export class SceneRenderer {
   sync(): void {
     const w = this.world;
     let trees = false;
+    const ls = (this.lastSync = { terrain: 0, roads: 0, zones: 0, buildings: 0, trees: 0 });
+    let t = performance.now();
+    const lap = (k: keyof typeof ls) => {
+      const n = performance.now();
+      ls[k] += n - t;
+      t = n;
+    };
     if (w.terrainVersion !== this.seen.terrain) {
       this.terrain.update();
+      lap('terrain');
       this.seen.terrain = w.terrainVersion;
       trees = true;
     }
     if (w.roadVersion !== this.seen.road) {
       this.roads.update();
+      lap('roads');
       this.seen.road = w.roadVersion;
       trees = true;
     }
     if (w.zoneVersion !== this.seen.zone || w.buildingVersion !== this.seen.building) {
+      t = performance.now();
       this.updateZones();
+      lap('zones');
       trees = true;
     }
     if (w.buildingVersion !== this.seen.building) {
+      t = performance.now();
       this.buildings.updateBuildings();
+      lap('buildings');
     }
     this.seen.zone = w.zoneVersion;
     this.seen.building = w.buildingVersion;
     if (trees) {
+      t = performance.now();
       this.buildings.updateTrees();
+      lap('trees');
       this.dirty = true;
     }
   }

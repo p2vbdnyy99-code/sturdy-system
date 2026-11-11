@@ -8,6 +8,7 @@ import { Quality } from '../render/quality';
 import { SceneRenderer } from '../render/SceneRenderer';
 import { listSaves, loadCity, newSaveId, saveCity, SaveMeta } from '../storage/saves';
 import { InputController, ToolHandler } from './InputController';
+import { BenchReport, formatReport, makeScenarioWorld, ORBIT_SECONDS, percentile, ScenarioResult, SCENARIOS } from './benchmark';
 import { loadSettings, saveSettings, Settings } from './settings';
 
 export type ToolId = 'pan' | 'road' | 'zoneRes' | 'zoneCom' | 'zoneInd' | 'place' | 'bulldoze';
@@ -30,6 +31,7 @@ export interface UiState {
   frameMs: number;
   lastSavedAt: number | null;
   mapSize: number;
+  bench: { running: boolean; step: string; report: string | null };
 }
 
 const UNDO_LIMIT = 25;
@@ -58,6 +60,8 @@ export class Game implements ToolHandler {
   private toastId = 0;
   private changedSinceSave = false;
   private autosaveTimer: number;
+  /** While set, the benchmark drives the camera and records frame times each loop. */
+  private benchHook: ((t: number) => void) | null = null;
   private onResize = () => this.view.resize();
   private onHide = () => {
     if (document.visibilityState === 'hidden') void this.autosave();
@@ -85,6 +89,7 @@ export class Game implements ToolHandler {
       frameMs: 0,
       lastSavedAt: null,
       mapSize: this.world.size,
+      bench: { running: false, step: '', report: null },
     };
     this.view.resize();
     window.addEventListener('resize', this.onResize);
@@ -122,6 +127,12 @@ export class Game implements ToolHandler {
   private loop = (t: number) => {
     const dt = Math.min(0.1, (t - this.lastT) / 1000);
     this.lastT = t;
+    if (this.benchHook) {
+      this.benchHook(t);
+      this.view.render(true);
+      this.raf = requestAnimationFrame(this.loop);
+      return;
+    }
     this.input.tick(dt);
     if (this.state.speed > 0) {
       this.simAcc += dt * this.state.speed;
@@ -156,7 +167,7 @@ export class Game implements ToolHandler {
   }
 
   toolActive(): boolean {
-    return this.state.tool !== 'pan';
+    return this.state.tool !== 'pan' && !this.state.bench.running;
   }
 
   private tileAt(cx: number, cy: number): TileXY | null {
@@ -227,6 +238,7 @@ export class Game implements ToolHandler {
     this.updatePreview();
   }
   toolUp(cx: number, cy: number): void {
+    if (this.state.bench.running) return;
     const t = this.tileAt(cx, cy) ?? this.current;
     const a = this.anchor ?? t;
     this.anchor = null;
@@ -348,7 +360,8 @@ export class Game implements ToolHandler {
   }
 
   private async autosave(): Promise<void> {
-    if (!this.changedSinceSave) return;
+    // Never autosave a benchmark city over the player's city.
+    if (!this.changedSinceSave || this.state.bench.running) return;
     // Autosave goes to the city's own slot if it has one, otherwise to a single shared autosave slot.
     const id = this.state.saveId ?? 'autosave';
     try {
@@ -376,6 +389,119 @@ export class Game implements ToolHandler {
     }
   }
 
+  // ---------- performance test ----------
+  /**
+   * Replaces the city with generated test cities of increasing size, orbits the camera over each
+   * while recording real frame intervals, then restores the player's city exactly as it was.
+   */
+  async runBenchmark(): Promise<void> {
+    if (this.state.bench.running) return;
+    const saved = snapshot(this.world, this.view.rig.state);
+    const savedSpeed = this.state.speed;
+    const savedUndo = this.undoStack;
+    this.set({ speed: 0, bench: { running: true, step: 'Preparing…', report: null } });
+    const results: ScenarioResult[] = [];
+    const nextFrame = () => new Promise<number>((r) => requestAnimationFrame(r));
+    try {
+      for (const sc of SCENARIOS) {
+        this.set({ bench: { running: true, step: `Building “${sc.label}” city…`, report: null } });
+        await nextFrame();
+        const world = makeScenarioWorld(sc.buildings);
+        const t0 = performance.now();
+        this.world = world;
+        this.view.setWorld(world);
+        const buildMs = performance.now() - t0;
+        const f0 = performance.now();
+        this.view.render(true);
+        const firstFrameMs = performance.now() - f0;
+        // Rebuild cost: what one growth step costs the renderer at this city size.
+        const rebuild: number[] = [];
+        const splits: { buildings: number; trees: number; zones: number }[] = [];
+        for (let k = 0; k < 5; k++) {
+          const x = 2 + k * 3;
+          const y = 2;
+          if (world.getKind(x, y) === 0 && !world.isWater(x, y)) {
+            world.zone[world.idx(x, y)] = 1;
+            world.addBuilding('house', x, y, true);
+          } else world.buildingVersion++;
+          const r0 = performance.now();
+          this.view.sync();
+          rebuild.push(performance.now() - r0);
+          const ls = this.view.lastSync;
+          splits.push({ buildings: ls.buildings, trees: ls.trees, zones: ls.zones });
+        }
+        const med = (k: 'buildings' | 'trees' | 'zones') => percentile(splits.map((x) => x[k]).sort((a, b) => a - b), 0.5);
+        rebuild.sort((a, b) => a - b);
+        // Orbit at a typical playing view over the dense centre.
+        const span = world.size * 8;
+        this.view.rig.setState({ tx: span / 2, tz: span / 2, distance: 380, yaw: 0, pitch: 0.75 });
+        this.set({ bench: { running: true, step: `Measuring “${sc.label}” (${world.buildings.size.toLocaleString('en-US')} buildings)…`, report: null } });
+        const times: number[] = [];
+        await new Promise<void>((resolve) => {
+          let start = -1;
+          let last = -1;
+          this.benchHook = (t) => {
+            if (start < 0) start = t;
+            else times.push(t - last);
+            last = t;
+            this.view.rig.rotate((Math.PI * 2) / (ORBIT_SECONDS * 60), 0);
+            if (t - start > ORBIT_SECONDS * 1000) {
+              this.benchHook = null;
+              resolve();
+            }
+          };
+        });
+        times.shift(); // first interval includes setup work
+        const sorted = [...times].sort((a, b) => a - b);
+        const total = times.reduce((a, b) => a + b, 0);
+        const info = this.view.renderer.info.render;
+        results.push({
+          label: sc.label,
+          buildings: world.buildings.size,
+          roadTiles: world.kind.reduce((n, k) => n + (k === 1 ? 1 : 0), 0),
+          buildMs,
+          rebuildMs: percentile(rebuild, 0.5),
+          rebuildSplit: { buildings: med('buildings'), trees: med('trees'), zones: med('zones') },
+          firstFrameMs,
+          frames: times.length,
+          fps: times.length ? (1000 * times.length) / total : 0,
+          p50: percentile(sorted, 0.5),
+          p95: percentile(sorted, 0.95),
+          worst: sorted[sorted.length - 1] ?? 0,
+          drawCalls: info.calls,
+          triangles: info.triangles,
+        });
+      }
+      const report: BenchReport = {
+        date: new Date().toISOString().slice(0, 16).replace('T', ' '),
+        device: navigator.userAgent,
+        screen: `${screen.width}×${screen.height} @${window.devicePixelRatio}x, canvas ${this.view.renderer.domElement.width}×${this.view.renderer.domElement.height}`,
+        quality: this.state.settings.quality,
+        pixelRatio: this.view.renderer.getPixelRatio(),
+        renderer: gpuName(this.view.renderer.getContext()),
+        heapMB: heapMB(),
+        scenarios: results,
+      };
+      this.set({ bench: { running: false, step: '', report: formatReport(report) } });
+    } catch (e) {
+      this.benchHook = null;
+      this.set({ bench: { running: false, step: '', report: `Performance test failed: ${(e as Error).message}` } });
+    } finally {
+      // Put the player's city back exactly as it was.
+      this.world = restore(saved);
+      this.view.setWorld(this.world);
+      if (saved.camera) this.view.rig.setState(saved.camera);
+      this.undoStack = savedUndo;
+      this.view.markDirty();
+      this.set({ speed: savedSpeed });
+      this.refreshCity();
+    }
+  }
+
+  clearBenchReport(): void {
+    this.set({ bench: { running: false, step: '', report: null } });
+  }
+
   listSaves(): Promise<SaveMeta[]> {
     return listSaves();
   }
@@ -392,6 +518,20 @@ export class Game implements ToolHandler {
 
 function sameTile(a: TileXY | null, b: TileXY | null): boolean {
   return !!a && !!b && a.x === b.x && a.y === b.y;
+}
+
+function gpuName(gl: WebGLRenderingContext | WebGL2RenderingContext): string {
+  try {
+    const ext = gl.getExtension('WEBGL_debug_renderer_info');
+    return ext ? String(gl.getParameter(ext.UNMASKED_RENDERER_WEBGL)) : String(gl.getParameter(gl.RENDERER));
+  } catch {
+    return 'unknown';
+  }
+}
+
+function heapMB(): number | null {
+  const m = (performance as unknown as { memory?: { usedJSHeapSize: number } }).memory;
+  return m ? Math.round(m.usedJSHeapSize / 1048576) : null;
 }
 
 export function randomSeed(): number {

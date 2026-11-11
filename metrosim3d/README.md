@@ -1,7 +1,7 @@
 # METROSIM 3D
 
 A 3D city builder that runs in the browser (Three.js + React + TypeScript). It is built for the iPad Air 3 and also runs on the iPhone 14 Pro and on desktop.
-**Phase 1 (creative-mode sandbox) is playable.** See [docs/SPEC.md](docs/SPEC.md) for the architecture, acceptance criteria and roadmap.
+**The first playable build (creative sandbox) works; see [docs/AUDIT.md](docs/AUDIT.md) for the current audit and performance baseline.** See [docs/SPEC.md](docs/SPEC.md) for the architecture, acceptance criteria and roadmap.
 
 ## Set up on Windows
 1. Install **Node.js 22 LTS** from nodejs.org (the default options are fine) and **Git for Windows**.
@@ -22,6 +22,7 @@ A 3D city builder that runs in the browser (Three.js + React + TypeScript). It i
 | `npm test` | Unit tests (simulation, tools, saves) |
 | `npm run build` | Type-check and produce `dist/` (static files; host anywhere, e.g. GitHub Pages) |
 | `npm run preview` | Serve the built `dist/` locally |
+| `node scripts/bench.mjs [url]` | Runs the in-game performance test headlessly (CPU timings only; no real GPU) |
 | `node scripts/smoke.mjs [url] [dir]` | End-to-end browser test (needs Playwright + Chromium installed); mouse and iPad multi-touch |
 
 ## Controls

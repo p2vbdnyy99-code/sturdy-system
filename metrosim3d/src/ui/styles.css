@@ -111,3 +111,6 @@ input[type='text'], .field input { font: inherit; font-size: 16px; color: var(--
   .camctl button { width: 44px; height: 44px; }
   .camctl { top: auto; bottom: calc(100px + var(--sab)); transform: none; }
 }
+
+.bench-progress { position: absolute; left: 50%; bottom: calc(20px + var(--sab)); transform: translateX(-50%); background: var(--bg); border: 1px solid var(--line); padding: 10px 18px; border-radius: 999px; white-space: nowrap; }
+.report { width: 100%; font: 12px/1.4 ui-monospace, Menlo, Consolas, monospace; color: var(--fg); background: rgba(0,0,0,0.3); border: 1px solid var(--line); border-radius: 10px; padding: 10px; white-space: pre; overflow: auto; -webkit-user-select: text; user-select: text; }

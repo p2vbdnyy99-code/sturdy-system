@@ -1,6 +1,23 @@
 # METROSIM 3D — Development Specification
 
-Status: **Phase 1 (creative-mode sandbox) implemented.** It has passed automated tests in a desktop browser and an emulated iPad. It has not been tested on the real devices yet.
+Status: **First playable build done** (sections 3 below). Revised Phase 1 (audit + baseline) is in progress: see `docs/AUDIT.md`. Not yet tested on real devices.
+
+## 0. Locked decisions (2026-11-11)
+
+| Decision | Selection |
+|---|---|
+| Primary device | iPad Air 3 (A12 Bionic, 3 GB RAM): every feature must stay playable on it |
+| Secondary device | iPhone 14 Pro (higher graphics settings) |
+| Graphics | CS1-level stylised 3D on iPad; enhanced settings on iPhone |
+| Map size | Large metropolitan map, initially 2–4 km |
+| Experience | Both a creative sandbox and realistic simulation, switchable per city |
+| Approach | Extend this repository; no rewrites without a measured reason |
+| Developer / reviewer | Claude Code (Opus) / Gemini Pro |
+
+Non-negotiable:
+1. **Creative mode from the beginning:** unlimited money, unrestricted construction, all buildings unlocked. Every new system ships with its creative-mode behaviour.
+2. **Transport geometry before advanced simulation:** curved roads, highways, bridges, tunnels and interchanges come before sophisticated traffic.
+3. **Performance before visual complexity:** each phase ends with the performance test on the iPad Air 3 (see `AUDIT.md`).
 
 ## 1. Targets
 
@@ -47,7 +64,7 @@ Design rules:
 - Everything is drawn with a few instanced meshes. Building count does not add draw calls.
 - Saves are versioned (`SAVE_VERSION`). Loading rejects saves with a mismatched size or unknown types instead of loading a corrupt city.
 
-## 3. Phase 1 milestone — acceptance criteria
+## 3. First playable build — acceptance criteria
 
 | Requirement | Implementation | Verified by |
 |---|---|---|
@@ -68,16 +85,18 @@ Design rules:
 - The "unlimited construction" toggle from the feature list is not implemented. Its meaning needs defining first: e.g. ignore slope, water and money limits.
 - No Web Worker yet. Growth takes well under a millisecond per day. The `sim/` layer has no DOM dependencies so it can move to a worker once traffic simulation needs one.
 
-## 4. Roadmap (one phase at a time — each must run on the iPad before the next starts)
+## 4. Roadmap (revised 2026-11-11; one phase at a time, each gated on the iPad performance test)
 
-1. **Creative sandbox** — done (this milestone).
-2. **Transport geometry**: curved roads, road types (street / avenue / highway), interchanges, bridges, terrain raise/lower/level tools.
-3. **Economy & services**: taxes and budget, demand (RCI), electricity, water/sewage, land value, pollution.
-4. **Traffic**: road graph, trip generation, pathfinding (in a Web Worker), visible vehicles with LOD.
-5. **Public transport**: bus, rail, metro (underground view), stations; then airports and seaports.
-6. **Atmosphere**: day/night cycle with lit windows, weather and seasons, pedestrians.
-7. **Services**: healthcare, education, police/fire, with coverage overlays.
-8. **Polish**: offline PWA (service worker), import/export cities as files, performance pass per device.
+| Phase | Development | Status |
+|---|---|---|
+| 1 | Audit and optimise the existing build | Audit + baseline done (`docs/AUDIT.md`); waiting on iPad numbers before optimising |
+| 2 | Advanced road and transport construction: Creative/Realistic mode flag, curved roads, road types, highways, interchanges, bridges, tunnels, terrain editing | Not started |
+| 3 | Traffic and pedestrian simulation (road graph, pathfinding in a Web Worker, vehicles with LOD) | Not started |
+| 4 | Population and economy (demand, taxes, budget, employment) | Not started |
+| 5 | Utilities and public services (power, water, sewage, health, education, police, fire) | Not started |
+| 6 | Public transport and advanced infrastructure (bus, rail, metro, airports, seaports) | Not started |
+| 7 | Graphics, lighting, weather, day/night, environment | Not started |
+| 8 | Challenges, advanced creative tools, expansion | Not started |
 
 ## 5. Performance budget (iPad Air 3, Medium)
 These are targets, to be measured on the device. They are not measured yet.

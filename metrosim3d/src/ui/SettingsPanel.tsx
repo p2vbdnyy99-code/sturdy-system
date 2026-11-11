@@ -40,6 +40,22 @@ export function SettingsPanel({ game, state, onClose }: { game: Game; state: UiS
           </label>
         </section>
         <section>
+          <h3>Performance test</h3>
+          <p className="muted">
+            Builds four test cities (empty, 1,500, 5,000 and 10,000 buildings), flies the camera around each and measures
+            frame rate. Takes about a minute. Your city is put back exactly as it was afterwards.
+          </p>
+          <button
+            className="primary"
+            onClick={() => {
+              onClose();
+              void game.runBenchmark();
+            }}
+          >
+            Run performance test
+          </button>
+        </section>
+        <section>
           <h3>Controls</h3>
           <ul className="help">
             <li><b>Touch:</b> one finger uses the selected tool (Move tool: pans). Two fingers: drag to pan, pinch to zoom, twist to rotate. Tilt with the ▲▼ buttons.</li>

@@ -1,0 +1,71 @@
+# MetroSim 3D — Phase 1 audit and performance baseline
+
+Date: 2026-11-11. Scope: inspect the existing build before any new feature work. **No code was rewritten.**
+Two things were added: an in-game performance test (Settings → Performance test) and per-layer timing inside the renderer.
+
+## 1. Architecture as built (unchanged)
+
+| Layer | Files | Notes |
+|---|---|---|
+| Simulation | `src/sim/*` | Pure TypeScript with no DOM or Three.js. Seeded and deterministic. Ready for a Web Worker. |
+| Rendering | `src/render/*` | Reads the World and never mutates it. Rebuilds only layers whose version counter changed. Draws only when something changed. |
+| Game glue | `src/game/*` | Input → Actions, undo (25 snapshots), autosave, main loop, performance test. |
+| Storage | `src/storage/saves.ts` | IndexedDB, separate meta and data stores. |
+| Interface | `src/ui/*` | React HUD, toolbar, save and settings sheets. |
+
+Size: about 3,000 lines of TypeScript/TSX. Dependencies: three 0.170, react 18.3, vite 5.4. Tests: 11 unit tests, plus an end-to-end smoke test (mouse and emulated iPad multi-touch).
+
+## 2. Feature inventory against the locked decisions
+
+| Locked requirement | Status |
+|---|---|
+| Creative mode: unlimited money | **Done.** Per-city toggle, on by default. |
+| Creative mode: unrestricted construction | **Not done.** Slope, water and occupancy rules always apply. Needs an explicit "Creative" mode flag (Phase 2). |
+| Creative mode: all buildings unlocked | **Done.** There is no unlock system. |
+| Realistic mode | **Not started.** Only money costs and zone growth exist. No income, demand or utilities. |
+| Roads | **Partial.** Grid-aligned, L-shaped drag, auto-joining junctions, follow slopes. No curves, road types, bridges, tunnels or interchanges. |
+| Zoning R/C/I + growth | **Done (basic).** Growth within 2 tiles of a road; denser neighbourhoods grow taller. |
+| Building placement | **Done.** Four placeable types, eleven procedural looks overall. |
+| Terrain | **Done (generation only).** Coast, river, hills. No editing tools. |
+| Camera / touch | **Done.** Tested on an emulated iPad, **not on a real one**. |
+| Save / load | **Done.** Named slots, autosave, survives page reload (tested). |
+| Map size 2–4 km | **Partial.** The current maximum is 2.0 km (256 tiles × 8 m). |
+
+## 3. Baseline measurements (cloud machine, software GPU)
+
+Headless Chromium with SwiftShader at 1112×834 (the iPad Air 3's logical size), Medium quality, map 192×192 (1.5 km).
+**The FPS column is meaningless here: there is no GPU.** The JavaScript columns are real CPU costs on this machine.
+
+```
+Scenario     Bldgs  build  rebuild (bldg/tree/zone)  draws  tris
+Empty map        4    113     10.0 (0.1/9.5/0.1)         8   613k
+Town          1500     86     15.9 (5.1/10.4/0.3)       11   660k
+City          5000     50     18.8 (9.2/9.2/0.1)        11   776k
+Metro        10000     84     15.5 (12.4/2.9/0.1)       11   795k
+```
+(build = ms to create all meshes; rebuild = main-thread ms each time a building appears; draws = draw calls per frame.)
+
+Growth at 3× speed applies about 4 growth steps per second, each costing the rebuild time above.
+
+## 4. Findings, ranked by expected cost on the iPad Air 3
+
+These are **hypotheses until the iPad numbers come in.** Each cites the measurement behind it.
+
+1. **Decorative trees dominate geometry.** The *empty* map already draws about 613k triangles, while 10,000 buildings add only about 180k. Each tree is a 10-sided capped trunk plus an 8-sided cone (≈56 triangles), and with shadows on, the whole scene is drawn twice. This is the most likely cause of a low frame rate on the A12.
+   *Candidate fix:* simpler trees, no trunks at Low/Medium, and no tree shadows at Medium. This changes visuals only, not gameplay.
+2. **Every growth step rebuilds all trees across the whole map.** That costs about 10 ms, because the forest noise is recomputed for every tile.
+   *Candidate fix:* compute the forest mask once per city and rebuild only the changed area.
+3. **Every growth step rebuilds every building's instances.** This grows linearly, to about 12 ms at 10,000 buildings. On the iPad, roughly 15–30 ms stalls 4× per second at fast speed would read as stutter. *(The A12 being 1–2× slower than this cloud CPU is my estimate, not measured.)*
+   *Candidate fix:* append new instances, and do a full rebuild only on removals.
+4. **Draw calls are low (8–11).** Instancing works as intended. Not a concern.
+5. **Memory: the JS heap is 22–45 MB.** Low. GPU memory is unmeasured; Safari doesn't expose it.
+
+## 5. What the iPad run decides
+
+Run Settings → **Performance test** on the iPad Air 3 at **Medium**, then again at **Low**. Then:
+
+- **Town ≥ 50 FPS and City ≥ 30 FPS at Medium:** apply fixes 2–3 (stutter only), then start Phase 2.
+- **City < 30 FPS at Medium but ≥ 30 at Low:** apply fix 1 first, re-measure, then decide Medium's defaults.
+- **City < 30 FPS even at Low:** stop. Profile on the device before any Phase 2 work.
+
+Repeat the test on the iPhone 14 Pro at High to set the iPhone defaults.

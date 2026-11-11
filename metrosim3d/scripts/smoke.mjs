@@ -21,6 +21,8 @@ const browser = await chromium.launch({ args: ['--use-angle=swiftshader', '--ena
   page.on('console', (m) => m.type() === 'error' && errors.push(m.text()));
   await page.goto(url);
   await page.waitForFunction(() => window.__game, null, { timeout: 30000 });
+  // Fixed seed so the terrain under the test's screen points is the same every run.
+  await page.evaluate(() => window.__game.newCity('large', 'New City', 777));
   await page.waitForTimeout(1500);
   await page.screenshot({ path: `${shots}/1-start.png` });
   const st = () => page.evaluate(() => {
@@ -152,6 +154,7 @@ const browser = await chromium.launch({ args: ['--use-angle=swiftshader', '--ena
   page.on('pageerror', (e) => errors.push(String(e)));
   await page.goto(url);
   await page.waitForFunction(() => window.__game, null, { timeout: 30000 });
+  await page.evaluate(() => window.__game.newCity('large', 'New City', 777));
   await page.waitForTimeout(1000);
   const cdp = await ctx.newCDPSession(page);
   const touch = (type, points) => cdp.send('Input.dispatchTouchEvent', { type, touchPoints: points.map(([x, y], i) => ({ x, y, id: i })) });

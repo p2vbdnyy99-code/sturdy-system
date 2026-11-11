@@ -140,3 +140,14 @@ describe('save snapshot', () => {
     expect(() => restore({ ...data, version: 99 })).toThrow(/version/);
   });
 });
+
+import { buildStressCity } from '../src/sim/stressCity';
+describe('benchmark city', () => {
+  it('reaches the requested building count deterministically with consistent indexes', () => {
+    const a = buildStressCity(192, 1234, 3000);
+    const b = buildStressCity(192, 1234, 3000);
+    expect(a.buildings.size).toBeGreaterThanOrEqual(3000);
+    expect(a.buildings.size).toBe(b.buildings.size);
+    for (const bl of a.buildings.values()) expect(a.buildingAt[a.idx(bl.x, bl.y)]).toBe(bl.id);
+  });
+});
