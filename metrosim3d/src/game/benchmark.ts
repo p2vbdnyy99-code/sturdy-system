@@ -30,6 +30,9 @@ export interface BenchReport {
   renderer: string;
   heapMB: number | null;
   scenarios: ScenarioResult[];
+  /** "City" scenario re-measured with one cost factor removed at a time. */
+  diagnosis: { label: string; fps: number; p50: number; p95: number }[];
+  trees: number;
 }
 
 export const SCENARIOS = [
@@ -41,6 +44,8 @@ export const SCENARIOS = [
 
 /** Seconds the camera orbits per scenario. */
 export const ORBIT_SECONDS = 6;
+/** Seconds per diagnosis variant (after a short settle period). */
+export const DIAG_SECONDS = 4;
 export const BENCH_MAP_SIZE = 192;
 export const BENCH_SEED = 20261111;
 
@@ -77,6 +82,10 @@ export function formatReport(r: BenchReport): string {
         `${(s.triangles / 1000).toFixed(0)}k`.padStart(6),
       ].join(' '),
     );
+  }
+  if (r.diagnosis.length) {
+    lines.push('', `What costs frame time (City, ${r.trees.toLocaleString('en-US')} trees):`, 'Variant              FPS   p50ms  p95ms');
+    for (const d of r.diagnosis) lines.push(`${d.label.padEnd(18)} ${d.fps.toFixed(0).padStart(5)} ${d.p50.toFixed(1).padStart(7)} ${d.p95.toFixed(1).padStart(6)}`);
   }
   lines.push('', 'FPS/p50/p95/worst: frame interval while the camera orbits (60 FPS = 16.7 ms).',
     'build: ms to create all meshes for the city. rebuild: ms of main-thread work per growth step.');

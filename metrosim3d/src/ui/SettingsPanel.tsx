@@ -43,7 +43,7 @@ export function SettingsPanel({ game, state, onClose }: { game: Game; state: UiS
           <h3>Performance test</h3>
           <p className="muted">
             Builds four test cities (empty, 1,500, 5,000 and 10,000 buildings), flies the camera around each and measures
-            frame rate. Takes about a minute. Your city is put back exactly as it was afterwards.
+            frame rate, then measures what each graphics feature costs. Takes about 90 seconds. Your city is put back exactly as it was afterwards.
           </p>
           <button
             className="primary"

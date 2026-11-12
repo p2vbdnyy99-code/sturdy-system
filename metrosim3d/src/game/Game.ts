@@ -8,7 +8,7 @@ import { Quality } from '../render/quality';
 import { SceneRenderer } from '../render/SceneRenderer';
 import { listSaves, loadCity, newSaveId, saveCity, SaveMeta } from '../storage/saves';
 import { InputController, ToolHandler } from './InputController';
-import { BenchReport, formatReport, makeScenarioWorld, ORBIT_SECONDS, percentile, ScenarioResult, SCENARIOS } from './benchmark';
+import { BenchReport, DIAG_SECONDS, formatReport, makeScenarioWorld, ORBIT_SECONDS, percentile, ScenarioResult, SCENARIOS } from './benchmark';
 import { loadSettings, saveSettings, Settings } from './settings';
 
 export type ToolId = 'pan' | 'road' | 'zoneRes' | 'zoneCom' | 'zoneInd' | 'place' | 'bulldoze';
@@ -436,22 +436,7 @@ export class Game implements ToolHandler {
         const span = world.size * 8;
         this.view.rig.setState({ tx: span / 2, tz: span / 2, distance: 380, yaw: 0, pitch: 0.75 });
         this.set({ bench: { running: true, step: `Measuring “${sc.label}” (${world.buildings.size.toLocaleString('en-US')} buildings)…`, report: null } });
-        const times: number[] = [];
-        await new Promise<void>((resolve) => {
-          let start = -1;
-          let last = -1;
-          this.benchHook = (t) => {
-            if (start < 0) start = t;
-            else times.push(t - last);
-            last = t;
-            this.view.rig.rotate((Math.PI * 2) / (ORBIT_SECONDS * 60), 0);
-            if (t - start > ORBIT_SECONDS * 1000) {
-              this.benchHook = null;
-              resolve();
-            }
-          };
-        });
-        times.shift(); // first interval includes setup work
+        const times = await this.orbit(ORBIT_SECONDS, 300);
         const sorted = [...times].sort((a, b) => a - b);
         const total = times.reduce((a, b) => a + b, 0);
         const info = this.view.renderer.info.render;
@@ -472,6 +457,30 @@ export class Game implements ToolHandler {
           triangles: info.triangles,
         });
       }
+      // Diagnosis: re-measure the City scenario with one cost factor removed at a time.
+      const diagnosis: BenchReport['diagnosis'] = [];
+      const city = makeScenarioWorld(SCENARIOS[2].buildings);
+      this.world = city;
+      this.view.setWorld(city);
+      const trees = this.view.treeCount();
+      const span = city.size * 8;
+      const variants: { label: string; apply: () => void }[] = [
+        { label: 'As configured', apply: () => {} },
+        { label: 'No shadows', apply: () => this.view.diagnose({ shadows: false }) },
+        { label: '1x resolution', apply: () => this.view.diagnose({ pixelRatio: 1 }) },
+        { label: 'No trees', apply: () => this.view.diagnose({ trees: false }) },
+      ];
+      for (const v of variants) {
+        this.set({ bench: { running: true, step: `Diagnosing: ${v.label}…`, report: null } });
+        this.view.diagnose({ shadows: null, pixelRatio: null, trees: null });
+        v.apply();
+        this.view.rig.setState({ tx: span / 2, tz: span / 2, distance: 380, yaw: 0, pitch: 0.75 });
+        const t = await this.orbit(DIAG_SECONDS, 600);
+        const st = [...t].sort((a, b) => a - b);
+        const tot = t.reduce((a, b) => a + b, 0);
+        diagnosis.push({ label: v.label, fps: t.length ? (1000 * t.length) / tot : 0, p50: percentile(st, 0.5), p95: percentile(st, 0.95) });
+      }
+      this.view.diagnose({ shadows: null, pixelRatio: null, trees: null });
       const report: BenchReport = {
         date: new Date().toISOString().slice(0, 16).replace('T', ' '),
         device: navigator.userAgent,
@@ -481,10 +490,13 @@ export class Game implements ToolHandler {
         renderer: gpuName(this.view.renderer.getContext()),
         heapMB: heapMB(),
         scenarios: results,
+        diagnosis,
+        trees,
       };
       this.set({ bench: { running: false, step: '', report: formatReport(report) } });
     } catch (e) {
       this.benchHook = null;
+      this.view.diagnose({ shadows: null, pixelRatio: null, trees: null });
       this.set({ bench: { running: false, step: '', report: `Performance test failed: ${(e as Error).message}` } });
     } finally {
       // Put the player's city back exactly as it was.
@@ -496,6 +508,25 @@ export class Game implements ToolHandler {
       this.set({ speed: savedSpeed });
       this.refreshCity();
     }
+  }
+
+  /** Orbit the camera for `seconds`, returning frame intervals (ms) recorded after `settleMs`. */
+  private orbit(seconds: number, settleMs: number): Promise<number[]> {
+    const times: number[] = [];
+    return new Promise((resolve) => {
+      let start = -1;
+      let last = -1;
+      this.benchHook = (t) => {
+        if (start < 0) start = t;
+        else if (t - start > settleMs) times.push(t - last);
+        last = t;
+        this.view.rig.rotate((Math.PI * 2) / (seconds * 60), 0);
+        if (t - start > settleMs + seconds * 1000) {
+          this.benchHook = null;
+          resolve(times);
+        }
+      };
+    });
   }
 
   clearBenchReport(): void {

@@ -7,12 +7,14 @@ export interface QualityProfile {
   shadowMapSize: number;
   /** Fraction of decorative trees to draw. */
   treeDensity: number;
+  /** Whether decorative trees cast shadows (thousands of trees double the shadow pass cost). */
+  treeShadows: boolean;
 }
 
 export const QUALITY_PROFILES: Record<Quality, QualityProfile> = {
-  low: { pixelRatioCap: 1, antialias: false, shadows: false, shadowMapSize: 0, treeDensity: 0.35 },
-  medium: { pixelRatioCap: 1.5, antialias: true, shadows: true, shadowMapSize: 1024, treeDensity: 0.7 },
-  high: { pixelRatioCap: 2, antialias: true, shadows: true, shadowMapSize: 2048, treeDensity: 1 },
+  low: { pixelRatioCap: 1, antialias: false, shadows: false, shadowMapSize: 0, treeDensity: 0.35, treeShadows: false },
+  medium: { pixelRatioCap: 1.5, antialias: true, shadows: true, shadowMapSize: 1024, treeDensity: 0.7, treeShadows: false },
+  high: { pixelRatioCap: 2, antialias: true, shadows: true, shadowMapSize: 2048, treeDensity: 1, treeShadows: true },
 };
 
 /**

@@ -88,7 +88,7 @@ export class SceneRenderer {
     const prof = QUALITY_PROFILES[this.quality];
     this.terrain = new TerrainMesh(world);
     this.roads = new RoadLayer(world, Math.min(8, this.renderer.capabilities.getMaxAnisotropy()));
-    this.buildings = new BuildingLayer(world, prof.shadows, prof.treeDensity);
+    this.buildings = new BuildingLayer(world, prof.shadows, prof.treeDensity, prof.treeShadows);
     this.scene.add(this.terrain.group, this.roads.mesh, this.buildings.group);
     // Rig bounds depend on map size.
     this.rig.setBounds(world.size * TILE);
@@ -110,13 +110,43 @@ export class SceneRenderer {
       this.sun.shadow.map?.dispose();
       this.sun.shadow.map = null;
     }
-    this.buildings.setShadows(prof.shadows);
+    this.buildings.setShadows(prof.shadows, prof.treeShadows);
     this.buildings.setTreeDensity(prof.treeDensity);
     this.scene.traverse((o) => {
       const m = (o as THREE.Mesh).material as THREE.Material | undefined;
       if (m) m.needsUpdate = true;
     });
     this.resize();
+  }
+
+  /**
+   * Performance-test overrides: switch one cost factor off at a time to see what it costs.
+   * Pass null to restore the quality profile's value.
+   */
+  diagnose(o: { shadows?: boolean | null; pixelRatio?: number | null; trees?: boolean | null }): void {
+    const prof = QUALITY_PROFILES[this.quality];
+    if (o.shadows !== undefined) {
+      const on = o.shadows ?? prof.shadows;
+      if (this.renderer.shadowMap.enabled !== on) {
+        this.renderer.shadowMap.enabled = on;
+        this.sun.castShadow = on;
+        if (on) this.sun.shadow.mapSize.set(prof.shadowMapSize || 1024, prof.shadowMapSize || 1024);
+        this.scene.traverse((obj) => {
+          const m = (obj as THREE.Mesh).material as THREE.Material | undefined;
+          if (m) m.needsUpdate = true;
+        });
+      }
+    }
+    if (o.pixelRatio !== undefined) {
+      this.renderer.setPixelRatio(o.pixelRatio ?? Math.min(window.devicePixelRatio || 1, prof.pixelRatioCap));
+      this.resize();
+    }
+    if (o.trees !== undefined) this.buildings.setTreesVisible(o.trees ?? true);
+    this.dirty = true;
+  }
+
+  treeCount(): number {
+    return this.buildings.treeCount();
   }
 
   /** Rebuild whatever layers the world says have changed. */

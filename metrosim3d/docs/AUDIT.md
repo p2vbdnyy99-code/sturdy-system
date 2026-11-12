@@ -69,3 +69,34 @@ Run Settings → **Performance test** on the iPad Air 3 at **Medium**, then agai
 - **City < 30 FPS even at Low:** stop. Profile on the device before any Phase 2 work.
 
 Repeat the test on the iPhone 14 Pro at High to set the iPhone defaults.
+
+## 6. iPad results, run 1 (2026-11-12, before optimisation)
+
+Reported by the device: Safari 26.2 (iPadOS presents itself as a Mac), "Apple GPU", 1112×660 screen at 2×. The canvas was 1112×612 CSS pixels. Safari hides the device model, so these are taken to be from the iPad Air 3.
+
+| Scenario | Medium FPS (p95 ms) | Low FPS (p95 ms) | Growth-step cost, Medium → Low |
+|---|---|---|---|
+| Empty map | 32 (36) | 60 (18) | 16 → 8 ms |
+| Town 1,500 | 33 (39) | 60 (19) | 23 → 9 ms |
+| City 5,000 | 31 (40) | 49 (23) | 30 → 16 ms |
+| Metro 10,000 | 33 (39) | 46 (25) | 24 → 17 ms |
+
+Reading:
+- **Medium is about 32 FPS even on an empty map**, so its cost is per-frame and fixed, not caused by buildings. The frame lands just over one 60 Hz refresh (16.7 ms), so it waits for the next one (33 ms).
+  - Medium differs from Low in four ways: 2.25× the pixels (1.5× ratio), anti-aliasing, shadows, and twice the trees. One run cannot separate these.
+- **Low holds 60 FPS up to Town and 46–49 FPS at City/Metro.** Building geometry starts to cost here.
+- **Growth-step cost on the iPad is 1.0–1.9× the cloud machine.** That's 8–30 ms, mostly the full tree rebuild, which confirms findings 2 and 3 as real stutter sources.
+- **Against §5's rules:** City at Medium is 31, which passes the ≥30 bar, but Town at Medium is 33, which fails the ≥50 bar. The rules didn't cover this case. It is treated as "optimise before Phase 2".
+- **Not a throttling artefact:** Low reached 60 FPS in the same setup, which rules out a Low Power Mode or embedded-page 30 FPS cap.
+
+## 7. Optimisations applied after run 1 (no gameplay changes)
+
+| Change | Measured effect (cloud machine; the iPad needs re-measuring) |
+|---|---|
+| Low-poly open-ended trees (5-sided trunk, 6-sided crown: about 16 instead of 56 triangles) | Empty map 613k → 229k triangles. Metro 795k → 586k |
+| Trees cast no shadows at Low/Medium (still do at High) | Removes the trees from the shadow pass |
+| Tree positions computed once per city; updates only filter by tile use, with no allocation | Tree rebuild 9.5 → about 0.5–1 ms |
+| Buildings cached as ready-made matrices; growth appends only new instances; full repack only on removal or terrain change | Building rebuild 12.4 → about 0.4 ms at 10,000 buildings |
+| **Total main-thread cost per growth step** | **10–19 ms → about 1 ms** |
+
+Deliberately not changed yet: render resolution, anti-aliasing and shadow-map size. The performance test now has a **diagnosis section**: the City scenario re-measured with no shadows, then at 1× resolution, then with no trees. Run 2 will show which of these the Medium setting should give up.
