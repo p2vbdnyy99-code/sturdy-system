@@ -100,3 +100,20 @@ Reading:
 | **Total main-thread cost per growth step** | **10–19 ms → about 1 ms** |
 
 Deliberately not changed yet: render resolution, anti-aliasing and shadow-map size. The performance test now has a **diagnosis section**: the City scenario re-measured with no shadows, then at 1× resolution, then with no trees. Run 2 will show which of these the Medium setting should give up.
+
+## 8. iPhone 14 Pro, run 1 (2026-11-12 03:13, before the section 7 optimisations)
+
+Reported by the device: iOS 18.6, inside the Claude app's web view. Screen 393×852 at 3×; the canvas was 786×1446 (393×723 CSS pixels) at render pixel ratio 2. Quality: High.
+
+| Scenario | FPS | p50 ms | p95 ms | worst ms | Growth-step cost |
+|---|---|---|---|---|---|
+| Empty map | 57 | 17 | 22 | 24 | 15 ms |
+| Town 1,500 | 55 | 17 | 22 | 140 | 17 ms |
+| City 5,000 | 58 | 17 | 20 | 49 | 18 ms |
+| Metro 10,000 | 54 | 17 | 24 | 47 | 18 ms |
+
+Reading:
+- **High runs at the 60 Hz ceiling (p50 17 ms) at every city size, with up to about 840k–980k triangles.** The iPhone 14 Pro screen can do 120 Hz, but this web view delivered 60 frames a second; that's the effective cap here.
+- **p95 of 20–24 ms means occasional dropped frames.** The single 140 ms frame is a one-off hitch, likely a shader compile or garbage collection; a second run would show whether it repeats.
+- **The 15–18 ms growth-step cost is the stutter source fixed in section 7.** It should now be about 1 ms.
+- **Decision:** keep **High** as the iPhone default. The iPhone is not the constraint; the iPad Air 3 at Medium still gates Phase 2.
