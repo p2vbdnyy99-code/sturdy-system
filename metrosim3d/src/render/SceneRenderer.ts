@@ -32,6 +32,9 @@ export class SceneRenderer {
   private seen = { terrain: -1, road: -1, zone: -1, building: -1 };
   private quality: Quality;
   private dirty = true;
+  private shadowMode: 'dynamic' | 'static' = 'dynamic';
+  /** Static shadow mode: redraw the shadow map on the next frame. */
+  private shadowDirty = true;
   /** Rolling average of CPU time spent in render() calls, ms. */
   frameMs = 0;
   /** Time spent in the last sync(), by layer (ms). For the performance test. */
@@ -43,7 +46,8 @@ export class SceneRenderer {
     this.renderer = new THREE.WebGLRenderer({ canvas, antialias: prof.antialias, powerPreference: 'high-performance' });
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, prof.pixelRatioCap));
     this.renderer.shadowMap.enabled = prof.shadows;
-    this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    this.renderer.shadowMap.type = prof.softShadows ? THREE.PCFSoftShadowMap : THREE.PCFShadowMap;
+    this.shadowMode = prof.shadowMode;
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
     this.renderer.toneMappingExposure = 1.0;
 
@@ -93,6 +97,7 @@ export class SceneRenderer {
     // Rig bounds depend on map size.
     this.rig.setBounds(world.size * TILE);
     this.seen = { terrain: world.terrainVersion, road: -1, zone: -1, building: -1 };
+    this.shadowDirty = true;
     this.sync();
     this.dirty = true;
   }
@@ -104,6 +109,9 @@ export class SceneRenderer {
     // Antialiasing is fixed at context creation; the rest can change live.
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, prof.pixelRatioCap));
     this.renderer.shadowMap.enabled = prof.shadows;
+    this.renderer.shadowMap.type = prof.softShadows ? THREE.PCFSoftShadowMap : THREE.PCFShadowMap;
+    this.shadowMode = prof.shadowMode;
+    this.shadowDirty = true;
     this.sun.castShadow = prof.shadows;
     if (prof.shadows) {
       this.sun.shadow.mapSize.set(prof.shadowMapSize, prof.shadowMapSize);
@@ -123,8 +131,12 @@ export class SceneRenderer {
    * Performance-test overrides: switch one cost factor off at a time to see what it costs.
    * Pass null to restore the quality profile's value.
    */
-  diagnose(o: { shadows?: boolean | null; pixelRatio?: number | null; trees?: boolean | null }): void {
+  diagnose(o: { shadows?: boolean | null; pixelRatio?: number | null; trees?: boolean | null; shadowMode?: 'dynamic' | 'static' | null }): void {
     const prof = QUALITY_PROFILES[this.quality];
+    if (o.shadowMode !== undefined) {
+      this.shadowMode = o.shadowMode ?? prof.shadowMode;
+      this.shadowDirty = true;
+    }
     if (o.shadows !== undefined) {
       const on = o.shadows ?? prof.shadows;
       if (this.renderer.shadowMap.enabled !== on) {
@@ -135,6 +147,7 @@ export class SceneRenderer {
           const m = (obj as THREE.Mesh).material as THREE.Material | undefined;
           if (m) m.needsUpdate = true;
         });
+        this.shadowDirty = true;
       }
     }
     if (o.pixelRatio !== undefined) {
@@ -190,6 +203,7 @@ export class SceneRenderer {
       this.buildings.updateTrees();
       lap('trees');
       this.dirty = true;
+      this.shadowDirty = true;
     }
   }
 
@@ -231,20 +245,42 @@ export class SceneRenderer {
     if (!this.dirty && !force) return false;
     this.dirty = false;
     const t0 = performance.now();
-    // Fit the sun's shadow frustum around what the camera is looking at.
     const s = this.rig.state;
-    const ext = Math.min(1200, Math.max(120, s.distance * 1.3));
     const sc = this.sun.shadow.camera;
-    sc.left = -ext;
-    sc.right = ext;
-    sc.top = ext;
-    sc.bottom = -ext;
-    sc.near = 10;
-    sc.far = 2000;
-    sc.updateProjectionMatrix();
-    const ty = this.world.heightAt(s.tx, s.tz);
-    this.sun.target.position.set(s.tx, ty, s.tz);
-    this.sun.position.set(s.tx + 350, ty + 600, s.tz + 220);
+    const sm = this.renderer.shadowMap;
+    if (this.shadowMode === 'static') {
+      // One shadow map for the whole map, from a fixed sun; redrawn only when the city changes.
+      const span = this.world.size * TILE;
+      const half = span * 0.75; // covers the map's diagonal as seen along the sun direction
+      sc.left = -half;
+      sc.right = half;
+      sc.top = half;
+      sc.bottom = -half;
+      sc.near = 10;
+      sc.far = 4000;
+      sc.updateProjectionMatrix();
+      this.sun.target.position.set(span / 2, 0, span / 2);
+      this.sun.position.set(span / 2 + 700, 1200, span / 2 + 440);
+      sm.autoUpdate = false;
+      if (this.shadowDirty) {
+        sm.needsUpdate = true;
+        this.shadowDirty = false;
+      }
+    } else {
+      // Fit the sun's shadow frustum around what the camera is looking at; redraw every frame.
+      const ext = Math.min(1200, Math.max(120, s.distance * 1.3));
+      sc.left = -ext;
+      sc.right = ext;
+      sc.top = ext;
+      sc.bottom = -ext;
+      sc.near = 10;
+      sc.far = 2000;
+      sc.updateProjectionMatrix();
+      const ty = this.world.heightAt(s.tx, s.tz);
+      this.sun.target.position.set(s.tx, ty, s.tz);
+      this.sun.position.set(s.tx + 350, ty + 600, s.tz + 220);
+      sm.autoUpdate = true;
+    }
     const fog = this.scene.fog as THREE.Fog;
     fog.near = s.distance * 2 + 400;
     fog.far = s.distance * 6 + 2500;

@@ -468,11 +468,12 @@ export class Game implements ToolHandler {
         { label: 'As configured', apply: () => {} },
         { label: 'No shadows', apply: () => this.view.diagnose({ shadows: false }) },
         { label: '1x resolution', apply: () => this.view.diagnose({ pixelRatio: 1 }) },
-        { label: 'No trees', apply: () => this.view.diagnose({ trees: false }) },
+        { label: 'No shadows + 1x', apply: () => this.view.diagnose({ shadows: false, pixelRatio: 1 }) },
+        { label: 'Shadows per frame', apply: () => this.view.diagnose({ shadowMode: 'dynamic' }) },
       ];
       for (const v of variants) {
         this.set({ bench: { running: true, step: `Diagnosing: ${v.label}…`, report: null } });
-        this.view.diagnose({ shadows: null, pixelRatio: null, trees: null });
+        this.view.diagnose({ shadows: null, pixelRatio: null, trees: null, shadowMode: null });
         v.apply();
         this.view.rig.setState({ tx: span / 2, tz: span / 2, distance: 380, yaw: 0, pitch: 0.75 });
         const t = await this.orbit(DIAG_SECONDS, 600);
@@ -480,7 +481,7 @@ export class Game implements ToolHandler {
         const tot = t.reduce((a, b) => a + b, 0);
         diagnosis.push({ label: v.label, fps: t.length ? (1000 * t.length) / tot : 0, p50: percentile(st, 0.5), p95: percentile(st, 0.95) });
       }
-      this.view.diagnose({ shadows: null, pixelRatio: null, trees: null });
+      this.view.diagnose({ shadows: null, pixelRatio: null, trees: null, shadowMode: null });
       const report: BenchReport = {
         date: new Date().toISOString().slice(0, 16).replace('T', ' '),
         device: navigator.userAgent,
@@ -496,7 +497,7 @@ export class Game implements ToolHandler {
       this.set({ bench: { running: false, step: '', report: formatReport(report) } });
     } catch (e) {
       this.benchHook = null;
-      this.view.diagnose({ shadows: null, pixelRatio: null, trees: null });
+      this.view.diagnose({ shadows: null, pixelRatio: null, trees: null, shadowMode: null });
       this.set({ bench: { running: false, step: '', report: `Performance test failed: ${(e as Error).message}` } });
     } finally {
       // Put the player's city back exactly as it was.

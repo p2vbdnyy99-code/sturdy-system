@@ -117,3 +117,27 @@ Reading:
 - **p95 of 20–24 ms means occasional dropped frames.** The single 140 ms frame is a one-off hitch, likely a shader compile or garbage collection; a second run would show whether it repeats.
 - **The 15–18 ms growth-step cost is the stutter source fixed in section 7.** It should now be about 1 ms.
 - **Decision:** keep **High** as the iPhone default. The iPhone is not the constraint; the iPad Air 3 at Medium still gates Phase 2.
+
+## 9. iPad results, run 2 (2026-11-12 03:33, after section 7)
+
+| Scenario | FPS | p50 ms | p95 ms | Growth-step cost (run 1 → run 2) | Triangles |
+|---|---|---|---|---|---|
+| Empty map | 39 | 26 | 30 | 16 → 1 ms | 229k |
+| Town 1,500 | 33 | 31 | 37 | 23 → 1 ms | 289k |
+| City 5,000 | 33 | 30 | 37 | 30 → 2 ms | 429k |
+| Metro 10,000 | 33 | 31 | 38 | 24 → 1 ms | 586k |
+
+Diagnosis (City, 8,672 trees): as configured 34 FPS (30 ms) · no shadows 42 (24 ms) · 1× resolution 37 (27 ms) · no trees 34 (30 ms).
+
+Reading:
+- **Growth stutter: fixed on the device** (1–2 ms per step).
+- **Geometry is not the bottleneck.** Triangles fell by 40–63% and removing every tree changed nothing. Section 4, finding 1 (trees) was wrong as a frame-rate cause.
+- **Shadows are the largest single cost, about 6 ms per frame.** Resolution is next at about 3 ms. Neither alone reaches 60 FPS. Gate still failed: Town 33 < 50.
+- **Some cost is still unexplained.** Low at City ran 21 ms in run 1. The overlap between "no shadows" and "1x" is unmeasured until run 3.
+
+## 10. Changes after run 2
+
+- **Medium now uses static shadows.** One 2048² shadow map covers the whole map from a fixed sun and is redrawn only when the city changes (a growth step, a build, a load). Moving the camera no longer re-draws shadows. Filtering is plain PCF instead of soft PCF, which takes fewer samples per pixel.
+  - Trade-off: shadow texels are about 1.1 m on the 1.5 km map, so they are softer up close. Checked by screenshot: no acne or gaps.
+- **High keeps per-frame shadows** that follow the camera (the iPhone held 60 Hz with them).
+- **New diagnosis rows:** "No shadows + 1x" (the floor without both costs) and "Shadows per frame" (the old behaviour, for a direct comparison).

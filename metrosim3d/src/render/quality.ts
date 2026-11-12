@@ -9,12 +9,20 @@ export interface QualityProfile {
   treeDensity: number;
   /** Whether decorative trees cast shadows (thousands of trees double the shadow pass cost). */
   treeShadows: boolean;
+  /**
+   * 'dynamic': the shadow map follows the camera and is redrawn every frame (sharp up close).
+   * 'static': one shadow map covers the whole map and is redrawn only when the city changes,
+   * so moving the camera costs no shadow pass (iPad Air 3 run 2: shadows were the largest cost).
+   */
+  shadowMode: 'dynamic' | 'static';
+  /** Soft (PCFSoft) filtering samples more per pixel than plain PCF. */
+  softShadows: boolean;
 }
 
 export const QUALITY_PROFILES: Record<Quality, QualityProfile> = {
-  low: { pixelRatioCap: 1, antialias: false, shadows: false, shadowMapSize: 0, treeDensity: 0.35, treeShadows: false },
-  medium: { pixelRatioCap: 1.5, antialias: true, shadows: true, shadowMapSize: 1024, treeDensity: 0.7, treeShadows: false },
-  high: { pixelRatioCap: 2, antialias: true, shadows: true, shadowMapSize: 2048, treeDensity: 1, treeShadows: true },
+  low: { pixelRatioCap: 1, antialias: false, shadows: false, shadowMapSize: 0, treeDensity: 0.35, treeShadows: false, shadowMode: 'static', softShadows: false },
+  medium: { pixelRatioCap: 1.5, antialias: true, shadows: true, shadowMapSize: 2048, treeDensity: 0.7, treeShadows: false, shadowMode: 'static', softShadows: false },
+  high: { pixelRatioCap: 2, antialias: true, shadows: true, shadowMapSize: 2048, treeDensity: 1, treeShadows: true, shadowMode: 'dynamic', softShadows: true },
 };
 
 /**
