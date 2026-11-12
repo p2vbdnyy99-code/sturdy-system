@@ -3,12 +3,12 @@ import { describe, expect, it } from 'vitest';
 import { snapshot, restore } from '../src/sim/serialize';
 import { deleteCity, listSaves, loadCity, newSaveId, saveCity } from '../src/storage/saves';
 import { World } from '../src/sim/world';
-import { commitAction } from '../src/sim/tools';
+import { tileRoad } from './helpers';
 
 describe('IndexedDB saves', () => {
   it('saves, lists, loads and deletes a city', async () => {
     const w = new World(32, 5, 'Stored');
-    commitAction(w, { type: 'road', from: { x: 10, y: 12 }, to: { x: 20, y: 12 } });
+    tileRoad(w, { x: 10, y: 12 }, { x: 20, y: 12 });
     const id = newSaveId();
     await saveCity({ id, name: 'Stored', savedAt: 1000, population: 0, size: 32, autosave: false }, snapshot(w));
     const list = await listSaves();

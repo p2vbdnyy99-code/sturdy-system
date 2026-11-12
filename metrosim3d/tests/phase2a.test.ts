@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { COST_ROAD, KIND_BUILDING, KIND_ROAD, ZONE_RES } from '../src/sim/constants';
+import { KIND_BUILDING, KIND_ROAD, ZONE_RES } from '../src/sim/constants';
 import { Treasury } from '../src/sim/finance/treasury';
 import { stepGrowth } from '../src/sim/growth';
 import { rulesFor } from '../src/sim/rules';
@@ -7,6 +7,7 @@ import { CityData, restore, snapshot } from '../src/sim/serialize';
 import { applyBrush, cornerLocked } from '../src/sim/terraform';
 import { commitAction, planAction } from '../src/sim/tools';
 import { World } from '../src/sim/world';
+import { planTileRoad, tileRoad } from './helpers';
 
 function flat(size = 32, h = 5): World {
   return new World(size, 3, 'T', new Float32Array((size + 1) * (size + 1)).fill(h));
@@ -19,18 +20,18 @@ describe('game modes', () => {
     w.heights[(w.size + 1) * 10 + 10] = 30; // steep around corner (10,10)
     w.money = 0;
     w.mode = 'realistic';
-    expect(planAction(w, { type: 'road', from: { x: 3, y: 1 }, to: { x: 8, y: 1 } }).ok).toBe(false); // water + no money
+    expect(planTileRoad(w, { x: 3, y: 1 }, { x: 8, y: 1 }).ok).toBe(false); // water + no money
     expect(planAction(w, { type: 'place', building: 'park', at: { x: 9, y: 9 } }).reason).toMatch(/steep|money/i);
     w.mode = 'creative';
     expect(rulesFor(w)).toMatchObject({ chargeMoney: false, enforceSlope: false, enforceWater: false });
-    expect(commitAction(w, { type: 'road', from: { x: 3, y: 1 }, to: { x: 8, y: 1 } }).ok).toBe(true);
+    expect(tileRoad(w, { x: 3, y: 1 }, { x: 8, y: 1 }).ok).toBe(true);
     expect(commitAction(w, { type: 'place', building: 'park', at: { x: 9, y: 9 } }).ok).toBe(true);
     expect(w.money).toBe(0);
   });
 
   it('switching modes never changes the city', () => {
     const w = flat();
-    commitAction(w, { type: 'road', from: { x: 0, y: 5 }, to: { x: 20, y: 5 } });
+    tileRoad(w, { x: 0, y: 5 }, { x: 20, y: 5 });
     commitAction(w, { type: 'zone', zone: ZONE_RES, from: { x: 0, y: 3 }, to: { x: 20, y: 7 } });
     for (let i = 0; i < 50; i++) stepGrowth(w);
     const before = snapshot(w);
@@ -49,9 +50,9 @@ describe('game modes', () => {
     const w = flat();
     w.financeInCreative = true;
     const start = w.money;
-    commitAction(w, { type: 'road', from: { x: 0, y: 0 }, to: { x: 9, y: 0 } });
-    expect(w.money).toBe(start - 10 * COST_ROAD);
-    expect(w.treasury.current(w.tick)?.byCategory['construction.roads']).toBe(-10 * COST_ROAD);
+    tileRoad(w, { x: 0, y: 0 }, { x: 9, y: 0 });
+    expect(w.money).toBe(start - 72 * 12); // 9 tiles × 8 m × $12/m
+    expect(w.treasury.current(w.tick)?.byCategory['construction.roads']).toBe(-72 * 12);
   });
 });
 
@@ -92,7 +93,7 @@ describe('terrain brush', () => {
   it('never moves corners under buildings, and roads follow the ground', () => {
     const w = flat();
     commitAction(w, { type: 'place', building: 'officeTower', at: { x: 15, y: 15 } });
-    commitAction(w, { type: 'road', from: { x: 10, y: 20 }, to: { x: 22, y: 20 } });
+    tileRoad(w, { x: 10, y: 20 }, { x: 22, y: 20 });
     applyBrush(w, { mode: 'raise', radius: 8, strength: 10 }, 16, 18, 2);
     expect(cornerLocked(w, 16, 16)).toBe(true);
     for (let y = 15; y <= 17; y++) for (let x = 15; x <= 17; x++) expect(w.cornerH(x, y)).toBe(5);
@@ -118,7 +119,7 @@ describe('terrain brush', () => {
 describe('save migration', () => {
   it('loads a version-1 save with the city intact', () => {
     const w = flat();
-    commitAction(w, { type: 'road', from: { x: 0, y: 5 }, to: { x: 20, y: 5 } });
+    tileRoad(w, { x: 0, y: 5 }, { x: 20, y: 5 });
     commitAction(w, { type: 'place', building: 'park', at: { x: 3, y: 3 } });
     const v2 = snapshot(w);
     // Build the v1 shape exactly as the first build wrote it.
@@ -130,7 +131,7 @@ describe('save migration', () => {
     expect(m.kind).toEqual(w.kind);
     expect([...m.buildings.values()]).toEqual([...w.buildings.values()]);
     expect(restore({ ...v1, unlimitedMoney: true }).mode).toBe('creative');
-    // And it re-saves as v2.
-    expect(snapshot(m).version).toBe(2);
+    // And it re-saves as the current version.
+    expect(snapshot(m).version).toBe(3);
   });
 });

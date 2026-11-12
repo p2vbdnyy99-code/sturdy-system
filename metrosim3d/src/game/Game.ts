@@ -6,6 +6,9 @@ import { Action, commitAction, Plan, planAction } from '../sim/tools';
 import { TileXY, World } from '../sim/world';
 import type { GameMode } from '../sim/rules';
 import { applyBrush, BrushMode } from '../sim/terraform';
+import { commitBend, commitMoveNode, commitRoad, commitUpgrade, planBend, planMoveNode, planRoad, planUpgrade, RoadPlan, segmentAt, SNAP_NODE } from '../sim/roads/build';
+import { Curve, fitChain, P2, simplify, straight } from '../sim/roads/geometry';
+import { ROAD_TYPES, RoadType } from '../sim/roads/types';
 import { Quality } from '../render/quality';
 import { SceneRenderer } from '../render/SceneRenderer';
 import { listSaves, loadCity, newSaveId, saveCity, SaveMeta } from '../storage/saves';
@@ -15,11 +18,13 @@ import { loadSettings, saveSettings, Settings, shadowPref } from './settings';
 
 export type ToolId = 'pan' | 'road' | 'zoneRes' | 'zoneCom' | 'zoneInd' | 'place' | 'terrain' | 'bulldoze';
 export type Speed = 0 | 1 | 3;
+export type RoadMode = 'straight' | 'curve' | 'upgrade' | 'edit';
 
 export interface UiState {
   tool: ToolId;
   placeType: BuildingType;
   brush: { mode: BrushMode; radius: number; strength: number };
+  road: { type: RoadType; mode: RoadMode; grid: boolean };
   mode: GameMode;
   financeInCreative: boolean;
   cityName: string;
@@ -58,6 +63,14 @@ export class Game implements ToolHandler {
   private state: UiState;
   private undoStack: CityData[] = [];
   private anchor: TileXY | null = null;
+  /** Active road gesture (drawing, upgrading or editing). */
+  private roadG:
+    | { kind: 'draw'; start: P2; end: P2 }
+    | { kind: 'curve'; path: P2[] }
+    | { kind: 'upgrade'; segs: Set<number> }
+    | { kind: 'node'; node: number; to: P2 }
+    | { kind: 'bend'; seg: number; to: P2 }
+    | null = null;
   /** Active terrain stroke: world state before it (for one undo step) and the brush centre in corner units. */
   private stroke: { before: CityData; at: { x: number; y: number } | null; target: number; changed: boolean; refused: boolean } | null = null;
   private current: TileXY | null = null;
@@ -83,6 +96,7 @@ export class Game implements ToolHandler {
       tool: 'road',
       placeType: 'park',
       brush: { mode: 'raise', radius: 4, strength: 4 },
+      road: { type: 'street', mode: 'straight', grid: true },
       mode: this.world.mode,
       financeInCreative: this.world.financeInCreative,
       cityName: this.world.name,
@@ -171,10 +185,25 @@ export class Game implements ToolHandler {
   // ---------- tools ----------
   setTool(tool: ToolId): void {
     this.endStroke();
+    this.roadG = null;
+    this.view.setRoadPreview(null, true);
     this.anchor = this.current = null;
     this.view.setPreview(null);
-    this.set({ tool, hint: tool === 'pan' ? { text: 'Drag to move the view. Two fingers: zoom and rotate.', ok: true } : null });
+    this.set({ tool, hint: this.idleHint(tool) });
   }
+  private idleHint(tool: ToolId): UiState['hint'] {
+    if (tool === 'pan') return { text: 'Drag to move the view. Two fingers: zoom and rotate.', ok: true };
+    if (tool !== 'road') return null;
+    const type = ROAD_TYPES[this.state.road.type].label.toLowerCase();
+    const text = {
+      straight: `Drag from start to end to build a ${type}. Ends snap to roads${this.state.road.grid ? ' and the grid' : ''}.`,
+      curve: `Draw the ${type} with your finger; it is smoothed into curves.`,
+      upgrade: `Drag along roads to change them to ${type}s.`,
+      edit: 'Drag a junction to move it (drop it on another to join), or drag a road’s middle to bend it.',
+    }[this.state.road.mode];
+    return { text, ok: true };
+  }
+
   setPlaceType(t: BuildingType): void {
     this.set({ placeType: t });
     this.setTool('place');
@@ -182,6 +211,134 @@ export class Game implements ToolHandler {
 
   toolActive(): boolean {
     return this.state.tool !== 'pan' && !this.state.bench.running;
+  }
+
+  // ---------- roads ----------
+  setRoad(patch: Partial<UiState['road']>): void {
+    this.set({ road: { ...this.state.road, ...patch } });
+    if (this.state.tool !== 'road') this.setTool('road');
+    else this.set({ hint: this.idleHint('road') });
+  }
+
+  private pointAt(cx: number, cy: number): P2 | null {
+    if (Number.isNaN(cx)) return null;
+    const p = this.view.pick(cx, cy);
+    return p ? { x: p.x, z: p.z } : null;
+  }
+
+  private drawCurves(): Curve[] {
+    const g = this.roadG;
+    if (g?.kind === 'draw') return [straight(g.start, g.end)];
+    if (g?.kind === 'curve') return g.path.length < 2 ? [] : fitChain(simplify(g.path, 2.5));
+    return [];
+  }
+
+  private roadPlanNow(): RoadPlan {
+    return planRoad(this.world, this.drawCurves(), this.state.road.type, this.state.road.grid);
+  }
+
+  private roadPreview(): void {
+    const g = this.roadG;
+    const fmtLen = (m: number) => (m >= 1000 ? `${(m / 1000).toFixed(2)} km` : `${Math.round(m)} m`);
+    const money = (c: number) => (this.world.unlimitedMoney ? '' : ` · ${fmtMoney(c)}`);
+    if (!g) {
+      this.view.setRoadPreview(null, true);
+      return;
+    }
+    if (g.kind === 'draw' || g.kind === 'curve') {
+      const plan = this.roadPlanNow();
+      this.view.setRoadPreview(plan.curves.map((curve) => ({ curve, type: plan.type })), plan.ok);
+      this.view.setPreview(plan.blocked.map((i) => ({ x: i % this.world.size, y: Math.floor(i / this.world.size), ok: false })));
+      const label = ROAD_TYPES[plan.type].label;
+      const j = plan.junctions ? ` · ${plan.junctions} junction${plan.junctions === 1 ? '' : 's'}` : '';
+      this.set({ hint: plan.ok ? { text: `${label}: ${fmtLen(plan.length)}${j}${money(plan.cost)}`, ok: true } : { text: plan.reason ?? 'Not possible here', ok: false } });
+      return;
+    }
+    if (g.kind === 'upgrade') {
+      const plan = planUpgrade(this.world, [...g.segs], this.state.road.type);
+      this.view.setRoadPreview(plan.curves.map((curve) => ({ curve, type: plan.type })), plan.ok);
+      this.set({ hint: plan.ok ? { text: `Upgrade ${g.segs.size} road${g.segs.size === 1 ? '' : 's'} to ${ROAD_TYPES[plan.type].label.toLowerCase()}${money(plan.cost)}`, ok: true } : { text: plan.reason ?? 'Not possible', ok: false } });
+      return;
+    }
+    const plan = g.kind === 'node' ? planMoveNode(this.world, g.node, g.to, this.state.road.grid) : planBend(this.world, g.seg, g.to);
+    this.view.setRoadPreview(plan.curves.map((curve) => ({ curve, type: plan.type })), plan.ok);
+    this.view.setPreview(plan.blocked.map((i) => ({ x: i % this.world.size, y: Math.floor(i / this.world.size), ok: false })));
+    const what = g.kind === 'node' ? ('mergeInto' in plan && plan.mergeInto !== undefined ? 'Join roads here' : 'Move junction') : 'Bend road';
+    this.set({ hint: plan.ok ? { text: what, ok: true } : { text: plan.reason ?? 'Not possible', ok: false } });
+  }
+
+  private roadDown(p: P2 | null): void {
+    if (!p) return;
+    const mode = this.state.road.mode;
+    if (mode === 'straight') this.roadG = { kind: 'draw', start: p, end: p };
+    else if (mode === 'curve') this.roadG = { kind: 'curve', path: [p] };
+    else if (mode === 'upgrade') {
+      const id = segmentAt(this.world, p, 4);
+      this.roadG = { kind: 'upgrade', segs: new Set(id === null ? [] : [id]) };
+    } else {
+      const node = this.world.roads.nodeNear(p, SNAP_NODE + 3);
+      if (node) this.roadG = { kind: 'node', node: node.id, to: p };
+      else {
+        const seg = segmentAt(this.world, p, 4);
+        if (seg !== null) this.roadG = { kind: 'bend', seg, to: p };
+        else return this.set({ hint: { text: 'Touch a junction to move it, or the middle of a road to bend it', ok: false } });
+      }
+    }
+    this.roadPreview();
+  }
+
+  private roadMove(p: P2 | null): void {
+    const g = this.roadG;
+    if (!g || !p) return;
+    if (g.kind === 'draw') g.end = p;
+    else if (g.kind === 'curve') {
+      const last = g.path[g.path.length - 1];
+      if (Math.hypot(p.x - last.x, p.z - last.z) < 3) return;
+      g.path.push(p);
+    } else if (g.kind === 'upgrade') {
+      const id = segmentAt(this.world, p, 4);
+      if (id === null || g.segs.has(id)) return;
+      g.segs.add(id);
+    } else g.to = p;
+    this.roadPreview();
+  }
+
+  private roadUp(): void {
+    const g = this.roadG;
+    this.roadG = null;
+    this.view.setRoadPreview(null, true);
+    this.view.setPreview(null);
+    if (!g) return;
+    const before = snapshot(this.world);
+    let ok = false;
+    let reason: string | undefined;
+    if (g.kind === 'draw' || g.kind === 'curve') {
+      this.roadG = g;
+      const plan = this.roadPlanNow();
+      this.roadG = null;
+      ok = plan.ok && commitRoad(this.world, plan).length > 0;
+      reason = plan.reason;
+    } else if (g.kind === 'upgrade') {
+      const plan = planUpgrade(this.world, [...g.segs], this.state.road.type);
+      ok = plan.ok && commitUpgrade(this.world, [...g.segs], this.state.road.type);
+      reason = plan.reason;
+    } else if (g.kind === 'node') {
+      const plan = planMoveNode(this.world, g.node, g.to, this.state.road.grid);
+      ok = plan.ok && commitMoveNode(this.world, g.node, g.to, this.state.road.grid);
+      reason = plan.reason;
+    } else {
+      const plan = planBend(this.world, g.seg, g.to);
+      ok = plan.ok && commitBend(this.world, g.seg, g.to);
+      reason = plan.reason;
+    }
+    if (ok) {
+      this.undoStack.push(before);
+      if (this.undoStack.length > UNDO_LIMIT) this.undoStack.shift();
+      this.changedSinceSave = true;
+      this.set({ hint: null });
+    } else if (reason) this.set({ hint: { text: reason, ok: false } });
+    else this.set({ hint: null });
+    this.refreshCity();
   }
 
   // ---------- terrain brush ----------
@@ -244,8 +401,6 @@ export class Game implements ToolHandler {
 
   private actionFor(a: TileXY, b: TileXY): Action | null {
     switch (this.state.tool) {
-      case 'road':
-        return { type: 'road', from: a, to: b };
       case 'zoneRes':
         return { type: 'zone', zone: ZONE_RES, from: a, to: b };
       case 'zoneCom':
@@ -270,7 +425,6 @@ export class Game implements ToolHandler {
     const money = this.world.unlimitedMoney ? '' : ` · ${fmtMoney(plan.cost)}`;
     let text: string;
     if (!plan.ok) text = plan.reason ?? 'Not possible here';
-    else if (plan.action.type === 'road') text = `Road: ${plan.count} tile${plan.count === 1 ? '' : 's'}${money}`;
     else if (plan.action.type === 'zone') text = `Zone ${plan.count} tile${plan.count === 1 ? '' : 's'}${money}`;
     else if (plan.action.type === 'bulldoze') text = `Bulldoze${plan.count ? ` ${plan.count} item${plan.count === 1 ? '' : 's'}` : ' zone'}${money}`;
     else text = `${BUILDING_DEFS[plan.action.building].label}${money}`;
@@ -286,12 +440,14 @@ export class Game implements ToolHandler {
   hover(cx: number, cy: number): void {
     if (!this.toolActive()) return;
     if (this.state.tool === 'terrain') return this.showBrush(this.cornerAt(cx, cy));
+    if (this.state.tool === 'road') return;
     const t = this.tileAt(cx, cy);
     if (sameTile(t, this.current)) return;
     this.current = t;
     this.updatePreview();
   }
   toolDown(cx: number, cy: number): void {
+    if (this.state.tool === 'road') return this.roadDown(this.pointAt(cx, cy));
     if (this.state.tool === 'terrain') {
       const at = this.cornerAt(cx, cy);
       const target = at ? this.world.heightAt(at.x * TILE, at.y * TILE) : 0;
@@ -305,6 +461,7 @@ export class Game implements ToolHandler {
     this.updatePreview();
   }
   toolMove(cx: number, cy: number): void {
+    if (this.state.tool === 'road') return this.roadMove(this.pointAt(cx, cy));
     if (this.state.tool === 'terrain') {
       if (this.stroke) this.stroke.at = this.cornerAt(cx, cy) ?? this.stroke.at;
       return this.showBrush(this.stroke?.at ?? null);
@@ -319,6 +476,10 @@ export class Game implements ToolHandler {
     if (this.state.tool === 'terrain') {
       this.endStroke();
       return this.view.setPreview(null);
+    }
+    if (this.state.tool === 'road') {
+      this.roadMove(this.pointAt(cx, cy));
+      return this.roadUp();
     }
     const t = this.tileAt(cx, cy) ?? this.current;
     const a = this.anchor ?? t;
@@ -342,6 +503,8 @@ export class Game implements ToolHandler {
   }
   toolCancel(): void {
     this.endStroke(); // keep what was already sculpted; it stays undoable
+    this.roadG = null;
+    this.view.setRoadPreview(null, true);
     this.anchor = this.current = null;
     this.view.setPreview(null);
     this.set({ hint: null });
@@ -570,6 +733,18 @@ export class Game implements ToolHandler {
       }
       brushTimes.sort((a, b) => a - b);
       const brushMs = moved > 0 ? percentile(brushTimes, 0.5) : NaN;
+      // Road edit cost: plan + build a road on open land and update the affected meshes.
+      const roadTimes: number[] = [];
+      for (let k = 0; k < 5; k++) {
+        const z = (10 + k * 4 + 0.5) * TILE;
+        const r0 = performance.now();
+        const plan = planRoad(city, [straight({ x: 8.5 * TILE, z }, { x: 40.5 * TILE, z })], 'street', false);
+        if (plan.ok) commitRoad(city, plan);
+        this.view.sync();
+        if (plan.ok) roadTimes.push(performance.now() - r0);
+      }
+      roadTimes.sort((a, b) => a - b);
+      const roadEditMs = roadTimes.length ? percentile(roadTimes, 0.5) : NaN;
       // Each variant flips one factor relative to the current configuration.
       const shOn = this.view.shadowsOn();
       const pr = this.view.basePixelRatio();
@@ -605,6 +780,9 @@ export class Game implements ToolHandler {
         diagnosis,
         trees,
         brushMs,
+        roadEditMs,
+        roadSegments: city.roads.segs.size,
+        roadChunks: this.view.roadChunkCount(),
       };
       this.set({ bench: { running: false, step: '', report: formatReport(report) } });
     } catch (e) {

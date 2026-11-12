@@ -35,6 +35,10 @@ export interface BenchReport {
   trees: number;
   /** Median ms for one terrain-brush frame on the City scenario: sim edit + mesh update. */
   brushMs: number;
+  /** Median ms to plan + build one road and update its meshes (City scenario). */
+  roadEditMs: number;
+  roadSegments: number;
+  roadChunks: number;
 }
 
 export const SCENARIOS = [
@@ -86,6 +90,7 @@ export function formatReport(r: BenchReport): string {
     );
   }
   lines.push('', `Terrain brush (City, size 8): ${r.brushMs.toFixed(1)} ms per frame of sculpting (main thread)`);
+  lines.push(`Road edit (City, ${r.roadSegments.toLocaleString('en-US')} road segments in ${r.roadChunks} chunks): ${r.roadEditMs.toFixed(1)} ms to build one road`);
   if (r.diagnosis.length) {
     lines.push('', `What costs frame time (City, ${r.trees.toLocaleString('en-US')} trees):`, 'Variant                         FPS   p50ms  p95ms');
     for (const d of r.diagnosis) lines.push(`${d.label.padEnd(30)} ${d.fps.toFixed(0).padStart(5)} ${d.p50.toFixed(1).padStart(7)} ${d.p95.toFixed(1).padStart(6)}`);

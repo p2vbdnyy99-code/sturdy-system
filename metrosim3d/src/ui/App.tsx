@@ -139,6 +139,28 @@ function Hud({ game }: { game: Game }) {
             })}
           </div>
         )}
+        {s.tool === 'road' && (
+          <div className="subbar roadbar">
+            <div className="seg" role="group" aria-label="Road type">
+              {(['street', 'avenue'] as const).map((t) => (
+                <button key={t} className={s.road.type === t ? 'on' : ''} onClick={() => game.setRoad({ type: t })}>
+                  {t === 'street' ? 'Street' : 'Avenue'}
+                </button>
+              ))}
+            </div>
+            <div className="seg" role="group" aria-label="Road mode">
+              {(['straight', 'curve', 'upgrade', 'edit'] as const).map((m) => (
+                <button key={m} className={s.road.mode === m ? 'on' : ''} onClick={() => game.setRoad({ mode: m })}>
+                  {m[0].toUpperCase() + m.slice(1)}
+                </button>
+              ))}
+            </div>
+            <label className="toggle compact">
+              <input type="checkbox" checked={s.road.grid} onChange={(e) => game.setRoad({ grid: e.target.checked })} />
+              <span>Snap to grid</span>
+            </label>
+          </div>
+        )}
         {s.tool === 'terrain' && (
           <div className="subbar brushbar">
             {(['raise', 'lower', 'flatten', 'smooth'] as const).map((m) => (

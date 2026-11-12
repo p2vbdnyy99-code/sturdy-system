@@ -1,5 +1,8 @@
 import * as THREE from 'three';
-import { KIND_ROAD, TILE } from '../sim/constants';
+import { TILE } from '../sim/constants';
+import { buildRoadGeometry } from './roadLayer';
+import type { Curve } from '../sim/roads/geometry';
+import type { RoadType } from '../sim/roads/types';
 import { PlanTile } from '../sim/tools';
 import { World } from '../sim/world';
 import { BuildingLayer } from './buildingLayer';
@@ -28,6 +31,10 @@ export class SceneRenderer {
   private buildings!: BuildingLayer;
   private zoneMesh: THREE.Mesh;
   private previewMesh: THREE.Mesh;
+  private roadGhost = new THREE.Mesh(
+    new THREE.BufferGeometry(),
+    new THREE.MeshBasicMaterial({ color: '#5fe08a', transparent: true, opacity: 0.5, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -4, polygonOffsetUnits: -4 }),
+  );
   private world!: World;
   private seen = { terrain: -1, road: -1, zone: -1, building: -1 };
   private quality: Quality;
@@ -81,7 +88,8 @@ export class SceneRenderer {
       new THREE.MeshBasicMaterial({ vertexColors: true, transparent: true, opacity: 0.55, depthWrite: false, depthTest: false }),
     );
     this.previewMesh.renderOrder = 10;
-    this.scene.add(this.zoneMesh, this.previewMesh);
+    this.roadGhost.renderOrder = 9;
+    this.scene.add(this.zoneMesh, this.previewMesh, this.roadGhost);
 
     this.world = world;
     this.rig = new CameraRig(world.size * TILE, (x, z) => this.world.heightAt(x, z));
@@ -91,7 +99,7 @@ export class SceneRenderer {
   setWorld(world: World): void {
     if (this.terrain) {
       // Replacing an existing city.
-      this.scene.remove(this.terrain.group, this.roads.mesh, this.buildings.group);
+      this.scene.remove(this.terrain.group, this.roads.group, this.buildings.group);
       this.terrain.dispose();
       this.roads.dispose();
       this.buildings.dispose();
@@ -99,9 +107,9 @@ export class SceneRenderer {
     this.world = world;
     const prof = QUALITY_PROFILES[this.quality];
     this.terrain = new TerrainMesh(world);
-    this.roads = new RoadLayer(world, Math.min(8, this.renderer.capabilities.getMaxAnisotropy()));
+    this.roads = new RoadLayer(world);
     this.buildings = new BuildingLayer(world, this.effectiveShadows(), prof.treeDensity, prof.treeShadows);
-    this.scene.add(this.terrain.group, this.roads.mesh, this.buildings.group);
+    this.scene.add(this.terrain.group, this.roads.group, this.buildings.group);
     // Rig bounds depend on map size.
     this.rig.setBounds(world.size * TILE);
     this.seen = { terrain: world.terrainVersion, road: -1, zone: -1, building: -1 };
@@ -190,19 +198,20 @@ export class SceneRenderer {
       ls[k] += n - t;
       t = n;
     };
-    // A terrain edit only needs roads / zone overlays rebuilt if the edited area contains any.
-    let roadsInEdit = false;
+    // A terrain edit only needs zone overlays rebuilt if the edited area contains any; roads
+    // rebuild just the chunks that overlap it.
     let zonesInEdit = false;
+    let terrainRect: { x0: number; z0: number; x1: number; z1: number } | undefined;
     if (w.terrainVersion !== this.seen.terrain) {
       const d = w.terrainDirty;
       if (d) {
         for (let y = Math.max(0, d.y0 - 1); y <= Math.min(w.size - 1, d.y1); y++)
           for (let x = Math.max(0, d.x0 - 1); x <= Math.min(w.size - 1, d.x1); x++) {
             const i = w.idx(x, y);
-            if (w.kind[i] === KIND_ROAD) roadsInEdit = true;
-            else if (w.zone[i] && w.kind[i] === 0) zonesInEdit = true;
+            if (w.zone[i] && w.kind[i] === 0) zonesInEdit = true;
           }
-      } else roadsInEdit = zonesInEdit = true;
+        terrainRect = { x0: d.x0 * TILE, z0: d.y0 * TILE, x1: d.x1 * TILE, z1: d.y1 * TILE };
+      } else zonesInEdit = true;
       if (d) {
         this.terrain.updateRect(d.x0, d.y0, d.x1, d.y1);
         this.buildings.updateTreeHeights(d.x0 - 1, d.y0 - 1, d.x1 + 1, d.y1 + 1);
@@ -212,11 +221,13 @@ export class SceneRenderer {
       this.seen.terrain = w.terrainVersion;
       trees = true;
     }
-    if (w.roadVersion !== this.seen.road || roadsInEdit) {
-      this.roads.update();
+    if (w.roadVersion !== this.seen.road || terrainRect || w.roads.dirtyChunks.size) {
+      t = performance.now();
+      const rebuilt = this.roads.update(terrainRect);
       lap('roads');
+      if (w.roadVersion !== this.seen.road) trees = true;
       this.seen.road = w.roadVersion;
-      trees = true;
+      if (rebuilt) this.dirty = true;
     }
     if (w.zoneVersion !== this.seen.zone || w.buildingVersion !== this.seen.building || zonesInEdit) {
       t = performance.now();
@@ -251,6 +262,21 @@ export class SceneRenderer {
     const g = buildTileQuads(w, tiles, 0.2, (t) => ZONE_COLORS[t.z], 0.5);
     this.zoneMesh.geometry.dispose();
     this.zoneMesh.geometry = g;
+  }
+
+  /** Ghost of a road being drawn or edited (green = can build, red = blocked). */
+  setRoadPreview(curves: { curve: Curve; type: RoadType }[] | null, ok: boolean): void {
+    const g = curves && curves.length
+      ? buildRoadGeometry(this.world, curves.map((c) => ({ curve: c.curve, type: c.type, trimA: 0, trimB: 0 })), [], 0.45)
+      : new THREE.BufferGeometry();
+    this.roadGhost.geometry.dispose();
+    this.roadGhost.geometry = g;
+    (this.roadGhost.material as THREE.MeshBasicMaterial).color.set(ok ? '#5fe08a' : '#ff4d4d');
+    this.dirty = true;
+  }
+
+  roadChunkCount(): number {
+    return this.roads.chunkCount();
   }
 
   setPreview(tiles: PlanTile[] | null): void {

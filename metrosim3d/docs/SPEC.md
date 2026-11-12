@@ -92,7 +92,7 @@ Design rules:
 | Phase | Development | Status |
 |---|---|---|
 | 1 | Audit and optimise the existing build | **Done**: iPad Air 3 gate passed on 2026-11-12 (City 52 FPS, Town 60 FPS at Medium; see `docs/AUDIT.md` §13) |
-| 2 | Advanced road and transport construction (§7) | **2a done** (waiting on the iPad benchmark). 2b approved once 2a passes. 2c–2e not yet approved. |
+| 2 | Advanced road and transport construction (§7) | **2a passed** on iPad (AUDIT §15). **2b built**, waiting on the iPad benchmark. 2c–2e not yet approved. |
 | 3 | Traffic and pedestrian simulation (road graph, pathfinding in a Web Worker, vehicles with LOD) | Not started |
 | 4 | Population, economy and **finance** (demand, employment; treasury, banking, revenue, expenditure, reports, per §8) | Not started. Finance interfaces exist since 2a. |
 | 5 | Utilities and public services (power, water, sewage, health, education, police, fire), each with its §8 revenue/expense lines | Not started |
@@ -126,7 +126,7 @@ Roads change from "a tile marked road" to a **road graph**: nodes (junctions and
 | | Milestone | Contents |
 |---|---|---|
 | 2a ✅ | Creative mode + terrain tools | A per-city **Creative/Realistic** switch. Creative ignores money, slope and water-placement limits. Terrain raise / lower / level / smooth brushes. |
-| 2b | Road graph + curved roads | Graph model, straight and curved drawing with snapping, automatic junctions where roads cross, road types (street, avenue). Tile footprint derived from the graph. Chunked road meshes. Save v2 + v1 migration. |
+| 2b ✅ | Road graph + curved roads | Graph model, straight and curved drawing with snapping, automatic junctions where roads cross, road types (street, avenue). Tile footprint derived from the graph. Chunked road meshes. Save v2 + v1 migration. |
 | 2c | Bridges, elevated roads, tunnels | Height control while drawing; automatic bridge over water; piers; tunnel portals; slope limits per road type. |
 | 2d | Highways and interchanges | One-way highways, on/off ramps, flyovers, freeform interchanges built from ramps; prefab interchange templates later. |
 | 2e | Larger maps | Up to 4 km (512 tiles): terrain split into chunks with level-of-detail, adopted only if the gate still passes. |
@@ -149,6 +149,24 @@ Roads change from "a tile marked road" to a **road graph**: nodes (junctions and
   - Buildings over water stand on piers; roads sit just above the surface.
 - **Terrain brush** (`sim/terraform.ts`): raise, lower, flatten (to the stroke's start height) and smooth. Size 1–16 tiles, strength 1–10, smooth falloff. Ground under buildings is locked; roads follow the ground. Earthworks cost money in Realistic mode. One undo step per stroke. Digging below sea level makes water; raising seabed makes land.
 - **Saves v2:** mode, Creative finance flag, treasury ledger. v1 saves migrate on load (unlimited money → Creative; limited → Realistic). Tests cover this.
+
+### Phase 2b as built
+- **Road graph** (`src/sim/roads/`): nodes and segments; each segment is a quadratic curve with a type.
+  - Tiles are *derived*: a tile is a road when its centre is within half the road width + 3 m of the centreline (reference-counted). Zoning, growth, placement and bulldozing work unchanged.
+  - **Traffic-ready:** `lanesFor(type)` gives lane offsets and directions (right-hand traffic); junctions are graph nodes.
+- **Road types:** Street (8 m, 1 lane each way, centre line, $12/m, max grade 15%) and Avenue (14 m, 2 lanes each way, planted median, $28/m, max grade 12%).
+- **Touch drawing:**
+  - **Straight:** drag start → end.
+  - **Curve:** draw with your finger; the path is simplified and fitted into smooth, tangent-continuous curves.
+  - **Upgrade:** drag along roads to change their type (refused if the wider road would hit buildings).
+  - **Edit:** drag a junction to move it (drop it on another end to join roads), or drag the middle of a road to bend it.
+  - Ends snap to existing junctions and road ends (9 m), onto roads (creating a T), and optionally to the grid (streets to tile centres, avenues to tile edges). A green/red ghost previews the road, with blocked tiles in red, length, junction count and cost.
+- **Automatic junctions:** crossing or meeting roads split both roads at a shared node.
+  - Refused with a clear message: running along or grazing an existing road, crossings flatter than 25°, junctions closer than 10 m, building conflicts. In Realistic mode also water and gradient.
+- **Delete:** the bulldozer removes whole segments (junction to junction) touched by its rectangle.
+- **Rendering:** ribbons that follow terrain, with markings drawn per pixel by a shader (no textures), and round junction pads. Meshes are grouped in 256 m chunks; an edit or terrain stroke rebuilds only the chunks it touches, plus neighbours whose junction shape changed.
+- **Saves v3:** the road graph is saved. **v1/v2 cities migrate automatically**: grid roads become street segments covering exactly the same tiles (tested), and buildings are untouched.
+- **Zoning unchanged**, as instructed. Plot shapes along curved roads are to be judged by playing.
 
 ### Performance rules for Phase 2
 - Road meshes are built in map chunks, so an edit rebuilds one chunk, never the whole network.

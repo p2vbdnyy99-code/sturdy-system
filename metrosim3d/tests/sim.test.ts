@@ -1,10 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { COST_ROAD, KIND_BUILDING, KIND_ROAD, MAX_ROAD_SLOPE, ZONE_COM, ZONE_RES } from '../src/sim/constants';
+import { KIND_BUILDING, KIND_ROAD, MAX_ROAD_SLOPE, ZONE_COM, ZONE_RES } from '../src/sim/constants';
 import { stepGrowth } from '../src/sim/growth';
 import { restore, snapshot } from '../src/sim/serialize';
 import { computeStats } from '../src/sim/stats';
-import { commitAction, planAction, roadMask, roadPath, N, E, S, W } from '../src/sim/tools';
+import { commitAction, planAction } from '../src/sim/tools';
 import { World } from '../src/sim/world';
+import { planTileRoad, tileRoad } from './helpers';
 
 /** A flat 32x32 world at height 5 (no water, no slopes) for predictable tests. */
 function flatWorld(size = 32): World {
@@ -38,33 +39,32 @@ describe('terrain generation', () => {
   });
 });
 
-describe('roads', () => {
-  it('builds an L-shaped path and charges per new tile', () => {
-    expect(roadPath({ x: 0, y: 0 }, { x: 3, y: 1 })).toEqual([
-      { x: 0, y: 0 }, { x: 1, y: 0 }, { x: 2, y: 0 }, { x: 3, y: 0 }, { x: 3, y: 1 },
-    ]);
+describe('roads (tile helper over the road graph)', () => {
+  it('builds an L-shaped street, charges per metre, and joins roads at junctions', () => {
     const w = flatWorld();
     w.mode = 'realistic';
     const start = w.money;
-    const r = commitAction(w, { type: 'road', from: { x: 2, y: 2 }, to: { x: 6, y: 2 } });
+    const r = tileRoad(w, { x: 2, y: 2 }, { x: 6, y: 2 });
     expect(r.ok).toBe(true);
-    expect(w.money).toBe(start - 5 * COST_ROAD);
-    // Overlapping road only charges the new tiles.
-    commitAction(w, { type: 'road', from: { x: 4, y: 2 }, to: { x: 4, y: 5 } });
-    expect(w.money).toBe(start - 8 * COST_ROAD);
-    expect(roadMask(w, 4, 2)).toBe(E | W | S);
-    expect(roadMask(w, 4, 5)).toBe(N);
+    expect(w.money).toBe(start - 32 * 12); // 4 tiles × 8 m × $12/m
+    for (let x = 2; x <= 6; x++) expect(w.getKind(x, 2)).toBe(KIND_ROAD);
+    expect(w.getKind(2, 1)).toBe(0);
+    expect(w.getKind(2, 3)).toBe(0);
+    // A road starting in the middle of another creates a T junction.
+    expect(tileRoad(w, { x: 4, y: 2 }, { x: 4, y: 6 }).ok).toBe(true);
+    const junction = w.roads.nodeNear({ x: 4.5 * 8, z: 2.5 * 8 }, 1)!;
+    expect(w.roads.degree(junction.id)).toBe(3);
   });
 
-  it('rejects water and steep tiles, and does not charge', () => {
+  it('rejects water in Realistic mode and does not charge', () => {
     const w = flatWorld();
     w.mode = 'realistic';
-    w.heights[w.size + 1 + 5] = -5; // corner (5,1) underwater -> tiles around it are water
-    const plan = planAction(w, { type: 'road', from: { x: 3, y: 1 }, to: { x: 7, y: 1 } });
+    w.heights[w.size + 1 + 5] = -5; // corner (5,1) underwater
+    const plan = planTileRoad(w, { x: 3, y: 1 }, { x: 7, y: 1 });
     expect(plan.ok).toBe(false);
     expect(plan.reason).toMatch(/water/);
     const before = w.money;
-    expect(commitAction(w, plan.action).ok).toBe(false);
+    expect(tileRoad(w, { x: 3, y: 1 }, { x: 7, y: 1 }).ok).toBe(false);
     expect(w.money).toBe(before);
     expect(w.getKind(3, 1)).toBe(0);
   });
@@ -73,9 +73,9 @@ describe('roads', () => {
     const w = flatWorld();
     w.mode = 'realistic';
     w.money = 150;
-    expect(commitAction(w, { type: 'road', from: { x: 0, y: 0 }, to: { x: 4, y: 0 } })).toMatchObject({ ok: false, reason: 'Not enough money' });
+    expect(tileRoad(w, { x: 0, y: 0 }, { x: 4, y: 0 })).toMatchObject({ ok: false, reason: 'Not enough money' });
     w.mode = 'creative';
-    expect(commitAction(w, { type: 'road', from: { x: 0, y: 0 }, to: { x: 4, y: 0 } }).ok).toBe(true);
+    expect(tileRoad(w, { x: 0, y: 0 }, { x: 4, y: 0 }).ok).toBe(true);
     expect(w.money).toBe(150);
   });
 });
@@ -83,7 +83,7 @@ describe('roads', () => {
 describe('zoning, growth, placement, bulldozing', () => {
   it('zones only empty land and grows buildings only near roads', () => {
     const w = flatWorld();
-    commitAction(w, { type: 'road', from: { x: 0, y: 10 }, to: { x: 31, y: 10 } });
+    tileRoad(w, { x: 0, y: 10 }, { x: 31, y: 10 });
     const z = commitAction(w, { type: 'zone', zone: ZONE_RES, from: { x: 0, y: 0 }, to: { x: 31, y: 31 } });
     expect(z.ok).toBe(true);
     expect(w.getZone(5, 10)).toBe(0); // road tile not zoned
@@ -103,7 +103,7 @@ describe('zoning, growth, placement, bulldozing', () => {
     expect(w.getKind(5, 5)).toBe(KIND_BUILDING);
     expect(w.getZone(5, 5)).toBe(0);
     expect(planAction(w, { type: 'place', building: 'park', at: { x: 5, y: 5 } }).ok).toBe(false);
-    expect(planAction(w, { type: 'road', from: { x: 3, y: 5 }, to: { x: 7, y: 5 } }).ok).toBe(false);
+    expect(planTileRoad(w, { x: 3, y: 5 }, { x: 7, y: 5 }).ok).toBe(false);
     // Bulldozing one tile of the footprint removes the whole building.
     expect(commitAction(w, { type: 'bulldoze', from: { x: 5, y: 5 }, to: { x: 5, y: 5 } }).ok).toBe(true);
     expect(w.buildings.size).toBe(0);
@@ -116,7 +116,7 @@ describe('save snapshot', () => {
     const w = flatWorld(48);
     w.name = 'Roundtrip';
     w.mode = 'realistic';
-    expect(commitAction(w, { type: 'road', from: { x: 20, y: 20 }, to: { x: 30, y: 24 } }).ok).toBe(true);
+    expect(tileRoad(w, { x: 20, y: 20 }, { x: 30, y: 24 }).ok).toBe(true);
     commitAction(w, { type: 'zone', zone: ZONE_RES, from: { x: 18, y: 18 }, to: { x: 32, y: 26 } });
     for (let i = 0; i < 50; i++) stepGrowth(w);
     const data = snapshot(w);

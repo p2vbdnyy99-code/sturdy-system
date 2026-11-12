@@ -78,6 +78,27 @@ const browser = await chromium.launch({ args: ['--use-angle=swiftshader', '--ena
   let s = await st();
   console.log('after road drag:', s, 'hint during drag:', during.hint);
   if (s.roads < 5) fail(`road not built (hint: ${JSON.stringify(during.hint)})`);
+  // Curve: draw an arc with the mouse that crosses the road -> automatic junction.
+  await page.getByRole('group', { name: 'Road mode' }).getByRole('button', { name: 'Curve' }).click();
+  const midX = (RX0 + RX1) / 2;
+  await page.mouse.move(midX - 60, RY - 70);
+  await page.mouse.down();
+  for (let i = 1; i <= 20; i++) {
+    const a = (i / 20) * Math.PI;
+    await page.mouse.move(midX - Math.cos(a) * 60, RY - 70 + Math.sin(a) * 140);
+  }
+  await page.mouse.up();
+  const graph = await page.evaluate(() => {
+    const net = window.__game.world.roads;
+    let maxDeg = 0;
+    for (const n of net.nodes.values()) maxDeg = Math.max(maxDeg, net.degree(n.id));
+    return { segs: net.segs.size, maxDeg, chunks: window.__game.view.roadChunkCount() };
+  });
+  console.log('road graph after curve:', graph);
+  if (graph.segs < 3 || graph.maxDeg < 3) fail('curved road did not create a junction');
+  if (graph.chunks < 1) fail('roads not rendered');
+  await page.screenshot({ path: `${shots}/2a-roads.png` });
+  await page.getByRole('group', { name: 'Road mode' }).getByRole('button', { name: 'Straight' }).click();
   // Zone residential above and below the road.
   await page.getByRole('button', { name: 'Homes' }).click();
   await page.mouse.move(RX0, RY - 40);

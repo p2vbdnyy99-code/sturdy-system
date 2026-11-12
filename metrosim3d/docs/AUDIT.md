@@ -196,3 +196,29 @@ Reading:
 - Terrain mesh updates only the brushed rectangle; trees in it are re-seated to the new ground.
 - Building instances are no longer rebuilt on terrain edits (foundations are locked).
 - Frame-rate scenarios: unchanged geometry and shaders since run 4. To confirm on the iPad.
+
+## 15. iPad results, run 5 (2026-11-12 06:44, Phase 2a build): 2a gate passed
+
+Safari, landscape. Canvas 1112×658 at 1× (7% more pixels than run 4's 1112×612).
+
+| Scenario | FPS | p50 ms | p95 ms | Run 4 FPS |
+|---|---|---|---|---|
+| Empty map | 60 | 17 | 17 | 60 |
+| Town 1,500 | 60 | 17 | 19 | 60 |
+| City 5,000 | 51 | 20 | 22 | 52 |
+| Metro 10,000 | 48 | 21 | 25 | 47 |
+
+- **Terrain brush: 1.0 ms per frame of sculpting** on the iPad (cloud machine: 2.6 ms).
+- **Diagnosis:** with shadows p50 27 ms; 1.5× p50 24 ms. Consistent with run 4.
+- **Verdict:** 2a adds no frame-rate cost, and sculpting is cheap. Phase 2b starts as approved.
+
+## 16. Phase 2b: cloud measurements (the iPad benchmark is the acceptance gate)
+
+- Tests: 32 unit tests (13 new for roads):
+  - Junction creation, snapping, curve fitting continuity, overlap, grazing and crowded-junction refusals, gradient by mode.
+  - Upgrade, moving and joining junctions, bending, delete, bulldoze by segment, lane layout.
+  - Exact v1/v2 tile-road migration, v3 round-trip.
+- Smoke test: mouse straight road, mouse-drawn curve crossing it (2 junctions, max degree 4), touch road, plus all earlier checks.
+- Benchmark city roads now go through the graph (657 segments in 17 chunks at City). Draw calls: City 11 → 22, Metro 11 → 27 (one per road chunk). Triangles: City 430k → 463k, Metro 587k → 642k.
+- **Road edit** (plan + build + mesh update, City): **2.8 ms** on the cloud machine. Terrain brush: 1.4 ms.
+- **Risk to watch on the iPad:** the extra draw calls and the road shader's per-pixel cost. The A12 was shown to be per-pixel bound (§11). If City drops below 50 FPS, simplify the road shader at Medium (drop the edge lines, cheaper anti-aliasing).

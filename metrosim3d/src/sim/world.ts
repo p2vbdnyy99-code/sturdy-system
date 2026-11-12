@@ -9,6 +9,7 @@ import {
   ZoneId,
 } from './constants';
 import { Treasury } from './finance/treasury';
+import { RoadNetwork } from './roads/network';
 import { Rng } from './rng';
 import type { GameMode } from './rules';
 import { generateHeights } from './terrain';
@@ -51,6 +52,12 @@ export class World {
   /** Creative mode only: charge construction to the treasury anyway (optional finance simulation). */
   financeInCreative = false;
   treasury = new Treasury(START_MONEY);
+  /** Road graph: the source of truth for roads. KIND_ROAD tiles are derived from it (roads/raster.ts). */
+  roads = new RoadNetwork();
+  /** Number of road segments covering each tile. */
+  roadCount: Uint16Array;
+  /** Tiles each segment covers (cached for exact removal). */
+  segTiles = new Map<number, number[]>();
   /** Union of terrain corners changed since the renderer last synced (null = none / full). */
   terrainDirty: { x0: number; y0: number; x1: number; y1: number } | null = null;
   rng: Rng;
@@ -71,6 +78,7 @@ export class World {
     this.kind = new Uint8Array(size * size);
     this.zone = new Uint8Array(size * size);
     this.buildingAt = new Int32Array(size * size).fill(-1);
+    this.roadCount = new Uint16Array(size * size);
     this.rng = new Rng(this.seed ^ 0x9e3779b9);
   }
 

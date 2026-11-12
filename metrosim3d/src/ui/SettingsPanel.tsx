@@ -82,7 +82,8 @@ export function SettingsPanel({ game, state, onClose }: { game: Game; state: UiS
             <li><b>Mouse:</b> left button uses the tool, right-drag rotates/tilts, middle-drag or Shift+drag pans, wheel zooms.</li>
             <li><b>Keys:</b> WASD/arrows pan, Q/E rotate, R/F tilt, +/− zoom.</li>
             <li>Terrain: pick Raise, Lower, Flatten or Smooth, then hold and drag. Flatten levels to the height where you start. Ground under buildings never moves.</li>
-            <li>Roads: drag from start to end (L-shaped). Zones and bulldozer: drag a rectangle. Buildings: drag to position, lift to place.</li>
+            <li>Roads: choose Street or Avenue, then Straight (drag start to end), Curve (draw with your finger), Upgrade (drag along roads) or Edit (move junctions, bend roads). Crossing roads make junctions automatically.</li>
+            <li>Zones and bulldozer: drag a rectangle (bulldozing a road removes it junction to junction). Buildings: drag to position, lift to place.</li>
             <li>Zoned land within 2 tiles of a road grows buildings while time runs.</li>
           </ul>
         </section>
