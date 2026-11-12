@@ -40,9 +40,17 @@ export class SceneRenderer {
   /** Time spent in the last sync(), by layer (ms). For the performance test. */
   lastSync = { terrain: 0, roads: 0, zones: 0, buildings: 0, trees: 0 };
 
-  constructor(private canvas: HTMLCanvasElement, world: World, quality: Quality) {
+  /** Player's shadow setting: null follows the quality preset. */
+  private shadowPref: boolean | null = null;
+
+  private effectiveShadows(): boolean {
+    return this.shadowPref ?? QUALITY_PROFILES[this.quality].shadows;
+  }
+
+  constructor(private canvas: HTMLCanvasElement, world: World, quality: Quality, shadowPref: boolean | null = null) {
     this.quality = quality;
-    const prof = QUALITY_PROFILES[quality];
+    this.shadowPref = shadowPref;
+    const prof = { ...QUALITY_PROFILES[quality], shadows: shadowPref ?? QUALITY_PROFILES[quality].shadows };
     this.renderer = new THREE.WebGLRenderer({ canvas, antialias: prof.antialias, powerPreference: 'high-performance' });
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, prof.pixelRatioCap));
     this.renderer.shadowMap.enabled = prof.shadows;
@@ -92,7 +100,7 @@ export class SceneRenderer {
     const prof = QUALITY_PROFILES[this.quality];
     this.terrain = new TerrainMesh(world);
     this.roads = new RoadLayer(world, Math.min(8, this.renderer.capabilities.getMaxAnisotropy()));
-    this.buildings = new BuildingLayer(world, prof.shadows, prof.treeDensity, prof.treeShadows);
+    this.buildings = new BuildingLayer(world, this.effectiveShadows(), prof.treeDensity, prof.treeShadows);
     this.scene.add(this.terrain.group, this.roads.mesh, this.buildings.group);
     // Rig bounds depend on map size.
     this.rig.setBounds(world.size * TILE);
@@ -108,23 +116,33 @@ export class SceneRenderer {
     const prof = QUALITY_PROFILES[q];
     // Antialiasing is fixed at context creation; the rest can change live.
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, prof.pixelRatioCap));
-    this.renderer.shadowMap.enabled = prof.shadows;
     this.renderer.shadowMap.type = prof.softShadows ? THREE.PCFSoftShadowMap : THREE.PCFShadowMap;
     this.shadowMode = prof.shadowMode;
-    this.shadowDirty = true;
-    this.sun.castShadow = prof.shadows;
-    if (prof.shadows) {
-      this.sun.shadow.mapSize.set(prof.shadowMapSize, prof.shadowMapSize);
-      this.sun.shadow.map?.dispose();
-      this.sun.shadow.map = null;
-    }
-    this.buildings.setShadows(prof.shadows, prof.treeShadows);
+    this.sun.shadow.map?.dispose();
+    this.sun.shadow.map = null;
+    this.applyShadows(this.effectiveShadows());
     this.buildings.setTreeDensity(prof.treeDensity);
-    this.scene.traverse((o) => {
-      const m = (o as THREE.Mesh).material as THREE.Material | undefined;
+    this.resize();
+  }
+
+  /** Player's shadow choice: true/false, or null to follow the quality preset. */
+  setShadowPref(p: boolean | null): void {
+    this.shadowPref = p;
+    this.applyShadows(this.effectiveShadows());
+  }
+
+  private applyShadows(on: boolean): void {
+    const prof = QUALITY_PROFILES[this.quality];
+    this.renderer.shadowMap.enabled = on;
+    this.sun.castShadow = on;
+    if (on) this.sun.shadow.mapSize.set(prof.shadowMapSize, prof.shadowMapSize);
+    this.buildings.setShadows(on, prof.treeShadows);
+    this.scene.traverse((obj) => {
+      const m = (obj as THREE.Mesh).material as THREE.Material | undefined;
       if (m) m.needsUpdate = true;
     });
-    this.resize();
+    this.shadowDirty = true;
+    this.dirty = true;
   }
 
   /**
@@ -138,24 +156,23 @@ export class SceneRenderer {
       this.shadowDirty = true;
     }
     if (o.shadows !== undefined) {
-      const on = o.shadows ?? prof.shadows;
-      if (this.renderer.shadowMap.enabled !== on) {
-        this.renderer.shadowMap.enabled = on;
-        this.sun.castShadow = on;
-        if (on) this.sun.shadow.mapSize.set(prof.shadowMapSize || 1024, prof.shadowMapSize || 1024);
-        this.scene.traverse((obj) => {
-          const m = (obj as THREE.Mesh).material as THREE.Material | undefined;
-          if (m) m.needsUpdate = true;
-        });
-        this.shadowDirty = true;
-      }
+      const on = o.shadows ?? this.effectiveShadows();
+      if (this.renderer.shadowMap.enabled !== on) this.applyShadows(on);
     }
-    if (o.pixelRatio !== undefined) {
+    if (o.pixelRatio !== undefined && o.pixelRatio !== this.renderer.getPixelRatio()) {
       this.renderer.setPixelRatio(o.pixelRatio ?? Math.min(window.devicePixelRatio || 1, prof.pixelRatioCap));
       this.resize();
     }
     if (o.trees !== undefined) this.buildings.setTreesVisible(o.trees ?? true);
     this.dirty = true;
+  }
+
+  shadowsOn(): boolean {
+    return this.renderer.shadowMap.enabled;
+  }
+
+  basePixelRatio(): number {
+    return Math.min(window.devicePixelRatio || 1, QUALITY_PROFILES[this.quality].pixelRatioCap);
   }
 
   treeCount(): number {

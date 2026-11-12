@@ -31,9 +31,18 @@ export function SettingsPanel({ game, state, onClose }: { game: Game; state: UiS
             ))}
           </div>
           <p className="muted">
-            Low: no shadows, fewer trees, 1× resolution. Medium: soft shadows, 1.5× resolution (iPad default). High: sharper
-            shadows, 2× resolution. Anti-aliasing changes apply after reloading.
+            Low: fewer trees, no anti-aliasing. Medium (iPad default): anti-aliasing, more trees. High: 2× resolution and
+            shadows that follow the camera. Anti-aliasing changes apply after reloading.
           </p>
+          <h3>Shadows</h3>
+          <div className="seg wide" role="group" aria-label="Shadows">
+            {(['auto', 'on', 'off'] as const).map((v) => (
+              <button key={v} className={state.settings.shadows === v ? 'on' : ''} onClick={() => game.updateSettings({ shadows: v })}>
+                {v === 'auto' ? 'Use preset' : v === 'on' ? 'On' : 'Off'}
+              </button>
+            ))}
+          </div>
+          <p className="muted">On the iPad Air 3, shadows cost about a quarter of the frame rate.</p>
           <label className="toggle">
             <input type="checkbox" checked={state.settings.showPerf} onChange={(e) => game.updateSettings({ showPerf: e.target.checked })} />
             <span>Show render time in statistics</span>

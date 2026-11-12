@@ -141,3 +141,29 @@ Reading:
   - Trade-off: shadow texels are about 1.1 m on the 1.5 km map, so they are softer up close. Checked by screenshot: no acne or gaps.
 - **High keeps per-frame shadows** that follow the camera (the iPhone held 60 Hz with them).
 - **New diagnosis rows:** "No shadows + 1x" (the floor without both costs) and "Shadows per frame" (the old behaviour, for a direct comparison).
+
+## 11. iPad results, run 3 (2026-11-12 03:38, after section 10)
+
+**Different environment from runs 1–2:** inside the Claude app, portrait. Canvas 870×879 device pixels (0.76M), against 1668×918 (1.53M) in Safari for run 2. Absolute FPS is **not comparable** with runs 1–2. Comparisons *within* this run are valid.
+
+| Scenario | FPS | p50 ms | p95 ms |
+|---|---|---|---|
+| Empty map | 56 | 17 | 22 |
+| Town 1,500 | 48 | 21 | 27 |
+| City 5,000 | 43 | 23 | 32 |
+| Metro 10,000 | 43 | 23 | 32 |
+
+Diagnosis (City): as configured 43 FPS (p50 24 ms) · no shadows 41 (p50 17) · 1× resolution 54 (18) · no shadows + 1× **60 (17, p95 18)** · shadows per frame 42 (24).
+
+Reading:
+- **Static shadows bought nothing:** 43 against 42 for per-frame shadows. The cost is *sampling* the shadow map in every pixel, not drawing it. Section 10's change is kept (it's harmless), but it was not the fix.
+- **The A12 is limited by per-pixel work.** 1× resolution alone gives +11 FPS. Removing shadows and going to 1× hits the 60 Hz ceiling, with p95 at 18 ms.
+- **The "no shadows" mean (41 FPS) contradicts its p50 (17 ms).** Shader recompiles after toggling shadows inflated the mean. The diagnosis settle time is now 1.5 s, and p50 is the trustworthy figure for that row.
+- **Gate (Town ≥ 50) still failed** as configured, even on half the pixels of run 2.
+
+## 12. Changes after run 3
+
+- **Medium now renders at 1× resolution with shadows off.** Anti-aliasing and 70% tree density are kept. This configuration measured 60 FPS (p95 18 ms) at City in run 3, on that canvas.
+- **Shadows are a separate setting:** Use preset / On / Off, stored per device. A player can choose shadows over frame rate at any quality.
+- **The diagnosis now flips factors relative to the current setup:** with or without shadows, the other resolution, then both together.
+- **To confirm:** run 4 in Safari, full screen, landscape, so it is comparable with runs 1–2. Full-screen 1× is about 0.68–0.93M pixels, close to run 3's 0.76M, so 55–60 FPS is expected. That is an estimate, not a measurement.

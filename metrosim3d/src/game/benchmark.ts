@@ -84,8 +84,8 @@ export function formatReport(r: BenchReport): string {
     );
   }
   if (r.diagnosis.length) {
-    lines.push('', `What costs frame time (City, ${r.trees.toLocaleString('en-US')} trees):`, 'Variant              FPS   p50ms  p95ms');
-    for (const d of r.diagnosis) lines.push(`${d.label.padEnd(18)} ${d.fps.toFixed(0).padStart(5)} ${d.p50.toFixed(1).padStart(7)} ${d.p95.toFixed(1).padStart(6)}`);
+    lines.push('', `What costs frame time (City, ${r.trees.toLocaleString('en-US')} trees):`, 'Variant                         FPS   p50ms  p95ms');
+    for (const d of r.diagnosis) lines.push(`${d.label.padEnd(30)} ${d.fps.toFixed(0).padStart(5)} ${d.p50.toFixed(1).padStart(7)} ${d.p95.toFixed(1).padStart(6)}`);
   }
   lines.push('', 'FPS/p50/p95/worst: frame interval while the camera orbits (60 FPS = 16.7 ms).',
     'build: ms to create all meshes for the city. rebuild: ms of main-thread work per growth step.');

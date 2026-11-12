@@ -9,7 +9,7 @@ import { SceneRenderer } from '../render/SceneRenderer';
 import { listSaves, loadCity, newSaveId, saveCity, SaveMeta } from '../storage/saves';
 import { InputController, ToolHandler } from './InputController';
 import { BenchReport, DIAG_SECONDS, formatReport, makeScenarioWorld, ORBIT_SECONDS, percentile, ScenarioResult, SCENARIOS } from './benchmark';
-import { loadSettings, saveSettings, Settings } from './settings';
+import { loadSettings, saveSettings, Settings, shadowPref } from './settings';
 
 export type ToolId = 'pan' | 'road' | 'zoneRes' | 'zoneCom' | 'zoneInd' | 'place' | 'bulldoze';
 export type Speed = 0 | 1 | 3;
@@ -70,7 +70,7 @@ export class Game implements ToolHandler {
   constructor(canvas: HTMLCanvasElement) {
     const settings = loadSettings();
     this.world = new World(MAP_SIZES.large, randomSeed(), 'New City');
-    this.view = new SceneRenderer(canvas, this.world, settings.quality);
+    this.view = new SceneRenderer(canvas, this.world, settings.quality, shadowPref(settings));
     this.input = new InputController(canvas, this.view.rig, this);
     this.state = {
       tool: 'road',
@@ -296,6 +296,7 @@ export class Game implements ToolHandler {
     const settings = { ...this.state.settings, ...patch };
     saveSettings(settings);
     if (patch.quality) this.view.setQuality(patch.quality as Quality);
+    if (patch.shadows) this.view.setShadowPref(shadowPref(settings));
     this.set({ settings });
   }
   camera(action: 'rotL' | 'rotR' | 'tiltUp' | 'tiltDown' | 'zoomIn' | 'zoomOut' | 'reset'): void {
@@ -464,19 +465,24 @@ export class Game implements ToolHandler {
       this.view.setWorld(city);
       const trees = this.view.treeCount();
       const span = city.size * 8;
+      // Each variant flips one factor relative to the current configuration.
+      const shOn = this.view.shadowsOn();
+      const pr = this.view.basePixelRatio();
+      const altPr = pr > 1 ? 1 : Math.min(window.devicePixelRatio || 1, 1.5);
+      const prLabel = `${altPr}x resolution`;
+      const shLabel = shOn ? 'No shadows' : 'With shadows';
       const variants: { label: string; apply: () => void }[] = [
-        { label: 'As configured', apply: () => {} },
-        { label: 'No shadows', apply: () => this.view.diagnose({ shadows: false }) },
-        { label: '1x resolution', apply: () => this.view.diagnose({ pixelRatio: 1 }) },
-        { label: 'No shadows + 1x', apply: () => this.view.diagnose({ shadows: false, pixelRatio: 1 }) },
-        { label: 'Shadows per frame', apply: () => this.view.diagnose({ shadowMode: 'dynamic' }) },
+        { label: `As set (${pr}x, shadows ${shOn ? 'on' : 'off'})`, apply: () => {} },
+        { label: shLabel, apply: () => this.view.diagnose({ shadows: !shOn }) },
+        { label: prLabel, apply: () => this.view.diagnose({ pixelRatio: altPr }) },
+        { label: `${shLabel} + ${altPr}x`, apply: () => this.view.diagnose({ shadows: !shOn, pixelRatio: altPr }) },
       ];
       for (const v of variants) {
         this.set({ bench: { running: true, step: `Diagnosing: ${v.label}…`, report: null } });
         this.view.diagnose({ shadows: null, pixelRatio: null, trees: null, shadowMode: null });
         v.apply();
         this.view.rig.setState({ tx: span / 2, tz: span / 2, distance: 380, yaw: 0, pitch: 0.75 });
-        const t = await this.orbit(DIAG_SECONDS, 600);
+        const t = await this.orbit(DIAG_SECONDS, 1500); // long settle: toggling shadows recompiles shaders
         const st = [...t].sort((a, b) => a - b);
         const tot = t.reduce((a, b) => a + b, 0);
         diagnosis.push({ label: v.label, fps: t.length ? (1000 * t.length) / tot : 0, p50: percentile(st, 0.5), p95: percentile(st, 0.95) });

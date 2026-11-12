@@ -19,9 +19,12 @@ export interface QualityProfile {
   softShadows: boolean;
 }
 
+// Medium was set from iPad Air 3 run 3 (docs/AUDIT.md §11): per-pixel cost dominates on the A12,
+// so Medium renders at 1x with shadows off by default (60 FPS floor measured); shadows remain a
+// separate setting for players who prefer them over frame rate.
 export const QUALITY_PROFILES: Record<Quality, QualityProfile> = {
-  low: { pixelRatioCap: 1, antialias: false, shadows: false, shadowMapSize: 0, treeDensity: 0.35, treeShadows: false, shadowMode: 'static', softShadows: false },
-  medium: { pixelRatioCap: 1.5, antialias: true, shadows: true, shadowMapSize: 2048, treeDensity: 0.7, treeShadows: false, shadowMode: 'static', softShadows: false },
+  low: { pixelRatioCap: 1, antialias: false, shadows: false, shadowMapSize: 2048, treeDensity: 0.35, treeShadows: false, shadowMode: 'static', softShadows: false },
+  medium: { pixelRatioCap: 1, antialias: true, shadows: false, shadowMapSize: 2048, treeDensity: 0.7, treeShadows: false, shadowMode: 'static', softShadows: false },
   high: { pixelRatioCap: 2, antialias: true, shadows: true, shadowMapSize: 2048, treeDensity: 1, treeShadows: true, shadowMode: 'dynamic', softShadows: true },
 };
 
