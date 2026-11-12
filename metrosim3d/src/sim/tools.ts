@@ -13,6 +13,8 @@ import {
   ZoneId,
 } from './constants';
 import { TileXY, World } from './world';
+import { rulesFor } from './rules';
+import type { ExpenseCategory } from './finance/types';
 
 export type Action =
   | { type: 'road'; from: TileXY; to: TileXY }
@@ -36,8 +38,6 @@ export interface Plan {
   reason?: string;
 }
 
-/** Largest rectangle side for drag tools (keeps previews and undo snapshots cheap). */
-export const MAX_DRAG = 64;
 
 export const N = 1;
 export const E = 2;
@@ -76,6 +76,7 @@ export function roadPath(from: TileXY, to: TileXY): TileXY[] {
 }
 
 function rect(world: World, a: TileXY, b: TileXY): TileXY[] {
+  const MAX_DRAG = rulesFor(world).maxDrag;
   const fa = clampTo(world, a);
   let fb = clampTo(world, b);
   fb = {
@@ -94,13 +95,17 @@ function tileSlope(world: World, x: number, y: number): number {
 }
 
 function affordable(world: World, plan: Plan): Plan {
-  if (plan.ok && !world.unlimitedMoney && plan.cost > world.money) {
+  if (plan.ok && rulesFor(world).chargeMoney && plan.cost > world.money) {
     return { ...plan, ok: false, reason: 'Not enough money' };
   }
   return plan;
 }
 
 export function planAction(world: World, action: Action): Plan {
+  const rules = rulesFor(world);
+  const MAX_DRAG = rules.maxDrag;
+  const water = (x: number, y: number) => rules.enforceWater && world.isWater(x, y);
+  const steep = (x: number, y: number, limit: number) => rules.enforceSlope && tileSlope(world, x, y) > limit;
   switch (action.type) {
     case 'road': {
       const from = clampTo(world, action.from);
@@ -115,13 +120,13 @@ export function planAction(world: World, action: Action): Plan {
       for (const t of roadPath(from, to)) {
         let ok = true;
         const k = world.getKind(t.x, t.y);
-        if (world.isWater(t.x, t.y)) {
+        if (water(t.x, t.y)) {
           ok = false;
-          reason ??= 'Roads cannot cross water yet (bridges come later)';
+          reason ??= 'Roads cannot cross water in Realistic mode yet (bridges come later)';
         } else if (k === KIND_BUILDING) {
           ok = false;
           reason ??= 'A building is in the way — bulldoze it first';
-        } else if (tileSlope(world, t.x, t.y) > MAX_ROAD_SLOPE) {
+        } else if (steep(t.x, t.y, MAX_ROAD_SLOPE)) {
           ok = false;
           reason ??= 'Too steep for a road';
         }
@@ -137,10 +142,10 @@ export function planAction(world: World, action: Action): Plan {
       let count = 0;
       for (const t of rect(world, action.from, action.to)) {
         const ok =
-          !world.isWater(t.x, t.y) &&
+          !water(t.x, t.y) &&
           world.getKind(t.x, t.y) === KIND_EMPTY &&
           world.getZone(t.x, t.y) !== action.zone &&
-          tileSlope(world, t.x, t.y) <= MAX_BUILD_SLOPE;
+          !steep(t.x, t.y, MAX_BUILD_SLOPE);
         if (ok) count++;
         tiles.push({ ...t, ok });
       }
@@ -196,9 +201,9 @@ export function planAction(world: World, action: Action): Plan {
         for (let x = at.x; x < at.x + def.w; x++) {
           let ok = world.inBounds(x, y);
           if (!ok) reason ??= 'Off the map';
-          else if (world.isWater(x, y)) {
+          else if (water(x, y)) {
             ok = false;
-            reason ??= 'Cannot build on water';
+            reason ??= 'Cannot build on water in Realistic mode';
           } else if (world.getKind(x, y) !== KIND_EMPTY) {
             ok = false;
             reason ??= 'Space is occupied';
@@ -209,7 +214,7 @@ export function planAction(world: World, action: Action): Plan {
       let ok = tiles.every((t) => t.ok);
       if (ok) {
         const [lo, hi] = world.footprintMinMax(at.x, at.y, def.w, def.h);
-        if (hi - lo > MAX_BUILD_SLOPE) {
+        if (rules.enforceSlope && hi - lo > MAX_BUILD_SLOPE) {
           ok = false;
           reason = 'Ground is too steep';
           for (const t of tiles) t.ok = false;
@@ -276,6 +281,13 @@ export function commitAction(world: World, action: Action): CommitResult {
       break;
     }
   }
-  if (!world.unlimitedMoney) world.money -= plan.cost;
+  if (rulesFor(world).chargeMoney && plan.cost > 0) {
+    const category: ExpenseCategory =
+      action.type === 'road' ? 'construction.roads'
+      : action.type === 'zone' ? 'construction.zoning'
+      : action.type === 'bulldoze' ? 'construction.demolition'
+      : 'construction.buildings';
+    world.treasury.post({ day: world.tick, amount: -plan.cost, category, budget: 'capital' });
+  }
   return { ok: true, cost: plan.cost };
 }

@@ -187,3 +187,12 @@ Reading:
 - **Metro (10,000 buildings) is at 47 FPS.** Geometry starts to cost at that size. Building level-of-detail goes on the list for when cities get that large; it doesn't block Phase 2.
 
 **Phase 1 (audit and optimise) is complete. Medium = 1×, no shadows, anti-aliasing on is the iPad default.**
+
+## 14. Phase 2a: cloud measurements (the iPad benchmark is the acceptance gate)
+
+- Tests: 19 unit tests (8 new: modes, mode-switch preserves the city, treasury ledger, the four brushes, locked foundations, Realistic earthworks cost, v1→v2 save migration). Smoke test passes with mouse and touch terrain strokes, a mode switch round-trip, and undo of a stroke.
+- **Terrain brush cost per frame of sculpting** (City, size 8, open land): first version 12.6 ms. Every frame rebuilt the whole road mesh and zone overlays. Now these rebuild only when the brushed area contains roads or zones: **2.6 ms**.
+  - Known limit: sculpting directly over roads still rebuilds the whole road mesh (about 10 ms on this machine at 5,000 buildings). Chunked road meshes in 2b remove that.
+- Terrain mesh updates only the brushed rectangle; trees in it are re-seated to the new ground.
+- Building instances are no longer rebuilt on terrain edits (foundations are locked).
+- Frame-rate scenarios: unchanged geometry and shaders since run 4. To confirm on the iPad.

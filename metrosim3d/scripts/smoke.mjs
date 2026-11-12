@@ -118,13 +118,32 @@ const browser = await chromium.launch({ args: ['--use-angle=swiftshader', '--ena
   await page.getByRole('button', { name: 'Undo' }).click();
   const afterUndo = await st();
   console.log('undo:', beforeUndo.buildings, '->', afterUndo.buildings);
-  // Unlimited money toggle off -> money shown.
+  // Mode switch keeps the city; Realistic shows funds.
+  const cityBefore = await st();
   await page.getByRole('button', { name: 'Settings' }).click();
-  await page.getByLabel('Unlimited money').uncheck();
-  const money = await page.evaluate(() => window.__game.getState().unlimitedMoney);
-  if (money !== false) fail('unlimited money toggle did not apply');
-  await page.getByLabel('Unlimited money').check();
+  await page.getByRole('group', { name: 'Game mode' }).getByRole('button', { name: 'Realistic' }).click();
+  const modeNow = await page.evaluate(() => window.__game.getState().mode);
+  if (modeNow !== 'realistic') fail('mode switch did not apply');
+  await page.getByRole('group', { name: 'Game mode' }).getByRole('button', { name: 'Creative' }).click();
+  const cityAfter = await st();
+  if (cityAfter.buildings !== cityBefore.buildings || cityAfter.roads !== cityBefore.roads) fail('mode switch changed the city');
   await page.getByRole('button', { name: 'Close' }).click();
+  // Terrain: raise with the mouse, check the ground moved, undo restores it.
+  await page.getByRole('button', { name: 'Terrain' }).click();
+  await page.getByRole('button', { name: 'Raise' }).click();
+  const probe = { x: 640, y: 300 };
+  const hBefore = await page.evaluate(({ x, y }) => { const g = window.__game; const p = g.view.pick(x, y); return p ? { h: g.world.heightAt(p.x, p.z), p } : null; }, probe);
+  await page.mouse.move(probe.x, probe.y);
+  await page.mouse.down();
+  await page.waitForTimeout(1500);
+  await page.mouse.up();
+  const hAfter = await page.evaluate(({ p }) => window.__game.world.heightAt(p.x, p.z), hBefore);
+  console.log('terrain raise:', hBefore?.h.toFixed(2), '->', hAfter.toFixed(2));
+  if (!hBefore || !(hAfter > hBefore.h + 0.5)) fail('terrain brush did not raise the ground');
+  await page.getByRole('button', { name: 'Undo' }).click();
+  const hUndo = await page.evaluate(({ p }) => window.__game.world.heightAt(p.x, p.z), hBefore);
+  if (Math.abs(hUndo - hBefore.h) > 1e-3) fail('undo did not restore the terrain');
+  await page.screenshot({ path: `${shots}/4b-terrain.png` });
   // Save, reload, load.
   await page.getByRole('button', { name: 'Save and load' }).click();
   await page.getByLabel('City name').fill('Smoke Town');
@@ -183,6 +202,15 @@ const browser = await chromium.launch({ args: ['--use-angle=swiftshader', '--ena
   if (!(c1.distance < c0.distance * 0.7)) fail('pinch did not zoom in');
   if (Math.abs(c1.yaw - c0.yaw) < 0.2) fail('twist did not rotate');
   if (roads2 !== roads) fail('two-finger gesture changed the city');
+  // One-finger terrain stroke on touch.
+  await page.getByRole('button', { name: 'Terrain' }).tap();
+  const tp = await page.evaluate(() => { const g = window.__game; const p = g.view.pick(600, 420); return p ? { p, h: g.world.heightAt(p.x, p.z) } : null; });
+  await touch('touchStart', [[600, 420]]);
+  for (let i = 0; i < 40; i++) { await touch('touchMove', [[600 + (i % 2), 420]]); await page.waitForTimeout(25); }
+  await touch('touchEnd', []);
+  const th = await page.evaluate(({ p }) => window.__game.world.heightAt(p.x, p.z), tp);
+  console.log('touch terrain:', tp.h.toFixed(2), '->', th.toFixed(2));
+  if (!(th > tp.h + 0.3)) fail('touch terrain stroke did not raise the ground');
   await page.screenshot({ path: `${shots}/5-ipad.png` });
   if (errors.length) fail('console errors: ' + errors.join(' | '));
   await ctx.close();

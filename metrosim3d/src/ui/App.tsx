@@ -12,6 +12,7 @@ const TOOLS: { id: ToolId; label: string; icon: JSX.Element; cls?: string }[] = 
   { id: 'zoneCom', label: 'Shops', icon: Icon.com, cls: 'z-com' },
   { id: 'zoneInd', label: 'Industry', icon: Icon.ind, cls: 'z-ind' },
   { id: 'place', label: 'Buildings', icon: Icon.place },
+  { id: 'terrain', label: 'Terrain', icon: Icon.terrain },
   { id: 'bulldoze', label: 'Bulldoze', icon: Icon.bulldoze, cls: 'danger' },
 ];
 
@@ -76,6 +77,9 @@ function Hud({ game }: { game: Game }) {
           <div className="city-name">{s.cityName}</div>
           <div className="city-sub">Day {fmt(s.day)}</div>
         </div>
+        <button className={`pill mode ${s.mode}`} onClick={() => setPanel('settings')} aria-label={`Game mode: ${s.mode}`}>
+          {s.mode === 'creative' ? 'Creative' : 'Realistic'}
+        </button>
         <div className="pill money" title="Funds">
           {s.unlimitedMoney ? <span className="inf">∞</span> : `$${fmt(s.money)}`}
         </div>
@@ -133,6 +137,23 @@ function Hud({ game }: { game: Game }) {
                 </button>
               );
             })}
+          </div>
+        )}
+        {s.tool === 'terrain' && (
+          <div className="subbar brushbar">
+            {(['raise', 'lower', 'flatten', 'smooth'] as const).map((m) => (
+              <button key={m} className={s.brush.mode === m ? 'on' : ''} onClick={() => game.setBrush({ mode: m })}>
+                <span className="sb-name">{m[0].toUpperCase() + m.slice(1)}</span>
+              </button>
+            ))}
+            <label className="slider">
+              <span>Size {s.brush.radius}</span>
+              <input type="range" min={1} max={16} value={s.brush.radius} onChange={(e) => game.setBrush({ radius: +e.target.value })} />
+            </label>
+            <label className="slider">
+              <span>Strength {s.brush.strength}</span>
+              <input type="range" min={1} max={10} value={s.brush.strength} onChange={(e) => game.setBrush({ strength: +e.target.value })} />
+            </label>
           </div>
         )}
         <nav className="toolbar">

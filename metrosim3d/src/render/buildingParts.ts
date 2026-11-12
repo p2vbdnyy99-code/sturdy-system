@@ -1,4 +1,4 @@
-import { TILE } from '../sim/constants';
+import { SEA_LEVEL, TILE } from '../sim/constants';
 import { mulberry32 } from '../sim/rng';
 import { Building, World } from '../sim/world';
 
@@ -43,7 +43,8 @@ export function buildingParts(b: Building, world: World): Part[] {
   const cz = (b.y + b.h / 2) * TILE;
   const fw = b.w * TILE;
   const fd = b.h * TILE;
-  const base = hi + 0.2;
+  // Built over water (Creative mode): the foundation rises above the surface like a pier.
+  const base = Math.max(hi, SEA_LEVEL + 0.8) + 0.2;
   const parts: Part[] = [];
   const rot = (r() < 0.5 ? 0 : Math.PI / 2);
   parts.push({ mesh: 'plain', x: cx, y: lo - 0.5, z: cz, sx: fw * 0.92, sy: base - lo + 0.5, sz: fd * 0.92, rotY: 0, color: FOUNDATION });

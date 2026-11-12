@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { KIND_ROAD, TILE } from '../sim/constants';
+import { KIND_ROAD, SEA_LEVEL, TILE } from '../sim/constants';
 import { roadMask } from '../sim/tools';
 import { World } from '../sim/world';
 
@@ -136,7 +136,8 @@ export class RoadLayer {
     const padY = 2 / (CELL * ROWS);
     for (let i = 0; i < n; i++) {
       const t = tiles[i];
-      const [nw, ne, se, sw] = w.tileCorners(t.x, t.y);
+      // Over water (allowed in Creative mode) the road deck sits just above the surface.
+      const [nw, ne, se, sw] = w.tileCorners(t.x, t.y).map((h) => Math.max(h, SEA_LEVEL + 0.2));
       const x0 = t.x * TILE;
       const x1 = x0 + TILE;
       const z0 = t.y * TILE;

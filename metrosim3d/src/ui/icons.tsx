@@ -13,6 +13,7 @@ export const Icon = {
   com: S(<><path d="M4 9h16l-1-5H5z" /><path d="M5 9v11h14V9" /><path d="M9 20v-5h6v5" /></>),
   ind: S(<><path d="M3 20V10l6 4V10l6 4V6h4v14z" /><path d="M3 20h18" /></>),
   place: S(<><rect x="5" y="3" width="14" height="18" rx="1" /><path d="M9 7h2M13 7h2M9 11h2M13 11h2M9 15h2M13 15h2" /></>),
+  terrain: S(<><path d="M2 20l7-11 4 6 3-4 6 9z" /><path d="M7.5 11.5l1.5 1.5 1.5-1.5" /></>),
   bulldoze: S(<><path d="M3 17h11V9H8l-3 4H3z" /><circle cx="6" cy="18" r="2" /><circle cx="12" cy="18" r="2" /><path d="M14 13h3l4 5h-6" /></>),
   undo: S(<><path d="M9 14L4 9l5-5" /><path d="M4 9h11a5 5 0 010 10h-3" /></>),
   save: S(<><path d="M5 3h11l3 3v15H5z" /><path d="M8 3v5h7V3M8 21v-7h8v7" /></>),

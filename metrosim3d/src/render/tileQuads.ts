@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { TILE } from '../sim/constants';
+import { SEA_LEVEL, TILE } from '../sim/constants';
 import { World } from '../sim/world';
 
 /**
@@ -19,7 +19,7 @@ export function buildTileQuads<T extends { x: number; y: number }>(
   const idx = new Uint32Array(n * 6);
   for (let i = 0; i < n; i++) {
     const t = tiles[i];
-    const [nw, ne, se, sw] = world.tileCorners(t.x, t.y);
+    const [nw, ne, se, sw] = world.tileCorners(t.x, t.y).map((h) => Math.max(h, SEA_LEVEL + 0.1));
     const x0 = t.x * TILE + inset;
     const x1 = (t.x + 1) * TILE - inset;
     const z0 = t.y * TILE + inset;

@@ -4,6 +4,8 @@ import { CityData, restore, snapshot } from '../sim/serialize';
 import { CityStats, computeStats } from '../sim/stats';
 import { Action, commitAction, Plan, planAction } from '../sim/tools';
 import { TileXY, World } from '../sim/world';
+import type { GameMode } from '../sim/rules';
+import { applyBrush, BrushMode } from '../sim/terraform';
 import { Quality } from '../render/quality';
 import { SceneRenderer } from '../render/SceneRenderer';
 import { listSaves, loadCity, newSaveId, saveCity, SaveMeta } from '../storage/saves';
@@ -11,12 +13,15 @@ import { InputController, ToolHandler } from './InputController';
 import { BenchReport, DIAG_SECONDS, formatReport, makeScenarioWorld, ORBIT_SECONDS, percentile, ScenarioResult, SCENARIOS } from './benchmark';
 import { loadSettings, saveSettings, Settings, shadowPref } from './settings';
 
-export type ToolId = 'pan' | 'road' | 'zoneRes' | 'zoneCom' | 'zoneInd' | 'place' | 'bulldoze';
+export type ToolId = 'pan' | 'road' | 'zoneRes' | 'zoneCom' | 'zoneInd' | 'place' | 'terrain' | 'bulldoze';
 export type Speed = 0 | 1 | 3;
 
 export interface UiState {
   tool: ToolId;
   placeType: BuildingType;
+  brush: { mode: BrushMode; radius: number; strength: number };
+  mode: GameMode;
+  financeInCreative: boolean;
   cityName: string;
   saveId: string | null;
   money: number;
@@ -53,6 +58,8 @@ export class Game implements ToolHandler {
   private state: UiState;
   private undoStack: CityData[] = [];
   private anchor: TileXY | null = null;
+  /** Active terrain stroke: world state before it (for one undo step) and the brush centre in corner units. */
+  private stroke: { before: CityData; at: { x: number; y: number } | null; target: number; changed: boolean; refused: boolean } | null = null;
   private current: TileXY | null = null;
   private raf = 0;
   private lastT = performance.now();
@@ -75,6 +82,9 @@ export class Game implements ToolHandler {
     this.state = {
       tool: 'road',
       placeType: 'park',
+      brush: { mode: 'raise', radius: 4, strength: 4 },
+      mode: this.world.mode,
+      financeInCreative: this.world.financeInCreative,
       cityName: this.world.name,
       saveId: null,
       money: this.world.money,
@@ -112,6 +122,8 @@ export class Game implements ToolHandler {
     this.set({
       money: this.world.money,
       unlimitedMoney: this.world.unlimitedMoney,
+      mode: this.world.mode,
+      financeInCreative: this.world.financeInCreative,
       stats: computeStats(this.world),
       day: this.world.tick,
       cityName: this.world.name,
@@ -134,6 +146,7 @@ export class Game implements ToolHandler {
       return;
     }
     this.input.tick(dt);
+    if (this.stroke?.at) this.brushStep(dt);
     if (this.state.speed > 0) {
       this.simAcc += dt * this.state.speed;
       let grew = 0;
@@ -157,6 +170,7 @@ export class Game implements ToolHandler {
 
   // ---------- tools ----------
   setTool(tool: ToolId): void {
+    this.endStroke();
     this.anchor = this.current = null;
     this.view.setPreview(null);
     this.set({ tool, hint: tool === 'pan' ? { text: 'Drag to move the view. Two fingers: zoom and rotate.', ok: true } : null });
@@ -168,6 +182,57 @@ export class Game implements ToolHandler {
 
   toolActive(): boolean {
     return this.state.tool !== 'pan' && !this.state.bench.running;
+  }
+
+  // ---------- terrain brush ----------
+  setBrush(patch: Partial<UiState['brush']>): void {
+    this.set({ brush: { ...this.state.brush, ...patch } });
+    if (this.state.tool !== 'terrain') this.setTool('terrain');
+  }
+
+  /** Brush centre in corner coordinates (fractional), or null off the map. */
+  private cornerAt(cx: number, cy: number): { x: number; y: number } | null {
+    if (Number.isNaN(cx)) return null;
+    const p = this.view.pick(cx, cy);
+    return p ? { x: p.x / TILE, y: p.z / TILE } : null;
+  }
+
+  private showBrush(at: { x: number; y: number } | null): void {
+    if (!at) return this.view.setPreview(null);
+    const r = this.state.brush.radius;
+    const tiles: { x: number; y: number; ok: boolean }[] = [];
+    for (let y = Math.floor(at.y - r); y <= Math.ceil(at.y + r); y++)
+      for (let x = Math.floor(at.x - r); x <= Math.ceil(at.x + r); x++)
+        if (this.world.inBounds(x, y) && Math.hypot(x + 0.5 - at.x, y + 0.5 - at.y) <= r) tiles.push({ x, y, ok: true });
+    this.view.setPreview(tiles);
+  }
+
+  private brushStep(dt: number): void {
+    const st = this.stroke!;
+    const b = this.state.brush;
+    const res = applyBrush(this.world, { ...b, target: st.target }, st.at!.x, st.at!.y, dt);
+    if (!res.ok) {
+      if (!st.refused) this.set({ hint: { text: 'Not enough money for earthworks', ok: false } });
+      st.refused = true;
+      return;
+    }
+    if (res.moved > 0) {
+      st.changed = true;
+      this.showBrush(st.at);
+      if (res.cost) this.refreshCity();
+    }
+  }
+
+  private endStroke(): void {
+    const st = this.stroke;
+    this.stroke = null;
+    if (!st) return;
+    if (st.changed) {
+      this.undoStack.push(st.before);
+      if (this.undoStack.length > UNDO_LIMIT) this.undoStack.shift();
+      this.changedSinceSave = true;
+      this.refreshCity();
+    }
   }
 
   private tileAt(cx: number, cy: number): TileXY | null {
@@ -220,18 +285,30 @@ export class Game implements ToolHandler {
 
   hover(cx: number, cy: number): void {
     if (!this.toolActive()) return;
+    if (this.state.tool === 'terrain') return this.showBrush(this.cornerAt(cx, cy));
     const t = this.tileAt(cx, cy);
     if (sameTile(t, this.current)) return;
     this.current = t;
     this.updatePreview();
   }
   toolDown(cx: number, cy: number): void {
+    if (this.state.tool === 'terrain') {
+      const at = this.cornerAt(cx, cy);
+      const target = at ? this.world.heightAt(at.x * TILE, at.y * TILE) : 0;
+      this.stroke = { before: snapshot(this.world), at, target, changed: false, refused: false };
+      this.set({ hint: null });
+      return this.showBrush(at);
+    }
     const t = this.tileAt(cx, cy);
     this.anchor = this.state.tool === 'place' ? null : t;
     this.current = t;
     this.updatePreview();
   }
   toolMove(cx: number, cy: number): void {
+    if (this.state.tool === 'terrain') {
+      if (this.stroke) this.stroke.at = this.cornerAt(cx, cy) ?? this.stroke.at;
+      return this.showBrush(this.stroke?.at ?? null);
+    }
     const t = this.tileAt(cx, cy);
     if (!t || sameTile(t, this.current)) return;
     this.current = t;
@@ -239,6 +316,10 @@ export class Game implements ToolHandler {
   }
   toolUp(cx: number, cy: number): void {
     if (this.state.bench.running) return;
+    if (this.state.tool === 'terrain') {
+      this.endStroke();
+      return this.view.setPreview(null);
+    }
     const t = this.tileAt(cx, cy) ?? this.current;
     const a = this.anchor ?? t;
     this.anchor = null;
@@ -260,6 +341,7 @@ export class Game implements ToolHandler {
     this.refreshCity();
   }
   toolCancel(): void {
+    this.endStroke(); // keep what was already sculpted; it stays undoable
     this.anchor = this.current = null;
     this.view.setPreview(null);
     this.set({ hint: null });
@@ -282,8 +364,17 @@ export class Game implements ToolHandler {
   setSpeed(speed: Speed): void {
     this.set({ speed });
   }
-  setUnlimitedMoney(on: boolean): void {
-    this.world.unlimitedMoney = on;
+  /** Switch Creative/Realistic. Only the rules change; the city is untouched. */
+  setMode(mode: GameMode): void {
+    if (mode === this.world.mode) return;
+    this.world.mode = mode;
+    this.changedSinceSave = true;
+    this.refreshCity();
+    this.toast(mode === 'creative' ? 'Creative mode: build anything, anywhere' : 'Realistic mode: costs and limits apply');
+  }
+  /** Creative only: simulate finances (charge construction) without leaving Creative. */
+  setCreativeFinance(on: boolean): void {
+    this.world.financeInCreative = on;
     this.changedSinceSave = true;
     this.refreshCity();
   }
@@ -463,8 +554,22 @@ export class Game implements ToolHandler {
       const city = makeScenarioWorld(SCENARIOS[2].buildings);
       this.world = city;
       this.view.setWorld(city);
+      this.view.render(true);
       const trees = this.view.treeCount();
       const span = city.size * 8;
+      // Terrain brush cost: what each frame of sculpting costs on a full city.
+      const brushTimes: number[] = [];
+      // Open land outside the built-up centre, so the brush really moves ground (not locked corners).
+      const bc = 24;
+      let moved = 0;
+      for (let k = 0; k < 12; k++) {
+        const b0 = performance.now();
+        moved += applyBrush(city, { mode: k % 2 ? 'lower' : 'raise', radius: 8, strength: 5 }, bc, bc, 1 / 60).moved;
+        this.view.sync();
+        brushTimes.push(performance.now() - b0);
+      }
+      brushTimes.sort((a, b) => a - b);
+      const brushMs = moved > 0 ? percentile(brushTimes, 0.5) : NaN;
       // Each variant flips one factor relative to the current configuration.
       const shOn = this.view.shadowsOn();
       const pr = this.view.basePixelRatio();
@@ -499,6 +604,7 @@ export class Game implements ToolHandler {
         scenarios: results,
         diagnosis,
         trees,
+        brushMs,
       };
       this.set({ bench: { running: false, step: '', report: formatReport(report) } });
     } catch (e) {

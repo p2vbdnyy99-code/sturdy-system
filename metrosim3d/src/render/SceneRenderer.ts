@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { TILE } from '../sim/constants';
+import { KIND_ROAD, TILE } from '../sim/constants';
 import { PlanTile } from '../sim/tools';
 import { World } from '../sim/world';
 import { BuildingLayer } from './buildingLayer';
@@ -190,19 +190,35 @@ export class SceneRenderer {
       ls[k] += n - t;
       t = n;
     };
+    // A terrain edit only needs roads / zone overlays rebuilt if the edited area contains any.
+    let roadsInEdit = false;
+    let zonesInEdit = false;
     if (w.terrainVersion !== this.seen.terrain) {
-      this.terrain.update();
+      const d = w.terrainDirty;
+      if (d) {
+        for (let y = Math.max(0, d.y0 - 1); y <= Math.min(w.size - 1, d.y1); y++)
+          for (let x = Math.max(0, d.x0 - 1); x <= Math.min(w.size - 1, d.x1); x++) {
+            const i = w.idx(x, y);
+            if (w.kind[i] === KIND_ROAD) roadsInEdit = true;
+            else if (w.zone[i] && w.kind[i] === 0) zonesInEdit = true;
+          }
+      } else roadsInEdit = zonesInEdit = true;
+      if (d) {
+        this.terrain.updateRect(d.x0, d.y0, d.x1, d.y1);
+        this.buildings.updateTreeHeights(d.x0 - 1, d.y0 - 1, d.x1 + 1, d.y1 + 1);
+      } else this.terrain.update();
+      w.terrainDirty = null;
       lap('terrain');
       this.seen.terrain = w.terrainVersion;
       trees = true;
     }
-    if (w.roadVersion !== this.seen.road) {
+    if (w.roadVersion !== this.seen.road || roadsInEdit) {
       this.roads.update();
       lap('roads');
       this.seen.road = w.roadVersion;
       trees = true;
     }
-    if (w.zoneVersion !== this.seen.zone || w.buildingVersion !== this.seen.building) {
+    if (w.zoneVersion !== this.seen.zone || w.buildingVersion !== this.seen.building || zonesInEdit) {
       t = performance.now();
       this.updateZones();
       lap('zones');

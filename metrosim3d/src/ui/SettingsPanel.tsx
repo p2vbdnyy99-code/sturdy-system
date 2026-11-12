@@ -11,15 +11,26 @@ export function SettingsPanel({ game, state, onClose }: { game: Game; state: UiS
           <button className="icon-btn" onClick={onClose} aria-label="Close">{Icon.close}</button>
         </div>
         <section>
-          <h3>Creative mode</h3>
-          <label className="toggle">
-            <input type="checkbox" checked={state.unlimitedMoney} onChange={(e) => game.setUnlimitedMoney(e.target.checked)} />
-            <span>Unlimited money</span>
-          </label>
+          <h3>Game mode</h3>
+          <div className="seg wide" role="group" aria-label="Game mode">
+            <button className={state.mode === 'creative' ? 'on' : ''} onClick={() => game.setMode('creative')}>Creative</button>
+            <button className={state.mode === 'realistic' ? 'on' : ''} onClick={() => game.setMode('realistic')}>Realistic</button>
+          </div>
           <p className="muted">
-            Off: construction costs money from the city's funds (${Math.round(state.money).toLocaleString('en-US')}). There is no
-            income yet — taxes arrive with the economy phase.
+            {state.mode === 'creative'
+              ? 'Creative: unlimited money, every building unlocked, build on water and steep ground, no size limits.'
+              : 'Realistic: construction and earthworks cost money; water and steep ground block building.'}{' '}
+            Switching keeps your city exactly as it is.
           </p>
+          {state.mode === 'creative' && (
+            <label className="toggle">
+              <input type="checkbox" checked={state.financeInCreative} onChange={(e) => game.setCreativeFinance(e.target.checked)} />
+              <span>Simulate finances in Creative (charge construction costs)</span>
+            </label>
+          )}
+          {!state.unlimitedMoney && (
+            <p className="muted">Funds: ${Math.round(state.money).toLocaleString('en-US')}. Income arrives with the economy phase.</p>
+          )}
         </section>
         <section>
           <h3>Graphics quality</h3>
@@ -70,6 +81,7 @@ export function SettingsPanel({ game, state, onClose }: { game: Game; state: UiS
             <li><b>Touch:</b> one finger uses the selected tool (Move tool: pans). Two fingers: drag to pan, pinch to zoom, twist to rotate. Tilt with the ▲▼ buttons.</li>
             <li><b>Mouse:</b> left button uses the tool, right-drag rotates/tilts, middle-drag or Shift+drag pans, wheel zooms.</li>
             <li><b>Keys:</b> WASD/arrows pan, Q/E rotate, R/F tilt, +/− zoom.</li>
+            <li>Terrain: pick Raise, Lower, Flatten or Smooth, then hold and drag. Flatten levels to the height where you start. Ground under buildings never moves.</li>
             <li>Roads: drag from start to end (L-shaped). Zones and bulldozer: drag a rectangle. Buildings: drag to position, lift to place.</li>
             <li>Zoned land within 2 tiles of a road grows buildings while time runs.</li>
           </ul>

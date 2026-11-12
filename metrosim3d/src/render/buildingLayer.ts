@@ -72,6 +72,11 @@ interface CachedBuilding {
 interface TreeCache {
   count: number;
   tile: Int32Array;
+  /** World x/z of each tree, to re-seat it when the ground under it is edited. */
+  px: Float32Array;
+  pz: Float32Array;
+  /** 0 when the ground is now underwater or too high for trees. */
+  valid: Uint8Array;
   trunkM: Float32Array;
   crownM: Float32Array;
   trunkC: Float32Array;
@@ -93,7 +98,6 @@ export class BuildingLayer {
   private treeCrownGeom = new THREE.ConeGeometry(0.5, 1, 6, 1, true).translate(0, 0.5, 0);
   private materials: THREE.Material[] = [];
   private cache = new Map<number, CachedBuilding>();
-  private cacheTerrainVersion = -1;
   private trees: TreeCache | null = null;
   private scratch = { m: new Float32Array(0), c: new Float32Array(0) };
 
@@ -127,12 +131,9 @@ export class BuildingLayer {
    */
   updateBuildings(): void {
     const w = this.world;
-    let full = false;
-    if (this.cacheTerrainVersion !== w.terrainVersion) {
-      this.cache.clear(); // foundations depend on terrain heights
-      this.cacheTerrainVersion = w.terrainVersion;
-      full = true;
-    }
+    // Terrain edits never move corners under buildings (sim/terraform.ts), so cached
+    // foundations stay valid; only a fresh layer (new city / load / undo) starts empty.
+    let full = this.cache.size === 0 && w.buildings.size > 0;
     for (const id of this.cache.keys()) {
       if (!w.buildings.has(id)) {
         this.cache.delete(id);
@@ -194,10 +195,11 @@ export class BuildingLayer {
     const trunks: Part[] = [];
     const crowns: Part[] = [];
     const tiles: number[] = [];
+    const pxs: number[] = [];
+    const pzs: number[] = [];
     if (this.treeDensity > 0) {
       for (let y = 0; y < w.size; y++) {
         for (let x = 0; x < w.size; x++) {
-          if (w.isWater(x, y)) continue;
           const forest = fbm(x / 22, y / 22, w.seed + 404, 3);
           const r0 = hash2(x, y, w.seed + 17);
           if (forest < 0.12 || r0 > this.treeDensity * Math.min(1, (forest - 0.12) * 4)) continue;
@@ -206,12 +208,13 @@ export class BuildingLayer {
             const px = (x + 0.15 + hash2(x * 3 + k, y, w.seed + 19) * 0.7) * TILE;
             const pz = (y + 0.15 + hash2(x, y * 3 + k, w.seed + 20) * 0.7) * TILE;
             const gh = w.heightAt(px, pz);
-            if (gh < SEA_LEVEL + 1.5 || gh > 50) continue;
             const s = 2.2 + hash2(x + k, y + k, w.seed + 21) * 2.2;
             trunks.push({ mesh: 'cyl', x: px, y: gh - 0.3, z: pz, sx: 0.4, sy: 1.8, sz: 0.4, rotY: 0, color: 0x5e4129 });
             const shade = [0x2f6b2c, 0x3b7a33, 0x2a5e2a, 0x467f3a][Math.floor(hash2(x, y + k, w.seed + 22) * 4)];
             crowns.push({ mesh: 'cone', x: px, y: gh + 1.2, z: pz, sx: s, sy: s * 2, sz: s, rotY: hash2(x, y, k) * 6.28, color: shade });
             tiles.push(w.idx(x, y));
+            pxs.push(px);
+            pzs.push(pz);
           }
         }
       }
@@ -220,6 +223,9 @@ export class BuildingLayer {
     const tc: TreeCache = {
       count: n,
       tile: Int32Array.from(tiles),
+      px: Float32Array.from(pxs),
+      pz: Float32Array.from(pzs),
+      valid: new Uint8Array(n),
       trunkM: new Float32Array(n * 16),
       crownM: new Float32Array(n * 16),
       trunkC: new Float32Array(n * 3),
@@ -231,6 +237,8 @@ export class BuildingLayer {
       partMatrix(crowns[i], tc.crownM, i * 16);
       partColor(trunks[i], tc.trunkC, i * 3);
       partColor(crowns[i], tc.crownC, i * 3);
+      const gh = trunks[i].y + 0.3;
+      tc.valid[i] = gh >= SEA_LEVEL + 1.5 && gh <= 50 ? 1 : 0;
     }
     return tc;
   }
@@ -243,7 +251,7 @@ export class BuildingLayer {
     let o = 0;
     for (let i = 0; i < t.count; i++) {
       const ti = t.tile[i];
-      if (w.kind[ti] !== KIND_EMPTY || w.zone[ti] !== ZONE_NONE) continue;
+      if (!t.valid[i] || w.kind[ti] !== KIND_EMPTY || w.zone[ti] !== ZONE_NONE) continue;
       for (let k = 0; k < 16; k++) {
         tm[o * 16 + k] = t.trunkM[i * 16 + k];
         cm[o * 16 + k] = t.crownM[i * 16 + k];
@@ -256,6 +264,26 @@ export class BuildingLayer {
     }
     this.treePools.trunk.setRaw(tm, tcol, o);
     this.treePools.crown.setRaw(cm, ccol, o);
+  }
+
+  /** Re-seat trees whose ground changed (corner rectangle from a terrain brush). */
+  updateTreeHeights(x0: number, y0: number, x1: number, y1: number): void {
+    const t = this.trees;
+    if (!t) return;
+    const w = this.world;
+    const minX = x0 * TILE;
+    const maxX = x1 * TILE;
+    const minZ = y0 * TILE;
+    const maxZ = y1 * TILE;
+    for (let i = 0; i < t.count; i++) {
+      const px = t.px[i];
+      const pz = t.pz[i];
+      if (px < minX || px > maxX || pz < minZ || pz > maxZ) continue;
+      const gh = w.heightAt(px, pz);
+      t.trunkM[i * 16 + 13] = gh - 0.3; // matrix translation y
+      t.crownM[i * 16 + 13] = gh + 1.2;
+      t.valid[i] = gh >= SEA_LEVEL + 1.5 && gh <= 50 ? 1 : 0;
+    }
   }
 
   /** Number of decorative trees currently drawn (for the performance test). */

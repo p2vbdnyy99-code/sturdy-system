@@ -8,7 +8,9 @@ import {
   TILE,
   ZoneId,
 } from './constants';
+import { Treasury } from './finance/treasury';
 import { Rng } from './rng';
+import type { GameMode } from './rules';
 import { generateHeights } from './terrain';
 
 export interface Building {
@@ -44,8 +46,13 @@ export class World {
   buildingAt: Int32Array;
   buildings = new Map<number, Building>();
   nextBuildingId = 1;
-  money = START_MONEY;
-  unlimitedMoney = true;
+  /** Creative (default, primary) or Realistic. Switching never modifies the city itself. */
+  mode: GameMode = 'creative';
+  /** Creative mode only: charge construction to the treasury anyway (optional finance simulation). */
+  financeInCreative = false;
+  treasury = new Treasury(START_MONEY);
+  /** Union of terrain corners changed since the renderer last synced (null = none / full). */
+  terrainDirty: { x0: number; y0: number; x1: number; y1: number } | null = null;
   rng: Rng;
   /** Simulation ticks elapsed (one tick = one in-game day). */
   tick = 0;
@@ -65,6 +72,30 @@ export class World {
     this.zone = new Uint8Array(size * size);
     this.buildingAt = new Int32Array(size * size).fill(-1);
     this.rng = new Rng(this.seed ^ 0x9e3779b9);
+  }
+
+  get money(): number {
+    return this.treasury.balance;
+  }
+  set money(v: number) {
+    this.treasury.balance = Math.round(v);
+  }
+  /** True when construction is free: Creative mode without the optional finance simulation. */
+  get unlimitedMoney(): boolean {
+    return this.mode === 'creative' && !this.financeInCreative;
+  }
+
+  setCornerH(cx: number, cy: number, h: number): void {
+    this.heights[cy * (this.size + 1) + cx] = h;
+  }
+
+  /** Record a changed corner rectangle so the renderer can update just that area. */
+  markTerrainDirty(x0: number, y0: number, x1: number, y1: number): void {
+    const d = this.terrainDirty;
+    this.terrainDirty = d
+      ? { x0: Math.min(d.x0, x0), y0: Math.min(d.y0, y0), x1: Math.max(d.x1, x1), y1: Math.max(d.y1, y1) }
+      : { x0, y0, x1, y1 };
+    this.terrainVersion++;
   }
 
   idx(x: number, y: number): number {

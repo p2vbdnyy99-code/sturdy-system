@@ -44,7 +44,7 @@ describe('roads', () => {
       { x: 0, y: 0 }, { x: 1, y: 0 }, { x: 2, y: 0 }, { x: 3, y: 0 }, { x: 3, y: 1 },
     ]);
     const w = flatWorld();
-    w.unlimitedMoney = false;
+    w.mode = 'realistic';
     const start = w.money;
     const r = commitAction(w, { type: 'road', from: { x: 2, y: 2 }, to: { x: 6, y: 2 } });
     expect(r.ok).toBe(true);
@@ -58,7 +58,7 @@ describe('roads', () => {
 
   it('rejects water and steep tiles, and does not charge', () => {
     const w = flatWorld();
-    w.unlimitedMoney = false;
+    w.mode = 'realistic';
     w.heights[w.size + 1 + 5] = -5; // corner (5,1) underwater -> tiles around it are water
     const plan = planAction(w, { type: 'road', from: { x: 3, y: 1 }, to: { x: 7, y: 1 } });
     expect(plan.ok).toBe(false);
@@ -71,10 +71,10 @@ describe('roads', () => {
 
   it('respects money unless unlimited money is on', () => {
     const w = flatWorld();
-    w.unlimitedMoney = false;
+    w.mode = 'realistic';
     w.money = 150;
     expect(commitAction(w, { type: 'road', from: { x: 0, y: 0 }, to: { x: 4, y: 0 } })).toMatchObject({ ok: false, reason: 'Not enough money' });
-    w.unlimitedMoney = true;
+    w.mode = 'creative';
     expect(commitAction(w, { type: 'road', from: { x: 0, y: 0 }, to: { x: 4, y: 0 } }).ok).toBe(true);
     expect(w.money).toBe(150);
   });
@@ -115,7 +115,7 @@ describe('save snapshot', () => {
   it('round-trips the full city state', () => {
     const w = flatWorld(48);
     w.name = 'Roundtrip';
-    w.unlimitedMoney = false;
+    w.mode = 'realistic';
     expect(commitAction(w, { type: 'road', from: { x: 20, y: 20 }, to: { x: 30, y: 24 } }).ok).toBe(true);
     commitAction(w, { type: 'zone', zone: ZONE_RES, from: { x: 18, y: 18 }, to: { x: 32, y: 26 } });
     for (let i = 0; i < 50; i++) stepGrowth(w);
