@@ -167,3 +167,23 @@ Reading:
 - **Shadows are a separate setting:** Use preset / On / Off, stored per device. A player can choose shadows over frame rate at any quality.
 - **The diagnosis now flips factors relative to the current setup:** with or without shadows, the other resolution, then both together.
 - **To confirm:** run 4 in Safari, full screen, landscape, so it is comparable with runs 1–2. Full-screen 1× is about 0.68–0.93M pixels, close to run 3's 0.76M, so 55–60 FPS is expected. That is an estimate, not a measurement.
+
+## 13. iPad results, run 4 (2026-11-12 03:45): gate passed
+
+Same environment as runs 1–2: Safari, landscape, screen 1112×660 @2×. The canvas was 1112×612 at 1×.
+
+| Scenario | FPS | p50 ms | p95 ms | worst ms |
+|---|---|---|---|---|
+| Empty map | 60 | 17 | 17 | 20 |
+| Town 1,500 | 60 | 17 | 18 | 29 |
+| City 5,000 | 52 | 19 | 22 | 23 |
+| Metro 10,000 | 47 | 22 | 24 | 26 |
+
+Diagnosis (City): as set (1×, no shadows) 52 FPS (p50 19 ms) · with shadows p50 27 ms · 1.5× resolution 42 (24) · shadows + 1.5× 32 (32).
+
+Reading:
+- **Gate passed.** By the §5 rule (Town ≥ 50, City ≥ 30) and by the stricter run-4 bar (Town ≥ 55, City ≥ 50). Compared with run 2 on the same screen: City went from 33 to 52 FPS, and growth steps from 16–30 ms to about 1 ms.
+- **The "With shadows" mean (19 FPS) is again distorted by shader recompile stalls.** Its p50 of 27 ms (about 37 FPS) is the figure to use. Shadows cost about 8 ms per frame on the A12.
+- **Metro (10,000 buildings) is at 47 FPS.** Geometry starts to cost at that size. Building level-of-detail goes on the list for when cities get that large; it doesn't block Phase 2.
+
+**Phase 1 (audit and optimise) is complete. Medium = 1×, no shadows, anti-aliasing on is the iPad default.**

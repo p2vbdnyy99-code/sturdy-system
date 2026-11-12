@@ -89,8 +89,8 @@ Design rules:
 
 | Phase | Development | Status |
 |---|---|---|
-| 1 | Audit and optimise the existing build | Audit + baseline done (`docs/AUDIT.md`); waiting on iPad numbers before optimising |
-| 2 | Advanced road and transport construction: Creative/Realistic mode flag, curved roads, road types, highways, interchanges, bridges, tunnels, terrain editing | Not started |
+| 1 | Audit and optimise the existing build | **Done**: iPad Air 3 gate passed on 2026-11-12 (City 52 FPS, Town 60 FPS at Medium; see `docs/AUDIT.md` §13) |
+| 2 | Advanced road and transport construction: Creative/Realistic mode flag, curved roads, road types, highways, interchanges, bridges, tunnels, terrain editing | Planned (§7), awaiting go-ahead |
 | 3 | Traffic and pedestrian simulation (road graph, pathfinding in a Web Worker, vehicles with LOD) | Not started |
 | 4 | Population and economy (demand, taxes, budget, employment) | Not started |
 | 5 | Utilities and public services (power, water, sewage, health, education, police, fire) | Not started |
@@ -111,3 +111,24 @@ These are targets, to be measured on the device. They are not measured yet.
 4. Save, force-quit the app, reopen, load. Check that autosave appears after a minute.
 5. Switch Low / Medium / High and note smoothness and render time for each.
 6. Report problems with a screenshot plus device, quality setting and what you did.
+
+## 7. Phase 2 plan: transport geometry
+
+### Core architectural decision
+Roads change from "a tile marked road" to a **road graph**: nodes (junctions and end points) joined by segments. Each segment is a straight line or curve with a road type, a height profile (ground / bridge / tunnel) and a direction. The graph becomes the source of truth.
+- The tile grid stays for zoning, buildings and terrain. Each segment's footprint is **marked onto the tiles it covers**, so the existing zoning, growth, placement and bulldoze rules keep working with small changes.
+- Phase 3 traffic will route on the same graph's lanes, so nothing is rebuilt later.
+- Saves move to version 2. Version-1 saves convert their road tiles into graph segments when loaded. Old cities keep working.
+
+### Milestones (each ends with the iPad performance test; the gate stays City ≥ 50 FPS at Medium)
+| | Milestone | Contents |
+|---|---|---|
+| 2a | Creative mode + terrain tools | A per-city **Creative/Realistic** switch. Creative ignores money, slope and water-placement limits. Terrain raise / lower / level / smooth brushes. |
+| 2b | Road graph + curved roads | Graph model, straight and curved drawing with snapping, automatic junctions where roads cross, road types (street, avenue). Tile footprint derived from the graph. Chunked road meshes. Save v2 + v1 migration. |
+| 2c | Bridges, elevated roads, tunnels | Height control while drawing; automatic bridge over water; piers; tunnel portals; slope limits per road type. |
+| 2d | Highways and interchanges | One-way highways, on/off ramps, flyovers, freeform interchanges built from ramps; prefab interchange templates later. |
+| 2e | Larger maps | Up to 4 km (512 tiles): terrain split into chunks with level-of-detail, adopted only if the gate still passes. |
+
+### Performance rules for Phase 2
+- Road meshes are built in map chunks, so an edit rebuilds one chunk, never the whole network.
+- The performance test gains a "Road network" scenario: a dense grid with curves, bridges and a highway.
