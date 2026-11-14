@@ -112,6 +112,9 @@ export function EmdGuidePage() {
           allowed for this work&rdquo; ({aiimsPage(12)}), so read your own tender&rsquo;s clause before relying on an
           exemption.
         </p>
+        <p>
+          To work out your own tender&rsquo;s figure, use the <Link to="/guides/emd-calculator">EMD calculator</Link>.
+        </p>
       </section>
 
       <section className="legal-block">

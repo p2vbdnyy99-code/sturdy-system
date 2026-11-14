@@ -127,6 +127,19 @@ export const GUIDES = [
     ],
   },
   {
+    path: '/guides/emd-calculator',
+    checked: '2026-11-09',
+    headline: 'EMD calculator: work out EMD and performance security for a tender',
+    title: 'EMD calculator for government tenders | TenderTez',
+    description: 'Work out the EMD and performance security for a tender in rupees. Type the value and percentages '
+      + 'from the tender; GFR ranges and a real example included.',
+    citations: [
+      'https://doe.gov.in/files/circulars_document/GFRupdatedupto31012026.pdf',
+      'https://doe.gov.in/files/circulars_document/Amendment_in_General_Financial_Rules_2017_Rule_171_i_Performance_Security_Regarding.pdf',
+      'https://aiimsbhubaneswar.nic.in/wp-content/uploads/2026/05/NIT11.pdf',
+    ],
+  },
+  {
     path: '/guides/tender-corrigendum',
     checked: '2026-11-10',
     headline: 'What is a corrigendum in a tender? Meaning, what it changes and how to check',

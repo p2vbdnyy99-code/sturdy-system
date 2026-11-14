@@ -23,6 +23,7 @@ import { InsightsPage } from './pages/Insights';
 import { GuidesPage } from './pages/guides/Guides';
 import { EligibilityGuidePage } from './pages/guides/EligibilityGuide';
 import { EmdGuidePage } from './pages/guides/EmdGuide';
+import { EmdCalculatorPage } from './pages/guides/EmdCalculator';
 import { CorrigendumGuidePage } from './pages/guides/CorrigendumGuide';
 import { TenderConsultantsPage } from './pages/TenderConsultants';
 
@@ -71,6 +72,7 @@ export function AppRoutes() {
       <Route path="/guides" element={<GuidesPage />} />
       <Route path="/guides/tender-eligibility-check" element={<EligibilityGuidePage />} />
       <Route path="/guides/emd-exemption" element={<EmdGuidePage />} />
+      <Route path="/guides/emd-calculator" element={<EmdCalculatorPage />} />
       <Route path="/guides/tender-corrigendum" element={<CorrigendumGuidePage />} />
       <Route path="*" element={<NotFound />} />
     </Routes>

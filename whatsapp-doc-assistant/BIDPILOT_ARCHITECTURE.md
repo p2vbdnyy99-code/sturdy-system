@@ -5462,3 +5462,29 @@ answers "meaning" (10 Nov 2026, local only; run
   - `verify.sh` green (backend 755/469/376, frontend 94, lint 0 errors, secret scan clean).
   - Browser 22/22 at 390 and 1366 px.
   - Local HTTP: with the feed stale, the landing page is noindex with its list, and the sitemap has 13 URLs and no lists. With the feed fresh, no noindex, and the lists are back.
+
+## EMD calculator page (14 Nov 2026)
+
+**What changed.** A new guide page, `/guides/emd-calculator`
+(`frontend/src/pages/guides/EmdCalculator.tsx`): the reader types the value,
+the EMD % and the performance security % from their tender and gets both
+amounts in rupees. It starts on the AIIMS Bhubaneswar example from the EMD
+guide (2% of Rs. 40,35,586.00 = Rs. 80,711.72), so the server-rendered page
+and its markdown show a real sum. A table gives EMD at 2%, 3% and 5% for six
+common values. The arithmetic is in `frontend/src/guides/emdCalc.ts`
+(tested). The page is registered as a guide in `guides.ts` and `seo.js`, so
+it gets the sitemap, llms.txt, markdown and Article data like the others; the
+EMD guide links to it.
+
+**Why.** The EMD guide brings most search visits and none reached sign-up. A
+free tool with no sign-up answers "how much EMD" and leads to the guide and
+the product.
+
+**Rules.** It only multiplies what the reader types. The ranges it states are
+those the EMD guide quotes (GFR Rules 170 and 171, Rule 171(i) as amended
+01.01.2024), read on 9 Nov 2026, and it says the tender's own clause decides.
+
+**Verification.** verify.sh all pass (backend 755/469/376, frontend 97).
+Browser at 1280px and 390px: example shows Rs. 80,711.72; 10,00,000 at 2%
+gives Rs. 20,000.00; bad input shows a message; no horizontal scroll; the
+link from the EMD guide opens it.

@@ -20,6 +20,12 @@ export const GUIDES: GuideMeta[] = [
     checked: '2026-11-09',
   },
   {
+    slug: 'emd-calculator',
+    title: 'EMD calculator: work out EMD and performance security for a tender',
+    summary: 'Type the value and percentages from your tender to get the EMD and performance security in rupees, with the GFR ranges and a real example.',
+    checked: '2026-11-09',
+  },
+  {
     slug: 'tender-corrigendum',
     title: 'What is a corrigendum in a tender? Meaning, what it changes and how to check',
     summary: 'What a corrigendum means, how it differs from an amendment, what one on GeM looks like, and a real example that changed who was eligible.',
