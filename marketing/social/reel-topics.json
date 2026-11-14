@@ -1,0 +1,128 @@
+[
+ {
+  "slug": "one-clause",
+  "facts": "Made 14 Nov 2026, scheduled 16 Nov 18:00.",
+  "link": "https://tendertez.in",
+  "made": true
+ },
+ {
+  "slug": "emd-3-steps",
+  "facts": "EMD kaise nikaale: value x percentage. GFR Rule 170: ordinarily 2-5% of estimated value. AIIMS example 2% of Rs. 40,35,586.00 = Rs. 80,711.72. Free EMD calculator.",
+  "link": "https://tendertez.in/guides/emd-calculator",
+  "made": false
+ },
+ {
+  "slug": "mse-emd-exemption",
+  "facts": "GFR Rule 170 exempts micro and small enterprises from EMD. On GeM only manufacturers / service providers qualify, traders do not; upload Udyam proof with the bid.",
+  "link": "https://tendertez.in/guides/emd-exemption",
+  "made": false
+ },
+ {
+  "slug": "startup-emd",
+  "facts": "DPIIT-recognised startups are exempt from EMD under Rule 170(i); on GeM upload the DPIIT certificate with the bid. Medium enterprises are not in the list.",
+  "link": "https://tendertez.in/guides/emd-exemption",
+  "made": false
+ },
+ {
+  "slug": "emd-vs-performance-security",
+  "facts": "EMD: every bidder, with the bid, ordinarily 2-5%. Performance security: only the winner, after award, 3-5% for goods and services (Rule 171, amended 1 Jan 2024). EMD exemption does not exempt performance security.",
+  "link": "https://tendertez.in/guides/emd-exemption",
+  "made": false
+ },
+ {
+  "slug": "emd-validity-refund",
+  "facts": "Bid security valid 45 days beyond final bid validity; unsuccessful bidders get it back at the latest by the 30th day after award (Rule 170).",
+  "link": "https://tendertez.in/guides/emd-exemption",
+  "made": false
+ },
+ {
+  "slug": "corrigendum-meaning",
+  "facts": "A corrigendum is the official notice that amends a published tender; buyers 'amend tender documents by issuing a corrigendum' (Manual for Procurement of Goods 2024, para 5.1.5). It becomes part of the tender.",
+  "link": "https://tendertez.in/guides/tender-corrigendum",
+  "made": false
+ },
+ {
+  "slug": "corrigendum-changed-eligibility",
+  "facts": "IIT Kanpur corrigendum of 5 May 2026 widened registrations accepted and changed the definition of similar work from repairs and maintenance to construction works.",
+  "link": "https://tendertez.in/guides/tender-corrigendum",
+  "made": false
+ },
+ {
+  "slug": "corrigendum-not-always-date",
+  "facts": "A corrigendum does not always extend the deadline; it can change EMD, eligibility, scope. Check the day before you submit and read the changed clause, not the summary.",
+  "link": "https://tendertez.in/guides/tender-corrigendum",
+  "made": false
+ },
+ {
+  "slug": "gem-corrigendum",
+  "facts": "On GeM a corrigendum can move the bid end date (RECPDCL GEM/2023/B/3262572: 29.03.2023 to 05.04.2023) and can also change terms. Read it in full.",
+  "link": "https://tendertez.in/guides/tender-corrigendum",
+  "made": false
+ },
+ {
+  "slug": "eligibility-first",
+  "facts": "Read eligibility before the scope of work: registration, turnover, similar work, exemptions, proof. If you don't qualify, the rest doesn't matter.",
+  "link": "https://tendertez.in/guides/tender-eligibility-check",
+  "made": false
+ },
+ {
+  "slug": "turnover-clause",
+  "facts": "A turnover clause has four parts: which years, average or every year, whole company or tendered item, and the proof (audited statements or CA certificate).",
+  "link": "https://tendertez.in/guides/tender-eligibility-check",
+  "made": false
+ },
+ {
+  "slug": "similar-work",
+  "facts": "'Similar work' is defined by the tender: type of work, minimum value per order, client type, period. Match each past order to it.",
+  "link": "https://tendertez.in/guides/tender-eligibility-check",
+  "made": false
+ },
+ {
+  "slug": "three-dates",
+  "facts": "Every tender has at least three dates: pre-bid query, bid submission close, technical bid opening; some add a date for physical EMD or documents.",
+  "link": "https://tendertez.in/sample-analysis",
+  "made": false
+ },
+ {
+  "slug": "rejected-on-form",
+  "facts": "Bids get rejected on form, not just price: unsigned annexure, missing self-attested page, EMD in wrong format, expired certificate. Build the checklist from the tender.",
+  "link": "https://tendertez.in/features",
+  "made": false
+ },
+ {
+  "slug": "gem-atc",
+  "facts": "On GeM the buyer's additional terms (ATC) can add conditions the main bid page doesn't show: experience, OEM authorisation, local office, extra documents.",
+  "link": "https://tendertez.in/guides",
+  "made": false
+ },
+ {
+  "slug": "boq-units",
+  "facts": "Read the BOQ against the specification: unit (per metre, per number, lump sum), items 'as per specification', 'LS' quantities, scope items missing from the BOQ.",
+  "link": "https://tendertez.in/features",
+  "made": false
+ },
+ {
+  "slug": "pre-bid-query",
+  "facts": "If a clause is unclear, ask in the pre-bid meeting or by the query date; answers come in writing as a corrigendum or minutes.",
+  "link": "https://tendertez.in/guides/tender-corrigendum",
+  "made": false
+ },
+ {
+  "slug": "sample-analysis",
+  "facts": "TenderTez's published sample: a real 35-page AIIMS Bhubaneswar tender, analysed exactly as produced: deadline p.4, EMD p.4, turnover and similar work p.11, 17 points worth a second look.",
+  "link": "https://tendertez.in/sample-analysis",
+  "made": false
+ },
+ {
+  "slug": "consultant-workspaces",
+  "facts": "For tender consultants: each client gets its own workspace and profile; eligibility checked against that client's profile.",
+  "link": "https://tendertez.in/tender-consultants",
+  "made": false
+ },
+ {
+  "slug": "checklist-from-tender",
+  "facts": "TenderTez builds the submission checklist from the tender's own requirements, each item linked to its page; you can add your own items.",
+  "link": "https://tendertez.in/features",
+  "made": false
+ }
+]

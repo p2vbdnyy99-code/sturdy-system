@@ -1,0 +1,179 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<style>
+@font-face{font-family:Jost;src:url(fonts/Jost.ttf);font-weight:100 900}
+html,body{margin:0;background:#F3F0EA;overflow:hidden}canvas{display:block}
+</style></head><body><canvas id="c"></canvas>
+<script>
+// TenderTez reel 1, "One clause in 150 pages". Stick-figure Explainer style, vertical 1080x1920, 60 fps.
+// Deterministic: every frame is a pure function of t.
+const W = innerWidth, Hh = innerHeight, cv = document.getElementById('c'); cv.width = W; cv.height = Hh;
+const g = cv.getContext('2d');
+const PAPER = '#F3F0EA', INK = '#24242C', MUTE = '#9C978C', TINT = '#E2DDD2', ACC = '#EB4A2A';
+const M = 90;                       // left margin
+const H = 380;                      // figure height, world units
+const GY = 1250;                    // screen y of the ground line at any zoom
+window.DUR = 31.4;
+
+// ---------- helpers ----------
+function mulberry(a){return()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+const cl = (x,a=0,b=1)=>Math.max(a,Math.min(b,x));
+const u01 = (t,a,b)=>cl((t-a)/(b-a));
+const ease = x=>x<.5?4*x*x*x:1-Math.pow(-2*x+2,3)/2;
+const eout = x=>1-Math.pow(1-x,3);
+const spring = (x,k=7,w=11)=>x<=0?0:1-Math.exp(-k*x)*Math.cos(w*x);   // 0 -> 1 with a small overshoot
+const lerp = (a,b,x)=>a+(b-a)*x;
+
+// ---------- paper, drawn once ----------
+const paper = document.createElement('canvas'); paper.width = W; paper.height = Hh;
+(function(){const p=paper.getContext('2d');p.fillStyle=PAPER;p.fillRect(0,0,W,Hh);const im=p.getImageData(0,0,W,Hh),d=im.data,r=mulberry(7);
+ for(let i=0;i<d.length;i+=4){const n=Math.round((r()-.5)*6);d[i]+=n;d[i+1]+=n;d[i+2]+=n}p.putImageData(im,0,0)})();
+
+// ---------- timeline ----------
+const VO = [   // start, duration, subtitle (Hinglish, Roman script)
+ [0.6, 2.98, "Ek sarkari tender 150 pages tak ka ho sakta hai."],
+ [5.2, 3.26, "Aur usmein sirf ek clause aapki bid dubo sakta hai."],
+ [9.0, 3.16, "Woh miss hua, toh aapki bid reject ho sakti hai."],
+ [13.2, 1.981, "TenderTez poori PDF padhta hai."],
+ [16.7, 5.054, "Deadline, EMD, eligibility aur documents, sab kuch page number ke saath."],
+ [22.3, 3.44, "Toh clause aap khud check kar lijiye, minutes mein."],
+ [26.3, 1.94, "Pehle 5 tenders bilkul free!"]
+];
+const NROW = 40, X0 = 300, DX = 170;
+const rowX = i => X0 + i*DX;
+const popT = i => 1.15 + 3.2*(1-Math.pow(1-i/(NROW-1),1.9))*0.98;     // pop-ins get faster
+const CL = 17;                                                          // the clause that matters
+const T_MARK = 6.25, T_FADE = 10.0;
+const HITS = [ {i:1,t:16.75,label:'Deadline',page:'p.4',tp:20.7}, {i:3,t:17.55,label:'EMD',page:'p.4',tp:20.9},
+               {i:5,t:18.25,label:'Eligibility',page:'p.11',tp:21.1}, {i:7,t:19.35,label:'Documents',page:'p.11',tp:21.3} ];
+const T_PULSE = 16.35, T_TURN = 25.1;
+const CAM = [  // t, centre x (world), zoom
+ [0, 40, 1.55], [1.15, 40, 1.55], [4.7, 1000, .44], [7.2, 2700, .5], [8.9, rowX(CL), 1.25], [11.6, rowX(CL), 1.32],
+ [13.4, 780, .56], [24.9, 800, .56], [27.5, 745, .62], [31.4, 745, .64] ];
+function cam(t){let k=0;while(k<CAM.length-2&&t>=CAM[k+1][0])k++;const a=CAM[k],b=CAM[k+1],x=ease(u01(t,a[0],b[0]));
+ return {x:lerp(a[1],b[1],x), z:Math.exp(lerp(Math.log(a[2]),Math.log(b[2]),x))};}
+let C = {x:0,z:1};
+const sx = x => W/2 + (x-C.x)*C.z, sy = y => GY + y*C.z;     // world -> screen (y up is negative)
+
+// ---------- sound and cue events ----------
+window.EV = [];
+for(let i=0;i<NROW;i++) EV.push({t:popT(i),type:'pop',i});
+EV.push({t:.25,type:'pop',i:-1},{t:T_MARK,type:'mark'},{t:T_FADE,type:'fade'},{t:T_PULSE,type:'pulse'},{t:T_TURN,type:'turn'},{t:26.3,type:'end'});
+HITS.forEach((h,k)=>{EV.push({t:h.t,type:'hit',k});EV.push({t:h.tp,type:'page',k})});
+EV.sort((a,b)=>a.t-b.t);
+
+// ---------- the figure: round head, one even line, every limb one curve ----------
+function limb(ax,ay,bx,by,bend){ const mx=(ax+bx)/2, my=(ay+by)/2, dx=bx-ax, dy=by-ay, L=Math.hypot(dx,dy)||1;
+ g.beginPath(); g.moveTo(sx(ax),sy(ay)); g.quadraticCurveTo(sx(mx - dy/L*bend), sy(my + dx/L*bend), sx(bx), sy(by)); g.stroke(); }
+function figure(x, o){
+ const s = o.s; if(s<=.01) return;
+ const h = H*s, lean = o.lean||0, dip = (o.dip||0)*h, raise = o.raise||0, face = o.face||0;
+ const hipX = x, hipY = -.47*h + dip;
+ const nkX = hipX + Math.sin(lean)*.31*h, nkY = hipY - Math.cos(lean)*.31*h;
+ const r = .088*h, hdX = nkX + Math.sin(lean+face*.25)*r, hdY = nkY - Math.cos(lean+face*.25)*r;
+ const px = h*C.z, lw = 8*cl(Math.sqrt(px/380),.6,1.05)*(o.lwk||1);
+ g.lineCap='round'; g.lineJoin='round'; g.lineWidth=lw; g.strokeStyle=o.col||INK;
+ // legs: hip to each foot, knee as the control point
+ limb(hipX,hipY, x-.075*h,0, -.035*h - dip*.6); limb(hipX,hipY, x+.075*h,0, .035*h + dip*.6);
+ // spine
+ limb(hipX,hipY, nkX,nkY, lean*.06*h);
+ // arms: hanging -> raised
+ const shX = lerp(hipX,nkX,.9), shY = lerp(hipY,nkY,.9);
+ for(const sd of [-1,1]){
+  const hang = [shX + sd*.11*h + lean*.1*h, shY + .30*h], up = [shX + sd*.2*h, shY - .30*h];
+  const k = cl(raise*(sd>0?1:(o.one?0:1)),0,1.15);
+  limb(shX,shY, lerp(hang[0],up[0],k), lerp(hang[1],up[1],k), sd*(.05*h*(1-k) - .07*h*k));
+ }
+ // head: a paper disc with an ink ring, or a solid accent head
+ const a = cl(o.acc||0); g.beginPath(); g.arc(sx(hdX),sy(hdY),r*C.z,0,7);
+ g.fillStyle = PAPER; g.fill();
+ if(a>0){ g.globalAlpha=a; g.fillStyle=ACC; g.fill(); g.globalAlpha=1; }
+ g.strokeStyle = a>.5?ACC:(o.col||INK); g.lineWidth=lw; g.stroke();
+ return {hdX, hdY, r, top: hdY - r};
+}
+
+// ---------- type ----------
+function font(w,px){ g.font = `${w} ${px}px Jost, sans-serif`; }
+function say(str, x, y, o){ // slides up while fading in; leaves by fading
+ const a = Math.min(u01(o.t,o.t0,o.t0+.4), 1-u01(o.t,o.t1-.35,o.t1)); if(a<=0) return;
+ const dy = (1-eout(u01(o.t,o.t0,o.t0+.4)))*(o.rise||18);
+ font(o.w||600,o.px); g.globalAlpha=a; g.fillStyle=o.col||INK; g.textBaseline='alphabetic';
+ if(g.letterSpacing!==undefined) g.letterSpacing=(o.track||0)+'px';
+ g.fillText(str,x,y+dy); g.globalAlpha=1; if(g.letterSpacing!==undefined) g.letterSpacing='0px';
+}
+function wrap(str,maxW){ const out=[]; let line=''; for(const w of str.split(' ')){ const t=line?line+' '+w:w; if(g.measureText(t).width>maxW&&line){out.push(line);line=w}else line=t } if(line)out.push(line); return out; }
+function subtitle(t){
+ for(const [t0,d,str] of VO){ const t1 = t0 + Math.max(1.8, d+.6); if(t<t0-.05||t>t1) continue;
+  const a = Math.min(u01(t,t0-.05,t0+.2), 1-u01(t,t1-.25,t1)); font(500,46); const lines = wrap(str, W-2*M-40);
+  const y0 = 1668; g.globalAlpha=a; g.fillStyle=ACC; g.fillRect(M, y0-44, 4, lines.length*60-8);
+  g.fillStyle=INK; lines.forEach((l,k)=>g.fillText(l, M+26, y0+k*60)); g.globalAlpha=1; }
+}
+
+// ---------- the frame ----------
+window.render = function(t){
+ C = cam(t);
+ g.drawImage(paper,0,0);
+ // ground line, with the accent pulse running along it
+ const gy = sy(0); g.lineCap='round'; g.lineWidth=4; g.strokeStyle=TINT; g.beginPath(); g.moveTo(-10,gy); g.lineTo(W+10,gy); g.stroke();
+ let front = -1;
+ if(t>=T_PULSE){ const pts=[[T_PULSE,0],...HITS.map(h=>[h.t,rowX(h.i)]),[21.5,rowX(9)+60]]; let k=0; while(k<pts.length-2&&t>=pts[k+1][0])k++;
+  front = lerp(pts[k][1],pts[k+1][1], ease(u01(t,pts[k][0],pts[k+1][0])));
+  const fa = 1-u01(t,T_TURN+2.2,T_TURN+3.2)*.0;
+  g.globalAlpha=fa; g.strokeStyle=ACC; g.lineWidth=7; g.beginPath(); g.moveTo(sx(0),gy); g.lineTo(sx(front),gy); g.stroke(); g.globalAlpha=1; }
+ // nodes under the four figures TenderTez returns
+ if(t>12.8) for(const h of HITS){ const a=u01(t,13.0,13.6), on=front>=rowX(h.i)-1; g.globalAlpha=a; g.beginPath(); g.arc(sx(rowX(h.i)),gy,9*Math.sqrt(C.z/.56),0,7);
+  g.fillStyle=on?ACC:PAPER; g.fill(); g.lineWidth=3.5; g.strokeStyle=on?ACC:MUTE; g.stroke(); g.globalAlpha=1; }
+
+ // the row: the tender's pages
+ const turn = eout(u01(t,T_TURN,T_TURN+1.1));
+ for(let i=NROW-1;i>=0;i--){ const x=rowX(i); if(sx(x)<-200||sx(x)>W+200) continue;
+  const s = spring(u01(t,popT(i),popT(i)+.55)*1.0, 6, 10);
+  const ph = i*1.7, sway = .022*Math.sin(t*1.25+ph);
+  const o = { s: Math.min(s,1.2), lean: sway - turn*(.10+.02*Math.sin(ph)), face: -turn, dip: .006*Math.sin(t*1.9+ph) };
+  if(i===CL){ o.acc = Math.min(spring(u01(t,T_MARK,T_MARK+.5),7,10), 1-ease(u01(t,T_FADE,T_FADE+1.0)));
+              o.raise = spring(u01(t,T_MARK+.1,T_MARK+.75),6,9)*(1-ease(u01(t,T_FADE,T_FADE+.9))); o.dip += -.02*Math.sin(Math.PI*u01(t,T_MARK,T_MARK+.35)); }
+  const hk = HITS.findIndex(h=>h.i===i);
+  if(hk>=0){ const h=HITS[hk]; o.acc = spring(u01(t,h.t,h.t+.45),7,10); o.raise = spring(u01(t,h.t+.04,h.t+.7),6,9)*(1-ease(u01(t,T_TURN,T_TURN+1)));
+             o.dip += .02*Math.sin(Math.PI*u01(t,h.t-.18,h.t+.14)) - .02*Math.sin(Math.PI*u01(t,h.t,h.t+.3)); }
+  const f = figure(x,o);
+  if(hk>=0&&f){ const h=HITS[hk], a=u01(t,h.tp,h.tp+.3)*(1-u01(t,T_TURN-.2,T_TURN+.3)); if(a>0){ const pop=spring(u01(t,h.tp,h.tp+.5),7,10);
+     font(600,34*pop); g.globalAlpha=a; g.fillStyle=ACC; g.textAlign='center'; g.fillText(h.page, sx(x), sy(f.top - .42*H) ); g.textAlign='left'; g.globalAlpha=1; } }
+ }
+ // the bidder
+ { const s = spring(u01(t,.25,.9),6,10);
+   const slump = ease(u01(t,9.3,10.2))*(1-ease(u01(t,12.6,13.6)));
+   const wave = spring(u01(t,26.3,27.0),6,9);
+   figure(0,{ s, lean: .02*Math.sin(t*1.1) + .05*ease(u01(t,1.3,2.4))*(1-ease(u01(t,12.6,13.4))) + slump*.16, face: 1 - 0, dip: slump*.03, raise: wave, one:true, lwk:1.0 }); }
+
+ // ---------- screen type: one statement per screen, left on the margin ----------
+ const Y = 330;
+ // 1. the count
+ if(t<5.2){ const n = Math.round(lerp(1,150, ease(u01(t,1.15,4.3))));
+   say(String(n), M-6, Y+110, {t,t0:.45,t1:5.0,px:190,track:-6,rise:26});
+   say('pages, ek tender mein', M, Y+190, {t,t0:.75,t1:5.0,px:56,w:500,col:MUTE}); }
+ // 2. the clause
+ say('Ek clause', M, Y+70, {t,t0:5.3,t1:8.8,px:96,track:-2,col:ACC});
+ say('bid dubo sakta hai.', M, Y+170, {t,t0:5.6,t1:8.8,px:84,track:-2});
+ // 3. miss it
+ say('Miss hua,', M, Y+70, {t,t0:9.05,t1:12.5,px:96,track:-2});
+ say('toh bid reject', M, Y+170, {t,t0:9.35,t1:12.5,px:84,track:-2});
+ say('ho sakti hai.', M, Y+262, {t,t0:9.55,t1:12.5,px:84,track:-2});
+ // 4. the turn
+ say('TenderTez', M, Y+70, {t,t0:13.2,t1:16.3,px:112,track:-3});
+ say('poori PDF padhta hai.', M, Y+170, {t,t0:13.5,t1:16.3,px:72,w:500,col:MUTE});
+ // 5. what it lists, each with its page
+ HITS.forEach((h,k)=>{ const y = Y+40+k*104;
+   say(h.label, M, y, {t,t0:h.t,t1:25.2,px:84,track:-2});
+   font(600,84); const wl = g.measureText(h.label).width;
+   say(h.page, M+wl+28, y, {t,t0:h.tp,t1:25.2,px:60,col:ACC,rise:10}); });
+ say('Pages ek asli AIIMS tender se.', M, Y+40+4*104-14, {t,t0:21.6,t1:25.2,px:34,w:500,col:MUTE});
+ // 6. end
+ say('Pehle 5 tenders', M, Y+70, {t,t0:26.2,t1:40,px:104,track:-3});
+ say('free.', M, Y+176, {t,t0:26.4,t1:40,px:104,track:-3});
+ say('tendertez.in', M, Y+290, {t,t0:27.3,t1:40,px:76,col:ACC,track:-1});
+ say('AI tender analysis, har point page number ke saath', M, Y+356, {t,t0:27.8,t1:40,px:35,w:500,col:MUTE});
+
+ subtitle(t);
+};
+document.fonts.load('600 80px Jost').then(()=>document.fonts.load('500 40px Jost')).then(()=>{ window.READY = true; render(0); });
+</script></body></html>
