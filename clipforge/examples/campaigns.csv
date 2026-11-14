@@ -1,0 +1,4 @@
+marketplace,name,url,cpm,budget_total,budget_remaining,min_views,max_payout_per_post,platforms,source_permission,min_withdrawal,payout_terms,rules,status,ends_on,checked_on
+ssemble,EXAMPLE podcast campaign - replace with a real one,,1.00,100,60,1000,,"tiktok,youtube,instagram",explicit,10,EXAMPLE ONLY,EXAMPLE ONLY,candidate,,
+vyro,EXAMPLE creator campaign - replace with a real one,,3.00,5000,4000,0,300,"tiktok,youtube,instagram",explicit,0,EXAMPLE ONLY,EXAMPLE ONLY,candidate,,
+content_rewards,EXAMPLE campaign with unclear rights - replace,,2.00,1000,900,0,,"tiktok,instagram",unclear,0,EXAMPLE ONLY,EXAMPLE ONLY,candidate,,
