@@ -1,0 +1,102 @@
+[
+ {
+  "d": "2026-11-16",
+  "k": "emd-in-tender",
+  "h": "EMD kya hota hai?",
+  "l": [
+   "Earnest Money Deposit: bid ke saath di jaane wali security.",
+   "GFR Rule 170: aam taur par 2-5% of estimated value.",
+   "Free EMD calculator: tendertez.in"
+  ]
+ },
+ {
+  "d": "2026-11-17",
+  "k": "msme-emd",
+  "h": "MSE ho? EMD maaf ho sakta hai",
+  "l": [
+   "GFR Rule 170: micro aur small enterprises ko EMD se chhoot.",
+   "GeM par sirf manufacturer / service provider. Trader nahi.",
+   "Udyam proof bid ke saath upload karein."
+  ]
+ },
+ {
+  "d": "2026-11-18",
+  "k": "eligibility",
+  "h": "Tender eligibility pehle padhein",
+  "l": [
+   "Turnover ke saal kaunse?",
+   "Similar work ki definition kya hai?",
+   "Har condition ka proof kya chahiye?"
+  ]
+ },
+ {
+  "d": "2026-11-19",
+  "k": "corrigendum",
+  "h": "Corrigendum matlab?",
+  "l": [
+   "Tender publish hone ke baad buyer ka official badlav notice.",
+   "Date, EMD, eligibility, kuch bhi badal sakta hai.",
+   "Submit se ek din pehle zaroor check karein."
+  ]
+ },
+ {
+  "d": "2026-11-20",
+  "k": "similar-work",
+  "h": "Similar work kaun tay karta hai?",
+  "l": [
+   "Tender ki definition, aapki nahi.",
+   "Kaam ka type, order value, client type, period.",
+   "Har past order ko definition se milayein."
+  ]
+ },
+ {
+  "d": "2026-11-21",
+  "k": "turnover",
+  "h": "Turnover clause ke 4 hisse",
+  "l": [
+   "Kaunse saal: last 3 ya last 5 mein se 3?",
+   "Average ya har saal?",
+   "Poori company ya sirf woh item? Aur proof kya?"
+  ]
+ },
+ {
+  "d": "2026-11-22",
+  "k": "three-dates",
+  "h": "Har tender ki 3 zaroori dates",
+  "l": [
+   "Pre-bid query date.",
+   "Bid submission close.",
+   "Technical bid opening."
+  ]
+ },
+ {
+  "d": "2026-11-23",
+  "k": "rejected-on-form",
+  "h": "Bid form ki galti se reject",
+  "l": [
+   "Unsigned annexure.",
+   "Missing self-attested page.",
+   "Galat format mein EMD, expired certificate."
+  ]
+ },
+ {
+  "d": "2026-11-24",
+  "k": "gem-atc",
+  "h": "GeM bid mein ATC padha?",
+  "l": [
+   "Buyer ke additional terms extra shartein jod sakte hain.",
+   "Experience, OEM authorisation, local office.",
+   "Bid karne se pehle ATC padhein."
+  ]
+ },
+ {
+  "d": "2026-11-25",
+  "k": "emd-validity",
+  "h": "EMD validity kitni?",
+  "l": [
+   "GFR Rule 170: bid validity ke baad 45 din tak.",
+   "Bid validity badhi? EMD / BG bhi check karein.",
+   "Unsuccessful bidders: award ke 30 din ke andar wapas."
+  ]
+ }
+]
