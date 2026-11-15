@@ -1,0 +1,24 @@
+{
+ "updated": "2026-11-15",
+ "source": "Google and YouTube search suggestions for India (gl=in), and titles/hashtags of top Indian tender videos on YouTube, 15 Nov 2026. Search volumes not measured (Semrush had no API units).",
+ "rules": [
+  "YouTube Shorts title: lead with the exact Hinglish search phrase, then the topic, then '| TenderTez'. Under 90 characters. Add #shorts and 2 topic hashtags at the end of the description.",
+  "YouTube tags: 8-12 from the topic's keywords below plus 'government tender', 'gem portal', 'tendertez'.",
+  "Instagram caption: first line answers the search phrase in Hinglish; 6-8 hashtags at the end: 2 broad + 3 topic + 1 audience + #tendertez.",
+  "Facebook: 3-4 hashtags only.",
+  "Never use unrelated trending tags; every tag must match the post's topic."
+ ],
+ "broad_hashtags": ["#governmenttender", "#gemportal", "#gemtender", "#tender", "#etender", "#govttender"],
+ "audience_hashtags": ["#msme", "#contractor", "#tenderconsultant", "#smallbusinessindia", "#startupindia", "#civilcontractor"],
+ "topics": {
+  "emd": {"keywords": ["emd in tender", "emd full form", "emd kya hota hai", "emd amount means", "emd exemption", "earnest money deposit"], "hashtags": ["#emd", "#earnestmoney", "#emdexemption", "#bidsecurity"]},
+  "msme-exemption": {"keywords": ["msme tender fee exemption", "msme tender benefits", "emd exemption for msme", "udyam registration tender", "msme se tender kaise bhare"], "hashtags": ["#msme", "#udyam", "#msmeindia", "#emdexemption"]},
+  "startup": {"keywords": ["startup india tender", "dpiit startup emd exemption"], "hashtags": ["#startupindia", "#dpiit", "#startups"]},
+  "corrigendum": {"keywords": ["corrigendum meaning in hindi", "corrigendum meaning", "corrigendum in gem portal", "corrigendum of tender notice"], "hashtags": ["#corrigendum", "#tendernotice", "#tenderupdate"]},
+  "eligibility": {"keywords": ["tender eligibility criteria", "gem tender eligibility criteria", "government tender eligibility criteria", "turnover criteria in tender", "similar work tender"], "hashtags": ["#eligibility", "#tendereligibility", "#turnover"]},
+  "gem": {"keywords": ["gem tender kaise bhare", "gem bid participation", "gem portal kya hai", "gem bidding process", "gem bid technical evaluation", "gem tender document"], "hashtags": ["#gem", "#gemportal", "#gembid", "#governmentemarketplace"]},
+  "process": {"keywords": ["tender kaise bhara jata hai", "government tender kaise bhare", "tender bharna kaise sikhe", "tender process in hindi", "tender process steps", "tender kaise milta hai"], "hashtags": ["#tenderkaisebhare", "#tenderprocess", "#governmentcontracts"]},
+  "documents": {"keywords": ["tender documents list", "government tender ke liye documents", "tender document checklist"], "hashtags": ["#tenderdocuments", "#checklist"]},
+  "boq": {"keywords": ["boq in tender", "boq kya hota hai", "bill of quantities"], "hashtags": ["#boq", "#billofquantities", "#civilengineering"]}
+ }
+}
