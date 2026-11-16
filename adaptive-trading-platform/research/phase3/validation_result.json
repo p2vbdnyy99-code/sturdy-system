@@ -1,0 +1,271 @@
+{
+ "preregistration_sha256": "83fb63b5d3868d52fa07b9986fc4b9c45f95a0493214ce97b60dafbf90c56137",
+ "preregistered_at_utc": "2026-11-16T11:27:48Z",
+ "run_at_utc": "2026-11-16T11:28:45Z",
+ "stage": "validation",
+ "loaded_until": "2024-11-10 20:00:00+00:00",
+ "holdout_ledger_entries": 0,
+ "gate": {
+  "timing p < 0.05": false,
+  "net Sharpe > 0": true,
+  "net total return > 0": true
+ },
+ "verdict": "FAIL",
+ "metrics": {
+  "days": 679,
+  "exposure_share": 0.6377025036818851,
+  "exposure_changes": 51,
+  "net_total_return": 2.142888848724242,
+  "gross_total_return": 2.3153098420427582,
+  "costs_total_return_drag": 0.17242099331851612,
+  "net_sharpe": 1.7503156728293419,
+  "net_mean_daily_bp": 18.998822272840766,
+  "max_drawdown": 0.3646533825024951,
+  "buy_hold_total_return": 3.836686475995612,
+  "buy_hold_sharpe": 1.9867469064775838,
+  "timing_p": 0.2318840579710145,
+  "null_mean_daily_bp": 15.993481559194453,
+  "first_decision_day": "2023-01-01",
+  "last_decision_day": "2024-11-09",
+  "annualised_net_return": 0.8507246779515525,
+  "annualised_net_volatility": 0.39618968379442765,
+  "t_stat_mean_net_daily": 2.387288118198125,
+  "buy_hold_max_drawdown": 0.26151375053867754,
+  "net_return_minus_buy_hold": -1.69379762727137,
+  "net_sharpe_minus_buy_hold": -0.23643123364824192,
+  "turnover_units": 51.0,
+  "cost_stress": {
+   "x2": {
+    "net_total_return": 1.9792681728410941,
+    "net_sharpe": 1.6776833555475692
+   },
+   "x3": {
+    "net_total_return": 1.8240071830352536,
+    "net_sharpe": 1.6047626575512215
+   }
+  },
+  "net_sharpe_ci95_block_bootstrap": [
+   0.06351601913137016,
+   3.2925636893625145
+  ],
+  "trades": {
+   "count": 26,
+   "win_rate": 0.5,
+   "mean_net_return": 0.05721623071420945,
+   "median_net_return": 0.00042784418314262274,
+   "mean_days_held": 16.653846153846153,
+   "best": 0.625840331546579,
+   "worst": -0.19133768294722397,
+   "list": [
+    {
+     "decision_day_in": "2023-01-06",
+     "decision_day_out": "2023-01-07",
+     "days_held": 1,
+     "net_return": -0.002515703923688828,
+     "carried_in": false,
+     "open_at_end": false
+    },
+    {
+     "decision_day_in": "2023-01-09",
+     "decision_day_out": "2023-02-28",
+     "days_held": 50,
+     "net_return": 0.34431532743019044,
+     "carried_in": false,
+     "open_at_end": false
+    },
+    {
+     "decision_day_in": "2023-03-01",
+     "decision_day_out": "2023-03-03",
+     "days_held": 2,
+     "net_return": -0.05592920336096541,
+     "carried_in": false,
+     "open_at_end": false
+    },
+    {
+     "decision_day_in": "2023-03-12",
+     "decision_day_out": "2023-04-22",
+     "days_held": 41,
+     "net_return": 0.26191419159503715,
+     "carried_in": false,
+     "open_at_end": false
+    },
+    {
+     "decision_day_in": "2023-04-23",
+     "decision_day_out": "2023-05-01",
+     "days_held": 8,
+     "net_return": 0.015177183506580594,
+     "carried_in": false,
+     "open_at_end": false
+    },
+    {
+     "decision_day_in": "2023-05-02",
+     "decision_day_out": "2023-05-08",
+     "days_held": 6,
+     "net_return": -0.03694276686942399,
+     "carried_in": false,
+     "open_at_end": false
+    },
+    {
+     "decision_day_in": "2023-06-20",
+     "decision_day_out": "2023-07-21",
+     "days_held": 31,
+     "net_return": 0.05408258780105224,
+     "carried_in": false,
+     "open_at_end": false
+    },
+    {
+     "decision_day_in": "2023-09-17",
+     "decision_day_out": "2023-09-28",
+     "days_held": 11,
+     "net_return": 0.01647967985244292,
+     "carried_in": false,
+     "open_at_end": false
+    },
+    {
+     "decision_day_in": "2023-09-30",
+     "decision_day_out": "2024-01-07",
+     "days_held": 99,
+     "net_return": 0.625840331546579,
+     "carried_in": false,
+     "open_at_end": false
+    },
+    {
+     "decision_day_in": "2024-01-08",
+     "decision_day_out": "2024-01-12",
+     "days_held": 4,
+     "net_return": -0.09069248657836282,
+     "carried_in": false,
+     "open_at_end": false
+    },
+    {
+     "decision_day_in": "2024-01-15",
+     "decision_day_out": "2024-01-18",
+     "days_held": 3,
+     "net_return": -0.02988259975468166,
+     "carried_in": false,
+     "open_at_end": false
+    },
+    {
+     "decision_day_in": "2024-01-29",
+     "decision_day_out": "2024-01-31",
+     "days_held": 2,
+     "net_return": -0.018753358463790892,
+     "carried_in": false,
+     "open_at_end": false
+    },
+    {
+     "decision_day_in": "2024-02-02",
+     "decision_day_out": "2024-02-03",
+     "days_held": 1,
+     "net_return": -0.0064626358628073755,
+     "carried_in": false,
+     "open_at_end": false
+    },
+    {
+     "decision_day_in": "2024-02-09",
+     "decision_day_out": "2024-04-03",
+     "days_held": 54,
+     "net_return": 0.39658309572121886,
+     "carried_in": false,
+     "open_at_end": false
+    },
+    {
+     "decision_day_in": "2024-04-04",
+     "decision_day_out": "2024-04-10",
+     "days_held": 6,
+     "net_return": 0.029129901881280063,
+     "carried_in": false,
+     "open_at_end": false
+    },
+    {
+     "decision_day_in": "2024-04-18",
+     "decision_day_out": "2024-04-19",
+     "days_held": 1,
+     "net_return": 0.0033713922899740734,
+     "carried_in": false,
+     "open_at_end": false
+    },
+    {
+     "decision_day_in": "2024-04-21",
+     "decision_day_out": "2024-04-23",
+     "days_held": 2,
+     "net_return": 0.02053326467786598,
+     "carried_in": false,
+     "open_at_end": false
+    },
+    {
+     "decision_day_in": "2024-05-15",
+     "decision_day_out": "2024-06-14",
+     "days_held": 30,
+     "net_return": -0.004548338388240092,
+     "carried_in": false,
+     "open_at_end": false
+    },
+    {
+     "decision_day_in": "2024-06-15",
+     "decision_day_out": "2024-06-16",
+     "days_held": 1,
+     "net_return": 0.004660731398597795,
+     "carried_in": false,
+     "open_at_end": false
+    },
+    {
+     "decision_day_in": "2024-07-19",
+     "decision_day_out": "2024-08-05",
+     "days_held": 17,
+     "net_return": -0.19133768294722397,
+     "carried_in": false,
+     "open_at_end": false
+    },
+    {
+     "decision_day_in": "2024-08-06",
+     "decision_day_out": "2024-08-07",
+     "days_held": 1,
+     "net_return": -0.01791386904162484,
+     "carried_in": false,
+     "open_at_end": false
+    },
+    {
+     "decision_day_in": "2024-08-08",
+     "decision_day_out": "2024-08-13",
+     "days_held": 5,
+     "net_return": -0.019874954064401318,
+     "carried_in": false,
+     "open_at_end": false
+    },
+    {
+     "decision_day_in": "2024-09-04",
+     "decision_day_out": "2024-09-06",
+     "days_held": 2,
+     "net_return": -0.07109071521790356,
+     "carried_in": false,
+     "open_at_end": false
+    },
+    {
+     "decision_day_in": "2024-09-13",
+     "decision_day_out": "2024-09-16",
+     "days_held": 3,
+     "net_return": -0.03977313627022416,
+     "carried_in": false,
+     "open_at_end": false
+    },
+    {
+     "decision_day_in": "2024-09-17",
+     "decision_day_out": "2024-09-22",
+     "days_held": 5,
+     "net_return": 0.051917054394559514,
+     "carried_in": false,
+     "open_at_end": false
+    },
+    {
+     "decision_day_in": "2024-09-24",
+     "decision_day_out": null,
+     "days_held": 47,
+     "net_return": 0.24933470721740592,
+     "carried_in": false,
+     "open_at_end": true
+    }
+   ]
+  }
+ }
+}

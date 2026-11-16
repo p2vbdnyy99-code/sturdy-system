@@ -1,0 +1,47 @@
+{
+  "study": "Phase 3: single confirmatory test of BTC 30-day time-series momentum (Phase 2.1 hypothesis H1)",
+  "registered_at_utc": "2026-11-16T11:27:48Z",
+  "registered_before_any_validation_result": true,
+  "relation_to_phase2_1": {
+    "what": "A NEW study. Under the Phase 2.1 pre-registration H1 failed the training gate (raw timing p 0.028, Holm-adjusted 0.140) and that study forbids looking at validation for train failures. This study is the separately registered single-hypothesis confirmation proposed in RESEARCH_HYPOTHESES.md section 5 and authorised by the owner.",
+    "identical_to_phase2_1": ["rule", "parameter", "bar construction", "decision timing", "cost model", "timing test (code path, shift count, minimum shift, seed)", "validation and hold-out gates"],
+    "selection_disclosure": "H1 was chosen as the best of 5 hypotheses on the TRAINING segment only. No validation or hold-out row of binance-2020 has been evaluated for any hypothesis before this registration. About 850 BTCUSDT configurations were examined in Phase 1 on different data (2025-26)."
+  },
+  "naming_note": "'H1' is the hypothesis identifier. Bars are DAILY, not hourly.",
+  "dataset": {"symbol": "BTCUSDT", "source": "binance-2020", "base_timeframe": "M5", "venue": "Binance spot",
+              "checksum_sha256_prefix": "26403f5fa16e1d6a",
+              "train": ["2020-01-01", "2023-01-01"], "validation": ["2023-01-01", "2024-11-11"],
+              "holdout": ["2024-11-11", "2025-11-11"]},
+  "hypothesis": {"id": "H1_tsmom30", "rule": "exposure 1 if trailing 30-day log return of the daily close > 0 else 0",
+                 "params": {"lookback_days": 30}, "direction": "long or flat; spot; no leverage; no shorting",
+                 "bar": "daily 00:00-24:00 UTC from six complete H4 bars built from M5; decision at the daily close; the position earns the NEXT day's close-to-close return",
+                 "implementation": "research/phase2_1/hypotheses.py functions h1_tsmom, daily_from_h4, evaluate, imported unchanged"},
+  "costs": {"commission_per_side_bp": 10.0, "spread_and_slippage_per_side_bp": 0.5, "applied": "per unit of absolute change in exposure",
+            "basis": "Binance VIP 0 published spot fee; spread/slippage allowance far above the measured ~0.001 bp"},
+  "primary_test": {
+    "name": "timing skill, circular-shift permutation",
+    "definition": "exposure series over the validation segment is circularly shifted against next-day returns; 2000 shifts drawn uniformly from [30, n-30) with numpy default_rng(seed=0); statistic = mean daily (exposure x return) before costs; p = (count(null >= actual) + 1) / (2000 + 1); one-sided",
+    "note": "The Phase 2.1 JSON worded the statistic as 'net'; the executed code and the report used the pre-cost mean (costs are identical under a shift apart from the wrap-around point). This study freezes the statistic exactly as executed in Phase 2.1.",
+    "alpha": 0.05, "tests_in_family": 1, "seed": 0, "reruns_with_other_seeds_or_shift_counts": "not allowed"
+  },
+  "gates": {
+    "validation_PASS_requires_all": ["timing p < 0.05", "net Sharpe > 0", "net total return > 0"],
+    "holdout": "read ONLY if validation passes; once; recorded in the dataset ledger; PASS requires net Sharpe > 0 AND net total return > 0",
+    "decision": "validation FAIL => H1 is stopped and the hold-out stays sealed. PASS at both stages => 'confirmed on unread data', which is a research finding, not approval to trade."
+  },
+  "reported_metrics_non_gating": [
+    "days", "exposure share", "exposure changes", "round-trip trades: count, win rate, mean and median net return, mean holding days, best, worst (descriptive; a position open at a segment boundary is marked there)",
+    "gross and net total return", "cost drag", "annualised net return and volatility (365 days)", "net Sharpe (daily x sqrt(365))",
+    "t-statistic of mean net daily return", "max drawdown", "buy-and-hold total return, Sharpe and max drawdown over the same days", "net return and Sharpe minus buy-and-hold",
+    "null distribution mean of the timing test", "cost stress: net return and Sharpe at 2x and 3x costs",
+    "95% interval of net Sharpe from a circular block bootstrap (30-day blocks, 2000 resamples, seed 0)"
+  ],
+  "known_limits_stated_before_results": [
+    "677 validation days are one market regime; the test has limited power, so FAIL does not prove absence of an effect and PASS is one confirmation, not proof",
+    "the timing test controls for average exposure, not for regime luck shared by all trend rules",
+    "signal-level daily simulation at the close; it is not run through the platform's paper engine and says nothing about execution parity (kept open as a separate engineering task)",
+    "the researcher knows the public BTC price path of 2023-2025 in aggregate"
+  ],
+  "not_allowed": ["changing the rule, lookback, costs, test or gates after seeing any validation result", "testing H2, H3 or any variant as a substitute if H1 fails",
+                  "re-running validation", "reading the hold-out after a validation fail", "enabling any trading on the basis of this study"]
+}
