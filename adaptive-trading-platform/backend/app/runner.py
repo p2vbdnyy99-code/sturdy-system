@@ -15,6 +15,8 @@ from .config import get_settings
 from .core import ai, live_gate
 from .core.instruments import TIMEFRAMES
 from .core.notify import notify
+from .core.engines import plan_from_id
+from .core.strategies.library import get_strategy
 from .core.trading import TradingService, user_sessions
 from .data import store
 from .db import session_scope, utcnow
@@ -43,6 +45,7 @@ class Feed:
 
     def quote(self, symbol: str) -> Quote: ...
     def candles(self, symbol: str, timeframe: str, limit: int): ...
+    def history(self, symbol: str, timeframe: str, bars: int, end: datetime): ...
     def supports(self, symbol: str) -> bool: ...
     def close(self): ...
 
@@ -58,6 +61,9 @@ class BinanceFeed(Feed):
     def candles(self, symbol, timeframe, limit): return self.md.klines(symbol, timeframe, limit=limit)
     def close(self): self.md.close()
 
+    def history(self, symbol, timeframe, bars, end):
+        return self.md.history(symbol, timeframe, end - timedelta(minutes=TIMEFRAMES[timeframe] * (bars + 2)), end)
+
 
 class AdapterFeed(Feed):
     """Market data through a broker adapter (MT5 bridge)."""
@@ -69,6 +75,9 @@ class AdapterFeed(Feed):
     def quote(self, symbol): return self.adapter.quote(symbol)
     def candles(self, symbol, timeframe, limit): return self.adapter.candles(symbol, timeframe, limit=limit)
     def close(self): self.adapter.close()
+
+    def history(self, symbol, timeframe, bars, end):
+        return self.adapter.candles(symbol, timeframe, limit=bars + 2)
 
 
 def build_feed(db, account: Account) -> Feed | None:
@@ -82,6 +91,35 @@ def build_feed(db, account: Account) -> Feed | None:
             return None
         return AdapterFeed(build_adapter(conn), "mt5")
     return None
+
+
+def history_needed(cfgs: list[StrategyConfig], timeframe: str) -> int:
+    """Bars every enabled strategy on this timeframe needs before its signals stop depending on history length."""
+    need = 0
+    for c in cfgs:
+        plan, st = plan_from_id(c.plan_id), get_strategy(c.strategy_key)
+        need = max(need, st.required_bars({**st.default_params, **plan.params, **(c.params or {})}, TIMEFRAMES[timeframe]))
+    return need + 2
+
+
+def ensure_history(db, feed: Feed, sym: str, tf: str, need: int, last_closed: datetime, now: datetime):
+    """Return the last ``need`` closed candles from the live dataset, backfilling from the feed when the
+    stored live history is too short. Raises store.DataError when complete history cannot be assembled."""
+    src = store.live_source(feed.source, tf)
+    ds = store.get_dataset(db, sym, src)
+    first_needed = last_closed - timedelta(minutes=TIMEFRAMES[tf] * (need - 1))
+    if ds is None or ds.start is None or ds.start > first_needed or ds.rows < need:
+        back = feed.history(sym, tf, need, now)
+        if back is None or back.empty:
+            raise store.DataError(f"feed returned no history for {sym} {tf}")
+        back = back[back.index + timedelta(minutes=TIMEFRAMES[tf]) <= now]
+        store.upsert(db, sym, tf, src, back, provenance={"feed": feed.source, "kind": "live backfill"})
+    hist = store.load(db, sym, tf, src, limit=need)
+    if len(hist) < need:
+        raise store.DataError(f"only {len(hist)} of {need} {tf} candles of history available for {sym}")
+    if hist.index[-1] != last_closed:
+        raise store.DataError(f"{sym} {tf} history ends {hist.index[-1]}, expected {last_closed}")
+    return hist
 
 
 def step_account(db, account: Account, feed: Feed, adapter: BrokerAdapter | None, now: datetime) -> dict:
@@ -145,19 +183,29 @@ def step_account(db, account: Account, feed: Feed, adapter: BrokerAdapter | None
         closed = df[df.index + timedelta(minutes=TIMEFRAMES[tf]) <= now]
         if closed.empty:
             continue
-        store.upsert(db, sym, tf, feed.source, closed)
+        live_src = store.live_source(feed.source, tf)
+        try:
+            store.upsert(db, sym, tf, live_src, closed, provenance={"feed": feed.source, "kind": "live"})
+        except store.DataError as e:
+            out["errors"].append(f"{sym} {tf} live candles rejected: {e}")
+            continue
         key, last = (account.id, sym, tf), closed.index[-1].to_pydatetime()
         prev = _last_candle.get(key)
         _last_candle[key] = last
         if prev is None or last <= prev:
             continue          # first sight after (re)start, or no new candle: never trade an old candle
-        hist = store.load(db, sym, tf, feed.source, limit=1500)
-        snap = ai.market_snapshot(hist, sym, tf, feed.source)
+        need = history_needed([c for c in cfgs if c.symbol == sym and c.timeframe == tf], tf)
+        try:
+            hist = ensure_history(db, feed, sym, tf, need, closed.index[-1], now)
+        except (store.DataError, BrokerError) as e:
+            out["errors"].append(f"{sym} {tf}: signals not evaluated, history incomplete: {e}")
+            continue
+        snap = ai.market_snapshot(hist, sym, tf, live_src)
         if snap.get("unusual_volatility"):
             notify(db, account.user_id, "unusual_volatility", snap["summary"],
                    f"vol:{sym}:{tf}:{last.strftime('%Y%m%d%H')}", {"symbol": sym})
         for cfg, sig in svc.evaluate_strategies(sym, tf, hist):
-            svc.execute_signal(cfg, sig, QUOTES[sym], now, data_source=feed.source)
+            svc.execute_signal(cfg, sig, QUOTES[sym], now, data_source=live_src)
             out["signals"] += 1
     return out
 

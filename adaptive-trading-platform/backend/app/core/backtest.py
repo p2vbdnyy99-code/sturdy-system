@@ -30,7 +30,8 @@ class BacktestConfig:
     max_hold_minutes: int = 24 * 60
     flat_at_session_end: bool = False
     max_participation: float = 0.05       # share of a candle's real volume we may take
-    oos_start: pd.Timestamp | None = None  # trades entered at/after this are out-of-sample
+    oos_start: pd.Timestamp | None = None  # legacy two-way label (in_sample / out_of_sample)
+    split: object | None = None            # core.validation.DataSplit: labels train / validation / holdout
     sessions: dict[str, SessionDef] | None = None
     enforce_portfolio_limits: bool = True
 
@@ -188,6 +189,10 @@ def run_backtest(items: list[PlanData], cfg: BacktestConfig | None = None) -> Ba
         comm = ex.commission_usd(spec, vol, tp_.entry, q2usd, m) + ex.commission_usd(spec, vol, px, q2usd, m)
         fin = ex.financing_usd(spec, side, vol, tp_.entry, q2usd, ts.to_pydatetime(), exit_ts.to_pydatetime())
         pnl = gross - comm + fin
+        # execution-cost estimates (already inside entry/exit prices): half spread each side, slippage on the
+        # entry and on every exit except a target fill
+        spread_cost = spread * vol * spec.contract_size * q2usd / 2 + P["spread"][x] * vol * spec.contract_size * q2usd / 2
+        slip_cost = ex.slippage_price(spec, m) * vol * spec.contract_size * q2usd * (1 if why == "take_profit" else 2)
         seg_lo = l[j:x + 1].min() if side > 0 else None
         seg_hi = h[j:x + 1].max() if side < 0 else None
         adverse = (tp_.entry - seg_lo) if side > 0 else (seg_hi - tp_.entry)
@@ -199,13 +204,15 @@ def run_backtest(items: list[PlanData], cfg: BacktestConfig | None = None) -> Ba
             "exit_time": exit_ts, "entry": float(tp_.entry), "exit": float(px), "sl": float(tp_.sl),
             "tp": float(tp_.tp), "volume": float(vol), "risk_usd": float(dec.risk_usd),
             "gross": float(gross), "commission": float(comm), "financing": float(fin),
-            "spread_cost": float(spread * vol * spec.contract_size * q2usd),
+            "spread_cost": float(spread_cost), "slippage_cost": float(slip_cost),
+            "pnl_before_costs": float(pnl + comm - fin + spread_cost + slip_cost),
             "pnl": float(pnl), "r": float(pnl / dec.risk_usd) if dec.risk_usd else 0.0,
             "exit_reason": why, "hold_minutes": float((exit_ts - ts).total_seconds() / 60),
             "mae_r": float(adverse / tp_.risk_per_unit) if tp_.risk_per_unit else 0.0,
             "vol_regime": "unknown" if np.isnan(ap) else ("low" if ap < 1 / 3 else "high" if ap > 2 / 3 else "normal"),
             "reason": str(P["reason"][i]), "partial_fill": dec.partial,
-            "segment": ("out_of_sample" if (cfg.oos_start is not None and ts >= cfg.oos_start) else
+            "segment": (cfg.split.segment_of(ts) if cfg.split is not None else
+                        "out_of_sample" if (cfg.oos_start is not None and ts >= cfg.oos_start) else
                         "in_sample" if cfg.oos_start is not None else "unsplit"),
         }
         orisk = OpenRisk(spec.symbol, side, vol, dec.risk_usd, dec.margin_usd, spec.correlation_group)

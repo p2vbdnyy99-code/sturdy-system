@@ -115,10 +115,13 @@ def checklist(db: Session, account: Account, now: datetime | None = None) -> dic
         "All traded symbols synced from broker symbol info." if classes and not unverified else
         f"Unverified: {', '.join(unverified) or 'no symbols'}")
     unval = [c.plan_id for c in db.query(StrategyConfig).filter_by(user_id=account.user_id, enabled=True, is_current=True)
-             if c.validation_status != "passed" or (c.validation_source or "").startswith("synthetic")]
-    add("strategies", "Enabled strategies validated out-of-sample on real data", bool(classes) and not unval,
-        "All enabled strategies passed validation on non-synthetic data." if classes and not unval else
-        f"Not validated on real data: {', '.join(unval) or 'none enabled'}")
+             if c.validation_status != "passed" or (c.validation_source or "").startswith("synthetic")
+             or (c.metrics or {}).get("holdout", {}).get("status") != "passed"
+             or not (c.metrics or {}).get("holdout", {}).get("independent")]
+    add("strategies", "Enabled strategies passed validation AND an independent hold-out test on real data",
+        bool(classes) and not unval,
+        "All enabled strategies passed training, validation and a first-time hold-out test on non-synthetic data."
+        if classes and not unval else f"Not validated + hold-out tested on real data: {', '.join(unval) or 'none enabled'}")
     paper = [a for a in db.query(Account).filter_by(user_id=account.user_id, mode="paper")
              if (a.feed or {}).get("type") in REAL_FEEDS and not (a.feed or {}).get("replay_used")]
     trades = db.query(Trade).filter(Trade.account_id.in_([a.id for a in paper])).all() if paper else []

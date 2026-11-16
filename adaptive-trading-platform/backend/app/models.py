@@ -149,6 +149,32 @@ class Candle(Base):
     __table_args__ = (CheckConstraint("high >= low", name="ck_candles_hl"),)
 
 
+class Dataset(Base):
+    """Registry entry for one candle dataset = (symbol, source). A dataset has exactly ONE stored base
+    timeframe; every other timeframe is resampled from it. Live-feed candles live in their own dataset
+    (kind='live', source ending '-live') and can never shadow or extend a historical dataset."""
+    __tablename__ = "datasets"
+    id: Mapped[int] = pk()
+    symbol: Mapped[str] = mapped_column(String(24), nullable=False)
+    source: Mapped[str] = mapped_column(String(48), nullable=False)
+    base_timeframe: Mapped[str] = mapped_column(String(4), nullable=False)
+    kind: Mapped[str] = mapped_column(String(16), nullable=False)          # historical|live|synthetic|csv|quarantined
+    calendar: Mapped[str] = mapped_column(String(8), nullable=False)       # 24x7 | fx
+    provenance: Mapped[dict] = mapped_column(Json, default=dict, nullable=False)
+    start: Mapped[datetime | None] = mapped_column(UTCDateTime)
+    end: Mapped[datetime | None] = mapped_column(UTCDateTime)
+    rows: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    missing_bars: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    gaps: Mapped[list] = mapped_column(Json, default=list, nullable=False)  # largest gaps, for inspection
+    checksum: Mapped[str | None] = mapped_column(String(64))
+    split: Mapped[dict] = mapped_column(Json, default=dict, nullable=False)  # immutable train/validation/hold-out boundaries
+    created_at: Mapped[datetime] = ts()
+    updated_at: Mapped[datetime] = ts()
+    __table_args__ = (UniqueConstraint("symbol", "source", name="uq_dataset_symbol_source"),
+                      CheckConstraint("kind in ('historical','live','synthetic','csv','quarantined')", name="ck_dataset_kind"),
+                      CheckConstraint("calendar in ('24x7','fx')", name="ck_dataset_calendar"))
+
+
 class StrategyDef(Base):
     __tablename__ = "strategies"
     id: Mapped[int] = pk()
@@ -263,6 +289,8 @@ class Position(Base):
     risk_usd: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)
     margin_usd: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)
     entry_commission: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)
+    entry_spread_cost: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)     # estimate (half spread)
+    entry_slippage_cost: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)   # estimate
     last_price: Mapped[float | None] = mapped_column(Float)
     floating_pnl: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)
     status: Mapped[str] = mapped_column(String(8), default="open", nullable=False)
@@ -295,6 +323,8 @@ class Trade(Base):
     gross: Mapped[float] = mapped_column(Float, nullable=False)
     commission: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)
     financing: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)
+    spread_cost: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)          # estimate, both sides
+    slippage_cost: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)        # estimate, both sides
     pnl: Mapped[float] = mapped_column(Float, nullable=False)
     risk_usd: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)
     r_multiple: Mapped[float | None] = mapped_column(Float)

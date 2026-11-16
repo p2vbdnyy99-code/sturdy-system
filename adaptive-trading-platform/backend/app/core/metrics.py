@@ -33,6 +33,23 @@ def max_drawdown(equity: np.ndarray, initial: float) -> tuple[float, float]:
     return float(dd.max()), float((dd / peak).max())
 
 
+def cost_breakdown(trades: list[dict]) -> dict:
+    """Every cost, split into charges set by a published schedule (commission; funding / swap) and modelled
+    execution costs (spread and slippage, which are estimates unless measured). Ledger identity:
+    pnl_before_costs - commission + financing - spread - slippage == net pnl."""
+    g = lambda k: float(sum(t.get(k, 0.0) or 0.0 for t in trades))  # noqa: E731
+    comm, fin, spr, slip = g("commission"), g("financing"), g("spread_cost"), g("slippage_cost")
+    net = g("pnl")
+    before = g("pnl_before_costs") if trades and all("pnl_before_costs" in t for t in trades) else None
+    out = {"exchange_fees": {"commission": comm, "financing_paid": max(0.0, -fin), "financing_received": max(0.0, fin),
+                             "basis": "published fee schedule (verify per broker/exchange)"},
+           "estimated_execution_costs": {"spread": spr, "slippage": slip, "basis": "model estimate"},
+           "total_costs": comm - fin + spr + slip, "net_pnl": net, "pnl_before_costs": before}
+    if before is not None:
+        out["ledger_residual"] = before - (comm - fin + spr + slip) - net
+    return out
+
+
 def summarize(trades: list[dict], initial: float, crypto_calendar: bool | None = None) -> dict:
     n = len(trades)
     base = {"trades": n, "initial_balance": initial}
@@ -40,7 +57,8 @@ def summarize(trades: list[dict], initial: float, crypto_calendar: bool | None =
         return base | {"net_profit": 0.0, "return_pct": 0.0, "win_rate": None, "profit_factor": None,
                        "expectancy_r": None, "expectancy_usd": None, "avg_rr_realized": None,
                        "max_drawdown_usd": 0.0, "max_drawdown_pct": 0.0, "sharpe": None, "sortino": None,
-                       "max_consecutive_losses": 0, "avg_hold_minutes": None, "total_costs": 0.0}
+                       "max_consecutive_losses": 0, "avg_hold_minutes": None, "total_costs": 0.0,
+                       "costs": cost_breakdown([])}
     df = pd.DataFrame(trades).sort_values("exit_time")
     pnl, r = df["pnl"].to_numpy(), df["r"].to_numpy()
     wins, losses = r[r > 0], r[r < 0]
@@ -61,7 +79,7 @@ def summarize(trades: list[dict], initial: float, crypto_calendar: bool | None =
         sharpe = float(rets.mean() / rets.std(ddof=1) * math.sqrt(ann))
         downside = np.sqrt(np.mean(np.minimum(rets, 0) ** 2))
         sortino = float(rets.mean() / downside * math.sqrt(ann)) if downside > 0 else None
-    costs = float(df["commission"].sum() + df["spread_cost"].sum() - df["financing"].sum())
+    cb = cost_breakdown(trades)
     pf = _pf(pnl)
     return base | {
         "net_profit": float(pnl.sum()), "return_pct": float(pnl.sum() / initial * 100),
@@ -74,8 +92,9 @@ def summarize(trades: list[dict], initial: float, crypto_calendar: bool | None =
         "sharpe": sharpe, "sortino": sortino, "sharpe_basis": f"daily closed-trade returns x sqrt({ann})",
         "max_consecutive_losses": _max_streak(pnl < 0),
         "avg_hold_minutes": float(df["hold_minutes"].mean()),
-        "total_costs": costs, "commission": float(df["commission"].sum()),
-        "spread_cost": float(df["spread_cost"].sum()), "financing": float(df["financing"].sum()),
+        "total_costs": cb["total_costs"], "commission": cb["exchange_fees"]["commission"],
+        "spread_cost": cb["estimated_execution_costs"]["spread"], "financing": float(df["financing"].sum()),
+        "slippage_cost": cb["estimated_execution_costs"]["slippage"], "costs": cb,
         "gross_profit": float(df["gross"].sum()), "final_balance": float(eq[-1]),
         "trading_days": int(len(daily)),
     }
@@ -135,8 +154,12 @@ def full_report(trades: list[dict], initial: float) -> dict:
     }
     segs = {t["segment"] for t in trades}
     if segs - {"unsplit"}:
-        rep["in_sample"] = summarize([t for t in trades if t["segment"] == "in_sample"], initial)
-        rep["out_of_sample"] = summarize([t for t in trades if t["segment"] == "out_of_sample"], initial)
+        order = ["train", "validation", "holdout", "in_sample", "out_of_sample"]
+        rep["segments"] = {k: summarize([t for t in trades if t["segment"] == k], initial)
+                           for k in order if k in segs}
+        if {"in_sample", "out_of_sample"} & segs:      # legacy two-way labels
+            rep["in_sample"] = summarize([t for t in trades if t["segment"] == "in_sample"], initial)
+            rep["out_of_sample"] = summarize([t for t in trades if t["segment"] == "out_of_sample"], initial)
     return rep
 
 

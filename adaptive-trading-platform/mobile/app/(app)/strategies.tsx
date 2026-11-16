@@ -49,7 +49,8 @@ export default function Strategies() {
             <Row style={{ justifyContent: "space-between" }}>
               {[["Expectancy", c.metrics.expectancy_r === null || c.metrics.expectancy_r === undefined ? "—" : `${num(c.metrics.expectancy_r)}R`],
                 ["Profit factor", num(c.metrics.profit_factor)], ["Max DD", c.metrics.max_drawdown_pct === undefined ? "—" : `${num(c.metrics.max_drawdown_pct, 1)}%`],
-                ["Trades", String(c.metrics.trades ?? "—")], ["OOS exp.", c.metrics.oos_expectancy_r === null || c.metrics.oos_expectancy_r === undefined ? "—" : `${num(c.metrics.oos_expectancy_r)}R`]].map(([k, v]) => (
+                ["Trades", String(c.metrics.trades ?? "—")], ["Valid. exp.", (c.metrics.validation_expectancy_r ?? c.metrics.oos_expectancy_r) == null ? "—" : `${num(c.metrics.validation_expectancy_r ?? c.metrics.oos_expectancy_r)}R`],
+                ["Hold-out", c.metrics.holdout?.status ?? "—"]].map(([k, v]) => (
                 <View key={k}><T dim small>{k}</T><T bold>{v}</T></View>
               ))}
             </Row>

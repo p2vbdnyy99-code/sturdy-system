@@ -6,6 +6,7 @@ or at the next quote (paper/live). Nothing in a row may depend on later rows.
 """
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass, field
 
 import numpy as np
@@ -17,6 +18,23 @@ from ..mtf import align_htf, infer_minutes, resample, tf_minutes
 from ..sessions import SessionDef
 
 SIGNAL_COLUMNS = ["side", "sl", "rr", "score", "reason"]
+
+# Recursive indicators (EMA, Wilder smoothing) depend on where the history starts. After k bars the seed's
+# weight is (1 - alpha)^k; these helpers return k such that the weight is below 1e-9, which makes a signal
+# computed on a finite window equal to one computed on the full history (defect D3).
+SEED_TOLERANCE = 1e-9
+
+
+def ema_bars(span: int) -> int:
+    return int(math.ceil(math.log(SEED_TOLERANCE) / math.log(1 - 2 / (span + 1))))
+
+
+def wilder_bars(n: int) -> int:
+    return int(math.ceil(math.log(SEED_TOLERANCE) / math.log(1 - 1 / n)))
+
+
+def htf_ratio(htf: str, base_minutes: int) -> int:
+    return max(1, tf_minutes(htf) // base_minutes)
 
 
 @dataclass
@@ -37,6 +55,11 @@ class Strategy:
     # small, coarse grid: used for selection on TRAINING data and stability testing
     param_grid: dict[str, list] = {}
     warmup_bars: int = 250
+
+    def required_bars(self, params: dict, base_minutes: int) -> int:
+        """Bars of the entry timeframe needed before a signal no longer depends on how much history was
+        loaded. Families override this; the default covers ATR(14) plus the warm-up."""
+        return max(self.warmup_bars, wilder_bars(14)) + 50
 
     def params(self, ctx: StrategyContext) -> dict:
         return {**self.default_params, **(ctx.params or {})}
@@ -71,7 +94,9 @@ class Strategy:
         res["rr"] = float(p.get("rr", 2.0))
         res["score"] = out.get("score", pd.Series(np.nan, index=df.index)).where(side != 0)
         res["reason"] = out.get("reason", pd.Series("", index=df.index)).where(side != 0, "")
-        res.iloc[: min(self.warmup_bars, len(res)), res.columns.get_loc("side")] = 0
+        # no signal until the indicators no longer depend on where the loaded history starts (D3)
+        n0 = self.required_bars(p, infer_minutes(df.index)) if len(df) > 1 else self.warmup_bars
+        res.iloc[: min(n0, len(res)), res.columns.get_loc("side")] = 0
         return res
 
 

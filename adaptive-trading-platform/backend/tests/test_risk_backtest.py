@@ -246,15 +246,17 @@ def test_monte_carlo_distinguishes_edge_from_no_edge():
     assert monte_carlo([1.0] * 5) is None
 
 
-def test_research_keeps_out_of_sample_strictly_after_training_and_rejects_noise(m5):
+def test_research_segments_are_chronological_and_rejects_noise(m5):
     df = resample(m5, "M15")
     rep = research_plan(PLAN, df, EUR, BacktestConfig(initial_balance=10_000), SelectionCriteria(), with_walk_forward=True)
-    cut = pd.Timestamp(rep["split_time"])
+    sp = rep["split"]
+    te, hs = pd.Timestamp(sp["train_end"]), pd.Timestamp(sp["holdout_start"])
+    assert pd.Timestamp(sp["data_start"]) < te < hs and pd.Timestamp(rep["data_end"]) < hs   # hold-out never loaded
     assert rep["train"]["trades"] > 0
     assert rep["verdict"] == "failed" and rep["failures"]       # random-walk data has no edge to find
-    assert rep["walk_forward"]["folds"] and all(
-        pd.Timestamp(f["test_start"]) > pd.Timestamp(f["train_start"]) for f in rep["walk_forward"]["folds"])
-    assert cut == df.index[int(len(df) * 0.65)]
+    assert rep["walk_forward"]["folds"] and all(                # inner walk-forward lives inside training
+        pd.Timestamp(f["test_end"]) < te and pd.Timestamp(f["test_start"]) > pd.Timestamp(f["train_start"])
+        for f in rep["walk_forward"]["folds"])
     assert 0 <= rep["param_stability"] <= 1 and len(rep["cost_sensitivity"]) == 3
 
 

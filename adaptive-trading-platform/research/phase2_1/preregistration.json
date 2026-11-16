@@ -1,0 +1,38 @@
+{
+  "registered_at_utc": "2026-11-11T16:49:24Z",
+  "registered_before_any_result": true,
+  "dataset": {"symbol": "BTCUSDT", "source": "binance-2020", "base_timeframe": "M5", "venue": "Binance spot",
+              "train": ["2020-01-01", "2023-01-01"], "validation": ["2023-01-01", "2024-11-11"],
+              "holdout": ["2024-11-11", "2025-11-11"], "holdout_rule": "evaluated only for hypotheses that pass validation; logged in the dataset ledger"},
+  "bar": "daily, 00:00-24:00 UTC, built from M5; decision at the daily close using data up to and including that close; position earns the NEXT day's return",
+  "direction": "long or flat only (spot, no shorting, no leverage); exposure in [0, 1]",
+  "costs": {"commission_per_side_bp": 10.0, "spread_and_slippage_per_side_bp": 0.5,
+            "applied": "per unit of absolute change in exposure", "basis": "Binance VIP 0 published fee; spread/slippage is a conservative allowance (measured ~0.001 bp)"},
+  "hypotheses": {
+    "H1_tsmom30": {"rule": "exposure 1 if trailing 30-day log return > 0 else 0", "params": {"lookback_days": 30},
+                   "rationale": "Time-series momentum: slow information diffusion and trend-following flows (documented for many asset classes and for crypto in the academic literature)."},
+    "H2_vol_scaled_tsmom": {"rule": "H1 sign x min(1, 0.40 / annualised 30-day realised volatility); rebalance only when target differs from current exposure by > 0.10",
+                            "params": {"lookback_days": 30, "target_vol": 0.40, "rebalance_band": 0.10},
+                            "rationale": "Volatility clustering: cutting exposure when volatility is high improves risk-adjusted returns if high volatility does not bring proportionally higher returns."},
+    "H3_donchian_55_20": {"rule": "enter (exposure 1) when the daily close exceeds the prior 55-day high; exit when the daily close falls below the prior 20-day low",
+                          "params": {"entry_days": 55, "exit_days": 20},
+                          "rationale": "Volatility-expansion breakout: a range break marks the start of a trend; a classic trend-following rule with an asymmetric exit."},
+    "H4_crash_reversal": {"rule": "after a day whose return < -2.5 x trailing 30-day daily standard deviation, exposure 1 for the next 3 days",
+                          "params": {"z": 2.5, "vol_days": 30, "hold_days": 3},
+                          "rationale": "Liquidity provision: forced liquidations of leveraged positions push prices below fundamental value temporarily; buyers who absorb the flow are compensated."},
+    "H5_failed_breakdown": {"rule": "if the day's low trades below the prior 20-day low but the day closes above that level, exposure 1 for the next 5 days",
+                            "params": {"lookback_days": 20, "hold_days": 5},
+                            "rationale": "Breakout failure: stops below an obvious level are run and absorbed; the failure to hold the break signals exhausted selling at a horizon where moves dwarf costs."}
+  },
+  "tests": {
+    "primary": "timing skill: circular-shift permutation of the exposure series against daily returns (2000 shifts, minimum shift 30 days); p = share of shifts whose mean net return >= actual. Costs are path-identical under a shift, so this tests timing, not cost.",
+    "secondary": ["net Sharpe ratio (daily returns x sqrt(365))", "net total return", "comparison with buy-and-hold over the same segment", "max drawdown", "exposure share", "number of exposure changes"],
+    "multiple_testing": "Holm-Bonferroni across the 5 hypotheses at family-wise alpha 0.05 on the TRAINING segment"
+  },
+  "gates": {
+    "train": "Holm-adjusted timing p < 0.05 AND net Sharpe > 0",
+    "validation": "only train survivors; timing p < 0.05 AND net Sharpe > 0 AND net total return > 0",
+    "holdout": "only validation survivors; net Sharpe > 0 AND net total return > 0; reported with the ledger entry"
+  },
+  "not_allowed": ["changing any parameter after seeing results", "adding hypotheses after seeing results without counting them in the multiple-testing family", "looking at validation for train failures", "looking at the hold-out for validation failures"]
+}

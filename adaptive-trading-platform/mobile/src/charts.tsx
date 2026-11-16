@@ -121,8 +121,8 @@ export function LineChart({ points, height = 180, color = C.accent, baseline, fo
           {splitIndex !== null && splitIndex !== undefined && splitIndex > 0 ? (
             <G>
               <Line x1={x(splitIndex)} x2={x(splitIndex)} y1={0} y2={ph} stroke={C.warn} strokeWidth={1} strokeDasharray="5 3" />
-              <SvgText x={x(splitIndex) + 4} y={12} fill={C.warn} fontSize={10}>out-of-sample →</SvgText>
-              <SvgText x={x(splitIndex) - 4} y={12} fill={C.dim} fontSize={10} textAnchor="end">← in-sample</SvgText>
+              <SvgText x={x(splitIndex) + 4} y={12} fill={C.warn} fontSize={10}>later segment →</SvgText>
+              <SvgText x={x(splitIndex) - 4} y={12} fill={C.dim} fontSize={10} textAnchor="end">← earlier</SvgText>
             </G>
           ) : null}
         </Svg>

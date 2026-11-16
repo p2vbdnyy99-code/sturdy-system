@@ -2,6 +2,7 @@
 research -> paper replay -> journal/analytics, compliance and live gating."""
 import io
 
+import pandas as pd
 import pytest
 
 from app import models as m
@@ -124,9 +125,12 @@ def test_full_research_pipeline_on_labelled_synthetic_data(client, db):
     run = client.get(f"{API}/backtests/{bt.json()['id']}?include_trades=true", headers=h).json()
     rep = run["report"]
     assert run["label"].startswith("SYNTHETIC") and rep["summary"]["trades"] == len(run["trades"]) > 20
-    assert {"in_sample", "out_of_sample", "monthly", "daily", "equity_curve", "by_strategy", "by_session",
+    assert {"segments", "monthly", "daily", "equity_curve", "by_strategy", "by_session", "split",
             "by_instrument", "by_vol_regime", "rejections", "assumptions"} <= set(rep)
-    assert rep["in_sample"]["trades"] + rep["out_of_sample"]["trades"] == rep["summary"]["trades"]
+    # default backtest stops before the hold-out: only train + validation segments, nothing from the hold-out
+    assert set(rep["segments"]) <= {"train", "validation"} and rep["touches_holdout"] is False
+    assert sum(v["trades"] for v in rep["segments"].values()) == rep["summary"]["trades"]
+    assert all(pd.Timestamp(t["entry_time"]) < pd.Timestamp(rep["split"]["holdout_start"]) for t in run["trades"])
     assert rep["summary"]["final_balance"] == pytest.approx(10000 + sum(t["pnl"] for t in run["trades"]))
     # --- research / selection ---
     rs = client.post(f"{API}/research", headers=h, json={
@@ -165,7 +169,7 @@ def test_full_research_pipeline_on_labelled_synthetic_data(client, db):
     assert client.get(f"{API}/markets/EURUSD/candles?timeframe=H1&limit=50", headers=h).json()["synthetic"] is True
     assert client.get(f"{API}/notifications", headers=h).json()
     # synthetic evidence can never unlock live trading
-    assert "Not validated on real data" in str(live_gate.checklist(db, _live_account(db))["items"])
+    assert "Not validated + hold-out tested on real data" in str(live_gate.checklist(db, _live_account(db))["items"])
 
 
 def _live_account(db):
@@ -260,7 +264,8 @@ def test_two_step_live_activation(db, user):
     db.flush()
     live = m.Account(user_id=user.id, name="Live", mode="live", broker_connection_id=conn.id)
     db.add(live)
-    cfg = make_cfg(db, user, "asia:asian_orb:BTCUSDT:M15", validation_status="passed", validation_source="binance")
+    cfg = make_cfg(db, user, "asia:asian_orb:BTCUSDT:M15", validation_status="passed", validation_source="binance",
+                   metrics={"holdout": {"status": "passed", "independent": True}})
     db.query(m.Instrument).filter_by(symbol="BTCUSDT").update({"spec_verified": True})
     db.add(m.ComplianceAttestation(user_id=user.id, broker_key="binance_spot", asset_class="crypto_spot",
                                    jurisdiction="AE", statement="x"))

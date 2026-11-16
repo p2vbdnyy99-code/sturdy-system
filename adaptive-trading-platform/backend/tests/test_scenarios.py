@@ -411,7 +411,9 @@ def test_replay_paper_engine_reproduces_the_backtest(db, user, m5):
     df = resample(m5, "M15").iloc[:6000]
     store.upsert(db, "EURUSD", "M15", "synthetic:test", df)
     acct, cfg = make_account(db, user), make_cfg(db, user)
-    stats = run_replay(db, acct, ["EURUSD"], "M15", "synthetic:test")
+    stats = run_replay(db, acct, ["EURUSD"], "M15", "synthetic:test", include_holdout=True)
+    assert stats["touches_holdout"] is True                     # recorded in the dataset's hold-out ledger
+    assert len(store.get_dataset(db, "EURUSD", "synthetic:test").split["accesses"]) == 1
     bt = run_backtest([PlanData(plan_from_id(cfg.plan_id), store.load(db, "EURUSD", "M15", "synthetic:test"),
                                 DEFAULT_SPECS["EURUSD"], cfg.params)], BacktestConfig(initial_balance=10_000))
     closed = [t for t in bt.trades if t["exit_reason"] != "end_of_data"]

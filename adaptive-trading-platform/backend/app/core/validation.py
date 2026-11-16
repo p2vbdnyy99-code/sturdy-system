@@ -1,14 +1,21 @@
 """Strategy research and selection.
 
-Selection (parameter choice and the pass/fail gates) uses TRAINING data only.
-The out-of-sample segment is touched exactly once, afterwards, as a
-confirmation check; it never feeds back into the choice. A candidate that
-fails the evidence or robustness requirements is rejected, however large its
-historical return.
+Three chronological, non-overlapping segments per dataset (Phase 2.1, defect D1):
+
+  TRAINING    parameter search, training gates, Monte Carlo, cost stress and the inner walk-forward
+              (whose folds lie entirely inside the training segment)
+  VALIDATION  one pass with the frozen training choice; validation gates and a statistical-power gate
+  HOLD-OUT    never visible to research. Evaluated only by ``holdout_test`` for frozen, validated
+              candidates, from a separate job that records every access in the dataset's ledger.
+
+The boundaries are calendar instants stored once per dataset (``DataSplit``), so every timeframe of the
+dataset shares them and they cannot drift between runs. A candidate that fails the evidence, robustness
+or power requirements is rejected, however large its historical return.
 """
 from __future__ import annotations
 
 import itertools
+import math
 from dataclasses import asdict, dataclass
 
 import numpy as np
@@ -21,9 +28,63 @@ from .metrics import summarize
 from .strategies.library import get_strategy
 
 
+class HoldoutViolation(RuntimeError):
+    """Raised when research code is handed data from the untouched hold-out segment."""
+
+
+@dataclass(frozen=True)
+class DataSplit:
+    train_end: pd.Timestamp        # first instant of VALIDATION
+    holdout_start: pd.Timestamp    # first instant of HOLD-OUT
+    data_start: pd.Timestamp
+    data_end: pd.Timestamp
+
+    def __post_init__(self):
+        if not (self.data_start < self.train_end < self.holdout_start <= self.data_end):
+            raise ValueError(f"invalid split: {self.data_start} < {self.train_end} < {self.holdout_start} <= {self.data_end} "
+                             f"does not hold")
+
+    @classmethod
+    def from_fractions(cls, start, end, train: float = 0.6, validation: float = 0.2) -> "DataSplit":
+        """Boundaries by calendar time, rounded down to midnight UTC."""
+        start, end = pd.Timestamp(start), pd.Timestamp(end)
+        span = end - start
+        te = (start + span * train).floor("D")
+        hs = (start + span * (train + validation)).floor("D")
+        return cls(te, hs, start, end)
+
+    @classmethod
+    def from_dict(cls, d: dict) -> "DataSplit":
+        return cls(pd.Timestamp(d["train_end"]), pd.Timestamp(d["holdout_start"]), pd.Timestamp(d["data_start"]),
+                   pd.Timestamp(d["data_end"]))
+
+    def to_dict(self) -> dict:
+        return {"train_end": self.train_end.isoformat(), "holdout_start": self.holdout_start.isoformat(),
+                "data_start": self.data_start.isoformat(), "data_end": self.data_end.isoformat()}
+
+    def segment_of(self, ts) -> str:
+        ts = pd.Timestamp(ts)
+        return "train" if ts < self.train_end else "validation" if ts < self.holdout_start else "holdout"
+
+    def segments(self) -> dict:
+        return {"train": (self.data_start, self.train_end), "validation": (self.train_end, self.holdout_start),
+                "holdout": (self.holdout_start, self.data_end)}
+
+
+def assert_no_holdout(df: pd.DataFrame, split: DataSplit) -> None:
+    if len(df) and df.index.max() >= split.holdout_start:
+        raise HoldoutViolation(f"research received data up to {df.index.max()}, inside the hold-out that starts "
+                               f"{split.holdout_start}")
+
+
+def trades_needed(sd_r: float, effect_r: float = 0.2, t: float = 2.0) -> int:
+    """Trades needed for a mean of ``effect_r`` to reach t-statistic ``t`` given the R standard deviation."""
+    return int(math.ceil((t * sd_r / effect_r) ** 2)) if sd_r and sd_r > 0 else 0
+
+
 @dataclass
 class SelectionCriteria:
-    train_fraction: float = 0.65
+    train_fraction: float = 0.65          # inner walk-forward only (share of each fold used for re-selection)
     min_trades_train: int = 40
     min_profit_factor: float = 1.2
     min_expectancy_r: float = 0.05
@@ -31,11 +92,13 @@ class SelectionCriteria:
     min_param_stability: float = 0.6      # share of the parameter grid that is profitable
     max_mc_loss_probability: float = 0.2  # bootstrap P(final return < 0)
     stress_cost_multiplier: float = 1.5   # must stay profitable with costs x1.5
-    min_trades_oos: int = 15
+    min_trades_oos: int = 15              # validation segment
     min_oos_expectancy_r: float = 0.0
     min_oos_profit_factor: float = 1.0
     walk_forward_folds: int = 4
     min_wf_positive_folds: float = 0.5
+    power_effect_r: float = 0.2           # validation sample must be able to detect this edge at t >= 2
+    power_t: float = 2.0
 
     def to_dict(self):
         return asdict(self)
@@ -141,7 +204,7 @@ def walk_forward(plan: Plan, df: pd.DataFrame, spec: InstrumentSpec, cfg: Backte
     rows, oos_trades = [], []
     if test_len < 200 or train_len < 1000:
         return {"folds": [], "insufficient_data": True}
-    warm = get_strategy(plan.strategy).warmup_bars + 600
+    warm = required_history(plan, df, {})
     for f in range(folds):
         a, b = f * test_len, f * test_len + train_len
         train, test = df.iloc[a:b], df.iloc[max(a, b - warm): b + test_len]
@@ -166,11 +229,40 @@ def walk_forward(plan: Plan, df: pd.DataFrame, spec: InstrumentSpec, cfg: Backte
             "oos_summary": agg, "efficiency": eff, "insufficient_data": False}
 
 
+def required_history(plan: Plan, df: pd.DataFrame, params: dict | None = None) -> int:
+    """Warm-up bars needed before a segment so the strategy's indicators have converged (plus one day)."""
+    from .mtf import infer_minutes
+    st = get_strategy(plan.strategy)
+    base = infer_minutes(df.index) if len(df) > 1 else 5
+    return st.required_bars({**st.default_params, **plan.params, **(params or {})}, base) + 1440 // base
+
+
+def _segment_run(plan, df_all, spec, cfg, params, seg_start, seg_end) -> tuple[dict, list[dict]]:
+    """Run ``params`` over [seg_start, seg_end) with indicator warm-up taken from bars before seg_start.
+    Only trades ENTERED inside the segment are kept."""
+    warm = required_history(plan, df_all, params)
+    i0 = int(df_all.index.searchsorted(seg_start))
+    part = df_all.iloc[max(0, i0 - warm):]
+    part = part[part.index < seg_end]
+    _, tr = _run(plan, part, spec, cfg, params)
+    tr = [t for t in tr if seg_start <= t["entry_time"] < seg_end]
+    return summarize(tr, cfg.initial_balance), tr
+
+
 def research_plan(plan: Plan, df: pd.DataFrame, spec: InstrumentSpec, cfg: BacktestConfig | None = None,
-                  crit: SelectionCriteria | None = None, with_walk_forward: bool = True) -> dict:
-    """Full evidence pack + verdict for one candidate plan."""
+                  crit: SelectionCriteria | None = None, with_walk_forward: bool = True,
+                  split: DataSplit | None = None) -> dict:
+    """Evidence pack + verdict for one candidate plan, from TRAINING and VALIDATION data only.
+
+    ``df`` must end before ``split.holdout_start``; anything later raises ``HoldoutViolation``. Without an
+    explicit split one is derived from ``df`` alone (60 / 20 / 20 by time, the last 20 % being discarded as
+    an implicit hold-out) so that no caller can accidentally research on all of its data."""
     cfg, crit = cfg or BacktestConfig(), crit or SelectionCriteria()
-    train, test, cut = chronological_split(df, crit.train_fraction)
+    if split is None:
+        split = DataSplit.from_fractions(df.index[0], df.index[-1] + (df.index[-1] - df.index[-2]))
+        df = df[df.index < split.holdout_start]
+    assert_no_holdout(df, split)
+    train = df[df.index < split.train_end]
     sel = select_parameters(plan, train, spec, cfg, min_trades=max(10, crit.min_trades_train // 2))
     params = sel["params"]
     s_train, tr_train = _run(plan, train, spec, cfg, params)
@@ -199,44 +291,69 @@ def research_plan(plan: Plan, df: pd.DataFrame, spec: InstrumentSpec, cfg: Backt
     gate(stressed is not None and stressed > 0, f"not profitable with costs x{crit.stress_cost_multiplier}")
     wf = None
     if with_walk_forward:
-        wf = walk_forward(plan, df, spec, cfg, crit.walk_forward_folds, crit.train_fraction)
+        # INNER walk-forward: every fold, including its test window, lies inside the training segment
+        wf = walk_forward(plan, train, spec, cfg, crit.walk_forward_folds, crit.train_fraction)
+        wf["scope"] = "inside training segment"
         if wf.get("insufficient_data"):
-            failures.append("not enough data for walk-forward validation")
+            failures.append("not enough training data for walk-forward validation")
         else:
             gate(wf["positive_fold_share"] >= crit.min_wf_positive_folds,
                  f"only {wf['positive_fold_share']:.0%} of walk-forward folds positive")
     selected_on_training = not failures
 
-    # ---- out-of-sample confirmation (never used for the choices above) -------
-    warm = get_strategy(plan.strategy).warmup_bars + 600
-    cut_i = len(train)
-    oos_df = df.iloc[max(0, cut_i - warm):]
-    _, tr_oos = _run(plan, oos_df, spec, cfg, params)
-    tr_oos = [t for t in tr_oos if t["entry_time"] >= cut]
-    s_oos = summarize(tr_oos, cfg.initial_balance)
-    oos_fail: list[str] = []
-    if s_oos["trades"] < crit.min_trades_oos:
-        oos_fail.append(f"out-of-sample trades {s_oos['trades']} < {crit.min_trades_oos}")
-    if (s_oos["expectancy_r"] if s_oos["expectancy_r"] is not None else -1) <= crit.min_oos_expectancy_r:
-        oos_fail.append("out-of-sample expectancy not positive")
-    if (s_oos["profit_factor"] or 0) < crit.min_oos_profit_factor:
-        oos_fail.append("out-of-sample profit factor below 1")
-    passed = selected_on_training and not oos_fail
+    # ---- VALIDATION: one pass with the frozen training choice -----------------
+    s_val, tr_val = _segment_run(plan, df, spec, cfg, params, split.train_end, split.holdout_start)
+    val_fail: list[str] = []
+    if s_val["trades"] < crit.min_trades_oos:
+        val_fail.append(f"validation trades {s_val['trades']} < {crit.min_trades_oos}")
+    if (s_val["expectancy_r"] if s_val["expectancy_r"] is not None else -1) <= crit.min_oos_expectancy_r:
+        val_fail.append("validation expectancy not positive")
+    if (s_val["profit_factor"] or 0) < crit.min_oos_profit_factor:
+        val_fail.append("validation profit factor below 1")
+    rs = [t["r"] for t in tr_train]
+    sd = float(np.std(rs, ddof=1)) if len(rs) > 2 else None
+    need = trades_needed(sd if sd else 1.2, crit.power_effect_r, crit.power_t)   # 1.2R: conservative prior when unknown
+    power = {"sd_r_training": sd, "effect_r": crit.power_effect_r, "t": crit.power_t, "trades_needed": need,
+             "training_trades": s_train["trades"], "validation_trades": s_val["trades"],
+             "sufficient": s_val["trades"] >= need}
+    if not power["sufficient"]:
+        val_fail.append(f"validation sample too small: {s_val['trades']} trades, {need} needed to detect "
+                        f"+{crit.power_effect_r}R at t={crit.power_t}")
+    passed = selected_on_training and not val_fail
     return {
         "plan_id": plan.plan_id, "engine": plan.engine, "strategy": plan.label, "strategy_key": plan.strategy,
         "symbol": plan.symbol, "timeframe": plan.timeframe, "params": {**plan.params, **params},
         "selected_params": params, "verdict": "passed" if passed else "failed",
-        "selected_on_training": selected_on_training, "failures": failures, "oos_failures": oos_fail,
-        "train": s_train, "out_of_sample": s_oos, "split_time": cut.isoformat(),
+        "selected_on_training": selected_on_training, "failures": failures, "validation_failures": val_fail,
+        "train": s_train, "validation": s_val, "power": power, "split": split.to_dict(),
+        "segments": {"train": [split.data_start.isoformat(), split.train_end.isoformat()],
+                     "validation": [split.train_end.isoformat(), split.holdout_start.isoformat()],
+                     "holdout": [split.holdout_start.isoformat(), split.data_end.isoformat(), "not used by research"]},
         "param_stability": sel["stability"], "param_grid": sel["grid"], "monte_carlo": mc,
         "cost_sensitivity": sens, "walk_forward": wf, "criteria": crit.to_dict(),
         "data_start": df.index[0].isoformat(), "data_end": df.index[-1].isoformat(), "bars": int(len(df)),
     }
 
 
+def holdout_test(plan: Plan, df_full: pd.DataFrame, spec: InstrumentSpec, cfg: BacktestConfig, params: dict,
+                 split: DataSplit, crit: SelectionCriteria | None = None) -> dict:
+    """One evaluation of FROZEN parameters on the hold-out segment. Never selects or changes anything."""
+    crit = crit or SelectionCriteria()
+    s, tr = _segment_run(plan, df_full, spec, cfg, params, split.holdout_start, split.data_end + pd.Timedelta(seconds=1))
+    fails = []
+    if s["trades"] < crit.min_trades_oos:
+        fails.append(f"hold-out trades {s['trades']} < {crit.min_trades_oos}")
+    if (s["expectancy_r"] if s["expectancy_r"] is not None else -1) <= 0:
+        fails.append("hold-out expectancy not positive")
+    if (s["profit_factor"] or 0) < 1:
+        fails.append("hold-out profit factor below 1")
+    return {"plan_id": plan.plan_id, "params": params, "holdout": s, "failures": fails,
+            "verdict": "passed" if not fails else "failed", "split": split.to_dict(), "trades": tr}
+
+
 def rank(reports: list[dict]) -> list[dict]:
     """Order candidates for display: passed first, then by a conservative score
-    built from training evidence (never raw return)."""
+    built from training evidence (never raw return, never hold-out data)."""
     def score(r):
         s = r["train"]
         if not s["trades"] or s["expectancy_r"] is None:

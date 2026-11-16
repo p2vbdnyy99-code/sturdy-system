@@ -21,7 +21,7 @@ export function SummaryStats({ s }: { s: any }) {
       <Stat label="Sortino" value={num(s.sortino)} />
       <Stat label="Max losing streak" value={String(s.max_consecutive_losses ?? "—")} />
       <Stat label="Avg hold" value={s.avg_hold_minutes ? `${(s.avg_hold_minutes / 60).toFixed(1)}h` : "—"} />
-      <Stat label="Costs paid" value={money(s.total_costs)} />
+      <Stat label="Costs (all)" value={money(s.total_costs)} sub={s.costs ? `fees ${money(s.costs.exchange_fees.commission)} · est. spread+slip ${money(s.costs.estimated_execution_costs.spread + s.costs.estimated_execution_costs.slippage)}` : undefined} />
     </Stats>
   );
 }
@@ -44,14 +44,17 @@ function Breakdown({ title, rows, k }: { title: string; rows: any[]; k: string }
 /** Shared performance report (backtests and live/paper analytics). */
 export function Report({ rep, initial }: { rep: any; initial: number }) {
   const eq: any[] = rep.equity_curve ?? [];
-  const split = eq.findIndex((p) => p.segment === "out_of_sample");
+  const split = eq.findIndex((p) => p.segment !== eq[0]?.segment);
+  const segs: [string, any][] = rep.segments ? Object.entries(rep.segments)
+    : rep.in_sample ? [["in-sample", rep.in_sample], ["out-of-sample", rep.out_of_sample]] : [];
+  const segTitle: Record<string, string> = { train: "Training segment", validation: "Validation segment",
+    holdout: "Hold-out segment (read — see ledger)" };
   return (
     <View style={{ gap: 12 }}>
       <Card title="Performance (net of spread, slippage, commission, financing)"><SummaryStats s={rep.summary} /></Card>
-      {rep.in_sample ? (
+      {segs.length ? (
         <Grid>
-          <Card title="In-sample"><SummaryStats s={rep.in_sample} /></Card>
-          <Card title="Out-of-sample"><SummaryStats s={rep.out_of_sample} /></Card>
+          {segs.map(([k, v]) => <Card key={k} title={segTitle[k] ?? k}><SummaryStats s={v} /></Card>)}
         </Grid>
       ) : null}
       <Grid min={340}>

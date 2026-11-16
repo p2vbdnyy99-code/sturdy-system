@@ -96,6 +96,7 @@ class TradingService:
         self.quotes: dict[str, Quote] = {}
         self.live_gate = live_gate            # callable(account) -> list[str] of blocking reasons
         self.cost_multiplier = getattr(self.adapter, "cost_multiplier", 1.0)
+        self.clock: datetime | None = None      # market time of the event being processed (replay-safe)
 
     # ------------------------------------------------------------------ state
     def open_positions(self, symbol: str | None = None) -> list[Position]:
@@ -120,6 +121,7 @@ class TradingService:
         a.peak_equity = max(a.peak_equity, a.equity)
 
     def roll_day(self, now: datetime) -> None:
+        self.clock = now
         a, key = self.account, ist_day(now)
         if a.day_key == key:
             return
@@ -151,7 +153,9 @@ class TradingService:
                                     margin_used=sum(p.margin_usd for p in opens), open_positions=len(opens)))
 
     def risk_event(self, kind: str, message: str, severity: str = "warn", **detail) -> None:
-        self.db.add(RiskEvent(account_id=self.account.id, kind=kind, message=message, severity=severity, detail=detail))
+        at = self.clock or utcnow()
+        self.db.add(RiskEvent(account_id=self.account.id, kind=kind, message=message, severity=severity,
+                              detail={**detail, "market_time": at.isoformat()}, created_at=at))
         audit(self.db, "risk", kind, self.account.user_id, self.account.id, level=severity, message=message, **detail)
 
     # ------------------------------------------------------------ market data
@@ -172,12 +176,13 @@ class TradingService:
             if self.account.mode != "paper":
                 continue                       # live exits are executed by the broker (server-side SL/TP)
             hit = ex.exit_on_quote(spec, side, p.sl, p.tp, q.bid, q.ask, self.cost_multiplier)
+            exit_spread = q.ask - q.bid
             if p.status == "closing":
                 hit = (px - side * ex.slippage_price(spec, self.cost_multiplier), "kill_switch")
             elif hit is None and now - p.opened_at >= self.max_hold:
                 hit = (px - side * ex.slippage_price(spec, self.cost_multiplier), "time_exit")
             if hit:
-                closed.append(self.close_position(p, hit[0], hit[1], now))
+                closed.append(self.close_position(p, hit[0], hit[1], now, exit_spread=exit_spread))
         self._after_mark(now)
         return closed
 
@@ -188,7 +193,8 @@ class TradingService:
             if p.status == "closing" or ts - p.opened_at >= self.max_hold:
                 side = 1 if p.side == "buy" else -1
                 px = o - side * (spread / 2 + ex.slippage_price(spec, self.cost_multiplier))
-                closed.append(self.close_position(p, px, "kill_switch" if p.status == "closing" else "time_exit", ts))
+                closed.append(self.close_position(p, px, "kill_switch" if p.status == "closing" else "time_exit", ts,
+                                                  exit_spread=spread))
         return closed
 
     def on_bar(self, symbol: str, o: float, h: float, l: float, c: float, spread: float, ts_open: datetime,
@@ -204,7 +210,7 @@ class TradingService:
             side = 1 if p.side == "buy" else -1
             hit = ex.exit_on_bar(spec, side, p.sl, p.tp, o, h, l, spread, self.cost_multiplier)
             if hit:
-                closed.append(self.close_position(p, hit[0], hit[1], end))
+                closed.append(self.close_position(p, hit[0], hit[1], end, exit_spread=spread))
         q = Quote(symbol, c - spread / 2, c + spread / 2, end, "replay")
         self.quotes[symbol] = q
         if isinstance(self.adapter, PaperBroker):
@@ -367,6 +373,9 @@ class TradingService:
                        volume=res.volume or order.volume, entry_price=fill, sl=intent.sl, tp=intent.tp,
                        risk_usd=dec.risk_usd, margin_usd=dec.margin_usd, last_price=fill,
                        entry_commission=ex.commission_usd(spec, order.volume, fill, q2usd, self.cost_multiplier),
+                       entry_spread_cost=(res.volume or order.volume) * spec.contract_size * q2usd * intent.spread / 2,
+                       entry_slippage_cost=(res.volume or order.volume) * spec.contract_size * q2usd
+                       * ex.slippage_price(spec, self.cost_multiplier),
                        broker_position_id=res.position_id, opened_at=now)
         pos.floating_pnl = -pos.entry_commission
         order.risk = {**order.risk, "entry_slippage_r": slip_r}
@@ -380,10 +389,20 @@ class TradingService:
                f"(SL {intent.sl:.5g}, TP {intent.tp:.5g})", f"exec:{a.id}:{order.id}", {"position_id": pos.id})
         return pos
 
-    def close_position(self, p: Position, exit_price: float, reason: str, now: datetime) -> Trade:
+    def close_position(self, p: Position, exit_price: float, reason: str, now: datetime,
+                       exit_spread: float | None = None, slipped: bool | None = None) -> Trade:
+        """``exit_spread``: bid/ask spread at the exit (None = unknown, e.g. a broker-side close); ``slipped``:
+        whether modelled slippage is inside ``exit_price`` (default: every exit except a target fill or a
+        manual close at the quote)."""
+        self.clock = now
         a, spec = self.account, self.specs[p.symbol]
         side = 1 if p.side == "buy" else -1
         q2usd = spec.quote_to_usd(exit_price)
+        if slipped is None:
+            slipped = reason not in ("take_profit", "manual")
+        unit = p.volume * spec.contract_size * q2usd
+        exit_spread_cost = unit * (exit_spread or 0.0) / 2
+        exit_slip_cost = unit * ex.slippage_price(spec, self.cost_multiplier) if slipped else 0.0
         gross = ex.pnl_usd(spec, side, p.volume, p.entry_price, exit_price, q2usd)
         comm = p.entry_commission + ex.commission_usd(spec, p.volume, exit_price, q2usd, self.cost_multiplier)
         fin = ex.financing_usd(spec, side, p.volume, p.entry_price, q2usd, p.opened_at, now)
@@ -394,6 +413,8 @@ class TradingService:
                   session=cfg.engine if cfg else "", side=p.side, volume=p.volume, entry_price=p.entry_price,
                   exit_price=exit_price, sl=p.sl, tp=p.tp, opened_at=p.opened_at, closed_at=now, gross=gross,
                   commission=comm, financing=fin, pnl=pnl, risk_usd=p.risk_usd,
+                  spread_cost=(p.entry_spread_cost or 0.0) + exit_spread_cost,
+                  slippage_cost=(p.entry_slippage_cost or 0.0) + exit_slip_cost,
                   r_multiple=(pnl / p.risk_usd) if p.risk_usd else None, exit_reason=reason)
         self.db.add(t)
         p.status, p.closed_at, p.floating_pnl, p.last_price = "closed", now, 0.0, exit_price
@@ -426,9 +447,11 @@ class TradingService:
                  self.db.query(Order).join(Signal, Order.signal_id == Signal.id)
                  .filter(Order.account_id == a.id, Signal.strategy_config_id == cfg.id, Order.status == "filled")]
         res = health_mod.evaluate([t.r_multiple or 0.0 for t in trades], cfg.metrics or {}, slips)
-        cfg.health = {**res, "account_id": a.id, "checked_at": utcnow().isoformat()}
+        at = (self.clock or utcnow()).isoformat()
+        cfg.health = {**res, "account_id": a.id, "checked_at": at}
         if res["status"] == "suspend" and cfg.status != "suspended":
             why = "; ".join(res["stop_reasons"])
+            cfg.health = {**cfg.health, "suspended_at": at, "trades_at_suspension": res["trades"]}
             cfg.enabled, cfg.status, cfg.validation_status, cfg.suspended_reason = False, "suspended", "needs_revalidation", why
             self.risk_event("strategy_suspended", f"{cfg.plan_id} suspended: {why}", "crit", strategy_config_id=cfg.id)
             notify(self.db, a.user_id, "strategy_disabled", f"{cfg.plan_id} was disabled: {why}. "
@@ -486,7 +509,8 @@ class TradingService:
                     px = (q.bid if side > 0 else q.ask) - side * ex.slippage_price(spec, self.cost_multiplier)
                 else:
                     raise BrokerUnavailable("no fresh market price to close against")
-                self.close_position(p, px, "kill_switch", now)
+                self.close_position(p, px, "kill_switch", now,
+                                    exit_spread=(q.ask - q.bid) if q is not None else None, slipped=a.mode == "paper")
                 result["closed"].append(p.id)
             except Exception as e:
                 p.status = "closing"

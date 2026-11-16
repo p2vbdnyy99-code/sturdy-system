@@ -38,7 +38,8 @@ def trade_out(t: Trade) -> dict:
     return {"id": t.id, "plan_id": t.plan_id, "symbol": t.symbol, "timeframe": t.timeframe, "session": t.session,
             "side": t.side, "volume": t.volume, "entry_price": t.entry_price, "exit_price": t.exit_price,
             "sl": t.sl, "tp": t.tp, "opened_at": t.opened_at, "closed_at": t.closed_at, "gross": t.gross,
-            "commission": t.commission, "financing": t.financing, "pnl": t.pnl, "risk_usd": t.risk_usd,
+            "commission": t.commission, "financing": t.financing, "spread_cost": t.spread_cost,
+           "slippage_cost": t.slippage_cost, "pnl": t.pnl, "risk_usd": t.risk_usd,
             "r_multiple": t.r_multiple, "exit_reason": t.exit_reason, "mode": t.mode}
 
 
@@ -82,6 +83,7 @@ class ReplayIn(BaseModel):
     source: str
     start: str | None = None
     end: str | None = None
+    include_holdout: bool = False
 
 
 @router.get("/accounts")
@@ -199,7 +201,7 @@ def replay(account_id: int, body: ReplayIn, user: User = Depends(require_role("t
         raise HTTPException(400, "Replay is only available for paper accounts")
     try:
         res = jobs.run_replay(db, a, body.symbols, body.timeframe, body.source, jobs._parse_ts(body.start),
-                              jobs._parse_ts(body.end))
+                              jobs._parse_ts(body.end), include_holdout=body.include_holdout)
     except ValueError as e:
         raise HTTPException(422, str(e)) from e
     return res
@@ -227,7 +229,7 @@ def close_position(position_id: int, user: User = Depends(require_role("trader")
     if q is None:
         raise HTTPException(503, f"No current market price for {p.symbol}: cannot close now. Data unavailable.")
     svc = TradingService(db, a, sessions=user_sessions(user.settings))
-    t = svc.close_position(p, q.bid if p.side == "buy" else q.ask, "manual", utcnow())
+    t = svc.close_position(p, q.bid if p.side == "buy" else q.ask, "manual", utcnow(), exit_spread=q.ask - q.bid)
     db.commit()
     return trade_out(t)
 
@@ -303,7 +305,8 @@ def analytics(account_id: int, start: datetime | None = None, end: datetime | No
     rows = _trade_query(db, a, None, None, None, None, start, end, None).order_by(Trade.closed_at).all()
     tr = [{"plan_id": t.plan_id, "engine": t.session or "n/a", "symbol": t.symbol, "pnl": t.pnl,
            "r": t.r_multiple or 0.0, "exit_time": pd.Timestamp(t.closed_at), "commission": t.commission,
-           "spread_cost": 0.0, "financing": t.financing, "gross": t.gross, "exit_reason": t.exit_reason,
+           "spread_cost": t.spread_cost, "slippage_cost": t.slippage_cost, "financing": t.financing,
+           "pnl_before_costs": t.pnl + t.commission - t.financing + t.spread_cost + t.slippage_cost, "gross": t.gross, "exit_reason": t.exit_reason,
            "hold_minutes": (t.closed_at - t.opened_at).total_seconds() / 60, "vol_regime": "n/a",
            "segment": "unsplit"} for t in rows]
     rep = metrics.clean(metrics.full_report(tr, a.initial_balance))

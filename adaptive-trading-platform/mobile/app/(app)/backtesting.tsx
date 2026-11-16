@@ -89,7 +89,7 @@ export default function Backtesting() {
             <Btn label="Backtest portfolio" kind="primary" onPress={() => run("backtests")} busy={busy === "backtests"} disabled={!source} />
             <Btn label="Research & validate" onPress={() => run("research")} busy={busy === "research"} disabled={!source} />
           </Row>
-          <T dim small style={{ marginTop: 8 }}>Research selects parameters on training data only, then runs walk-forward, Monte Carlo and cost-stress tests and one out-of-sample confirmation. Most candidates are expected to fail.</T>
+          <T dim small style={{ marginTop: 8 }}>Research selects parameters on the training segment only (walk-forward runs inside it), then checks the frozen choice once on the validation segment. The hold-out segment is never read by research. Most candidates are expected to fail.</T>
         </Card>
       </Grid>
       <Card title="Runs">
@@ -135,7 +135,7 @@ export default function Backtesting() {
             </>
           ) : null}
           {d.kind === "research" ? (
-            <Card title={`Candidates (${d.candidates.length}) — selection used training data only`}>
+            <Card title={`Candidates (${d.candidates.length}) — selected on training, checked on validation; hold-out untouched`}>
               <Table rows={d.candidates} empty={d.status === "running" ? "Research is running…" : "No candidates."} keyOf={(c: any) => c.plan_id} cols={[
                 { key: "p", title: "Plan", flex: 2.4, render: (c: any) => <View><T small bold>{c.plan_id}</T>{c.failures.length ? <T dim small numberOfLines={2}>{c.failures.join("; ")}</T> : null}</View> },
                 { key: "v", title: "Verdict", render: (c: any) => <Badge text={c.verdict} color={c.verdict === "passed" ? C.up : C.down} /> },
@@ -143,8 +143,8 @@ export default function Backtesting() {
                 { key: "te", title: "Train R", align: "right", render: (c: any) => <T color={pnlColor(c.train.expectancy_r)}>{signed(c.train.expectancy_r)}</T> },
                 { key: "pf", title: "Train PF", align: "right", hideNarrow: true, render: (c: any) => num(c.train.profit_factor) },
                 { key: "ps", title: "Stability", align: "right", hideNarrow: true, render: (c: any) => num(c.param_stability) },
-                { key: "on", title: "OOS n", align: "right", hideNarrow: true, render: (c: any) => String(c.out_of_sample.trades) },
-                { key: "oe", title: "OOS R", align: "right", render: (c: any) => <T color={pnlColor(c.out_of_sample.expectancy_r)}>{signed(c.out_of_sample.expectancy_r)}</T> },
+                { key: "on", title: "Valid. n", align: "right", hideNarrow: true, render: (c: any) => String((c.validation ?? c.out_of_sample)?.trades ?? "—") },
+                { key: "oe", title: "Valid. R", align: "right", render: (c: any) => { const v = c.validation ?? c.out_of_sample; return <T color={pnlColor(v?.expectancy_r)}>{signed(v?.expectancy_r)}</T>; } },
               ]} />
             </Card>
           ) : null}

@@ -25,10 +25,10 @@ router = APIRouter(tags=["research"])
 
 
 def _default_source(db: Session, symbol: str) -> str | None:
-    """Most recently updated NON-synthetic source for a symbol, if any."""
-    rows = [d for d in store.datasets(db) if d["symbol"] == symbol]
-    real = [d for d in rows if not d["synthetic"]]
-    pick = sorted(real or rows, key=lambda d: d["end"])
+    """Historical dataset preferred, then live, then synthetic; quarantined datasets never."""
+    rows = [d for d in store.datasets(db) if d["symbol"] == symbol and d["kind"] != "quarantined" and d["end"]]
+    rank = {"historical": 3, "csv": 3, "live": 2, "synthetic": 1}
+    pick = sorted(rows, key=lambda d: (rank.get(d["kind"], 0), d["end"]))
     return pick[-1]["source"] if pick else None
 
 
@@ -165,7 +165,12 @@ def import_binance(body: ProviderImport, user: User = Depends(require_role("trad
         md.close()
     if df.empty:
         raise HTTPException(503, "Provider returned no candles")
-    n = store.upsert(db, body.symbol, body.timeframe, "binance", df)
+    try:
+        n = store.upsert(db, body.symbol, body.timeframe, "binance", df, provenance={
+            "provider": "Binance", "url": f"{get_settings().binance_base_url}/api/v3/klines",
+            "downloaded_at": utcnow().isoformat(), "requested_days": body.days, "user_id": user.id})
+    except store.DataError as e:
+        raise HTTPException(422, f"Rejected: {e}") from e
     db.commit()
     return {"symbol": body.symbol, "timeframe": body.timeframe, "source": "binance", "candles": n,
             "start": df.index[0], "end": df.index[-1]}
@@ -293,15 +298,22 @@ class BacktestIn(BaseModel):
     cost_multiplier: float = Field(default=1.0, ge=0.5, le=5)
     max_hold_minutes: int = Field(default=1440, ge=5)
     flat_at_session_end: bool = False
-    oos_fraction: float | None = Field(default=0.35, ge=0, le=0.8)
+    include_holdout: bool = False          # backtests only; every hold-out read is written to the ledger
     risk: dict | None = None
     walk_forward: bool = True
     criteria: dict | None = None
 
 
-def _create_run(db, user, body: BacktestIn, kind: str) -> BacktestRun:
-    if not any(d["source"] == body.source for d in store.datasets(db)):
+def _create_run(db, user, body, kind: str) -> BacktestRun:
+    found = [d for d in store.datasets(db) if d["source"] == body.source]
+    if not found:
         raise HTTPException(422, f"No dataset with source '{body.source}'. Import data first.")
+    unusable = [d for d in found if d["kind"] in ("live", "quarantined")]
+    if len(unusable) == len(found):
+        raise HTTPException(422, f"Dataset '{body.source}' is {unusable[0]['kind']}: live-feed and quarantined "
+                                 "candles cannot be used for historical research or backtests")
+    if kind == "research" and getattr(body, "include_holdout", False):
+        raise HTTPException(422, "Research never reads the hold-out segment")
     run = BacktestRun(user_id=user.id, kind=kind, request=body.model_dump(), data_source=body.source,
                       is_synthetic=synthetic.is_synthetic(body.source), code_version=__version__)
     db.add(run)
@@ -359,3 +371,51 @@ def get_run(run_id: int, include_trades: bool = False, user: User = Depends(curr
         d["trades"] = top.trades
     d["candidates"] = [{"plan_id": x.plan_id, **x.summary, "detail": x.report} for x in res if x.plan_id]
     return d
+
+
+class HoldoutIn(BaseModel):
+    source: str
+    strategy_config_ids: list[int]
+    acknowledge_reuse: bool = False
+    initial_balance: float = Field(default=300.0, gt=0)
+
+
+@router.post("/holdout", status_code=202)
+def start_holdout(body: HoldoutIn, user: User = Depends(require_role("trader")), db: Session = Depends(get_db)):
+    """One evaluation of frozen, validated configurations on the untouched hold-out (logged in the ledger)."""
+    run = _create_run(db, user, body, "holdout")
+    jobs.submit(jobs.run_holdout_job, run.id)
+    db.refresh(run)
+    return run_out(run)
+
+
+class SplitIn(BaseModel):
+    train_end: str
+    holdout_start: str
+    reason: str = Field(min_length=3, max_length=200)
+
+
+@router.get("/data/datasets/{symbol}/{source}/split")
+def get_split(symbol: str, source: str, user: User = Depends(current_user), db: Session = Depends(get_db)):
+    from ..data import splits
+    ds = store.get_dataset(db, symbol, source)
+    if ds is None:
+        raise HTTPException(404, "Dataset not found")
+    return {"split": ds.split or None, "defined": splits.get_split(ds) is not None}
+
+
+@router.put("/data/datasets/{symbol}/{source}/split")
+def put_split(symbol: str, source: str, body: SplitIn, user: User = Depends(require_role("admin")),
+              db: Session = Depends(get_db)):
+    """Define the train / validation / hold-out boundaries ONCE, before any research on the dataset."""
+    from ..data import splits
+    ds = store.get_dataset(db, symbol, source)
+    if ds is None:
+        raise HTTPException(404, "Dataset not found")
+    try:
+        splits.define_split(db, ds, body.train_end, body.holdout_start, reason=body.reason)
+    except (store.DataError, ValueError) as e:
+        raise HTTPException(409, str(e)) from e
+    audit(db, "admin", "dataset_split_defined", user.id, symbol=symbol, source=source, split=ds.split)
+    db.commit()
+    return ds.split

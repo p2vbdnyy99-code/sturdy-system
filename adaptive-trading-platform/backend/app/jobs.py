@@ -18,8 +18,8 @@ from .core.backtest import BacktestConfig, PlanData, run_backtest
 from .core.engines import Plan, candidate_plans, plan_from_id
 from .core.risk import RiskConfig
 from .core.trading import TradingService, load_specs, user_sessions
-from .core.validation import SelectionCriteria, rank, research_plan
-from .data import store
+from .core.validation import SelectionCriteria, holdout_test, rank, research_plan
+from .data import splits, store
 from .data.synthetic import is_synthetic
 from .db import session_scope, utcnow
 from .models import Account, BacktestResult, BacktestRun, StrategyConfig, User
@@ -81,10 +81,16 @@ def run_backtest_job(run_id: int) -> None:
         sessions, specs = user_sessions(user.settings), load_specs(db)
         cfg = _bt_config(req, sessions)
         saved = {c.plan_id: c.params for c in db.query(StrategyConfig).filter_by(user_id=user.id, is_current=True)}
-        items, missing = [], []
+        items, missing, touched, split = [], [], False, None
         for plan in _plans(req):
-            df = store.load(db, plan.symbol, plan.timeframe, run.data_source, _parse_ts(req.get("start")),
-                            _parse_ts(req.get("end")))
+            if store.get_dataset(db, plan.symbol, run.data_source) is None:
+                missing.append(f"{plan.symbol} {plan.timeframe}")
+                continue
+            end, split, t = splits.guard_range(db, plan.symbol, run.data_source, _parse_ts(req.get("start")),
+                                               _parse_ts(req.get("end")), bool(req.get("include_holdout")),
+                                               "portfolio backtest", run.id, run.user_id)
+            touched |= t
+            df = store.load(db, plan.symbol, plan.timeframe, run.data_source, _parse_ts(req.get("start")), end)
             if len(df) < 300:
                 missing.append(f"{plan.symbol} {plan.timeframe}")
                 continue
@@ -92,15 +98,13 @@ def run_backtest_job(run_id: int) -> None:
         if not items:
             raise ValueError(f"No candle data in source '{run.data_source}' for: {sorted(set(missing))}. "
                              "Import data first; results are never simulated without data.")
-        if req.get("oos_fraction"):
-            first = min(i.df.index[0] for i in items)
-            last = max(i.df.index[-1] for i in items)
-            cfg.oos_start = first + (last - first) * (1 - float(req["oos_fraction"]))
+        cfg.split = split                      # trades are labelled train / validation / holdout
         res = run_backtest(items, cfg)
         report = metrics.full_report(res.trades, cfg.initial_balance)
         report |= {"rejections": res.rejections, "signals_total": res.signals_total, "data_range": res.data_range,
                    "missing_data": sorted(set(missing)), "plans": [i.plan.plan_id for i in items],
-                   "oos_start": cfg.oos_start.isoformat() if cfg.oos_start is not None else None,
+                   "split": split.to_dict() if split else None, "touches_holdout": touched,
+                   "datasets": {i.plan.symbol: i.df.attrs.get("dataset") for i in items},
                    "assumptions": {"fill": "next candle open; mid +/- half spread + slippage",
                                    "intrabar": "if stop and target are both inside one candle, the stop is assumed first",
                                    "equity": "closed-trade equity (open-trade excursions are bounded by the stop)",
@@ -127,12 +131,20 @@ def run_research_job(run_id: int) -> None:
                                     if k in SelectionCriteria.__dataclass_fields__})
         plans, reports, skipped = _plans(req), [], []
         for n, plan in enumerate(plans):
+            if store.get_dataset(db, plan.symbol, run.data_source) is None:
+                skipped.append({"plan_id": plan.plan_id, "reason": f"no dataset {plan.symbol}/{run.data_source}"})
+                continue
+            ds = store.require_dataset(db, plan.symbol, run.data_source)
+            split = splits.ensure_split(db, ds)
+            db.commit()
+            # research NEVER loads the hold-out: the load stops at the instant before it begins
             df = store.load(db, plan.symbol, plan.timeframe, run.data_source, _parse_ts(req.get("start")),
-                            _parse_ts(req.get("end")))
+                            splits.research_end(split))
             if len(df) < 3000:
                 skipped.append({"plan_id": plan.plan_id, "reason": f"only {len(df)} candles (need >= 3000)"})
                 continue
-            rep = research_plan(plan, df, specs[plan.symbol], cfg, crit, bool(req.get("walk_forward", True)))
+            rep = research_plan(plan, df, specs[plan.symbol], cfg, crit, bool(req.get("walk_forward", True)), split)
+            rep["dataset"] = df.attrs.get("dataset")
             rep["data_source"], rep["synthetic"] = run.data_source, run.is_synthetic
             reports.append(rep)
             run.progress = (n + 1) / len(plans)
@@ -142,13 +154,60 @@ def run_research_job(run_id: int) -> None:
         for rep in rank(reports):
             clean = metrics.clean(rep)
             db.add(BacktestResult(run_id=run.id, plan_id=rep["plan_id"], trades=[], report=clean, summary={
-                "verdict": rep["verdict"], "failures": rep["failures"] + rep["oos_failures"],
-                "train": metrics.clean(rep["train"]), "out_of_sample": metrics.clean(rep["out_of_sample"]),
-                "param_stability": rep["param_stability"]}))
+                "verdict": rep["verdict"], "failures": rep["failures"] + rep["validation_failures"],
+                "train": metrics.clean(rep["train"]), "validation": metrics.clean(rep["validation"]),
+                "power": metrics.clean(rep["power"]), "param_stability": rep["param_stability"]}))
             _apply_validation(db, user.id, rep, run)
         db.add(BacktestResult(run_id=run.id, plan_id=None, trades=[], report={"skipped": skipped}, summary={
             "candidates": len(reports), "passed": sum(r["verdict"] == "passed" for r in reports),
             "skipped": len(skipped)}))
+    _guard(run_id, body)
+
+
+def run_holdout_job(run_id: int) -> None:
+    """Evaluate FROZEN, validated strategy configurations once on the hold-out segment of their dataset.
+    Never selects, re-tunes or re-enables anything. Every run is written to the dataset's hold-out ledger;
+    if the hold-out was already read before, the run is refused unless the request acknowledges reuse,
+    and its results are then labelled as not independent."""
+    def body(db: Session, run: BacktestRun):
+        req = run.request
+        user = db.get(User, run.user_id)
+        sessions, specs = user_sessions(user.settings), load_specs(db)
+        cfg = _bt_config(req, sessions)
+        ids = req.get("strategy_config_ids") or []
+        if not ids:
+            raise ValueError("hold-out evaluation needs an explicit list of frozen strategy configuration ids")
+        cfgs = [db.get(StrategyConfig, i) for i in ids]
+        bad = [i for i, c in zip(ids, cfgs) if c is None or c.user_id != user.id or not c.is_current
+               or c.validation_status != "passed" or c.validation_source != run.data_source]
+        if bad:
+            raise ValueError(f"configurations {bad} are not current, validated (training + validation passed) "
+                             f"configurations on dataset '{run.data_source}'; only frozen survivors may see the hold-out")
+        out = []
+        for c in cfgs:
+            ds = store.require_dataset(db, c.symbol, run.data_source)
+            split = splits.get_split(ds)
+            if split is None:
+                raise ValueError(f"dataset {c.symbol}/{run.data_source} has no split")
+            prior = len((ds.split or {}).get("accesses", []))
+            if prior and not req.get("acknowledge_reuse"):
+                raise ValueError(f"the hold-out of {c.symbol}/{run.data_source} has already been read {prior} time(s); "
+                                 f"a further evaluation is not independent. Set acknowledge_reuse to proceed anyway.")
+            splits.record_access(ds, f"hold-out evaluation of config {c.id}", run.id, user.id)
+            df = store.load(db, c.symbol, c.timeframe, run.data_source)
+            res = holdout_test(plan_from_id(c.plan_id), df, specs[c.symbol], cfg, c.params, split)
+            res["independent"] = prior == 0
+            c.metrics = {**(c.metrics or {}), "holdout": metrics.clean({
+                "status": res["verdict"], "independent": res["independent"], "run_id": run.id,
+                "trades": res["holdout"]["trades"], "expectancy_r": res["holdout"]["expectancy_r"],
+                "profit_factor": res["holdout"]["profit_factor"], "failures": res["failures"]})}
+            out.append(res)
+            db.add(BacktestResult(run_id=run.id, plan_id=c.plan_id, summary=metrics.clean(
+                {k: res[k] for k in ("verdict", "failures", "independent", "holdout")}),
+                report=metrics.clean({k: v for k, v in res.items() if k != "trades"}), trades=_trade_rows(res["trades"])))
+        db.add(BacktestResult(run_id=run.id, plan_id=None, trades=[], report={}, summary={
+            "evaluated": len(out), "passed": sum(r["verdict"] == "passed" for r in out),
+            "independent": all(r["independent"] for r in out)}))
     _guard(run_id, body)
 
 
@@ -159,10 +218,12 @@ def _apply_validation(db: Session, user_id: int, rep: dict, run: BacktestRun) ->
     tr = rep["train"]
     m = {"expectancy_r": tr["expectancy_r"], "profit_factor": tr["profit_factor"], "win_rate": tr["win_rate"],
          "max_drawdown_pct": tr["max_drawdown_pct"], "trades": tr["trades"],
-         "oos_expectancy_r": rep["out_of_sample"]["expectancy_r"], "oos_trades": rep["out_of_sample"]["trades"],
-         "oos_profit_factor": rep["out_of_sample"]["profit_factor"], "param_stability": rep["param_stability"],
+         "validation_expectancy_r": rep["validation"]["expectancy_r"], "validation_trades": rep["validation"]["trades"],
+         "validation_profit_factor": rep["validation"]["profit_factor"], "param_stability": rep["param_stability"],
+         "power": rep["power"], "split": rep["split"],
          "max_drawdown_r": None, "validated_at": utcnow().isoformat(), "data_source": run.data_source,
-         "data_start": rep["data_start"], "data_end": rep["data_end"], "failures": rep["failures"] + rep["oos_failures"]}
+         "data_start": rep["data_start"], "data_end": rep["data_end"],
+         "failures": rep["failures"] + rep["validation_failures"], "holdout": {"status": "not evaluated"}}
     m = metrics.clean(m)
     status = "passed" if rep["verdict"] == "passed" else "failed"
     same = cur is not None and cur.params == rep["params"] and cur.validation_status not in ("needs_revalidation",)
@@ -185,7 +246,8 @@ def _apply_validation(db: Session, user_id: int, rep: dict, run: BacktestRun) ->
 
 
 def run_replay(db: Session, account: Account, symbols: list[str], timeframe: str, source: str,
-               start: datetime | None = None, end: datetime | None = None, max_hold_minutes: int = 1440) -> dict:
+               start: datetime | None = None, end: datetime | None = None, max_hold_minutes: int = 1440,
+               include_holdout: bool = False) -> dict:
     """Forward-simulate the PAPER engine over stored candles, bar by bar, using
     the live order path (journal, risk engine, positions, notifications).
     Replayed results never count as forward-test evidence for live trading."""
@@ -195,8 +257,14 @@ def run_replay(db: Session, account: Account, symbols: list[str], timeframe: str
     svc = TradingService(db, account, sessions=user_sessions(user.settings), max_hold_minutes=max_hold_minutes)
     account.feed = {"type": "replay", "source": source, "replay_used": True, "synthetic": is_synthetic(source)}
     frames, sigs = {}, {}
+    touched = False
     for sym in symbols:
-        df = store.load(db, sym, timeframe, source, start, end)
+        if store.get_dataset(db, sym, source) is None:
+            continue
+        eff_end, _, t = splits.guard_range(db, sym, source, start, end, include_holdout, "paper replay", None,
+                                           account.user_id)
+        touched |= t
+        df = store.load(db, sym, timeframe, source, start, eff_end)
         if len(df) < 300:
             continue
         frames[sym] = df
@@ -236,5 +304,5 @@ def run_replay(db: Session, account: Account, symbols: list[str], timeframe: str
         if stats["bars"] % 2000 == 0:
             db.commit()
     db.commit()
-    return stats | {"account_id": account.id, "balance": account.balance, "equity": account.equity,
+    return stats | {"touches_holdout": touched, "account_id": account.id, "balance": account.balance, "equity": account.equity,
                     "source": source, "synthetic": is_synthetic(source), "code_version": __version__}

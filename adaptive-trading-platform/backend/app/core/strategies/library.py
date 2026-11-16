@@ -8,7 +8,16 @@ import pandas as pd
 
 from .. import indicators as ind
 from .. import structure as st
-from .base import Strategy, StrategyContext, first_true_per_day, htf_trend
+from .base import Strategy, StrategyContext, ema_bars, first_true_per_day, htf_ratio, htf_trend, wilder_bars
+
+
+def _days(n: int, base_minutes: int) -> int:
+    return n * 1440 // base_minutes
+
+
+def _range_needs(self, p, base_minutes):
+    # ATR(14) + previous-day / previous-session levels (at most two calendar days back)
+    return max(self.warmup_bars, wilder_bars(14)) + _days(3, base_minutes)
 
 
 def _reference_range(df, ctx: StrategyContext, p) -> pd.DataFrame:
@@ -40,6 +49,7 @@ class RangeBreakout(Strategy):
     default_params = {"range_source": "opening", "range_minutes": 60, "buffer_atr": 0.1, "rr": 2.0,
                       "sl_atr": 1.5, "max_range_atr": 6.0, "roc_n": 5, "min_relvol": 0.0}
     param_grid = {"range_minutes": [30, 60, 90], "buffer_atr": [0.0, 0.1, 0.25], "sl_atr": [1.0, 1.5, 2.0]}
+    required_bars = _range_needs
 
     def raw(self, df, ctx, p):
         a = ind.atr(df, 14)
@@ -74,6 +84,7 @@ class LiquiditySweep(Strategy):
     default_params = {"range_source": "asia", "range_minutes": 60, "wick_atr": 0.3, "buffer_atr": 0.15,
                       "rr": 2.0, "use_equal_levels": False}
     param_grid = {"wick_atr": [0.2, 0.3, 0.5], "buffer_atr": [0.1, 0.15, 0.3]}
+    required_bars = _range_needs
 
     def raw(self, df, ctx, p):
         a = ind.atr(df, 14)
@@ -103,6 +114,7 @@ class BreakoutRetest(Strategy):
     indicators_used = ("ATR", "session range")
     default_params = {"range_source": "asia", "range_minutes": 60, "tol_atr": 0.25, "buffer_atr": 0.3, "rr": 2.0}
     param_grid = {"tol_atr": [0.15, 0.25, 0.4], "buffer_atr": [0.2, 0.3, 0.5]}
+    required_bars = _range_needs
 
     def raw(self, df, ctx, p):
         a = ind.atr(df, 14)
@@ -134,6 +146,13 @@ class TrendContinuation(Strategy):
                       "buffer_atr": 0.2, "rr": 2.0, "cooldown": 12, "max_per_day": 2}
     param_grid = {"adx_min": [15, 20, 25], "pullback_bars": [4, 6, 10], "swing_bars": [6, 10, 16]}
     warmup_bars = 300
+
+    def required_bars(self, p, base_minutes):
+        # entry TF: EMA9/20, RSI(14), ATR(14); HTF: EMA50/200 and ADX(14, two Wilder stages); HTF2: EMA20/50
+        entry = max(ema_bars(20), wilder_bars(14))
+        h1 = htf_ratio(p["htf"], base_minutes) * (max(ema_bars(200), 2 * wilder_bars(14)) + 1)
+        h2 = htf_ratio(p["htf2"], base_minutes) * (ema_bars(50) + 1) if p.get("htf2") else 0
+        return max(self.warmup_bars, entry, h1, h2) + 50
 
     def raw(self, df, ctx, p):
         a = ind.atr(df, 14)
@@ -175,6 +194,10 @@ class VolatilitySqueeze(Strategy):
                       "sl_atr": 1.5, "rr": 2.0}
     param_grid = {"squeeze_pct": [0.15, 0.2, 0.3], "recent": [5, 8, 12], "sl_atr": [1.0, 1.5, 2.0]}
 
+    def required_bars(self, p, base_minutes):
+        # ATR(14) feeding a 50-bar mean (expansion), Bollinger(20) width ranked over `lookback`
+        return max(self.warmup_bars, wilder_bars(14) + 50, int(p["bb_n"]) + int(p["lookback"]) + int(p["recent"])) + 50
+
     def raw(self, df, ctx, p):
         a = ind.atr(df, 14)
         c = df["close"]
@@ -201,6 +224,10 @@ class StructureShift(Strategy):
     default_params = {"mode": "choch", "swing_k": 3, "htf": "H1", "buffer_atr": 0.2, "rr": 2.0, "max_per_day": 2}
     param_grid = {"swing_k": [2, 3, 5], "buffer_atr": [0.1, 0.2, 0.4]}
 
+    def required_bars(self, p, base_minutes):
+        h = htf_ratio(p["htf"], base_minutes) * (max(ema_bars(200), 2 * wilder_bars(14)) + 1)
+        return max(self.warmup_bars, wilder_bars(14), h) + 50
+
     def raw(self, df, ctx, p):
         a = ind.atr(df, 14)
         s = st.structure_breaks(df, int(p["swing_k"]))
@@ -224,6 +251,10 @@ class MomentumBreakout(Strategy):
     indicators_used = ("N-bar high/low", "MACD histogram", "ADX", "ATR")
     default_params = {"lookback": 48, "adx_min": 20, "sl_atr": 1.5, "rr": 2.0}
     param_grid = {"lookback": [24, 48, 96], "adx_min": [15, 20, 25], "sl_atr": [1.0, 1.5, 2.0]}
+
+    def required_bars(self, p, base_minutes):
+        # ADX (two Wilder stages) and MACD(12, 26, 9)
+        return max(self.warmup_bars, 2 * wilder_bars(14), ema_bars(26) + ema_bars(9), int(p["lookback"])) + 50
 
     def raw(self, df, ctx, p):
         a = ind.atr(df, 14)
