@@ -245,7 +245,7 @@ test('served by the real app: landing page, unknown slug, sitemap, llms.txt, lan
   if (fs.existsSync(new URL('../../frontend/dist-ssr/prerender.js', import.meta.url))) {
     const guide = await get('/guides/emd-exemption');
     assert.match(guide.body, /<div id="root"><div class="home">/);
-    assert.match(guide.body, /<h1>EMD exemption for MSEs and startups/);
+    assert.match(guide.body, /<h1>EMD exemption for MSME: who qualifies/);
     assert.match(guide.body, /"@type":"Article"/);
     assert.match((await get('/pricing')).body, /<div id="root"><div class="home">/);
     assert.match((await get('/dashboard')).body, /<div id="root"><\/div>/, 'app pages stay empty');

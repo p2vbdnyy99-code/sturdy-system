@@ -100,10 +100,10 @@ export const GUIDES = [
   {
     path: '/guides/tender-eligibility-check',
     checked: '2026-10-24',
-    headline: 'How to check eligibility in a government tender',
-    title: 'How to check eligibility in a government tender',
-    description: 'Check turnover, similar-work experience, registrations and exemptions in a government tender, '
-      + 'clause by clause, before you spend on a bid.',
+    headline: 'Tender eligibility criteria: how to check them in a government tender',
+    title: 'Tender eligibility criteria: how to check a government tender',
+    description: 'Government tender eligibility criteria, clause by clause: turnover, similar-work experience, '
+      + 'registrations and exemptions. Check them before you spend on a bid.',
     citations: [
       'https://prasarbharati.gov.in/wp-content/uploads/2024/04/Engineering_673527.pdf',
       'https://www.rri.res.in/sites/default/files/2024-08/GeM-Bidding-5263261.pdf',
@@ -113,10 +113,10 @@ export const GUIDES = [
   {
     path: '/guides/emd-exemption',
     checked: '2026-11-09',
-    headline: 'EMD exemption for MSEs and startups: who qualifies and how to claim it',
-    title: 'EMD exemption for MSEs and startups: who qualifies',
-    description: 'GFR Rule 170 exempts MSEs and DPIIT-recognised startups from EMD. On GeM, traders are excluded '
-      + 'and proof must be uploaded with the bid.',
+    headline: 'EMD exemption for MSME: who qualifies (micro, small, startups) and how to claim it',
+    title: 'EMD exemption for MSME: micro, small and startups qualify',
+    description: 'GFR Rule 170 exempts micro and small enterprises and DPIIT startups from EMD; medium ones are not. '
+      + 'On GeM, traders are excluded and proof goes with the bid.',
     citations: [
       'https://dgll.nic.in/sites/default/files/2023-06/GFR%20amendment2.pdf',
       'https://www.rri.res.in/sites/default/files/2024-08/GeM-Bidding-5263261.pdf',

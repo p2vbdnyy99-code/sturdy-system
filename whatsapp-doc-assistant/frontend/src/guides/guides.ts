@@ -9,13 +9,13 @@ export type GuideMeta = { slug: string; title: string; summary: string; checked:
 export const GUIDES: GuideMeta[] = [
   {
     slug: 'tender-eligibility-check',
-    title: 'How to check eligibility in a government tender',
+    title: 'Tender eligibility criteria: how to check them in a government tender',
     summary: 'Registration, turnover, similar-work experience, exemptions and proof: test your company against each condition before you spend on a bid.',
     checked: '2026-10-24',
   },
   {
     slug: 'emd-exemption',
-    title: 'EMD exemption for MSEs and startups: who qualifies and how to claim it',
+    title: 'EMD exemption for MSME: who qualifies (micro, small, startups) and how to claim it',
     summary: 'What GFR Rule 170 says, how to work out the amount, how it differs from performance security, and the proof GeM asks for.',
     checked: '2026-11-09',
   },

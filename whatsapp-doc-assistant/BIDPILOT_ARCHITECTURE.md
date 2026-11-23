@@ -5488,3 +5488,17 @@ those the EMD guide quotes (GFR Rules 170 and 171, Rule 171(i) as amended
 Browser at 1280px and 390px: example shows Rs. 80,711.72; 10,00,000 at 2%
 gives Rs. 20,000.00; bad input shows a message; no horizontal scroll; the
 link from the EMD guide opens it.
+
+## Guide titles use the phrases people search (23 Nov 2026)
+
+**What.** Two guide titles and descriptions (`backend/src/seo.js`, `frontend/src/guides/guides.ts`) now lead with the
+search phrases found in Google and YouTube suggestions for India: "tender eligibility criteria" (was "How to check
+eligibility in a government tender") and "EMD exemption for MSME" (was "...for MSEs and startups"). The EMD title
+and description say plainly that only micro and small enterprises and startups qualify, and medium enterprises do
+not, because "MSME" includes medium. Paths, dates and body text are unchanged.
+
+**Why.** The founder asked for SEO that reaches the right audience. People search "tender eligibility criteria" and
+"emd exemption for msme"; the old titles used neither phrase.
+
+**Verification.** `node --test test/geo.test.js` (titles in sync, 7 pass), `test/landing-pages.test.js` and
+`test/md.test.js` (21 pass, H1 assertion updated), frontend build OK.
