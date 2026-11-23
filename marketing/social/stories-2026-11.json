@@ -98,5 +98,85 @@
    "Bid validity badhi? EMD / BG bhi check karein.",
    "Unsuccessful bidders: award ke 30 din ke andar wapas."
   ]
+ },
+ {
+  "d": "2026-11-26",
+  "k": "emd-vs-ps",
+  "h": "EMD aur performance security alag hain",
+  "l": [
+   "EMD: har bidder, bid ke saath, aam taur par 2-5%.",
+   "Performance security: sirf jeetne wala, award ke baad, goods/services mein 3-5%.",
+   "EMD ki chhoot = PS ki chhoot nahi."
+  ]
+ },
+ {
+  "d": "2026-11-27",
+  "k": "emd-refund",
+  "h": "Tender haare? EMD kab wapas?",
+  "l": [
+   "Bid security: bid validity ke baad 45 din tak valid.",
+   "Haarne wale ko award ke 30ve din tak wapas (GFR Rule 170).",
+   "Apne tender ka EMD clause zaroor padhein."
+  ]
+ },
+ {
+  "d": "2026-11-28",
+  "k": "startup-emd",
+  "h": "Startup ho? EMD se chhoot",
+  "l": [
+   "DPIIT-recognised startups: GFR Rule 170(i).",
+   "GeM par DPIIT certificate bid ke saath upload karein.",
+   "Medium enterprises is list mein nahi."
+  ]
+ },
+ {
+  "d": "2026-11-29",
+  "k": "corrigendum-meaning",
+  "h": "Corrigendum kya hota hai?",
+  "l": [
+   "Published tender ko badalne wala official notice.",
+   "Tender documents corrigendum se amend hote hain (Procurement Manual 2024, 5.1.5).",
+   "Corrigendum tender ka hissa ban jaata hai."
+  ]
+ },
+ {
+  "d": "2026-11-30",
+  "k": "corrigendum-dates",
+  "h": "Corrigendum se date badal sakti hai",
+  "l": [
+   "Ek GeM bid ke corrigendum ne end aur opening date badhayi (REC PDCL, 2023).",
+   "Purani date pe mat chaliye: latest corrigendum dekhiye.",
+   "Corrigenda GeM-CPPP par publish hote hain (GFR Rule 159)."
+  ]
+ },
+ {
+  "d": "2026-12-01",
+  "k": "similar-work-corrigendum",
+  "h": "Corrigendum ne 'similar work' badal diya",
+  "l": [
+   "IIT Kanpur, corrigendum 5 May 2026.",
+   "Similar work: repairs/maintenance se construction works.",
+   "Zyada registrations bhi accept hui."
+  ]
+ },
+ {
+  "d": "2026-12-02",
+  "k": "experience-tiers",
+  "h": "Similar work: 3, 2 ya 1 kaam",
+  "l": [
+   "All India Radio tender (CPWD format): 3 kaam har ek 40%, 2 kaam 60%, ya 1 kaam 80%.",
+   "Window: pichhle 7 saal.",
+   "Numbers har tender mein alag hote hain."
+  ]
+ },
+ {
+  "d": "2026-12-03",
+  "k": "pre-bid-corrigendum",
+  "h": "Pre-bid meeting ke baad corrigendum",
+  "l": [
+   "Pre-bid ke baad corrigendum aa sakta hai (Procurement Manual 2024, 5.2.3(e)).",
+   "Pre-bid mein apne sawaal poochhiye.",
+   "Bid se pehle har corrigendum padhiye."
+  ]
  }
 ]
