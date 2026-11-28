@@ -1,219 +1,226 @@
 {
- "updated": "2026-11-23",
- "source": "Google and YouTube search suggestions for India (gl=in), and titles/hashtags of top Indian tender videos on YouTube, 15 Nov 2026. Search volumes not measured (Semrush had no API units). Refreshed 21 Nov 2026 from the same Google/YouTube India suggestions and top YouTube results.",
- "rules": [
-  "Lead with the exact phrase people search (from this file), word for word, in the first line of every caption, in the YouTube title, and in the reel's first on-screen text. Never use a phrase the post doesn't answer.",
-  "YouTube Shorts title: exact search phrase first, then the topic, then '| TenderTez'; under 70 characters so it isn't cut on phones.",
-  "Reel caption (shared by YouTube, Instagram and Facebook): line 1 answers the search phrase in Hinglish; line 2 repeats it in Hindi (Devanagari) from 'hindi_phrases' for people who search in Hindi; then the guide link with UTM (utm_source=youtube); 'Voice-over AI se banaya gaya hai.'; then exactly 5 hashtags in this order: 2 topic, 1 audience, #tendertez, #shorts (YouTube shows the first 3 above the title; Instagram's 3-5 limit is met).",
-  "YouTube tags: 8-12 from the topic's keywords plus 'government tender', 'gem portal', 'tendertez'.",
-  "Instagram image posts: 3-5 niche hashtags (2 topic + 1 audience + #tendertez, optionally 1 broad). No generic tags (#business, #india, #viral).",
-  "Instagram image posts: alt text that contains the search phrase.",
-  "Reels also go to the Facebook page as a REEL (facebookData type REEL, title = YouTube title).",
-  "Facebook: 2-3 hashtags; the link carries UTM.",
-  "X: at most 1-2 hashtags; the search phrase in the first line; link carries UTM.",
-  "Every link to tendertez.in carries ?utm_source=<instagram|youtube|facebook|x>&utm_medium=social&utm_campaign=<topic slug>, so the nightly numbers show which channel and topic bring visitors.",
-  "Pick the audience tag that matches who the post helps: see 'audience_by_topic'.",
-  "Posting times (Metricool best-time data for this account, IST): Instagram peaks 10:00 then 18:00; YouTube peaks 16:00 then 10:00. Reels (IG + YT + FB) at 10:30 and 17:00; Instagram/Facebook image posts at 10:00/10:15; stories 09:30; X 09:30, 13:00, 17:00.",
-  "Never use unrelated trending tags; every tag must match the post's topic."
- ],
- "broad_hashtags": [
-  "#governmenttender",
-  "#gemportal",
-  "#gemtender",
-  "#tender",
-  "#etender",
-  "#govttender"
- ],
- "audience_hashtags": [
-  "#msme",
-  "#contractor",
-  "#tenderconsultant",
-  "#smallbusinessindia",
-  "#startupindia",
-  "#civilcontractor"
- ],
- "topics": {
-  "emd": {
-   "keywords": [
-    "emd in tender",
-    "emd full form",
-    "emd kya hota hai",
-    "emd amount means",
-    "emd exemption",
-    "earnest money deposit",
-    "emd meaning",
-    "gem emd refund"
-   ],
-   "hashtags": [
-    "#emd",
-    "#earnestmoney",
-    "#emdexemption",
-    "#bidsecurity"
-   ]
-  },
-  "msme-exemption": {
-   "keywords": [
-    "msme tender fee exemption",
-    "msme tender benefits",
-    "emd exemption for msme",
-    "udyam registration tender",
-    "msme se tender kaise bhare"
-   ],
-   "hashtags": [
-    "#msme",
-    "#udyam",
-    "#msmeindia",
-    "#emdexemption"
-   ]
-  },
-  "startup": {
-   "keywords": [
-    "startup india tender",
-    "dpiit startup emd exemption"
-   ],
-   "hashtags": [
-    "#startupindia",
-    "#dpiit",
-    "#startups"
-   ]
-  },
-  "corrigendum": {
-   "keywords": [
-    "corrigendum meaning in hindi",
-    "corrigendum meaning",
-    "corrigendum in gem portal",
-    "corrigendum of tender notice"
-   ],
-   "hashtags": [
-    "#corrigendum",
-    "#tendernotice",
-    "#tenderupdate"
-   ]
-  },
-  "eligibility": {
-   "keywords": [
-    "tender eligibility criteria",
-    "gem tender eligibility criteria",
-    "government tender eligibility criteria",
-    "turnover criteria in tender",
-    "similar work tender",
-    "railway tender eligibility criteria",
-    "cpwd tender eligibility criteria",
-    "pwd tender eligibility criteria"
-   ],
-   "hashtags": [
-    "#eligibility",
-    "#tendereligibility",
-    "#turnover"
-   ]
-  },
-  "gem": {
-   "keywords": [
-    "gem tender kaise bhare",
-    "gem bid participation",
-    "gem portal kya hai",
-    "gem bidding process",
-    "gem bid technical evaluation",
-    "gem tender document",
-    "gem tender kya hota hai",
-    "gem bid kaise kare",
-    "gem tender participation",
-    "gem bid submission process"
-   ],
-   "hashtags": [
-    "#gem",
+  "updated": "2026-11-28",
+  "source": "Google and YouTube search suggestions for India (gl=in), and titles/hashtags of top Indian tender videos on YouTube, 15 Nov 2026. Search volumes not measured (Semrush had no API units). Refreshed 21 Nov 2026 from the same Google/YouTube India suggestions and top YouTube results. Refreshed 28 Nov 2026 from the same Google/YouTube India suggestions.",
+  "rules": [
+    "Lead with the exact phrase people search (from this file), word for word, in the first line of every caption, in the YouTube title, and in the reel's first on-screen text. Never use a phrase the post doesn't answer.",
+    "YouTube Shorts title: exact search phrase first, then the topic, then '| TenderTez'; under 70 characters so it isn't cut on phones.",
+    "Reel caption (shared by YouTube, Instagram and Facebook): line 1 answers the search phrase in Hinglish; line 2 repeats it in Hindi (Devanagari) from 'hindi_phrases' for people who search in Hindi; then the guide link with UTM (utm_source=youtube); 'Voice-over AI se banaya gaya hai.'; then exactly 5 hashtags in this order: 2 topic, 1 audience, #tendertez, #shorts (YouTube shows the first 3 above the title; Instagram's 3-5 limit is met).",
+    "YouTube tags: 8-12 from the topic's keywords plus 'government tender', 'gem portal', 'tendertez'.",
+    "Instagram image posts: 3-5 niche hashtags (2 topic + 1 audience + #tendertez, optionally 1 broad). No generic tags (#business, #india, #viral).",
+    "Instagram image posts: alt text that contains the search phrase.",
+    "Reels also go to the Facebook page as a REEL (facebookData type REEL, title = YouTube title).",
+    "Facebook: 2-3 hashtags; the link carries UTM.",
+    "X: at most 1-2 hashtags; the search phrase in the first line; link carries UTM.",
+    "Every link to tendertez.in carries ?utm_source=<instagram|youtube|facebook|x>&utm_medium=social&utm_campaign=<topic slug>, so the nightly numbers show which channel and topic bring visitors.",
+    "Pick the audience tag that matches who the post helps: see 'audience_by_topic'.",
+    "Posting times (Metricool best-time data for this account, IST): Instagram peaks 10:00 then 18:00; YouTube peaks 16:00 then 10:00. Reels (IG + YT + FB) at 10:30 and 17:00; Instagram/Facebook image posts at 10:00/10:15; stories 09:30; X 09:30, 13:00, 17:00.",
+    "Never use unrelated trending tags; every tag must match the post's topic."
+  ],
+  "broad_hashtags": [
+    "#governmenttender",
     "#gemportal",
-    "#gembid",
-    "#governmentemarketplace"
-   ]
+    "#gemtender",
+    "#tender",
+    "#etender",
+    "#govttender"
+  ],
+  "audience_hashtags": [
+    "#msme",
+    "#contractor",
+    "#tenderconsultant",
+    "#smallbusinessindia",
+    "#startupindia",
+    "#civilcontractor"
+  ],
+  "topics": {
+    "emd": {
+      "keywords": [
+        "emd in tender",
+        "emd full form",
+        "emd kya hota hai",
+        "emd amount means",
+        "emd exemption",
+        "earnest money deposit",
+        "emd meaning",
+        "gem emd refund"
+      ],
+      "hashtags": [
+        "#emd",
+        "#earnestmoney",
+        "#emdexemption",
+        "#bidsecurity"
+      ]
+    },
+    "msme-exemption": {
+      "keywords": [
+        "msme tender fee exemption",
+        "msme tender benefits",
+        "emd exemption for msme",
+        "udyam registration tender",
+        "msme se tender kaise bhare"
+      ],
+      "hashtags": [
+        "#msme",
+        "#udyam",
+        "#msmeindia",
+        "#emdexemption"
+      ]
+    },
+    "startup": {
+      "keywords": [
+        "startup india tender",
+        "dpiit startup emd exemption"
+      ],
+      "hashtags": [
+        "#startupindia",
+        "#dpiit",
+        "#startups"
+      ]
+    },
+    "corrigendum": {
+      "keywords": [
+        "corrigendum meaning in hindi",
+        "corrigendum meaning",
+        "corrigendum in gem portal",
+        "corrigendum of tender notice"
+      ],
+      "hashtags": [
+        "#corrigendum",
+        "#tendernotice",
+        "#tenderupdate"
+      ]
+    },
+    "eligibility": {
+      "keywords": [
+        "tender eligibility criteria",
+        "gem tender eligibility criteria",
+        "government tender eligibility criteria",
+        "turnover criteria in tender",
+        "similar work tender",
+        "railway tender eligibility criteria",
+        "cpwd tender eligibility criteria",
+        "pwd tender eligibility criteria",
+        "nhai tender eligibility criteria"
+      ],
+      "hashtags": [
+        "#eligibility",
+        "#tendereligibility",
+        "#turnover"
+      ]
+    },
+    "gem": {
+      "keywords": [
+        "gem tender kaise bhare",
+        "gem bid participation",
+        "gem portal kya hai",
+        "gem bidding process",
+        "gem bid technical evaluation",
+        "gem tender document",
+        "gem tender kya hota hai",
+        "gem bid kaise kare",
+        "gem tender participation",
+        "gem bid submission process",
+        "gem bid extension",
+        "gem tender opening process",
+        "gem tender submission process"
+      ],
+      "hashtags": [
+        "#gem",
+        "#gemportal",
+        "#gembid",
+        "#governmentemarketplace"
+      ]
+    },
+    "process": {
+      "keywords": [
+        "tender kaise bhara jata hai",
+        "government tender kaise bhare",
+        "tender bharna kaise sikhe",
+        "tender process in hindi",
+        "tender process steps",
+        "tender kaise milta hai",
+        "tender kaise bhare online",
+        "tender kaise dekhe",
+        "tender kaise bharte hai",
+        "tender kaise le",
+        "how to apply for e tender"
+      ],
+      "hashtags": [
+        "#tenderkaisebhare",
+        "#tenderprocess",
+        "#governmentcontracts"
+      ]
+    },
+    "documents": {
+      "keywords": [
+        "tender documents list",
+        "government tender ke liye documents",
+        "tender document checklist"
+      ],
+      "hashtags": [
+        "#tenderdocuments",
+        "#checklist"
+      ]
+    },
+    "boq": {
+      "keywords": [
+        "boq in tender",
+        "boq kya hota hai",
+        "bill of quantities"
+      ],
+      "hashtags": [
+        "#boq",
+        "#billofquantities",
+        "#civilengineering"
+      ]
+    }
   },
-  "process": {
-   "keywords": [
-    "tender kaise bhara jata hai",
-    "government tender kaise bhare",
-    "tender bharna kaise sikhe",
-    "tender process in hindi",
-    "tender process steps",
-    "tender kaise milta hai",
-    "tender kaise bhare online",
-    "tender kaise dekhe"
-   ],
-   "hashtags": [
-    "#tenderkaisebhare",
-    "#tenderprocess",
-    "#governmentcontracts"
-   ]
+  "audience_by_topic": {
+    "emd": [
+      "#msme",
+      "#contractor"
+    ],
+    "msme-exemption": [
+      "#msme",
+      "#smallbusinessindia"
+    ],
+    "startup": [
+      "#startupindia"
+    ],
+    "corrigendum": [
+      "#contractor",
+      "#tenderconsultant"
+    ],
+    "eligibility": [
+      "#civilcontractor",
+      "#contractor"
+    ],
+    "gem": [
+      "#gemseller",
+      "#msme"
+    ],
+    "process": [
+      "#smallbusinessindia",
+      "#contractor"
+    ],
+    "documents": [
+      "#tenderconsultant",
+      "#contractor"
+    ],
+    "boq": [
+      "#civilcontractor",
+      "#civilengineering"
+    ]
   },
-  "documents": {
-   "keywords": [
-    "tender documents list",
-    "government tender ke liye documents",
-    "tender document checklist"
-   ],
-   "hashtags": [
-    "#tenderdocuments",
-    "#checklist"
-   ]
-  },
-  "boq": {
-   "keywords": [
-    "boq in tender",
-    "boq kya hota hai",
-    "bill of quantities"
-   ],
-   "hashtags": [
-    "#boq",
-    "#billofquantities",
-    "#civilengineering"
-   ]
+  "hindi_phrases": {
+    "emd": "ईएमडी क्या होता है",
+    "msme-exemption": "एमएसएमई ईएमडी छूट",
+    "startup": "स्टार्टअप ईएमडी छूट",
+    "corrigendum": "कोरिजेंडम का मतलब",
+    "eligibility": "टेंडर पात्रता शर्तें",
+    "gem": "जेम टेंडर कैसे भरें",
+    "process": "टेंडर कैसे भरा जाता है",
+    "documents": "टेंडर के लिए दस्तावेज़",
+    "boq": "बीओक्यू क्या होता है"
   }
- },
- "audience_by_topic": {
-  "emd": [
-   "#msme",
-   "#contractor"
-  ],
-  "msme-exemption": [
-   "#msme",
-   "#smallbusinessindia"
-  ],
-  "startup": [
-   "#startupindia"
-  ],
-  "corrigendum": [
-   "#contractor",
-   "#tenderconsultant"
-  ],
-  "eligibility": [
-   "#civilcontractor",
-   "#contractor"
-  ],
-  "gem": [
-   "#gemseller",
-   "#msme"
-  ],
-  "process": [
-   "#smallbusinessindia",
-   "#contractor"
-  ],
-  "documents": [
-   "#tenderconsultant",
-   "#contractor"
-  ],
-  "boq": [
-   "#civilcontractor",
-   "#civilengineering"
-  ]
- },
- "hindi_phrases": {
-  "emd": "ईएमडी क्या होता है",
-  "msme-exemption": "एमएसएमई ईएमडी छूट",
-  "startup": "स्टार्टअप ईएमडी छूट",
-  "corrigendum": "कोरिजेंडम का मतलब",
-  "eligibility": "टेंडर पात्रता शर्तें",
-  "gem": "जेम टेंडर कैसे भरें",
-  "process": "टेंडर कैसे भरा जाता है",
-  "documents": "टेंडर के लिए दस्तावेज़",
-  "boq": "बीओक्यू क्या होता है"
- }
 }
